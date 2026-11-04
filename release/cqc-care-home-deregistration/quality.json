@@ -1,0 +1,490 @@
+{
+ "name": "cqc-care-home-deregistration",
+ "built_at_utc": "2026-11-04T00:00:00Z",
+ "task": {
+  "question": "At the production instant T of a CQC 'HSCA Active Locations' monthly vintage, for every care home active at T, will the location's CQC registration end within the following 12 months? A useful prediction gives local-authority commissioners and CQC market-oversight analysts a 12-month early warning on care-home capacity before a deregistration lands (the 2024 BMJ Public Health closure study is the policy reference).",
+  "prediction_time": "the vintage's production date T (the dated archived file name; Europe/London). Features are the T vintage's own register columns - the state CQC published at T. The 12-month outcome window (T, T+365d] lies entirely after the instant. Worked example: Park Hills Nursing Home (1-113831768, Oldham, 17 beds, Good published 26/08/2022, HSCA start 01/02/2011) is active in the 05 January 2024 vintage; its registration ended 01/02/2024, inside (T, T+365d], so its label is 1."
+ },
+ "target": "deregistered_12m",
+ "positive_label": 1,
+ "positive_label_text": "the location's CQC registration ends (Location Status Inactive-Dereg or Removed with a Location HSCA End Date) within 12 months of the vintage instant",
+ "id_columns": [
+  "location_key"
+ ],
+ "id_columns_are_entity_keys": true,
+ "id_columns_note": "location_key = sha256(salt|instant|location_id)[:16] names one location-instant with one label; unique across the panel, asserted at construction; the key is deliberately different for the same location at different instants",
+ "time_column": "instant",
+ "event_key_column": "location_key",
+ "event_key_note": "an event is one care-home location's 12-month deregistration at one vintage instant, so the distinct-event count the gate recomputes from location_key is the number of distinct deregistering locations (measured ~700-800 care-home register events per year 2019-2025). The dependence that matters scientifically is PROVIDER clustering (a provider's homes exit together) and common-year shocks; provider identity does not ship (P0 design), so provider-clustered intervals cannot be computed over the shipped frame - recorded as a limitation, with the discovery measurement (376-877 distinct providers per deregistration year) as the dependence evidence",
+ "split_windows": {
+  "train": {
+   "start": "2016-01",
+   "end": "2023-01"
+  },
+  "eval": {
+   "start": "2024-01",
+   "end": "2025-01"
+  },
+  "holdout": {
+   "start": "2025-01",
+   "end": "2026-01"
+  }
+ },
+ "split_boundaries": {
+  "train": "vintage instants 2016-01..2022-01 (January vintages; rows within [2016-01-01, 2023-01-01))",
+  "eval": "the 2024-01 vintage only",
+  "holdout": "the 2025-01 vintage only"
+ },
+ "splits": {
+  "train": "public/train.csv",
+  "eval": "public/eval.csv",
+  "holdout": "private/holdout.csv"
+ },
+ "positive_events": {
+  "train": {
+   "positives": 4418,
+   "distinct_events": 4418
+  },
+  "eval": {
+   "positives": 757,
+   "distinct_events": 757
+  },
+  "holdout": {
+   "positives": 761,
+   "distinct_events": 761
+  }
+ },
+ "positive_events_note": "each positive is one location-instant; the underlying events are the register's own deregistrations (measured ~700-800 care-home register events per year 2019-2025, CQC Deactivated Locations)",
+ "features": [
+  "instant",
+  "care_home_beds",
+  "beds_bucket",
+  "latest_overall_rating",
+  "rating_recency_bucket",
+  "inherited_rating",
+  "hsca_start_year",
+  "local_authority",
+  "region",
+  "provider_sector",
+  "svc_nursing",
+  "svc_residential",
+  "svc_other_count",
+  "users_dementia",
+  "users_older_people",
+  "users_learning_disabilities",
+  "users_physical_disability",
+  "users_mental_health",
+  "users_other_count"
+ ],
+ "features_documented_at": "prediction_time",
+ "shipped_columns": [
+  "location_key",
+  "instant",
+  "care_home_beds",
+  "beds_bucket",
+  "latest_overall_rating",
+  "rating_recency_bucket",
+  "inherited_rating",
+  "hsca_start_year",
+  "local_authority",
+  "region",
+  "provider_sector",
+  "svc_nursing",
+  "svc_residential",
+  "svc_other_count",
+  "users_dementia",
+  "users_older_people",
+  "users_learning_disabilities",
+  "users_physical_disability",
+  "users_mental_health",
+  "users_other_count",
+  "deregistered_12m"
+ ],
+ "label_source_columns": [
+  "the CQC Location ID (the join key to the Deactivated Locations file) - present in NO shipped column; only the per-instant pseudonym location_key ships, and the real ids live in auxiliary/location_map.csv outside every solver-visible frame",
+  "'Location HSCA End Date' and 'Location Status' from the Deactivated Locations file - the label operands; never shipped",
+  "'Care home?' - the eligibility flag, consumed at construction; every shipped row is a care home by construction"
+ ],
+ "post_hoc_columns": [
+  "every Deactivated Locations column (end date, status, beds at deactivation, rating at deactivation) - post-hoc at T and the label's own operands; excluded from all split files",
+  "the location's presence/absence in any LATER vintage - the missing-successor channel; structurally unreadable because no shipped frame contains a later instant of the scored rows (single-instant eval/holdout) and no shippable column links a location across instants",
+  "provider identity, Companies House number, charity number, provider name, location name, address, postcode - linkage keys; excluded from all split files"
+ ],
+ "expected_duplicate_ids": 0,
+ "high_cardinality_columns": [
+  "location_key"
+ ],
+ "high_cardinality_columns_note": "location_key is the row identity (one pseudonym per location-instant, unique by construction). Its per-level statistics memorise single rows, so it is declared a free identity field rather than scored as a leak; it carries no cross-instant information because the hash includes the instant. Any other column listed here tripped the gate's own measured rule (distinct levels > rows/5) on at least one split of THIS artifact - a panel-size property, not a leak claim; on the full artifact only the identity column is expected to trip",
+ "external_threshold": false,
+ "threshold_note": "no external threshold: the label is a register event inside a fixed 12-month window. The dated fixtures (Park Hills label 1; Henley House label 0; Options Hazel House end 05/03/2025 -> label 0 at T=2024-01-05) and the eval-instant counts (14,765 care homes, 758 positives, 2,076 later-deactivated, 0 rating publication dates after T) are asserted in-build against the 2026-11-03 discovery measurements",
+ "measurements": [
+  {
+   "column": "care_home_beds",
+   "unit": "beds (integer)",
+   "frame": "the location's registered care-home beds at T, as published in the T vintage; -1 = not stated"
+  },
+  {
+   "column": "hsca_start_year",
+   "unit": "calendar year (integer)",
+   "frame": "the year the location's HSCA registration started; -1 = not stated"
+  },
+  {
+   "column": "svc_nursing",
+   "unit": "flag (0/1/-1)",
+   "frame": "service-type flag at T; -1 = column absent in that vintage"
+  },
+  {
+   "column": "svc_residential",
+   "unit": "flag (0/1/-1)",
+   "frame": "service-type flag at T; -1 = column absent in that vintage"
+  },
+  {
+   "column": "svc_other_count",
+   "unit": "count (integer)",
+   "frame": "other registered service types at T"
+  },
+  {
+   "column": "users_other_count",
+   "unit": "count (integer)",
+   "frame": "other service user bands at T"
+  },
+  {
+   "column": "instant",
+   "unit": "YYYY-MM",
+   "frame": "the vintage production month, Europe/London"
+  },
+  {
+   "column": "users_dementia",
+   "unit": "flag (0/1/-1)",
+   "frame": "service user band flag at T; -1 = column absent in that vintage"
+  },
+  {
+   "column": "users_older_people",
+   "unit": "flag (0/1/-1)",
+   "frame": "service user band flag at T; -1 = column absent in that vintage"
+  },
+  {
+   "column": "users_learning_disabilities",
+   "unit": "flag (0/1/-1)",
+   "frame": "service user band flag at T; -1 = column absent in that vintage"
+  },
+  {
+   "column": "users_physical_disability",
+   "unit": "flag (0/1/-1)",
+   "frame": "service user band flag at T; -1 = column absent in that vintage"
+  },
+  {
+   "column": "users_mental_health",
+   "unit": "flag (0/1/-1)",
+   "frame": "service user band flag at T; -1 = column absent in that vintage"
+  }
+ ],
+ "timing": {
+  "prediction_instant": {
+   "kind": "period_end",
+   "period": "the vintage snapshot itself: an administrative register extract whose 'period' IS its production instant T",
+   "days_after_period_end": 0,
+   "citation": "CQC care directory with filters ('HSCA Active Locations'), monthly, archived 2011-2026 in CQC's public Google Drive archive (the dated file names, e.g. '05 January 2024 HSCA Active Locations.ods'); every feature column is read from the T vintage's own bytes. The as-of property is asserted at construction: 0 of the 14,765 eval-instant rows carry a rating Publication Date after T. Real historical vintages - not a reconstruction"
+  },
+  "features": {
+   "period": "the T vintage's own columns (register state at production)",
+   "published_days_after_period_end": 0,
+   "source_kind": "administrative_record"
+  },
+  "row_selection": {
+   "latest_period_used": "2025-01",
+   "fields": [
+    "'Care home?' = Y in the T vintage (the vintage's own column, read at T)",
+    "the location is active at T by construction of the HSCA Active Locations product"
+   ],
+   "basis": "membership reads only the T vintage; the label is looked up afterwards, solely to compute the label. No censoring bucket exists: every scored window (T, T+365d] lies fully inside the Deactivated Locations file's coverage (asserted in-build with a margin check)"
+  },
+  "observations": [
+   {
+    "period": "2018-01",
+    "period_end": "2018-01-01",
+    "published": "2018-01-01",
+    "note": "the vintage is an administrative register snapshot: its production date IS the instant; in-file production stamp: null"
+   },
+   {
+    "period": "2019-01",
+    "period_end": "2019-01-03",
+    "published": "2019-01-03",
+    "note": "the vintage is an administrative register snapshot: its production date IS the instant; in-file production stamp: null"
+   },
+   {
+    "period": "2020-01",
+    "period_end": "2020-01-01",
+    "published": "2020-01-01",
+    "note": "the vintage is an administrative register snapshot: its production date IS the instant; in-file production stamp: null"
+   },
+   {
+    "period": "2021-01",
+    "period_end": "2021-01-04",
+    "published": "2021-01-04",
+    "note": "the vintage is an administrative register snapshot: its production date IS the instant; in-file production stamp: null"
+   },
+   {
+    "period": "2022-01",
+    "period_end": "2022-01-05",
+    "published": "2022-01-05",
+    "note": "the vintage is an administrative register snapshot: its production date IS the instant; in-file production stamp: null"
+   },
+   {
+    "period": "2024-01",
+    "period_end": "2024-01-05",
+    "published": "2024-01-05",
+    "note": "the vintage is an administrative register snapshot: its production date IS the instant; in-file production stamp: null"
+   },
+   {
+    "period": "2025-01",
+    "period_end": "2025-01-02",
+    "published": "2025-01-02",
+    "note": "the vintage is an administrative register snapshot: its production date IS the instant; in-file production stamp: null"
+   }
+  ]
+ },
+ "evaluation_contract": {
+  "use": "retrospective_research",
+  "access": "isolated_rows",
+  "training_label_timing": "unverified",
+  "scope_note": "each row is one care-home location at one vintage instant. Features are genuinely as-of: they are read from the real archived monthly vintage CQC published at T (the feature side is stronger than a reconstructed snapshot). Labels are read from the CURRENT cumulative Deactivated Locations edition (2026-11-02) rather than from the register editions that existed at each window's end, and per-window register editions are not archived - so label timing is unverified and the scope is retrospective research, not certified historical forecasting. The isolated-rows declaration is the required posture for the probe-measured quasi-identifier exposure and is not an enforcement claim. Labeled eval is development/validation; the holdout is the final test and stays sealed",
+  "feature_evidence": {
+   "location_key": {
+    "source": "per-instant pseudonym sha256(salt|instant|location_id)[:16]",
+    "availability": "identity of the row; deliberately NOT linkable across instants (the missing-successor rule, the unhcr P0 class)",
+    "status": "verified"
+   },
+   "instant": {
+    "source": "the vintage's production month (YYYY-MM), from the archived file's dated name",
+    "availability": "the prediction instant itself",
+    "status": "verified"
+   },
+   "care_home_beds": {
+    "source": "the vintage's 'Care homes beds' column",
+    "availability": "the T vintage's own column, published at the instant (the register state at production)",
+    "status": "verified"
+   },
+   "beds_bucket": {
+    "source": "fixed bucket of care_home_beds (1-3/4-10/11-25/26-50/51+)",
+    "availability": "derived from a vintage column at the instant",
+    "status": "verified"
+   },
+   "latest_overall_rating": {
+    "source": "the vintage's 'Location Latest Overall Rating' column (blank -> 'Not rated'; the ~2024 single-assessment change leaves more multi-service locations unrated - an era property, recorded)",
+    "availability": "the T vintage's own column, published at the instant (the register state at production)",
+    "status": "verified"
+   },
+   "rating_recency_bucket": {
+    "source": "fixed recency bucket of (T - 'Publication Date'), the rating's publication date as stamped in the vintage",
+    "availability": "the vintage's own stamp; buckets are coarsened deliberately so the column cannot serve as a cross-instant quasi-identifier",
+    "status": "verified"
+   },
+   "inherited_rating": {
+    "source": "the vintage's 'Inherited Rating' field verbatim",
+    "availability": "the T vintage's own column, published at the instant (the register state at production)",
+    "status": "verified"
+   },
+   "hsca_start_year": {
+    "source": "the calendar year of the vintage's 'Location HSCA start date' (-1 when absent)",
+    "availability": "registration age at T, coarsened to the start year deliberately: instant-invariant, so a solvers' cross-instant quasi-join must collide to link, which the gate probe measures",
+    "status": "verified"
+   },
+   "local_authority": {
+    "source": "the vintage's 'Location Local Authority' column",
+    "availability": "the T vintage's own column, published at the instant (the register state at production)",
+    "status": "verified"
+   },
+   "region": {
+    "source": "the vintage's 'Location Region' column",
+    "availability": "the T vintage's own column, published at the instant (the register state at production)",
+    "status": "verified"
+   },
+   "provider_sector": {
+    "source": "the vintage's provider type/sector column",
+    "availability": "the provider's sector AT T only; the provider's identity, CH/charity numbers and any sister-location outcome aggregate are deliberately NOT shipped (the za-statsa/acnc cross-row shape)",
+    "status": "verified"
+   },
+   "svc_nursing": {
+    "source": "the vintage's service-type flag 'Care home service with nursing' (-1 when the column is absent in an early vintage)",
+    "availability": "vintage column at the instant",
+    "status": "verified"
+   },
+   "svc_residential": {
+    "source": "the vintage's service-type flag 'Care home service without nursing' (-1 when absent)",
+    "availability": "vintage column at the instant",
+    "status": "verified"
+   },
+   "svc_other_count": {
+    "source": "count of the vintage's other 'Service type - *' Y flags",
+    "availability": "vintage columns at the instant",
+    "status": "verified"
+   },
+   "users_dementia": {
+    "source": "the vintage's 'Service user band - *' flag matching 'dementia' (-1 when the band column is absent in an early vintage)",
+    "availability": "vintage column at the instant",
+    "status": "verified"
+   },
+   "users_older_people": {
+    "source": "the vintage's 'Service user band - *' flag matching 'older people' or \"older people's\" (-1 when the band column is absent in an early vintage)",
+    "availability": "vintage column at the instant",
+    "status": "verified"
+   },
+   "users_learning_disabilities": {
+    "source": "the vintage's 'Service user band - *' flag matching 'learning disab' or 'autistic' (-1 when the band column is absent in an early vintage)",
+    "availability": "vintage column at the instant",
+    "status": "verified"
+   },
+   "users_physical_disability": {
+    "source": "the vintage's 'Service user band - *' flag matching 'physical disab' (-1 when the band column is absent in an early vintage)",
+    "availability": "vintage column at the instant",
+    "status": "verified"
+   },
+   "users_mental_health": {
+    "source": "the vintage's 'Service user band - *' flag matching 'mental health' or 'mental ill' (-1 when the band column is absent in an early vintage)",
+    "availability": "vintage column at the instant",
+    "status": "verified"
+   },
+   "users_other_count": {
+    "source": "count of the vintage's other 'Service user band - *' Y flags",
+    "availability": "vintage columns at the instant",
+    "status": "verified"
+   }
+  },
+  "vintage": {
+   "kind": "as_of",
+   "evidence": "real historical vintages: January editions 2016-2022 + 2024 + 2025 downloaded from CQC's public Drive archive at build time, every file pinned by size+sha256 in summary.json (the 2024-01 vintage asserted against the 2026-11-03 discovery pins ac40b6f8/26,147,266 B); the as-of check (0 rows with rating Publication Date after T) is asserted on the eval instant"
+  },
+  "selection": {
+   "kind": "prediction_time",
+   "evidence": "a row exists iff its location is an active care home in the T vintage ('Care home?' = Y) - decidable at the instant from the instant's own product; the 2023 January vintage is excluded by design so every train outcome window closes >= 12 months before the eval instant; no future field is read for membership"
+  },
+  "limitations": [
+   "register-event target: the event conflates service cessation with re-registration under a new legal entity (CQC's own in-file note; BMJ 2024 implies ~40-55% of register events are re-registrations). The label is the location's register exit, not a verified service closure",
+   "labels come from the 2026-11-02 cumulative Deactivated Locations edition; per-window historical editions were not archived, so label timing at window end is unverified and the scope is retrospective research",
+   "the eval instant's window closes two days after the holdout instant (T_eval+365 = 2025-01-05 > T_holdout = 2025-01-03): a property of yearly January instants, recorded, not repaired",
+   "rating era break: from the ~2024 single-assessment approach, multi-service locations carry no location-level overall rating ('Not rated' share rises in later vintages; measured per instant in summary.json); the 1 April 2019 regulatory-history inheritance change affects the 'Inherited Rating' field across eras",
+   "no provider-group feature ships: provider identity, sister-location counts and trailing provider outcomes are excluded by the P0 design, so provider-clustered inference is not directly supported; the BMJ evidence says chain effects exist - a v2 question, not a silent gap",
+   "dormant-but-registered locations may sit in the at-T population (CQC publishes no dormant bulk product)",
+   "publisher system-migration delay on registration cancellations (CQC data-page note): recent-month label lag measured and recorded in summary.json (lag_check); the holdout window ends 2026-01, 10 months inside the deactivated file's coverage",
+   "England only; one regulator; generalisation beyond CQC's register is not established"
+  ],
+  "cross_row_audit": {
+   "rationale": "the decisive exposure for a multi-instant register panel is the missing-successor rule (the unhcr P0): a row's label is recoverable from the PRESENCE of the same location at a later instant. Structural mitigation, not a declaration: (1) each scored frame carries a single instant - the successor rows of eval rows exist only in the sealed holdout, and holdout rows have no successor instant in the artifact; (2) location identity ships as a per-instant pseudonym and no id, name, address, postcode, provider id or CH number ships, so no exact cross-instant link exists; (3) train instants stop at 2022 so every train window closes a year before the eval instant. Probe 1 executes the successor-presence attack over the strongest instant-invariant quasi-key (LA x beds x start-year x rating x sector) with a +12-month offset and measures coverage and mismatch per split; coverage inside train measures the quasi-linkage rate where labels are already public, and coverage on eval/holdout is the measured bound on the attack over the frames a solver can see (expected 0 - no successor rows are visible). Probe 0 proves the pseudonym id channel is dead. A covered probe requires the isolated_rows access declared above",
+   "auxiliary_files_review": "the artifact ships exactly public/train.csv, public/eval.csv, private/holdout.csv, meta.json and quality.json. auxiliary/location_map.csv (instant, location_key, real CQC Location ID) is uploaded to private staging for label verification and reproduction only - it is never mounted into an evaluated agent's workspace and never a solver input; no other outcome-bearing file exists. The downloaded vintage and deactivated files stay in the job work-dir with size+sha256 recorded in summary.json and are not uploaded",
+   "probes": [
+    {
+     "name": "successor_presence_via_pseudonym_id",
+     "entity_columns": [
+      "location_key"
+     ],
+     "time_column": "instant",
+     "offset_months": 12,
+     "left": "hsca_start_year",
+     "right": "hsca_start_year",
+     "right_row": "earlier",
+     "operation": "lt",
+     "note": "the successor-presence attack over the row id itself: a covered row would mean the same pseudonym exists at a later instant, which the per-instant hash forbids; expected coverage 0 on every split"
+    },
+    {
+     "name": "successor_presence_via_quasi_key",
+     "entity_columns": [
+      "local_authority",
+      "care_home_beds",
+      "hsca_start_year",
+      "latest_overall_rating",
+      "provider_sector"
+     ],
+     "time_column": "instant",
+     "offset_months": 12,
+     "left": "hsca_start_year",
+     "right": "hsca_start_year",
+     "right_row": "earlier",
+     "operation": "lt",
+     "note": "the strongest successor-presence attack an agent could run over the shipped frame: link a row to a quasi-matching row 12 months later (all five key columns are instant-invariant), predict label 0 iff a unique successor exists. The probe predicts 0 on every covered row, so mismatch = positives among quasi-linked rows and coverage = the measured quasi-linkage rate. On eval/holdout no successor instant is visible to the probe's donor pool, so coverage there is the measured bound on this attack; on train, where labels are public anyway, coverage measures the linkage rate itself"
+    }
+   ]
+  }
+ },
+ "auxiliary_files": {
+  "auxiliary/location_map.csv": "staging-side verification input mapping each location_key to the real CQC Location ID per instant; never a solver input"
+ },
+ "lag_check": {
+  "max_end_date": "2026-10-27",
+  "holdout_window_end": "2026-01-01",
+  "margin_days": 299,
+  "recent_months": {
+   "2026-03": {
+    "events": 64,
+    "same_month_prior_3y": [
+     63,
+     50,
+     67
+    ]
+   },
+   "2026-04": {
+    "events": 53,
+    "same_month_prior_3y": [
+     61,
+     66,
+     90
+    ]
+   },
+   "2026-05": {
+    "events": 51,
+    "same_month_prior_3y": [
+     82,
+     42,
+     88
+    ]
+   },
+   "2026-06": {
+    "events": 122,
+    "same_month_prior_3y": [
+     67,
+     49,
+     106
+    ]
+   },
+   "2026-07": {
+    "events": 62,
+    "same_month_prior_3y": [
+     71,
+     69,
+     64
+    ]
+   },
+   "2026-08": {
+    "events": 39,
+    "same_month_prior_3y": [
+     59,
+     49,
+     58
+    ]
+   },
+   "2026-09": {
+    "events": 71,
+    "same_month_prior_3y": [
+     82,
+     49,
+     62
+    ]
+   },
+   "2026-10": {
+    "events": 123,
+    "same_month_prior_3y": [
+     82,
+     105,
+     58
+    ]
+   }
+  }
+ },
+ "deactivated_source": {
+  "url": "https://www.cqc.org.uk/system/files/2026-11/02_November_2026_Deactivated_Locations.ods",
+  "bytes": 27644723,
+  "sha256": "49dc3062098f04463a4fef6a272f33f405a36dc737b8b4203ad2a396861fb508",
+  "care_home_rows": 17177,
+  "duplicate_care_home_ids": 0
+ }
+}

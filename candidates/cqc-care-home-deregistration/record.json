@@ -206,7 +206,7 @@
  ],
  "rejection_reason": null,
  "review": null,
- "next_action": "RUNNER-CONTRACT BASELINE MEASURED (cqc-chd-baseline-001, staging release 433569826, artifact afe9ee203f302f3c re-accepted BEFORE any score, runner files verified unmodified, both implementations agree): full-model eval AUC 0.5659 on the identical 14,765 eval rows - below the headroom reference rating_x_beds_rate 0.5871 (recorded defect for the stock runner, observed gap 0.0212) but above every one-line prior (last_rating_rate 0.5597 ... provider_sector_rate 0.5011) and above chance; the pre-registered drop condition (a one-line prior saturating the task) is NOT met, and the reference reads only shipped at-T columns, so no information asymmetry exists (unlike the za-cct persistence case). NEXT: packaging per dataset-release, following the ocha-fts precedent that shipped with model 0.6298 < persistence 0.7171 recorded - the comparison ladder leads every package document, any model figure is quoted beside rating_x_beds_rate 0.5871 with the no-persistence-by-design note, holdout stays sealed, and everything stays private until the operator's flip. Packaging produces the release/ package (manifest, checksums, docs, licence per candidates/cqc-care-home-deregistration/license.json once written, reproduction instructions, VERIFICATION.md with baseline scope), then check-package.py, then private staging; the flip remains the operator's single approval.",
+ "next_action": "PACKAGED (v2026.11, private; NOT published): release/cqc-care-home-deregistration/ assembled on the pins layout - docs (README/DATA_DICTIONARY/RELEASE_NOTES/REPRODUCE/VERIFICATION/LICENSE.md), code/ (build.py+run.sh+score.py at the bf8a5ea construction bytes, canonical gate 1.5.0, materialize.py), baseline/ (the benchmark's runner files verbatim + reproduce script + README), byte-pinned meta/quality/qualification from the staging parts, measurements.json generated from the record, MANIFEST.json + SHA256SUMS via scripts/release-manifest.py (artifact_version afe9ee203f302f3c..., baseline present), and scripts/check-package.py -> OK. The comparison ladder leads every document: model 0.5659 quoted beside rating_x_beds_rate 0.5871 (recorded defect of the stock runner), no-persistence-by-design note, register-event framing limitation, OGL-UK-3.0 attribution + CQC in-sheet disclaimer carried. Holdout sealed; private until the operator's flip. NEXT: private staging per dataset-release - python3 scripts/publish-dataset.py cqc-care-home-deregistration --repo earino/cqc-care-home-deregistration (dry-run first; executes only with --execute, uses the publish credential, creates the private dataset repo + v2026.11 release with the five assets), then re-run check-package, then set packaged_at + awaiting_operator true in this record when the flip is the sole remaining step. The flip itself is the operator's single approval; the pre-flip adversarial audit prompt is generated from the frozen manifest before it.",
  "licence_class": "A",
  "licence_note": "OGL v3 per the publisher's own instruments. Attribution 'Care Quality Commission' carries into any release; the in-sheet disclaimer (CQC not responsible for subsequent analysis; must not be quoted as its source) is carried into the dataset documentation.",
  "jurisdiction": {
@@ -226,7 +226,7 @@
   },
   "uncertainty": "1) FRAMING: the register event conflates cessation with re-registration - CQC's own file note says some deactivations continue under a new registration (legal entity/address/provider change), and BMJ 2024 (8,346 complete closures vs 14,911 register events 2011-2023) implies roughly 40-55% of deregistrations are re-registrations/transfer; advancement must either ship the honest register-event target with this limitation stated or build successor linkage (address/UPRN/ODS-code/brand adjacency; the API's linked-organisation data needs developer-portal auth). 2) HEADROOM UNMEASURED: simple references (last-rating rate, bed-size, LA, provider-sector) are the plausible strong priors - the BMJ/npj evidence says ratings+ownership drive closures (US ML AUROC 0.79 out-of-sample, so learnable structure exists); the reference triad is the FIRST construction measurement and the task is droppable if a one-line prior saturates it. 3) The publisher's system migration is delaying reflection of registration cancellations in current files - recent-window lag check required. 4) Era breaks: single-assessment rating change (~2024, location-level overall ratings dropped for multi-service ASC locations) and the 1 April 2019 regulatory-history inheritance change. 5) Provider-group cross-row exposure if group-history features ship - strictly-prior events only + declared restricted protocol. 6) Dormant-but-registered locations may sit in the at-T population (no dormancy flag in the bulk files; not measured this session)."
  },
- "updated_at": "2026-11-04T06:32:00Z",
+ "updated_at": "2026-11-04T07:10:00Z",
  "novelty_check": {
   "checked_at": "2026-11-03T16:56:53+00:00",
   "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
@@ -378,5 +378,25 @@
     "note": "in-train coverage is the quasi-linkage rate where labels are public anyway; eval/holdout coverage 0 is the measured bound over the frames a solver can see"
    }
   }
+ },
+ "construction_output": {
+  "splits": {
+   "train": {
+    "rows": 78138,
+    "positives": 4418,
+    "positive_rate": 0.056540991579001255
+   },
+   "eval": {
+    "rows": 14765,
+    "positives": 757,
+    "positive_rate": 0.051269895022011513
+   },
+   "holdout": {
+    "rows": 14749,
+    "positives": 761,
+    "positive_rate": 0.0515967184215879
+   }
+  },
+  "source": "gate 1.5.0 report splits.non_empty evidence (job cqc-chd-004, artifact afe9ee203f302f3c...); cross-checked against the artifact meta.json per-split positive_rate"
  }
 }

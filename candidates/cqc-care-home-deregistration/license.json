@@ -1,0 +1,47 @@
+{
+ "dataset": "cqc-care-home-deregistration",
+ "decided": "2026-11-04",
+ "basis": "The Care Quality Commission publishes its register bulk files ('HSCA Active Locations' monthly vintages archived 2011-2026 in CQC's public Google Drive, 'Deactivated Locations' cumulative register) as open data. The 'using CQC data' page states 'Our data is made available under the Open Government Licence' (linking nationalarchives.gov.uk/doc/open-government-licence/version/3/) and 'By using it you are accepting the conditions of this licence. If you use our data, you should also acknowledge on your site or service that you are using CQC information.' The 2026-11-02 Deactivated Locations ODS carries an in-sheet statement that the data 'can be used in accordance with the Open Government Licence for Public Sector Information by acknowledging CQC as the data source' plus the disclaimer that CQC does not hold responsibility for subsequent analysis and must not be quoted as its source. CQC's terms-and-conditions page states its copyright-protected material 'may be used in accordance with the Open Government Licence for Public Sector Information'. All three instruments were read 2026-11-03 and are quoted in the candidate record's license_evidence. No dataset-specific restriction was found on any product page; the bulk files are register data only (no third-party content). OGL-UK v3.0 grants a worldwide, royalty-free, perpetual, non-exclusive licence to copy, publish, distribute, transmit, adapt and commercially exploit the information, with attribution. Class A (explicit open licence permitting redistribution and derivatives with attribution), so the standing defaults apply: our code and documentation are MIT, our rights in the derived compilation are dedicated CC0-1.0, and the source's own terms are preserved, never relicensed.",
+ "code": {
+  "spdx": "MIT",
+  "copyright": "Copyright (c) 2026 E. Ariño de la Rubia (earino)",
+  "file": "LICENSE-MIT.txt",
+  "third_party": [
+   {
+    "file": "baseline/train.py, baseline/validate.py, baseline/validate.sh",
+    "terms": "MIT - the harness benchmark's own runner files, shipped verbatim and unmodified (bundled sha256 equal the benchmark clone's hashes, recorded as unmodified: true in the baseline job result)",
+    "permission": "The benchmark checkout is read-only; permission to distribute verbatim copies of its runner files covers the distributed copies only"
+   }
+  ]
+ },
+ "compilation": {
+  "spdx": "CC0-1.0",
+  "file": "LICENSE-CC0-1.0.txt",
+  "scope": "Our contribution - the vintage-anchored eligibility frame (care-home rows of the January HSCA Active Locations vintages 2018-2022 + 2024 + 2025, with the 2016/2017 vintages loudly dropped for unresolved required columns), the derived binary register-event label (Location HSCA End Date in (T, T+365d] with Location Status Inactive-Dereg or Removed, joined from the pinned Deactivated Locations edition), the per-instant pseudonymised identity (sha256(salt|instant|location_id)), the at-T feature derivation (beds, service types, service user bands, latest rating + publication date, geography, provider sector, start year), the single-instant-per-frame P0 partition (train 2018-2022 January instants, eval 2024-01, holdout 2025-01), and the packaging - is dedicated to the public domain under CC0-1.0. The dedication covers only our contribution: the underlying CQC register keeps its own designation and remains subject to the Open Government Licence v3.0, whose attribution condition carries through to every copy of the derived data. Nothing here relicenses the source or presents CC0 as the source's terms."
+ },
+ "source": {
+  "spdx": "OGL-UK-3.0",
+  "status": "CQC register bulk files ('HSCA Active Locations' vintages + 'Deactivated Locations' 2026-11-02 edition) under the Open Government Licence v3.0: free to copy, publish, distribute, transmit, adapt and exploit commercially with the required attribution statement. OGL-UK exempts personal data, third-party rights and official symbols from its grant; the shipped columns were chosen with that in mind: no location name, address, postcode, phone, registered manager, provider id/name, Companies House or charity number ships (identity is a per-instant salted pseudonym; the real-id location map is staging-side and never published), and the redistributed fields (care home beds, service type and service user band flags, latest overall rating + publication date, local authority, region, provider sector, HSCA start year, the vintage instant) are derived from the publisher's own register columns with nothing added beyond our derived binary label, the pseudonym, the derived counts/flags and the partition. The derived dataset is labelled as such throughout and is not CQC's official product.",
+  "evidence": [
+   "[CQC, using CQC data, https://www.cqc.org.uk/about-us/transparency/using-cqc-data, read 2026-11-03] 'Our data is made available under the Open Government Licence [link: nationalarchives.gov.uk/doc/open-government-licence/version/3/]. By using it you are accepting the conditions of this licence. If you use our data, you should also acknowledge on your site or service that you are using CQC information.'",
+   "[In-sheet statement, 02_November_2026_Deactivated_Locations.ods, read 2026-11-03] 'the data we have provided can be used in accordance with the Open Government Licence for Public Sector Information by acknowledging CQC as the data source' plus the disclaimer that CQC 'does not however hold any responsibility for subsequent analysis done from raw data provided as this is seen as creating new information; CQC should not be quoted as the source of the analysis and/or interpretation'.",
+   "[CQC terms and conditions, https://www.cqc.org.uk/about-us/our-policies/terms-conditions, read 2026-11-03] CQC copyright-protected material published on the site 'may be used in accordance with the Open Government Licence for Public Sector Information'.",
+   "[Pinned source bytes, anonymous GETs] 02_November_2026_Deactivated_Locations.ods, 27,644,723 B, sha256 49dc3062098f04463a4fef6a272f33f405a36dc737b8b4203ad2a396861fb508; '05 January 2024 HSCA Active Locations.ods', 26,147,266 B, sha256 ac40b6f8248d3bc173fee292db708e2de6c6fbc2390569798ef5ddde5a20ca46; the January vintages 2018-2022 and 2025 fetched from CQC's public Google Drive archive with per-file sha256 recorded in the build and the candidate record."
+  ],
+  "attribution": "Contains public sector information licensed under the Open Government Licence v3.0. Source: Care Quality Commission (CQC), HSCA Active Locations (monthly vintages, January 2018-2025) and Deactivated Locations (2026-11-02 edition) bulk files.",
+  "citation": "Care Quality Commission. CQC care directory bulk files: HSCA Active Locations and Deactivated Locations. https://www.cqc.org.uk/about-us/transparency/using-cqc-data . Licensed under the Open Government Licence v3.0. Derived dataset: CQC care-home 12-month deregistration prediction task (not a CQC product).",
+  "derived_labelling": "Labelled as a derived research dataset throughout; it is not CQC's official product and CQC has not reviewed or endorsed it. CQC's in-sheet analysis disclaimer is preserved verbatim in spirit and carried in every package document: CQC is not responsible for subsequent analysis of this raw data and must not be quoted as the source of the analysis or interpretation. The publisher's own designation, required attribution statement and suggested citation are preserved, and changes from the source are indicated (row selection, the derived register-event label, pseudonymised identity, derived features, the partition)."
+ },
+ "conditions": [
+  "The required attribution statement 'Contains public sector information licensed under the Open Government Licence v3.0.' with acknowledgement of CQC as the data source is carried in every copy of the data and its documentation.",
+  "The dataset is labelled as derived and never presented as CQC's official product; CQC's in-sheet disclaimer about subsequent analysis carries through unchanged.",
+  "Changes are indicated: the dataset ships a row selection (care-home rows of the January vintages), a derived binary register-event label, per-instant pseudonymised identity (no name/address/postcode/provider identifiers ship), derived at-T features, and a single-instant-per-frame temporal partition.",
+  "The framing limitation is stated in every document: the target is the register event (deregistration), which CQC's own file note says can include services continuing under a new registration - not necessarily service cessation.",
+  "Our contribution is dedicated CC0-1.0; the source's OGL v3.0 terms are preserved and carry through unchanged, including attribution.",
+  "Our code and documentation are MIT."
+ ],
+ "operator_acceptance": {
+  "accepted": false,
+  "note": "No operator acceptance is needed or recorded: the source carries an explicit open licence (OGL-UK v3.0) that permits redistribution and derivatives with attribution, and this release stays within it."
+ }
+}

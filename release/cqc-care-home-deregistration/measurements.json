@@ -1,0 +1,144 @@
+{
+ "name": "cqc-care-home-deregistration",
+ "built_at_utc": "2026-11-04T00:00:00Z",
+ "source": {
+  "publisher": "Care Quality Commission (CQC) - regulator of health and adult social care in England",
+  "landing_page": "https://www.cqc.org.uk/about-us/transparency/using-cqc-data",
+  "files": [
+   {
+    "name": "02_November_2026_Deactivated_Locations.ods (label source, pinned)",
+    "url": "https://www.cqc.org.uk/system/files/2026-11/02_November_2026_Deactivated_Locations.ods",
+    "bytes": 27644723,
+    "sha256": "49dc3062098f04463a4fef6a272f33f405a36dc737b8b4203ad2a396861fb508"
+   },
+   {
+    "name": "05 January 2024 HSCA Active Locations.ods (eval vintage, pinned)",
+    "url": "https://drive.usercontent.google.com/download?id=1WsUwZAarJARNYwPLnlZ5C1p1dooRBX61&export=download&confirm=t",
+    "bytes": 26147266,
+    "sha256": "ac40b6f8248d3bc173fee292db708e2de6c6fbc2390569798ef5ddde5a20ca46"
+   }
+  ],
+  "mode": "anonymous bulk GETs; the January vintages 2018-2022 and 2025 come from CQC's public Google Drive archive (year folders 2011-2026) with every per-file sha256 pinned in code/build.py; the build fails if any pinned bytes change",
+  "vintage_note": "the active-locations product is a monthly register SNAPSHOT: the January vintage for year Y is the historical vintage produced at that instant, not a reconstruction; the deactivated-locations file is the cumulative current edition (2026-11-02) used solely as the event register for labels"
+ },
+ "grain": "one row per care-home location active on the CQC register at a January vintage instant T ('Care home?' = Y in that vintage's own column)",
+ "population": {
+  "eligibility": "care-home rows of the January HSCA Active Locations vintages 2018, 2019, 2020, 2021, 2022 (train instants), 2024-01-05 (eval instant) and 2025-01-02 (holdout instant); the 2016 and 2017 vintages are DROPPED loudly (unresolved required columns) and the 2023 January vintage is excluded by design so every train target window closes at least 12 months before the eval instant",
+  "identity": "location_key is a per-instant salted pseudonym sha256(salt|instant|location_id)[:16]; no name, address, postcode, provider identifier, Companies House or charity number ships; the real-id map is staging-side only",
+  "censoring": "instants whose 12-month window extends past the deactivated file's coverage are excluded; later-deactivated counts confirm the label is fully observable at every shipped instant"
+ },
+ "splits": {
+  "train": {
+   "instants": [
+    "2018-01",
+    "2019-01",
+    "2020-01",
+    "2021-01",
+    "2022-01"
+   ],
+   "rows": 78138,
+   "positives": 4418,
+   "positive_rate": 0.056540991579001255
+  },
+  "eval": {
+   "instants": [
+    "2024-01"
+   ],
+   "rows": 14765,
+   "positives": 757,
+   "positive_rate": 0.051269895022011513
+  },
+  "holdout": {
+   "instants": [
+    "2025-01"
+   ],
+   "rows": 14749,
+   "positives": 761,
+   "positive_rate": 0.0515967184215879
+  }
+ },
+ "runner_contract_probe": {
+  "job": "cqc-chd-baseline-001",
+  "procedure": "the five gate-digest assets fetched from the private staging release, every sha256 verified on arrival; exact-byte --accept against the bundled gate report BEFORE any score; workdir materialized from public train+eval only (holdout never copied); the benchmark's own train.py + validate.sh run unmodified",
+  "accept_line": "ACCEPTED: /data/extract matches the qualified artifact afe9ee203f302f3c",
+  "contract_ok": true,
+  "runner_unmodified": true,
+  "both_implementations_agree": true
+ },
+ "qualification": {
+  "gate_version": "1.5.0",
+  "ok": true,
+  "failed_checks": [],
+  "artifact_version": "afe9ee203f302f3ca41b9b01ad74a937e111d1b830590c7e662bb0b7b6df85d7",
+  "accepted": "exact-byte --accept on the worker (cqc-chd-004) and re-accepted from the fetched bytes in cqc-chd-baseline-001 before any score",
+  "cross_row_probes": {
+   "probe_0_pseudonym_successor": {
+    "train": 0,
+    "eval": 0,
+    "holdout": 0
+   },
+   "probe_1_quasi_identifier_la_beds_startyear_rating_sector": {
+    "train": 11786,
+    "eval": 0,
+    "holdout": 0,
+    "note": "in-train coverage is the quasi-linkage rate where labels are public anyway; eval/holdout coverage 0 is the measured bound over the frames a solver can see"
+   }
+  }
+ },
+ "references": {
+  "command": "score.py stage 4 (post-acceptance) on the worker, eval rows only (14,765 rows / 757 positives, base rate 5.127%), holdout never opened; every rate table estimated ONLY from train rows",
+  "eval_auc": {
+   "rating_x_beds_rate": 0.5870921937794369,
+   "last_rating_rate": 0.5597447335246061,
+   "beds_bucket_rate": 0.5297982677571677,
+   "hsca_start_year_rate": 0.5226476076701217,
+   "local_authority_rate": 0.5207061335775669,
+   "provider_sector_rate": 0.5010938738912734,
+   "global_rate": "degenerate (constant score)"
+  },
+  "majority_class_accuracy_eval": 0.9487301049779885,
+  "no_persistence_by_design": "the location's own prior-instant outcome is the natural persistence score, but identity ships as a per-instant pseudonym (the missing-successor P0 design), so prior-instant labels are structurally unlinkable over the shipped frame - for the scorer too; hsca_start_year_rate is the nearest shippable history prior",
+  "paired_bootstrap_150": {
+   "rating_x_beds_vs_last_rating": {
+    "observed_difference": 0.027347460254830813,
+    "ci95": [
+     0.012336799268033438,
+     0.04074592760988893
+    ],
+    "note": "interval excludes zero"
+   }
+  }
+ },
+ "runner_baseline": {
+  "command": "worker job cqc-chd-baseline-001 run.sh (fetch the five accepted assets from staging release 433536764, digests verified on arrival, --accept ACCEPTED afe9ee203f302f3c BEFORE any score, then the benchmark's own unmodified train.py + validate.sh); report .factory/cqc-chd-baseline-001/reports/output/baseline_result.json, staging release 433569826",
+  "full_model_eval_auc": 0.5659,
+  "full_model_eval_auc_from_validate_py": 0.5659,
+  "dependencies": {
+   "python": "3.13.18",
+   "pandas": "2.3.3",
+   "numpy": "2.5.4",
+   "xgboost": "3.4.1",
+   "scikit-learn": "1.9.1"
+  }
+ },
+ "model_vs_reference_comparison": {
+  "ladder_eval_auc": {
+   "rating_x_beds_rate_headroom_reference": 0.5870921937794369,
+   "MODEL_stock_runner": 0.5659,
+   "last_rating_rate_best_one_line_prior": 0.5597447335246061,
+   "beds_bucket_rate": 0.5297982677571677,
+   "hsca_start_year_rate_nearest_history_prior": 0.5226476076701217,
+   "local_authority_rate": 0.5207061335775669,
+   "provider_sector_rate": 0.5010938738912734,
+   "global_rate": "degenerate (constant score)",
+   "majority_class_accuracy_eval": 0.9487301049779885,
+   "persistence": "NOT APPLICABLE BY DESIGN - identity ships as per-instant pseudonyms (missing-successor P0 design), so prior-instant labels are structurally unlinkable for the scorer too"
+  },
+  "observed_gap": "the stock runner model trails the strongest reference by 0.0212 AUC (0.5659 vs rating_x_beds_rate 0.5871) on identical rows, while beating every one-line prior (best: last_rating_rate 0.5597); observed difference, no dependence-aware interval computed for the model-vs-reference pair",
+  "information_note": "rating_x_beds_rate reads ONLY shipped at-T columns (latest_overall_rating x care_home_beds), so it is a fair same-information target for anything that consumes this artifact - no information asymmetry, unlike a persistence score",
+  "concrete_diagnosis_candidates": "(a) verified by code reading: the stock train.py treats the 'instant' string column (YYYY-MM) as a train-only categorical - train instants 2018-01..2022-01 define the levels and the eval instant 2024-01 is unseen, so every eval row gets NaN there and part of the 30-tree depth-6 budget was spent on train-instant memorization that cannot transfer; (b) the rating x beds interaction the two-way rate table captures directly is available to XGBoost only through split combinations, and the small-home x poorly-rated cells are a thin slice of 78k train rows; (c) no misalignment and no post-hoc reference: both AUC figures come from the runner's own two implementations on the same accepted bytes, and as-of was asserted in-build (0/14,765 rating publication dates after T); (d) prevalence shift train 5.654% -> eval 5.127% is mild and recorded",
+  "verdict": "RECORDED DEFECT for the stock runner under this protocol (model 0.5659 < rating_x_beds_rate 0.5871, both on the identical 14,765 eval rows) - quoted beside the reference as the skill requires. NOT a no-headroom verdict on the task, and the pre-registered drop condition (a one-line prior saturating it) is NOT met: the model beats every one-line prior, and the headroom reference demonstrates exploitable signal (CI excluding zero over last_rating_rate) inside the model's own shipped feature set. This does not prove a competent model must beat 0.5871; no model above the reference has been measured",
+  "interpretation_rule": "any later model figure must still be quoted beside rating_x_beds_rate 0.5871; a model below it is a recorded defect, not an encouraging result; keep fitting until a score wins is forbidden"
+ },
+ "scope_note": "Runner-contract baseline only: one XGBoost pass through the benchmark's own training and validation contract. No agent or harness comparison was run and none is implied. The holdout was never copied into a workdir and never scored; holdout evaluation requires a frozen design. The stock runner trailing the strongest reference is a recorded defect of that runner under this protocol, quoted here so no later reader can quote the model AUC alone."
+}

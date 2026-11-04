@@ -1,0 +1,85 @@
+{
+ "name": "cqc-care-home-deregistration",
+ "description": "At the production instant of a CQC 'HSCA Active Locations' monthly vintage T, for every care home active at T, predict whether the location's CQC registration ends within the following 12 months (register event: Location Status Inactive-Dereg or Removed with a Location HSCA End Date in (T, T+365d]).",
+ "target": "deregistered_12m",
+ "positive_label": 1,
+ "id_columns": [
+  "location_key"
+ ],
+ "split": "temporal by vintage instant: train = January vintages 2016-2022 (every train outcome window closes >= 12 months before the eval instant), eval = the January 2024 vintage, holdout = the January 2025 vintage; the 2023 vintage is excluded by design because its 12-month label window would still be open at the eval prediction instant",
+ "columns": [
+  "location_key",
+  "instant",
+  "care_home_beds",
+  "beds_bucket",
+  "latest_overall_rating",
+  "rating_recency_bucket",
+  "inherited_rating",
+  "hsca_start_year",
+  "local_authority",
+  "region",
+  "provider_sector",
+  "svc_nursing",
+  "svc_residential",
+  "svc_other_count",
+  "users_dementia",
+  "users_older_people",
+  "users_learning_disabilities",
+  "users_physical_disability",
+  "users_mental_health",
+  "users_other_count",
+  "deregistered_12m"
+ ],
+ "rows": {
+  "train": 78138,
+  "eval": 14765,
+  "holdout": 14749
+ },
+ "positive_rate": {
+  "train": 0.056540991579001255,
+  "eval": 0.051269895022011513,
+  "holdout": 0.0515967184215879
+ },
+ "built_at_utc": "2026-11-04T00:00:00Z",
+ "splits": {
+  "train": {
+   "path": "public/train.csv",
+   "rows": 78138,
+   "positives": 4418,
+   "positive_rate": 0.056540991579001255
+  },
+  "eval": {
+   "path": "public/eval.csv",
+   "rows": 14765,
+   "positives": 757,
+   "positive_rate": 0.051269895022011513
+  },
+  "holdout": {
+   "path": "private/holdout.csv",
+   "rows": 14749,
+   "positives": 761,
+   "positive_rate": 0.0515967184215879
+  }
+ },
+ "feature_columns": [
+  "instant",
+  "care_home_beds",
+  "beds_bucket",
+  "latest_overall_rating",
+  "rating_recency_bucket",
+  "inherited_rating",
+  "hsca_start_year",
+  "local_authority",
+  "region",
+  "provider_sector",
+  "svc_nursing",
+  "svc_residential",
+  "svc_other_count",
+  "users_dementia",
+  "users_older_people",
+  "users_learning_disabilities",
+  "users_physical_disability",
+  "users_mental_health",
+  "users_other_count"
+ ]
+}

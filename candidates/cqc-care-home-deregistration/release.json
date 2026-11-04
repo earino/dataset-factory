@@ -1,0 +1,31 @@
+{
+ "release_version": "2026.11",
+ "release_tag": "v2026.11",
+ "repository": "https://github.com/earino/cqc-care-home-deregistration",
+ "construction_commit": "bf8a5ea0c97b840206c0d0dde48c9936de6f398f",
+ "construction_commit_note": "bf8a5ea (2026-11-04T05:03Z) carries candidates/cqc-care-home-deregistration/source/build.py at sha256 5085195bfaaf012385261cc79f11883f550e96116a233410768514aeeada19ab, source/run.sh at 3db218e1c6d9007603918d015a6aaa52dda46e8a61426f618acc709c9dde577d and source/score.py at 501bb76b530b3aed80f11c9873fe37eab46b0768791fed6f8549d1e4afb75fa3 - the exact bytes worker job cqc-chd-004 executed (its bundle-owner record lists the same digests), which produced the gated artifact afe9ee203f302f3ca41b9b01ad74a937e111d1b830590c7e662bb0b7b6df85d7 from the pinned CQC source bytes (02_November_2026_Deactivated_Locations.ods 27,644,723 B sha256 49dc3062098f04463a4fef6a272f33f405a36dc737b8b4203ad2a396861fb508; January HSCA Active Locations vintages 2018-2025 from CQC's public Google Drive archive, per-file sha256 pinned in the build; '05 January 2024 HSCA Active Locations.ods' 26,147,266 B sha256 ac40b6f8248d3bc173fee292db708e2de6c6fbc2390569798ef5ddde5a20ca46). code/qualify_dataset.py is the canonical gate 1.5.0 (4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1); code/materialize.py is the baseline bundle's own copy. baseline/train.py, validate.py, validate.sh are the harness benchmark's runner files, shipped verbatim (a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8, b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b, 3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d).",
+ "source": {
+  "name": "Care Quality Commission register bulk files - 'HSCA Active Locations' monthly vintages (Google Drive archive 2011-2026) + 'Deactivated Locations' cumulative register (2026-11-02 edition)",
+  "landing_page": "https://www.cqc.org.uk/about-us/transparency/using-cqc-data",
+  "api": "monthly ODS/XLSX bulk files; the January vintages 2018-2025 are fetched from CQC's public Google Drive archive (year folders 2011-2026, drive folder 1Y6V6r-q2l4lJYKuZL0DXw25VDUTH6L4N, per-file IDs pinned in code/build.py); the label source is https://www.cqc.org.uk/system/files/2026-11/02_November_2026_Deactivated_Locations.ods (anonymous GET, 27,644,723 B); ~118 documented columns on the active-locations vintages",
+  "accessed": "2026-11-03/04 (the build pins the 2026-11-02 deactivated edition and each vintage's bytes and fails if they change; the register is republished monthly, so the pins are the vintage)",
+  "licence": "Open Government Licence v3.0 (CQC 'using CQC data' page; in-sheet statement inside the Deactivated Locations file; CQC terms-and-conditions page; evidence recorded in candidates/cqc-care-home-deregistration/record.json license_evidence). Required attribution carries through: 'Contains public sector information licensed under the Open Government Licence v3.0. Source: Care Quality Commission (CQC), HSCA Active Locations and Deactivated Locations bulk files.' Derived research dataset - not a CQC product. CQC's in-sheet disclaimer carries through unchanged: CQC is not responsible for subsequent analysis of raw data and must not be quoted as the source of the analysis."
+ },
+ "commands": {
+  "gate": "python3 code/qualify_dataset.py ./task",
+  "baseline": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset": "python3 get_dataset.py --dest ./task"
+ },
+ "layout": {
+  "public/train.csv": "public/train.csv",
+  "public/eval.csv": "public/eval.csv",
+  "private/holdout.csv": "private/holdout.csv",
+  "meta.json": "meta.json",
+  "quality.json": "quality.json"
+ },
+ "required_docs": [
+  "code/score.py",
+  "code/materialize.py"
+ ],
+ "note": "One task instance, one artifact. The five shipped files are the cqc-chd-004 worker artifact afe9ee203f302f3c... (gate 1.5.0 on the full artifact, failed_checks empty, exact-byte --accepted on the worker and re-accepted in job cqc-chd-baseline-001); the package's code/ carries the construction script, the references implementation, the runner-workdir materializer and the gate, baseline/ the runner-contract baseline. The holdout ships as an asset like the other splits; it is not copied into any runner workdir and was never evaluated. The prediction instant is the vintage production instant T (period_end, an administrative register snapshot; kind=period_end with 0-day lag is admissible because the vintage IS the register state at its production instant, as-of asserted in-build: 0/14,765 eval rows carry a rating publication date after T). Identity ships as per-instant pseudonyms (the missing-successor P0 design), so no prior-instant label is linkable - for solvers too; there is NO persistence reference by design and cross-row probes measured eval/holdout successor coverage 0. Training-label timing is declared UNVERIFIED (no full-row availability ledger for the 2011-2026 Drive archive) and the evaluation contract is retrospective research only. Recorded finding carried in measurements.json, RELEASE_NOTES.md and VERIFICATION.md: the stock runner baseline (eval AUC 0.5659 from both runner implementations) trails the strongest reference rating_x_beds_rate 0.5871 on the identical 14,765 eval rows (observed gap 0.0212; a recorded defect for the stock runner, not a no-headroom verdict - the model beats every one-line prior, and the reference reads only shipped at-T columns) - no figure may be quoted without that comparison beside it. The target is the register event (deregistration), which CQC's own file note says can include services continuing under a new registration; the framing limitation is stated in every document."
+}

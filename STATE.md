@@ -38,16 +38,37 @@ candidate exists, so nothing preempts this work; no release byte, tag or destina
   is unseen and every eval row gets NaN there; part of the tree budget was spent on
   train-instant memorization that cannot transfer. No model above the reference has
   been measured; keep-fitting-until-a-score-wins is forbidden.
-- NEXT: packaging per dataset-release (ocha-fts precedent: ship with the model-below-
-  reference finding recorded, the comparison ladder leading every package document).
-  Concrete steps for a fresh session: write candidates/cqc-care-home-deregistration/
-  license.json (OGL-UK-3.0 source terms, CQC attribution + in-sheet analysis
-  disclaimer, MIT code, CC0-1.0 compilation scope, register-event framing limitation),
-  assemble release/cqc-care-home-deregistration/ on the pins-planning-appeal-outcome
-  layout (docs, code/, baseline/ runner files verbatim, measurements.json, MANIFEST via
-  scripts/release-manifest.py, SHA256SUMS, VERIFICATION.md with baseline scope),
-  check-package.py green, then private staging. Holdout stays sealed; private until
-  the operator's flip.
+- PACKAGING (done this session, 07:10Z): release/cqc-care-home-deregistration/ assembled
+  on the pins layout and check-package.py -> OK. Docs (README, DATA_DICTIONARY,
+  RELEASE_NOTES, REPRODUCE, VERIFICATION, LICENSE.md, baseline/README.md) with the
+  comparison ladder leading every document (model 0.5659 quoted beside
+  rating_x_beds_rate 0.5871, no-persistence-by-design, register-event framing
+  limitation, OGL-UK-3.0 attribution + CQC in-sheet disclaimer); code/ at the
+  bf8a5ea construction bytes + canonical gate 1.5.0 + materialize.py; baseline/
+  runner files verbatim + reproduce script; byte-pinned meta/quality/qualification
+  copied from the staging parts (digests re-verified on copy);
+  candidates/cqc-care-home-deregistration/license.json (class A, OGL-UK-3.0 source
+  terms preserved, MIT code, CC0-1.0 compilation scope) + release.json descriptor
+  (v2026.11, repo earino/cqc-care-home-deregistration, construction commit bf8a5ea)
+  + baseline/expected_artifact.json (the five gate digests, staging release 433536764)
+  + baseline/baseline_result.json (the collected worker report, tracked); the record
+  gained construction_output.splits from the gate report values (cross-checked against
+  meta.json) because the manifest generator requires recorded split counts;
+  measurements.json generated from the record by script (nothing retyped);
+  scripts/release-manifest.py wrote MANIFEST.json + SHA256SUMS (artifact_version
+  afe9ee203f302f3c..., baseline present, licenses block generated from the
+  declaration); scripts/check-package.py -> OK first pass. check-candidate --all rc=0;
+  suite 708/708 OK.
+- NEXT (a fresh session can carry it out): private staging per dataset-release -
+  python3 scripts/publish-dataset.py cqc-care-home-deregistration
+  --repo earino/cqc-care-home-deregistration (dry-run first, --execute to create the
+  private repo + v2026.11 release with the five assets via the publish credential),
+  re-run check-package, then set packaged_at + awaiting_operator true once the flip
+  is the sole remaining step. The flip is the operator's single approval; before it,
+  generate the pre-flip adversarial audit prompt from the frozen manifest. Holdout
+  stays sealed; everything stays private until the flip. The operator's two standing
+  decisions (za-cct (a)/(b)/(c); unhcr drop/re-scope/keep-private) are unchanged.
+
 
 ## 2026-11-04 (05:45Z) - watcher follow-up: cqc-chd-004 SUCCEEDED (candidate qualified + accepted); cqc-chd-002/-003 failures already durably recorded at bf8a5ea; all three workers provider-404-confirmed deleted; all three jobs acknowledged
 
