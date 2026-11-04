@@ -1,3 +1,106 @@
+## 2026-11-04 (22:50Z) - advancement session: unhcr-corridor-entry-surge construction built, rehearsed and preflighted end-to-end; the unhcr-corridor-001 launch was REFUSED BY THE PROVIDER (Hetzner 412 resource_unavailable, no server ever created) - the one changed retry is recorded with its timed ledger window and a fresh attempt ID
+
+Scheduled advancement session. Release work first: za-cct v2026.11 stays
+`awaiting_operator: true` (the flip plus the independent pre-flip auditor's
+verdict are the operator's; untouched, and a human wait preempts nothing).
+No remediation hold is active (#17 closed). The operator's actionable list
+names unhcr-corridor-entry-surge (build) - the READY candidate opened
+2026-11-04 formulating the operator's recorded UNHCR reopen condition, whose
+record.next_action ordered exactly this construction. The job ledger held no
+non-terminal jobs at session start.
+
+CONSTRUCTION WRITTEN (candidates/unhcr-corridor-entry-surge/source/): build.py
+(one row per corridor at its FIRST year >= 500 G/P applications; PRIMARY label
+cum2_2x = total(T0+1..T0+2) >= 2 x T0; population = momentum-eligible,
+published strictly positive T0-1 value, the parent task's own rule, capacity
+measured in the record - chosen BEFORE any score; splits by entry year train
+2000-2014 / eval 2015-2020 / holdout 2021-2023; 18 at-instant features; carry
+entry_date + surge_cluster = origin|entry-year event key; loader replicates
+the probe scripts' exact rules incl. zero-value cells), run.sh (the fixed
+construct -> gate 1.5.0 on the FULL artifact -> exact-byte --accept ->
+score.py order; no performance metric before acceptance), score.py (references
+on identical eval rows: identity origin/host/combined, momentum raw +
+train-bucket rate, persistence state/magnitude, global, majority; per-entry-
+year structural reporting; CLUSTER bootstrap over surge_cluster keys; the
+pre-registered deciding check), bundle.json + job.json (unhcr-corridor-001,
+cx23/hel1, EUR 0.04 reservation).
+
+PRE-REGISTERED BEFORE ANY SCORE (record.preflight_unhcr_corridor_001,
+written before launch): the deciding check - headroom over identity-only
+priors is demonstrated ONLY if momentum_raw vs identity_combined or
+momentum_bucket_rate vs identity_combined shows observed difference > 0 AND a
+cluster-bootstrap 95% CI excluding zero in favor of momentum; identity
+dominating both -> DROP for no headroom (the wb-loan precedent); other
+inconclusive outcomes -> HOLD with the negative finding preserved; no
+re-tuning of threshold/eligibility/label/windows after any score; the
+next1_g25 fallback stays behind a fresh operator decision only.
+
+LOCAL PREFLIGHT ON THE PINNED SOURCE (construct-only dry run, cqc
+vintage-probe precedent; sha256 d5808616 re-verified = the record's pin;
+NO reference/AUC/model figure computed on real bytes - score.py has never
+run on real data): all anchors reproduced EXACTLY (train 363/127/106, eval
+202/98/80, holdout 159/72/64 rows/positives/events; full-population
+cross-check 653/214/153, 230/103/83, 170/73/64); all six fixtures green
+(AFG->USA 2021 TRUE, VEN->COL 2017 TRUE, UKR->POL 2014 FALSE, SYR->DEU 2000
+left-censored, SSD->ETH 2025 live-edge, UKR->POL 2021 no-re-entry); gate
+1.5.0 on the dry-run extract ok=true failed_checks=[] (one iteration: the
+gate caught origin/asylum crossing the rows/5 cardinality threshold in this
+smaller population - now DECLARED high_cardinality with the near-row-unique
+identity note) and local --accept ACCEPTED (dry run; the worker's
+full-artifact run stays authoritative). MEASURED: ZERO built rows in any
+split have a shipped origin/host aggregate equal to another row's label
+operand - verified twice (the build's measurement + an independent
+re-implementation from the written CSVs; the panel's 497 single-corridor
+origin-years and 167 single-corridor host-years never coincide with a built
+row's outcome years plus a built donor), so the residual aggregate exposure
+is sum-components only; gate probe diagnostics recorded (corridor grain
+0/0/0 - the structural claim; origin aggregate +12m covered 50/30/20 with
+mismatches 31/14/7; +24m 39/27/9; host +12m 36/20/4).
+
+SYNTHETIC REHEARSAL tests/test_unhcr_corridor_build.py 12/12 OK: real
+build.py (--rehearsal skips only the real-data anchor/fixture asserts) over
+a synthetic HDX panel -> gate zero failed checks -> accept -> score.py's
+FIRST execution (synthetic bytes) -> one-row-per-corridor, label rule,
+exclusion machinery (left-censored, zero-valued prior cell, host-silent,
+live edge) -> byte-identical rebuild -> FIVE red/green refusals (eval row
+outside the declared window; timing block removed; stale report vs mutated
+bytes; a fully-declared label-determining outcome_ratio column caught by
+leakage.no_single_column_determines_the_target; duplicated row id). The
+rehearsal itself caught two generator defects before any worker spend.
+Full suite 720/720 OK (708 + 12 new).
+
+LAUNCH REFUSED BY PROVIDER (infrastructure, named source, diagnosed before
+any retry): plan OK (EUR 0.04, cx23 hel1 priced EUR 0.0106/h gross), POST
+/servers answered HTTP 412 = Hetzner's documented resource_unavailable
+("not available for order": type+location capacity, or since 2025-07
+primary-IP allocation - our request allocates a primary IPv4). Ruled out by
+direct measurement: SSH key scout-worker present; cx23 available and priced
+in hel1; provider inventory after the failure 0 servers / 0 primary IPs in
+project AND account; no server was ever created (the same cx23/hel1
+launches succeeded 20:33-20:41Z the same day). Ledger: jobs/unhcr-
+corridor-001.json creation-unresolved (the designed state; EUR 0.04
+reservation retained by policy), closable by reconcile at/after
+2026-11-05T00:21:50Z (expiry 23:21:50Z + 60-min grace). The ledger is never
+hand-edited around that invariant, so no retry was possible inside this
+session's wall clock.
+
+- Hygiene: check-candidate unhcr-corridor-entry-surge OK + --all rc=0;
+  suite 720/720 OK; no token exposure (the Hetzner probes read the token
+  file in-process and printed no value); candidates/fenz-incident-data/
+  left untracked for its owner; no release byte, tag, manifest, destination
+  or visibility touched anywhere; the za-cct record and the operator's
+  standing decisions unchanged.
+- NEXT (a fresh session can carry it out, in record.next_action order):
+  (1) at/after 00:21:50Z run `sh scripts/scout-factory worker status
+  unhcr-corridor-001` (reconcile closes it as deleted; confirm 0/0
+  inventory); (2) edit source/job.json id -> unhcr-corridor-002, re-assemble
+  (python3 scripts/assemble-job.py unhcr-corridor-entry-surge), plan,
+  launch - the ONE changed retry this infrastructure failure is entitled
+  to; (3) collect on success (gate ok + ACCEPTED + fixtures + probe
+  coverage 0), destroy with provider 404 read-back, record the ladder and
+  APPLY the pre-registered deciding check; (4) a second 412 is a recorded
+  blocker - preserve evidence, record, report; never a blind retry loop.
+
 ## 2026-11-04T21:06:41Z - worker follow-up: za-cct v2026.11 PRIVATE STAGING COMPLETE on both destinations - packaged, awaiting the operator's flip
 
 Watcher follow-up for za-cct-publish-001, za-cct-hf-001 and za-cct-consumer-001
