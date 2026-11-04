@@ -1,3 +1,86 @@
+## 2026-11-04 (10:51Z) - watcher follow-up: cqc private staging to BOTH destinations verified and recorded (cqc-publish-001 / cqc-hf-001 / cqc-consumer-001 all SUCCEEDED); GitHub release 433767120 published under tag v2026.11 == main, Hub uploads verified at main fea98b69, fresh-consumer green end-to-end; the third worker destroyed this session with provider read-back; hf --verify + --tag remain before the pre-flip audit and the operator's flip
+
+Watcher brief, three terminal jobs observed (cqc-publish-001, cqc-hf-001,
+cqc-consumer-001, all succeeded, all uploaded). The follow-up runner held the
+research mutex for the whole invocation; the working tree held the release
+session's uncommitted evidence (the three job-ledger entries, the
+publish/hf/consumer job sources, the generated Hub card template and the
+pre-flip audit prompt) and no tracked-file edits, so this session verified
+every claim first-hand from the ledger, the collected reports and live
+read-backs, completed the durable recording and committed it. No new worker,
+no recovery, no release byte, tag, manifest or destination changed; EUR 0
+spent by this session (the three reservations, 0.04 + 0.04 + 0.24, were the
+owning session's, all released).
+
+- cqc-publish-001 (server 174456485, cx23/hel1, 21.1 s): 5/5 accepted assets
+  (afe9ee203f302f3c) copied from private staging release 433536764 into the
+  private repo earino/cqc-care-home-deregistration release 433767120 under the
+  flat asset names, every sha256 verified on arrival and server-side, failures
+  empty. Live read-back this session: repo private:true, release PUBLISHED
+  non-draft, tag v2026.11 == main == 8bc008af97f60fd798bd8d453108c37fc0404d3a,
+  exactly the five flat assets. Worker destroyed by the owning session
+  10:19:08Z; provider read-back 404 this session.
+- cqc-hf-001 (server 174459641, cx23/hel1, 100.4 s): 5/5 uploads to the private
+  Hub repo pinned at main commit fea98b695abd7804e78377c65782585af4e126e7,
+  Hub-reported sha256 + blob ids equal to the package MANIFEST digests, hf
+  verification ok:true errors empty, hf_loading ok:true (train 78,138/4,418,
+  eval 14,765/757, holdout 14,749/761 - equal to the accepted artifact).
+  Anonymous Hub API read-back: 401 (private). Collected by the owning session
+  10:37:02Z but NOT destroyed - this session confirmed preservation first
+  (accepted bytes durably at GitHub release 433767120, Hub main fea98b69 and
+  staging 433536764, all at matching digests), then destroyed it 10:49:15Z;
+  provider read-back 404 + inventory 0 servers / 0 primary IPs (project and
+  account). Reports at staging release 433788369.
+- cqc-consumer-001 (server 174458029, cpx32/hel1, 383.7 s, exit 0):
+  fresh-consumer verification green end-to-end on the released bytes -
+  package vs MANIFEST 24 files OK, 5 assets host-fetched digest-verified
+  (13,155,319 bytes), get_dataset.py re-verification OK, sha256sum -c 5/5 OK,
+  gate 1.5.0 QUALIFICATION PASSED on the published bytes, exact-byte --accept
+  ACCEPTED afe9ee203f302f3c, declared imports OK, baseline reproduced (both
+  AUC prints 0.5659, validate.py CONTRACT OK - the figure stands recorded
+  beside headroom reference rating_x_beds_rate 0.5871, the recorded
+  stock-runner defect), 7 references recomputed equal to measurements.json,
+  CQC-source rebuild byte-identical at --built-at 2026-11-04T00:00:00Z (real
+  fixtures reproduced exactly). Worker destroyed by the owning session
+  10:33:11Z; provider read-back 404 this session. Evidence:
+  .factory/cqc-consumer-001/reports/ (container.log + output/), staging
+  release 433783951; the committed consumer/source/ run.sh + verify_package.py
+  hash-match the ledger's bundled digests.
+- RECORDING (this session): record status qualified -> packaged (artifacts[0]
+  now names the private repo/tag/release_url), packaged_at 2026-11-04T10:51:08Z,
+  the three job entries appended, next_action rewritten to the remaining
+  steps; release/cqc-care-home-deregistration/DESTINATIONS.json written with
+  both destination blocks (github verified at tag v2026.11; huggingface
+  verified at pre-tag main fea98b69 with the tag step named in the block).
+  awaiting_operator stays FALSE - the flip is NOT yet the sole remaining step.
+  Provenance script kept beside the candidate
+  (record_staging_followup_2026_11_04.py); no manifest or frozen package byte
+  touched (DESTINATIONS.json is deliberately outside MANIFEST.json's
+  package_files).
+- NEXT (a fresh session can carry it out): (1) python3 scripts/hf-publish.py
+  --verify (files vs the manifest; also confirms the --create --upload-small
+  small files including the card); (2) python3 scripts/hf-publish.py --tag
+  (tag the commit that has the data), then update the hub DESTINATIONS block
+  to revision v2026.11; (3) re-run scripts/check-package.py
+  release/cqc-care-home-deregistration; (4) the independent pre-flip
+  adversarial audit with an agent independent of the build/stage sessions,
+  using candidates/cqc-care-home-deregistration/pre-flip-audit-prompt.md
+  (generated 2026-11-04, digests filled programmatically from the frozen
+  manifest) - the flip waits for the auditor verdict unless the operator
+  waives it; (5) set awaiting_operator true once the flip is the sole
+  remaining step. The flip itself (both destinations, anonymous verification,
+  DESTINATIONS visibility fields, current editorial refresh of card / LOADING /
+  README / release notes, check-suitability notice carried) stays the
+  operator's single approval. The operator's two standing decisions (za-cct
+  (a)/(b)/(c); unhcr drop/re-scope/keep-private) are unchanged and not part of
+  this event.
+- Hygiene: check-candidate cqc OK (status=packaged) + --all rc=0 (130 records);
+  check-package release/cqc-care-home-deregistration rc=0 (only the
+  by-design note that DESTINATIONS.json is outside the manifest);
+  check-suitability rc=0 (19 reviews); suite 708/708 OK in 30.1 s. No token
+  exposure (the Hetzner read-back token stayed in-process); no public
+  visibility anywhere; holdout sealed on both destinations.
+
 ## 2026-11-04 (08:10Z) - discovery tick (South & South-East Asia): cpcb-aqi-exceedance REOPENED from dropped - the missing publisher licence evidence is now read (GODL-India via the OGD platform instrument, Wayback + live AIKosh corroboration) and XKDR remeasured; india-datagovin-portal reopen condition (b) fired but every reachable vantage is still refused, so the unlock is now a named operator config step
 
 Discovery-only session, regional focus South & Southeast Asia (operator tick: India data.gov.in/IMD/CPCB,
