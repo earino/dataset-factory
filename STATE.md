@@ -1,3 +1,86 @@
+## 2026-11-04 (12:30Z) - discovery tick (East Asia): tw-typhoon-day-closure mirror question RESOLVED (differentiated re-recorded from the prior repo's own bytes; FIX-THE-RECORD closed, stays ready with anti-mirror constraints), standing-capture mechanism SEEDED for tw-taipower + hk-red-tide (their recorded reopen paths), Seoul probed end-to-end - Korea access is NOT uniformly account-walled (per-dataset class-A licence instruments read on the publisher's own pages); the one event-grain register found is an operator family decision, not a candidate
+
+Discovery-only session, regional focus East Asia (operator tick: Japan e-Stat/JMA, South
+Korea KOSIS/KMA, Taiwan, Hong Kong, Singapore). No construction, qualification, packaging,
+publication or advancement of any candidate; no worker launched (EUR 0); bounded anonymous
+probes only (plain HTTP + the supported browser where JS gating blocks plain clients). No
+new candidate record opened; one ready candidate's novelty contract resolved, two parked
+records' reopen paths seeded, one parked record extended with new-publisher measurements.
+
+- tw-typhoon-day-closure (ready; the 2026-11-01 audit's FIX-THE-RECORD CLOSED): the
+  novelty premise was contradicted by kxykxyou/TyphoonDayoffPrediction. This session
+  confronted that repo's ACTUAL RELEASED BYTES (fetched 2026-11-04, recipe:
+  probe/prior_repo_confrontation_2026-11-04.py in the candidate dir): 87,669-row
+  station x date panel, 3,366 county-date pairs, 1,056 positives (31.4%), 153
+  closure-announcement dates 2001-07-30..2021-10-12, ALL 153 carry >=1 county positive
+  (outcome-conditioned day population; after their TmrDayoff day-shift the target day is
+  also announcement-conditioned - 'warning active, nobody closes anywhere' never appears as
+  a training row); the binary target is hand-mapped any-closure (mapping code absent from
+  the repo; their raw scraped text contains district-qualified and half-day closures);
+  features are SAME-DAY station observation aggregates joined one-to-one on ObsDate (the
+  final TmrDayoff = D+1 closure from full-day-D aggregates - information completing only
+  after the statutory 19:00-22:00 D-1 announcement window); ONE random
+  train_test_split(0.2) inside a notebook, no shipped splits/holdout/scored contract, no
+  licence; released panel ends 2021-10-12. VERDICT: differentiated, re-recorded via
+  check-novelty.py (3 catalog queries; supplementary web sweep added two more prior-art
+  finds, both data-less: a 2024 Taiwan science-fair PDF and a frontend toy estimator).
+  The four anti-mirror constraints that keep ours a different task are written into
+  record.next_action + notes.md as construction requirements (full-day county-wide
+  positive class; pre-19:00-D-1 feature cutoff; unconditioned warning-day population;
+  temporal splits with sealed holdout). check-candidate rc=0. Advancement owns the ready
+  handoff.
+- Standing-capture mechanism SEEDED (scripts/standing-capture.py +
+  scripts/standing-capture-sources.json; ledgers candidates/<id>/standing-captures.json):
+  the recorded reopen paths of tw-taipower-major-outage-register (>=4 distinct yearly
+  vintages; single-year replacement file) and hk-red-tide-sighting (>=12 consecutive
+  captures for the publication-lag distribution) both required repeated observation and no
+  mechanism existed. Runs on every East Asia discovery tick; Taipower vintages commit
+  byte-exact into candidates/tw-taipower-major-outage-register/vintages/ (with README
+  provenance), red-tide bytes stay in the host store /opt/data/standing-captures/. Seed
+  captures 2026-11-04: Taipower register STILL the 2024 vintage (sha256 bb326eed..., 102
+  rows, 2024-01-05..2024-12-25 - 679 days behind; the 2024 bytes are now pinned in git);
+  AFCD red tide 1,931 rows, max Date of Report 2026-09-08 -> lag 57 days (between the
+  recorded 8/155-day extremes; lag not stable). Live-file + Wayback re-check: no new
+  Taipower vintage anywhere (CDX latest capture still 20260929233634); Singapore catalog
+  diff not due (enumeration 2026-10-20, quarterly). Both records updated, check-candidate
+  rc=0 both.
+- kr-kosis-kma-access (stays parked; record extended with a new publisher probed
+  end-to-end): Seoul Open Data Plaza data.seoul.go.kr - anonymous browsing works
+  (homepage + dataset pages server-rendered to plain HTTP), per-dataset LICENCE
+  instruments read on the publisher's own pages (sampled datasets: '공공누리 0유형 :
+  자유이용 (출처미표기)' and '이용허락범위 제한 없음' - class A equivalent; copyright
+  서울특별시, third-party rights 없음). Catalog (6,537 public-data datasets) enumerated in
+  the supported browser (plain GET is an AJAX shell): '출동' -> aggregate monthly
+  dispatch counts per 법정동 (aggregate-series family); '행정처분' -> the one event-grain
+  register worth naming: OA-23122 식품행정처분 (per-business food administrative
+  dispositions, 18 documented columns incl. disposition type/confirmation date/end date/
+  violated law/violation content, DAILY refresh, class-A licence field, national coverage
+  in preview rows, bulk CSV/JSON download NOT fetched on the coordinator). It is an
+  enforcement/inspection-outcome family member (chicago-food-inspections, msha citations
+  published; cqc packaged) -> NOT opened as a candidate; recorded as operator option (a)
+  in record.next_action, option (b) being a bounded catalog sweep for a register outside
+  crowded families. Recipes retained: probe_kr_seoul_2026_11_04.py + the browser-sweep
+  measurement. check-candidate rc=0.
+- Regional coverage this tick: Japan e-Stat + JMA terminal (dropped, mirror/aggregate
+  grounds - re-checked against their records, unchanged); Hong Kong: hk-datagov-portal and
+  singapore-datagov-catalog keep their operator family decisions, hk-red-tide now has the
+  collector running; Taiwan: tw-reservoir stays parked (daily collector out of reach at
+  tick cadence; authenticated WRA endpoint is operator-side), tw-taipower collector
+  running. East Asia live: 2 ready (jp-moe-pollen, tw-typhoon) + collectors on 2 parked.
+- Hygiene: check-candidate --all rc=0; discovery-coverage rc=0 (129 records, live 51,
+  non-US 45/51 = 88%; East Asia 9 records - no count change: no candidate opened/closed);
+  suite 708/708 OK; factory doctor rc=0. Working tree carried only this session's files
+  at commit time.
+
+Next action (a fresh session can carry it out): advancement owns tw-typhoon-day-closure
+(ready handoff in record.next_action; gate order construction -> full-worker qualification
+-> exact-byte acceptance -> reference/baseline scoring -> reporting; the four anti-mirror
+constraints are binding). The next East Asia discovery tick runs
+python3 scripts/standing-capture.py --all FIRST, then either executes operator option
+(a)/(b) on Korea if decided, or continues the regional sweep (Singapore catalog diff due
+after 2027-01-20). KOSIS/KMA, hk-datagov-portal and singapore-datagov-catalog keep their
+recorded operator decisions.
+
 ## 2026-11-04 (10:51Z) - watcher follow-up: cqc private staging to BOTH destinations verified and recorded (cqc-publish-001 / cqc-hf-001 / cqc-consumer-001 all SUCCEEDED); GitHub release 433767120 published under tag v2026.11 == main, Hub uploads verified at main fea98b69, fresh-consumer green end-to-end; the third worker destroyed this session with provider read-back; hf --verify + --tag remain before the pre-flip audit and the operator's flip
 
 Watcher brief, three terminal jobs observed (cqc-publish-001, cqc-hf-001,

@@ -77,3 +77,54 @@ prefixed pip install xlrd), the one permitted recovery. All 7 staging assets of 
 429614137/429618656 sha256-verified on the coordinator (.factory/east-asia-measure-*/reports/).
 Both workers destroyed; Hetzner read-back: 0 servers, 0 primary IPs. The recorded positives
 total was corrected to 1,333 (the tick session had written ~1,395).
+
+## Prior-art confrontation (2026-11-04) - novelty premise corrected, verdict stays differentiated
+
+The 2026-11-01 queue audit found the record's original novelty premise ("predictor demos ship
+no dataset") contradicted by the public repo kxykxyou/TyphoonDayoffPrediction. This section
+records the confrontation with that repo's actual released bytes (fetched 2026-11-04,
+anonymous; recipe: probe/prior_repo_confrontation_2026-11-04.py in this dir).
+
+Measured from the repo itself (repo metadata + README + data_ver2_transform.R +
+DCT_model_training.ipynb + LFS-backed CSVs fetched via media.githubusercontent.com):
+
+| Fact | Measurement |
+|---|---|
+| Repo identity | created 2022-02-28, last push 2023-02-13, 1 star, **no licence**; README: "given typhoon alert and weather infos, predicting tomorrow will be dayoff or not" |
+| Released panel (station_dayoff_neat.csv) | 87,669 rows, 3,366 county-date pairs, 1,056 positives (31.4% at county-date grain) |
+| Day population | **153 closure-announcement dates, 2001-07-30..2021-10-12** (notebook text mentions 2022 checks; the released CSV ends 2021-10-12) |
+| Outcome conditioning | **all 153 dates carry >=1 county positive** (dates with zero positives: 0). Every scored day is a day some county somewhere closed; the day-shift to TmrDayoff keeps only rows whose D+1 is also an announcement date, so "warning active, nobody closes anywhere" never appears as a training row |
+| Target derivation | binary `day_off`/`TmrDayoff` hand-assembled by a person into 'Stations+Typhoon break_final.csv' (wide format, melted in 清理資料.ipynb); the text->binary mapping code is NOT in the repo; the raw scraped DGPA text (dayoff_info_utf-8.csv) contains district-qualified and half-day closures, so the binary is an any-closure mapping, not full-day county-wide |
+| Features / instant | same-day station daily observations (StnPres, T Max, WSGust, Precp, PrecpMax60, ... ) joined one_to_one to the closure on ObsDate (整合測站_颱風_放假資訊.ipynb cell 12); the final target TmrDayoff = closure of D+1 with features = full-day-D aggregates (data_ver2_transform.R `day_shiftting`) - i.e. feature information completes only AFTER the statutory 19:00-22:00 D-1 announcement window |
+| Splits / contract | ONE random `train_test_split(test_size=0.2)` inside DCT_model_training.ipynb (RF with RandomizedSearchCV; confusion matrix + ROC images in README); no split files shipped, no holdout, no temporal split, no scored contract, no runner artifact |
+
+Differentiation (all grounded in the measurements above, recorded in
+record.novelty_check 2026-11-04, verdict differentiated):
+
+1. Target: ours is county-wide FULL-DAY closure with partial/district-qualified closures
+   excluded from the positive class; theirs is an any-closure binary whose hand-mapping is
+   not even reproducible from the repo.
+2. Timing: ours pins the prediction instant to the statutory 19:00-22:00 D-1 window with
+   every feature published before 19:00 D-1 (CWA bulletins by issuance timestamp); theirs
+   uses same-day observation aggregates that complete after the announcement - post-hoc
+   relative to the decision being predicted.
+3. Population: ours is ALL county-days inside land-warning periods 2001-2026 (negatives
+   include warning days where no county anywhere closes); theirs is 153 closure-conditioned
+   announcement dates - a selection conditioned on the outcome.
+4. Evaluation: ours is disjoint temporal train 2001-2012 / eval 2013-2018 / holdout
+   2019-2026 with clustered event-run counts and a sealed holdout in a scored, runner-
+   compatible artifact; theirs is one random in-notebook split with no shipped contract.
+5. Coverage/licence: ours covers 2001-2026 (4 seasons beyond their released panel, incl.
+   the 2024 Krathon national-closure events) under the DGPA class-A 開放宣告; their repo
+   carries no licence at all.
+
+Other prior art found in the same 2026-11-04 supplementary sweep (web search, recorded in
+record.novelty_check.evidence): a 2024 Taiwan science-fair report (sciexplore2024.colife.org.tw
+C0089) building a typhoon-day-off model from scraped CWA data - PDF only, ships no data; and
+stwater20/typhoon, a frontend toy probability estimator (娛樂參考用) with no dataset.
+Neither changes the verdict.
+
+ANTI-MIRROR CONSTRAINT FOR CONSTRUCTION (now part of the task definition): if construction
+drifts to an any-closure binary over announcement dates with same-day observations, the task
+becomes their formulation and must not be published. Keep: full-day county-wide positive
+class; pre-19:00-D-1 feature cutoff; unconditioned warning-day population; temporal splits.

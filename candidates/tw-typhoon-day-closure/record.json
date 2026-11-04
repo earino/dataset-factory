@@ -1,227 +1,187 @@
 {
- "id": "tw-typhoon-day-closure",
- "created_at": "2026-10-22",
- "status": "ready",
- "verdict": "go",
- "domain": "emergency management / government decision prediction",
- "prediction_question": "For a Taiwan county on a date D for which a typhoon land warning (\u9678\u4e0a\u98b1\u98a8\u8b66\u5831) is active or being considered, will offices and schools be fully closed (\u5168\u65e5\u505c\u6b62\u8fa6\u516c\u53ca\u4e0a\u8ab2) on D, predicted at the statutory announcement instant on the evening before D?",
- "prediction_time": "The announcement instant is fixed by regulation, quoted from the DGPA daily closure page (2026-10-22) and repeated verbatim in the announcement attachments: full-day or morning closures must be announced between 19:00 and 22:00 the previous evening (\u524d\u4e00\u65e5\u665a\u95937\u6642\u81f310\u6642\u524d\u767c\u5e03); same-morning reinforced closures are announced by 04:30 and broadcast by 05:00. Features may therefore use only data published before 19:00 Taipei time on D-1 (CWA warning bulletins issued through 17:10/20:10 are the boundary cases and must be pinned per-bulletin by issuance timestamp).",
- "target_definition": "Binary per (county, date): the county's status for date D is a full-day stop of both work and school, as published by the Directorate-General of Personnel Administration (DGPA). Label sources (excluded from shipped features): the DGPA \u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f archive (500 announcements, 2001-present, per-county status attachments) and, for the modern era, county-portal historical CSVs (e.g. data.taipei \u81fa\u5317\u5e02\u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f, fields \u6c11\u570b\u5e74/\u6708/\u65e5/\u5929\u7136\u707d\u5bb3\u540d\u7a31/\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u60c5\u5f62).",
- "sources": [
-  {
-   "name": "DGPA \u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f (historical closure announcements)",
-   "url": "https://www.dgpa.gov.tw/informationlist?uid=374",
-   "api": "https://www.dgpa.gov.tw/informationlist?uid=374&pgnum=50&page={1..50}; detail: /information?uid=374&pid={id}; attachments: /FileConversion?filename=...",
-   "licence": "Government website open declaration (\u653f\u5e9c\u7db2\u7ad9\u8cc7\u6599\u958b\u653e\u5ba3\u544a, linked in the site footer); same agency's mirror of this data on data.gov.tw is Open Government Data License 1.0",
-   "notes": "500 records, 50 pages, oldest \u6c11\u570b90 (CE 2001-07-30); announcement pages carry \u516c\u544a\u6642\u9593; per-county status attachments static in older/typhoon-event records (Big5 era and 2024 sample), shell-only in some modern records"
-  },
-  {
-   "name": "data.gov.tw dataset 20457 - Natural disaster stop working, stop attending class situation (DGPA, CAP feed)",
-   "url": "https://data.gov.tw/dataset/20457",
-   "licence": "Open Government Data License 1.0 (\u6388\u6b0a\u65b9\u5f0f: \u653f\u5e9c\u8cc7\u6599\u958b\u653e\u6388\u6b0a\u689d\u6b3e-\u7b2c1\u7248; \u8a08\u8cbb\u65b9\u5f0f: \u514d\u8cbb; authorization site: http://data.gov.tw/license)",
-   "notes": "RSS + KMZ CAP-format resources (current alerts), publish date 2015-08-20, updated 2026-06-01"
-  },
-  {
-   "name": "CWA \u98b1\u98a8\u8cc7\u6599\u5eab typhoon database (warning bulletins 1958-present)",
-   "url": "https://rdc28.cwa.gov.tw/TDB/public/warning_typhoon_list",
-   "api": "server-rendered per-typhoon pages, e.g. https://rdc28.cwa.gov.tw/TDB/public/typhoon_detail?typhoon_id=197823 (issuance/release times, bulletin counts)",
-   "licence": "CWA Government Website Open Information Declaration: all website data provided free of charge, non-exclusive, sublicensable, irrevocable, users may reproduce/adapt/compile/publicly transmit for any purpose with attribution (https://www.cwa.gov.tw/V8/C/information.html)",
-   "notes": "feature source: per-typhoon warning bulletins (position, intensity, radius, forecast), 1958-present; CWA's opendata.cwa.gov.tw platform needs a free member key, but the website/TDB archive does not"
-  },
-  {
-   "name": "data.taipei - \u81fa\u5317\u5e02\u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f (cross-check label source)",
-   "url": "https://data.taipei/dataset/detail?id=83b013c2-35f3-4470-98d7-03dd68a372cb",
-   "licence": "data.taipei open data licence (\u8cc7\u6599\u6388\u6b0a: \u516c\u958b), free",
-   "notes": "CSV 9.49 KB, fields \u6c11\u570b\u5e74\u3001\u6708\u3001\u65e5\u3001\u5929\u7136\u707d\u5bb3\u540d\u7a31\u3001\u81fa\u5317\u5e02\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u60c5\u5f62, updated yearly; template for the per-county label fallback; DNS resolves to IPv6 only - fetch needs a browser or IPv6-capable client from this host"
-  }
- ],
- "license_evidence": [
-  "data.gov.tw dataset 20457 page read in a real browser 2026-10-22: 'License: Open Government Data License, version 1.0 / Charge: free / Note: Authorization description website: http://data.gov.tw/license'. The same ODDL text governs dataset 45501 and the platform-wide licence page.",
-  "CWA website declaration (https://www.cwa.gov.tw/V8/C/information.html, read 2026-10-22 via search-engine cache of the live page): '\u4ee5\u7121\u511f\u3001\u975e\u5c08\u5c6c\u3001\u5f97\u7531\u4f7f\u7528\u8005\u518d\u6388\u6b0a\u4e4b\u65b9\u5f0f\u63d0\u4f9b\u516c\u773e\u4f7f\u7528\uff0c\u4f7f\u7528\u8005\u5f97\u4e0d\u9650\u6642\u9593\u53ca\u5730\u57df\uff0c\u91cd\u8907\u3001\u6539\u4f5c\u3001\u7de8\u8f2f\u3001\u516c\u958b\u50b3\u8f38\u6216\u70ba\u5176\u4ed6\u65b9\u5f0f\u4e4b\u5229\u7528...\u7136\u4f7f\u7528\u6642\u61c9\u8a3b\u660e\u51fa\u8655' - free, non-exclusive, sublicensable, any purpose, attribution required.",
-  {
-   "quote": "\u884c\u653f\u9662\u4eba\u4e8b\u884c\u653f\u7e3d\u8655\u5168\u7403\u8cc7\u8a0a\u7db2\u4e0a\u520a\u8f09\u4e4b\u6240\u6709\u8cc7\u6599\u8207\u7d20\u6750\uff0c\u5176\u5f97\u53d7\u8457\u4f5c\u6b0a\u4fdd\u8b77\u4e4b\u7bc4\u570d\uff0c\u4ee5\u7121\u511f\u3001\u975e\u5c08\u5c6c\uff0c\u5f97\u518d\u6388\u6b0a\u4e4b\u65b9\u5f0f\u63d0\u4f9b\u516c\u773e\u4f7f\u7528\uff0c\u4f7f\u7528\u8005\u5f97\u4e0d\u9650\u6642\u9593\u53ca\u5730\u57df\uff0c\u91cd\u8907\u3001\u6539\u4f5c\u3001\u7de8\u8f2f\u3001\u516c\u958b\u50b3\u8f38\u6216\u70ba\u5176\u4ed6\u65b9\u5f0f\u4e4b\u5229\u7528\uff0c\u958b\u767c\u5404\u7a2e\u7522\u54c1\u6216\u670d\u52d9\uff08\u7c21\u7a31\u52a0\u503c\u884d\u751f\u7269\uff09\uff0c\u6b64\u4e00\u6388\u6b0a\u884c\u70ba\u4e0d\u6703\u55e3\u5f8c\u64a4\u56de\uff0c\u4f7f\u7528\u8005\u4ea6\u7121\u9808\u53d6\u5f97\u672c\u6a5f\u95dc\u4e4b\u66f8\u9762\u6216\u5176\u4ed6\u65b9\u5f0f\u6388\u6b0a\uff1b\u7136\u4f7f\u7528\u6642\uff0c\u61c9\u8a3b\u660e\u51fa\u8655\u3002",
-   "url": "https://www.dgpa.gov.tw/archive?uid=75",
-   "note": "DGPA \u653f\u5e9c\u7db2\u7ad9\u8cc7\u6599\u958b\u653e\u5ba3\u544a (dated 106.03.28), fetched 2026-10-31 by probe_modern_label.py session: free, non-exclusive, sublicensable, reuse and derivatives (\u91cd\u88fd\u3001\u6539\u4f5c\u3001\u7de8\u8f2f\u3001\u516c\u958b\u50b3\u8f38) without time/place limit, irrevocable, no further written authorisation needed, attribution (\u8a3b\u660e\u51fa\u8655) required. Covers the closure archive and attachments served on www.dgpa.gov.tw itself."
-  }
- ],
- "licence_class": "A",
- "licence_note": "Open Government Data License 1.0 (data.gov.tw, DGPA-mirrored dataset) and the government-website open declarations (CWA, DGPA): free use, redistribution and derivatives with attribution; attribution and non-misrepresentation conditions carried through.",
- "jurisdiction": {
-  "country": "TW",
-  "region": "East Asia",
-  "publisher": "Directorate-General of Personnel Administration, Executive Yuan (\u884c\u653f\u9662\u4eba\u4e8b\u884c\u653f\u7e3d\u8655); features: Central Weather Administration (\u4ea4\u901a\u90e8\u4e2d\u592e\u6c23\u8c61\u7f72)",
-  "recorded_at": "2026-10-22"
- },
- "measurements": {
-  "dgpa_archive_span_2026_10_22": "DGPA archive: 500 announcements over 50 pages (10/page), oldest record \u6c11\u570b90.07.30 (CE 2001-07-30), newest \u6c11\u570b115.09.03 (CE 2026-09-02) - measured from informationlist pages 1 and 50, fetched anonymously 2026-10-22.",
-  "dgpa_fetch_sizes_2026_10_22": "Detail page pid=13097 = 34,360 bytes; attachments 3,058-21,661 bytes; full harvest is about 50 list pages + 500 detail pages + 500-1000 attachments, on the order of 1,050-1,550 requests and 20-30 MB total (estimate labelled as such; not yet measured end-to-end). DGPA HTTPS fails strict SSL validation (chain missing Subject Key Identifier), so probes used an unverified context; the browser accepts the chain.",
-  "dgpa_attachment_formats_2026_10_22": "Sampled first record of list pages 1/6/12/20/30/40/45: static per-county status table found for 2002 (Big5), 2009-era, and 2024-10-04 (UTF-8 typhoon-event table, 21,661 bytes); shell-only files (no county rows, only the statutory disclaimer block) observed for 2023-06-01, 2025-09-30 and 2026-09-02 - per-county extraction for the modern era is the one unproven step and is pinned as the first construction task.",
-  "modern_label_extraction_2026_10_31": "DGPA archive attachments carry machine-parseable per-county status rows across the whole span. The 2026-10-22 'shell only' reading for 2023-06-01/2025-09-30/2026-09-02 was a probe artifact: pid=13097 (2026-09-02) carries '\u5c4f\u6771\u7e23|\u6625\u65e5\u9109\u58eb\u6587\u6751:\u4eca\u5929\u505c\u6b62\u4e0a\u73ed\u3001\u505c\u6b62\u4e0a\u8ab2\u3002' - a township-level closure the old probe's county/phrase list missed. Worker census east-asia-measure-002 (exit 0, 280.2 s; 976 DGPA detail/attachment requests + 50 list pages): 500/500 announcements processed, 0 fetch errors; 476/500 records carry county rows, 24 records (all in 2013) have no attachment and no county rows anywhere (label absent - measured coverage gap); 216/500 records have >=1 county-wide full-day closure; 1,333 county-day full-closure positives total (measured: sum of per-year countyday_full in the report); 100 event runs (consecutive-date clusters) with full closures, run sizes 19,10,9,5,4,3...; per-year positives 2001-2026: every year has both classes (min 2 county-day positives in 2020, max 158 in 2024). Modern canonical phrases: '\u4eca\u5929\u5df2\u9054\u505c\u6b62\u4e0a\u73ed\u53ca\u4e0a\u8ab2\u6a19\u6e96' (closed) / '\u4eca\u5929\u672a\u9054\u505c\u6b62\u4e0a\u73ed\u53ca\u4e0a\u8ab2\u6a19\u6e96' (open); old era uses \u7167\u5e38\u8fa6\u516c/\u505c\u6b62\u8fa6\u516c variants; district-qualified rows (township/school closures) appear from 2011 and must be excluded from the county-wide label. Classifier fixtures: 13130 (2026-10-24) 13 full + 9 open; 13097 (2026-09-02) 1 partial; 7100 (2011-03-11, Big5, descriptive attachment name) 5 full + 1 partial; 7018 (2011-08-28) 2 full + 19 open. Report: probe/measure_report_2026-10-31.json.",
-  "effective_date_semantics_2026_10_31": "Archive records are keyed by ANNOUNCEMENT date (title = NNN\u5e74M\u6708D\u65e5...\u60c5\u5f62), and rows reference one effective day via phrase: '\u4eca\u5929' rows -> effective = title date; '\u660e\u5929' rows -> effective = title date + 1. Sampled 10 records across 2001-2026: 9/10 are entirely \u4eca\u5929-phrased; one (2024-07-27, Gaemi) mixes 16 \u4eca\u5929 + 10 \u660e\u5929 rows; one further 2025 record (114\u5e7411\u670811\u65e5) is \u660e\u5929-phrased. Most records therefore carry the same-day (final) status for the title date; a minority (observed 2024+) are previous-evening announcements for the next day. CONSTRUCTION RULE: map each row's effective date from its \u4eca\u5929/\u660e\u5929 phrase, never from the title alone. The census's per-year counts attribute positives by title date, so a minority of 2024+ records shifts by +1 day; this does not change any split-capacity conclusion.",
-  "daily_view_not_parameterisable_2026_10_31": "probe_modern_label.py: /typh/daily/nds.html returns a byte-identical 13,113 B response for 6 date-parameter variants (?date=2024-10-03, ?d=1131003, ?ymd=1131003, ?yy&mm&dd, ...) and contains no form/date controls; the daily view answers the current day only and cannot serve historical labels. County-portal registers exist as a cross-check: data.gov.tw 84387 (Taichung, CSV \u897f\u5143\u5e74,\u6708,\u65e5,\u707d\u5bb3\u985e\u5225,\u72c0\u6cc1 - 80 rows 2018-07-10..2026-06-10, 7,304 B, fetched 2026-10-31) and 161017 (Taoyuan, opendata.tycg.gov.tw); they are per-county and not needed for the primary label path."
- },
- "next_action": "FIX-THE-RECORD (2026-11-01 queue audit): the record's novelty premise ('predictor demos ship no dataset') is contradicted - the public kxykxyou/TyphoonDayoffPrediction repository ships usable county/day and township/day weather+closure CSVs with a binary TmrDayoff field and training notebooks, citing the same DGPA uid=374 archive and CWA warning database. Exact target equivalence (county-wide full-day closure, prior-evening cutoff) remains unverified, so the verdict is FIX-THE-RECORD, not NOT-NOVEL. Before any build: the novelty record must confront the prior repository's actual released training data and differentiate the task definition against it. Licence and channel passed at bounded scope.",
- "rejection_reason": null,
- "review": "Five contracts reconciled 2026-10-31: redistribution SUPPORTED (DGPA \u653f\u5e9c\u7db2\u7ad9\u8cc7\u6599\u958b\u653e\u5ba3\u544a quoted - free, irrevocable, derivatives allowed, attribution; attribution-only condition, no sharealike - class A per the quoted declaration; data.gov.tw mirror ODDL 1.0), timing SUPPORTED (statutory announcement instant quoted from the DGPA operating rules; CWA TDB issuance timestamps verified on the archive structure 2026-10-22), target SUPPORTED (machine-parseable per-county statuses proven 2001-2026 with fixtures; 2013 coverage gap measured), split capacity SUPPORTED (measured: 216 closure dates, 1,333 county-day positives, 100 event clusters, both classes every year), not-a-mirror SUPPORTED (novelty_check differentiated, recorded 2026-10-22). Uncertainty carried into construction: the 'other'-phrase rows (up to 111/yr in 2025) and the \u660e\u5929-row minority need per-row sampling during the build; they change attribution, not feasibility.",
- "jobs": [
-  {
-   "id": "east-asia-measure-001",
-   "status": "failed (deleted)",
-   "outcome": "INFRASTRUCTURE failure, not a scientific verdict: python:3.13-slim ships no xlrd, so all 64 OLE2/BIFF .xls pollen files parsed as valid=None and part_a crashed at agg['censored'] += rec['censored'] (KeyError) before the DGPA census ran; exit 1 at 46.0 s. The 64 per-file None lines in container.log are the .xls/.xlsx format split cited by jp-moe-pollen-exceedance's archive_format_split measurement. Diagnosed and recovered in the same tick by east-asia-measure-002 (same script; command prefixed \"pip install xlrd\"), the one permitted recovery. Evidence: .factory/east-asia-measure-001/reports/ (container.log, source.tar, manifest.json), staging release 429614137, jobs/east-asia-measure-001.json status deleted.",
-   "exit_code": 1,
-   "elapsed_seconds": 46.0
-  },
-  {
-   "id": "east-asia-measure-002",
-   "status": "succeeded (deleted)",
-   "server_id": 173635988,
-   "outcome": "Measure succeeded: pollen 113/113 files fetched (16 seasons 2006-2021 parsed; 2003-2005 unparsed, different layout), DGPA census 500/500 announcements, 0 fetch errors. Report collected to probe/measure_report_2026-10-31.json, sha256 58311d0f... equal to ledger asset 693888476 and re-verified against the staging asset of release 429618656 by the follow-up session; all 7 assets of both releases sha256-verified. Recorded figures recomputed from the report; positives total corrected to 1,333. Worker destroyed by the tick session; Hetzner read-back 2026-10-31: 0 servers, 0 primary IPs. Evidence: .factory/east-asia-measure-002/reports/, staging release 429618656, jobs/east-asia-measure-002.json status deleted.",
-   "exit_code": 0,
-   "elapsed_seconds": 280.2
-  }
- ],
- "artifacts": [],
- "novelty_check": {
-  "checked_at": "2026-10-22T00:21:04+00:00",
-  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
-  "queries": [
-   "typhoon day prediction",
-   "Taiwan typhoon school closure prediction",
-   "\u98b1\u98a8\u5047 \u9810\u6e2c \u6a5f\u5668\u5b78\u7fd2",
-   "school closure prediction machine learning dataset",
-   "work suspension natural disaster prediction"
+  "id": "tw-typhoon-day-closure",
+  "created_at": "2026-10-22",
+  "status": "ready",
+  "verdict": "go",
+  "domain": "emergency management / government decision prediction",
+  "prediction_question": "For a Taiwan county on a date D for which a typhoon land warning (\u9678\u4e0a\u98b1\u98a8\u8b66\u5831) is active or being considered, will offices and schools be fully closed (\u5168\u65e5\u505c\u6b62\u8fa6\u516c\u53ca\u4e0a\u8ab2) on D, predicted at the statutory announcement instant on the evening before D?",
+  "prediction_time": "The announcement instant is fixed by regulation, quoted from the DGPA daily closure page (2026-10-22) and repeated verbatim in the announcement attachments: full-day or morning closures must be announced between 19:00 and 22:00 the previous evening (\u524d\u4e00\u65e5\u665a\u95937\u6642\u81f310\u6642\u524d\u767c\u5e03); same-morning reinforced closures are announced by 04:30 and broadcast by 05:00. Features may therefore use only data published before 19:00 Taipei time on D-1 (CWA warning bulletins issued through 17:10/20:10 are the boundary cases and must be pinned per-bulletin by issuance timestamp).",
+  "target_definition": "Binary per (county, date): the county's status for date D is a full-day stop of both work and school, as published by the Directorate-General of Personnel Administration (DGPA). Label sources (excluded from shipped features): the DGPA \u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f archive (500 announcements, 2001-present, per-county status attachments) and, for the modern era, county-portal historical CSVs (e.g. data.taipei \u81fa\u5317\u5e02\u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f, fields \u6c11\u570b\u5e74/\u6708/\u65e5/\u5929\u7136\u707d\u5bb3\u540d\u7a31/\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u60c5\u5f62).",
+  "sources": [
+    {
+      "name": "DGPA \u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f (historical closure announcements)",
+      "url": "https://www.dgpa.gov.tw/informationlist?uid=374",
+      "api": "https://www.dgpa.gov.tw/informationlist?uid=374&pgnum=50&page={1..50}; detail: /information?uid=374&pid={id}; attachments: /FileConversion?filename=...",
+      "licence": "Government website open declaration (\u653f\u5e9c\u7db2\u7ad9\u8cc7\u6599\u958b\u653e\u5ba3\u544a, linked in the site footer); same agency's mirror of this data on data.gov.tw is Open Government Data License 1.0",
+      "notes": "500 records, 50 pages, oldest \u6c11\u570b90 (CE 2001-07-30); announcement pages carry \u516c\u544a\u6642\u9593; per-county status attachments static in older/typhoon-event records (Big5 era and 2024 sample), shell-only in some modern records"
+    },
+    {
+      "name": "data.gov.tw dataset 20457 - Natural disaster stop working, stop attending class situation (DGPA, CAP feed)",
+      "url": "https://data.gov.tw/dataset/20457",
+      "licence": "Open Government Data License 1.0 (\u6388\u6b0a\u65b9\u5f0f: \u653f\u5e9c\u8cc7\u6599\u958b\u653e\u6388\u6b0a\u689d\u6b3e-\u7b2c1\u7248; \u8a08\u8cbb\u65b9\u5f0f: \u514d\u8cbb; authorization site: http://data.gov.tw/license)",
+      "notes": "RSS + KMZ CAP-format resources (current alerts), publish date 2015-08-20, updated 2026-06-01"
+    },
+    {
+      "name": "CWA \u98b1\u98a8\u8cc7\u6599\u5eab typhoon database (warning bulletins 1958-present)",
+      "url": "https://rdc28.cwa.gov.tw/TDB/public/warning_typhoon_list",
+      "api": "server-rendered per-typhoon pages, e.g. https://rdc28.cwa.gov.tw/TDB/public/typhoon_detail?typhoon_id=197823 (issuance/release times, bulletin counts)",
+      "licence": "CWA Government Website Open Information Declaration: all website data provided free of charge, non-exclusive, sublicensable, irrevocable, users may reproduce/adapt/compile/publicly transmit for any purpose with attribution (https://www.cwa.gov.tw/V8/C/information.html)",
+      "notes": "feature source: per-typhoon warning bulletins (position, intensity, radius, forecast), 1958-present; CWA's opendata.cwa.gov.tw platform needs a free member key, but the website/TDB archive does not"
+    },
+    {
+      "name": "data.taipei - \u81fa\u5317\u5e02\u6b77\u6b21\u5929\u7136\u707d\u5bb3\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u8a0a\u606f (cross-check label source)",
+      "url": "https://data.taipei/dataset/detail?id=83b013c2-35f3-4470-98d7-03dd68a372cb",
+      "licence": "data.taipei open data licence (\u8cc7\u6599\u6388\u6b0a: \u516c\u958b), free",
+      "notes": "CSV 9.49 KB, fields \u6c11\u570b\u5e74\u3001\u6708\u3001\u65e5\u3001\u5929\u7136\u707d\u5bb3\u540d\u7a31\u3001\u81fa\u5317\u5e02\u505c\u6b62\u4e0a\u73ed\u4e0a\u8ab2\u60c5\u5f62, updated yearly; template for the per-county label fallback; DNS resolves to IPv6 only - fetch needs a browser or IPv6-capable client from this host"
+    }
   ],
-  "evidence": {
-   "huggingface_datasets": [
+  "license_evidence": [
+    "data.gov.tw dataset 20457 page read in a real browser 2026-10-22: 'License: Open Government Data License, version 1.0 / Charge: free / Note: Authorization description website: http://data.gov.tw/license'. The same ODDL text governs dataset 45501 and the platform-wide licence page.",
+    "CWA website declaration (https://www.cwa.gov.tw/V8/C/information.html, read 2026-10-22 via search-engine cache of the live page): '\u4ee5\u7121\u511f\u3001\u975e\u5c08\u5c6c\u3001\u5f97\u7531\u4f7f\u7528\u8005\u518d\u6388\u6b0a\u4e4b\u65b9\u5f0f\u63d0\u4f9b\u516c\u773e\u4f7f\u7528\uff0c\u4f7f\u7528\u8005\u5f97\u4e0d\u9650\u6642\u9593\u53ca\u5730\u57df\uff0c\u91cd\u8907\u3001\u6539\u4f5c\u3001\u7de8\u8f2f\u3001\u516c\u958b\u50b3\u8f38\u6216\u70ba\u5176\u4ed6\u65b9\u5f0f\u4e4b\u5229\u7528...\u7136\u4f7f\u7528\u6642\u61c9\u8a3b\u660e\u51fa\u8655' - free, non-exclusive, sublicensable, any purpose, attribution required.",
     {
-     "query": "typhoon day prediction",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "Taiwan typhoon school closure prediction",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "\u98b1\u98a8\u5047 \u9810\u6e2c \u6a5f\u5668\u5b78\u7fd2",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "school closure prediction machine learning dataset",
-     "hits": 0,
-     "top": []
-    },
-    {
-     "query": "work suspension natural disaster prediction",
-     "hits": 0,
-     "top": []
+      "quote": "\u884c\u653f\u9662\u4eba\u4e8b\u884c\u653f\u7e3d\u8655\u5168\u7403\u8cc7\u8a0a\u7db2\u4e0a\u520a\u8f09\u4e4b\u6240\u6709\u8cc7\u6599\u8207\u7d20\u6750\uff0c\u5176\u5f97\u53d7\u8457\u4f5c\u6b0a\u4fdd\u8b77\u4e4b\u7bc4\u570d\uff0c\u4ee5\u7121\u511f\u3001\u975e\u5c08\u5c6c\uff0c\u5f97\u518d\u6388\u6b0a\u4e4b\u65b9\u5f0f\u63d0\u4f9b\u516c\u773e\u4f7f\u7528\uff0c\u4f7f\u7528\u8005\u5f97\u4e0d\u9650\u6642\u9593\u53ca\u5730\u57df\uff0c\u91cd\u8907\u3001\u6539\u4f5c\u3001\u7de8\u8f2f\u3001\u516c\u958b\u50b3\u8f38\u6216\u70ba\u5176\u4ed6\u65b9\u5f0f\u4e4b\u5229\u7528\uff0c\u958b\u767c\u5404\u7a2e\u7522\u54c1\u6216\u670d\u52d9\uff08\u7c21\u7a31\u52a0\u503c\u884d\u751f\u7269\uff09\uff0c\u6b64\u4e00\u6388\u6b0a\u884c\u70ba\u4e0d\u6703\u55e3\u5f8c\u64a4\u56de\uff0c\u4f7f\u7528\u8005\u4ea6\u7121\u9808\u53d6\u5f97\u672c\u6a5f\u95dc\u4e4b\u66f8\u9762\u6216\u5176\u4ed6\u65b9\u5f0f\u6388\u6b0a\uff1b\u7136\u4f7f\u7528\u6642\uff0c\u61c9\u8a3b\u660e\u51fa\u8655\u3002",
+      "url": "https://www.dgpa.gov.tw/archive?uid=75",
+      "note": "DGPA \u653f\u5e9c\u7db2\u7ad9\u8cc7\u6599\u958b\u653e\u5ba3\u544a (dated 106.03.28), fetched 2026-10-31 by probe_modern_label.py session: free, non-exclusive, sublicensable, reuse and derivatives (\u91cd\u88fd\u3001\u6539\u4f5c\u3001\u7de8\u8f2f\u3001\u516c\u958b\u50b3\u8f38) without time/place limit, irrevocable, no further written authorisation needed, attribution (\u8a3b\u660e\u51fa\u8655) required. Covers the closure archive and attachments served on www.dgpa.gov.tw itself."
     }
-   ],
-   "zenodo_records": [
-    {
-     "query": "typhoon day prediction",
-     "hits": 151651,
-     "top": [
-      "A Study on Typhoon Eye Extraction from Cloud Imagery using Flat Maxima Enhancement",
-      "D7.1 Validation plan",
-      "Statistics of the Subgrid Cloud of an Idealized Tropical Cyclone at Convection-Permitting Resolution",
-      "H-gradient",
-      "Urban Flood Warning Dataset"
-     ]
-    },
-    {
-     "query": "Taiwan typhoon school closure prediction",
-     "hits": 396140,
-     "top": [
-      "Fig. 4 in Barn Swallow Nest Predation by a Recent Urban Invader, the Taiwan Whistling Thrush - Implications for the Evolution of Urban Avian Communities",
-      "A Study on Typhoon Eye Extraction from Cloud Imagery using Flat Maxima Enhancement",
-      "Lebbeus quadratus Chan & Komai, 2017, n. sp.",
-      "D7.1 Validation plan",
-      "Statistics of the Subgrid Cloud of an Idealized Tropical Cyclone at Convection-Permitting Resolution"
-     ]
-    },
-    {
-     "query": "\u98b1\u98a8\u5047 \u9810\u6e2c \u6a5f\u5668\u5b78\u7fd2",
-     "hits": 11358,
-     "top": [
-      "Repairing Engagement Failure in Modern Learning Systems through Motivational Narrative Engineering",
-      "Reconstructing Learning Sovereignty in the Post-Education Era through Knowledge Narrative Reconfiguration",
-      "\u610f\u8b58\u67d3\u2014The Portrait of Consciousness",
-      "From Learning Spirit Energy (LSE) to Social Spirit Energy (SSE): The Practice of Electronic-based Learning Theory in Personal Learning and Cooperative Learning",
-      "Robotic Narrative System: Next-Generation Syntax for Narrative Reasoning, Tonal Input, and Interactive Meaning Construction"
-     ]
-    },
-    {
-     "query": "school closure prediction machine learning dataset",
-     "hits": 856697,
-     "top": [
-      "Campus Placement Prediction System using  Machine Learning",
-      "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
-      "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
-      "RGB and RGNIR Plastic Waste Database",
-      "Global hotspots of shark interactions with industrial longline fisheries"
-     ]
-    },
-    {
-     "query": "work suspension natural disaster prediction",
-     "hits": 1006886,
-     "top": [
-      "Transformers for aerial images semantic segmentation of natural disaster-impacted areas in natural disaster assessment",
-      "Python For Natural Disaster Prediction And Response",
-      "AI in Climate Studies and Disaster Management",
-      "Investigation on the Existing Geometry of Pathein Suspension Bridge",
-      "Weather Prediction Model using Random Forest Algorithm and Apache Spark"
-     ]
-    }
-   ],
-   "arxiv_preprints": [
-    {
-     "query": "typhoon day prediction",
-     "hits": 5,
-     "top": [
-      "Prediction of typhoon tracks using a generative adversarial network with observational and meteorological data",
-      "Strong enhancement of chlorophyll a concentration by a weak typhoon",
-      "Typhoon ASR Real-time: FastConformer-Transducer for Thai Automatic Speech Recognition",
-      "Typhoon-S: Minimal Open Post-Training for Sovereign Large Language Models",
-      "Typhoon track prediction using satellite images in a Generative Adversarial Network"
-     ]
-    },
-    {
-     "query": "Taiwan typhoon school closure prediction",
-     "error": "TimeoutError",
-     "hits": null,
-     "top": []
-    },
-    {
-     "query": "\u98b1\u98a8\u5047 \u9810\u6e2c \u6a5f\u5668\u5b78\u7fd2",
-     "error": "TimeoutError",
-     "hits": null,
-     "top": []
-    },
-    {
-     "query": "school closure prediction machine learning dataset",
-     "error": "TimeoutError",
-     "hits": null,
-     "top": []
-    },
-    {
-     "query": "work suspension natural disaster prediction",
-     "error": "TimeoutError",
-     "hits": null,
-     "top": []
-    }
-   ]
-  },
-  "evidence_summary": "- huggingface_datasets / 'typhoon day prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'Taiwan typhoon school closure prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / '\u98b1\u98a8\u5047 \u9810\u6e2c \u6a5f\u5668\u5b78\u7fd2': 0 hit(s) - nothing notable\n- huggingface_datasets / 'school closure prediction machine learning dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'work suspension natural disaster prediction': 0 hit(s) - nothing notable\n- zenodo_records / 'typhoon day prediction': 151651 hit(s) - A Study on Typhoon Eye Extraction from Cloud Imagery using Flat Maxima Enhancement, D7.1 Validation plan, Statistics of the Subgrid Cloud of an Idealized Tropical Cyclone at Convection-Permitting Resolution, H-gradient, Urban Flood Warning Dataset\n- zenodo_records / 'Taiwan typhoon school closure prediction': 396140 hit(s) - Fig. 4 in Barn Swallow Nest Predation by a Recent Urban Invader, the Taiwan Whistling Thrush - Implications for the Evolution of Urban Avian Communities, A Study on Typhoon Eye Extraction from Cloud Imagery using Flat Maxima Enhancement, Lebbeus quadratus Chan & Komai, 2017, n. sp., D7.1 Validation plan, Statistics of the Subgrid Cloud of an Idealized Tropical Cyclone at Convection-Permitting Resolution\n- zenodo_records / '\u98b1\u98a8\u5047 \u9810\u6e2c \u6a5f\u5668\u5b78\u7fd2': 11358 hit(s) - Repairing Engagement Failure in Modern Learning Systems through Motivational Narrative Engineering, Reconstructing Learning Sovereignty in the Post-Education Era through Knowledge Narrative Reconfiguration, \u610f\u8b58\u67d3\u2014The Portrait of Consciousness, From Learning Spirit Energy (LSE) to Social Spirit Energy (SSE): The Practice of Electronic-based Learning Theory in Personal Learning and Cooperative Learning, Robotic Narrative System: Next-Generation Syntax for Narrative Reasoning, Tonal Input, and Interactive Meaning Construction\n- zenodo_records / 'school closure prediction machine learning dataset': 856697 hit(s) - Campus Placement Prediction System using  Machine Learning, plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Global hotspots of shark interactions with industrial longline fisheries\n- zenodo_records / 'work suspension natural disaster prediction': 1006886 hit(s) - Transformers for aerial images semantic segmentation of natural disaster-impacted areas in natural disaster assessment, Python For Natural Disaster Prediction And Response, AI in Climate Studies and Disaster Management, Investigation on the Existing Geometry of Pathein Suspension Bridge, Weather Prediction Model using Random Forest Algorithm and Apache Spark\n- arxiv_preprints / 'typhoon day prediction': 5 hit(s) - Prediction of typhoon tracks using a generative adversarial network with observational and meteorological data, Strong enhancement of chlorophyll a concentration by a weak typhoon, Typhoon ASR Real-time: FastConformer-Transducer for Thai Automatic Speech Recognition, Typhoon-S: Minimal Open Post-Training for Sovereign Large Language Models, Typhoon track prediction using satellite images in a Generative Adversarial Network\n- arxiv_preprints / 'Taiwan typhoon school closure prediction': unavailable (TimeoutError)\n- arxiv_preprints / '\u98b1\u98a8\u5047 \u9810\u6e2c \u6a5f\u5668\u5b78\u7fd2': unavailable (TimeoutError)\n- arxiv_preprints / 'school closure prediction machine learning dataset': unavailable (TimeoutError)\n- arxiv_preprints / 'work suspension natural disaster prediction': unavailable (TimeoutError)",
-  "prior_art": [
-   "Taiwan civil typhoon-day predictor apps and hackathon projects (predict whether tomorrow is a typhoon day); no public benchmark dataset of the closure decision was found in any catalog"
   ],
-  "theirs": "DGPA publishes the closure record (labels only, as human-readable announcement pages); CWA publishes forecasts and the typhoon database (features only); consumer apps and hackathon demos predict typhoon days but ship no dataset, no splits and no scored contract",
-  "ours": "First ML-ready benchmark of the Taiwan county-day typhoon-closure decision: 2001-2026 panel built from the DGPA statutory announcement archive (the only public per-county closure record) with the prediction instant fixed by regulation at 19:00-22:00 the prior evening, features limited to CWA typhoon warning bulletins and prior-day closure status available before that instant, year-based splits with clustered positives reported per typhoon, and persistence/calendar baselines shipped beside any model",
-  "verdict": "differentiated",
-  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
- },
- "split_strategy": "County-day event panel from the DGPA archive (label) + CWA TDB warning periods and bulletins (population and features). Population: county-days within typhoon land-warning periods 2001-2026 for the 22 counties. Label: county-wide full-day closure on the effective date (phrase-mapped \u4eca\u5929/\u660e\u5929; district/school-qualified rows and half-day closures are excluded from the positive class - they may form a separate partial class). Candidate windows (temporal, disjoint): train 2001-2012 (measured by the east-asia-measure-002 census: 491 county-day positives over 91 announcement records), eval 2013-2018 (403 positives measured over 138 records; note 2013 has 24 label-absent records - usable dates only), holdout 2019-2026 (439 positives measured over 271 records). Both classes present in every year 2001-2026 (min 2 positives, 2020). Clustered effective sample: 100 event runs with full closures (a national closure day contributes 22 correlated positives) - clustered counts must be reported with scores."
+  "licence_class": "A",
+  "licence_note": "Open Government Data License 1.0 (data.gov.tw, DGPA-mirrored dataset) and the government-website open declarations (CWA, DGPA): free use, redistribution and derivatives with attribution; attribution and non-misrepresentation conditions carried through.",
+  "jurisdiction": {
+    "country": "TW",
+    "region": "East Asia",
+    "publisher": "Directorate-General of Personnel Administration, Executive Yuan (\u884c\u653f\u9662\u4eba\u4e8b\u884c\u653f\u7e3d\u8655); features: Central Weather Administration (\u4ea4\u901a\u90e8\u4e2d\u592e\u6c23\u8c61\u7f72)",
+    "recorded_at": "2026-10-22"
+  },
+  "measurements": {
+    "dgpa_archive_span_2026_10_22": "DGPA archive: 500 announcements over 50 pages (10/page), oldest record \u6c11\u570b90.07.30 (CE 2001-07-30), newest \u6c11\u570b115.09.03 (CE 2026-09-02) - measured from informationlist pages 1 and 50, fetched anonymously 2026-10-22.",
+    "dgpa_fetch_sizes_2026_10_22": "Detail page pid=13097 = 34,360 bytes; attachments 3,058-21,661 bytes; full harvest is about 50 list pages + 500 detail pages + 500-1000 attachments, on the order of 1,050-1,550 requests and 20-30 MB total (estimate labelled as such; not yet measured end-to-end). DGPA HTTPS fails strict SSL validation (chain missing Subject Key Identifier), so probes used an unverified context; the browser accepts the chain.",
+    "dgpa_attachment_formats_2026_10_22": "Sampled first record of list pages 1/6/12/20/30/40/45: static per-county status table found for 2002 (Big5), 2009-era, and 2024-10-04 (UTF-8 typhoon-event table, 21,661 bytes); shell-only files (no county rows, only the statutory disclaimer block) observed for 2023-06-01, 2025-09-30 and 2026-09-02 - per-county extraction for the modern era is the one unproven step and is pinned as the first construction task.",
+    "modern_label_extraction_2026_10_31": "DGPA archive attachments carry machine-parseable per-county status rows across the whole span. The 2026-10-22 'shell only' reading for 2023-06-01/2025-09-30/2026-09-02 was a probe artifact: pid=13097 (2026-09-02) carries '\u5c4f\u6771\u7e23|\u6625\u65e5\u9109\u58eb\u6587\u6751:\u4eca\u5929\u505c\u6b62\u4e0a\u73ed\u3001\u505c\u6b62\u4e0a\u8ab2\u3002' - a township-level closure the old probe's county/phrase list missed. Worker census east-asia-measure-002 (exit 0, 280.2 s; 976 DGPA detail/attachment requests + 50 list pages): 500/500 announcements processed, 0 fetch errors; 476/500 records carry county rows, 24 records (all in 2013) have no attachment and no county rows anywhere (label absent - measured coverage gap); 216/500 records have >=1 county-wide full-day closure; 1,333 county-day full-closure positives total (measured: sum of per-year countyday_full in the report); 100 event runs (consecutive-date clusters) with full closures, run sizes 19,10,9,5,4,3...; per-year positives 2001-2026: every year has both classes (min 2 county-day positives in 2020, max 158 in 2024). Modern canonical phrases: '\u4eca\u5929\u5df2\u9054\u505c\u6b62\u4e0a\u73ed\u53ca\u4e0a\u8ab2\u6a19\u6e96' (closed) / '\u4eca\u5929\u672a\u9054\u505c\u6b62\u4e0a\u73ed\u53ca\u4e0a\u8ab2\u6a19\u6e96' (open); old era uses \u7167\u5e38\u8fa6\u516c/\u505c\u6b62\u8fa6\u516c variants; district-qualified rows (township/school closures) appear from 2011 and must be excluded from the county-wide label. Classifier fixtures: 13130 (2026-10-24) 13 full + 9 open; 13097 (2026-09-02) 1 partial; 7100 (2011-03-11, Big5, descriptive attachment name) 5 full + 1 partial; 7018 (2011-08-28) 2 full + 19 open. Report: probe/measure_report_2026-10-31.json.",
+    "effective_date_semantics_2026_10_31": "Archive records are keyed by ANNOUNCEMENT date (title = NNN\u5e74M\u6708D\u65e5...\u60c5\u5f62), and rows reference one effective day via phrase: '\u4eca\u5929' rows -> effective = title date; '\u660e\u5929' rows -> effective = title date + 1. Sampled 10 records across 2001-2026: 9/10 are entirely \u4eca\u5929-phrased; one (2024-07-27, Gaemi) mixes 16 \u4eca\u5929 + 10 \u660e\u5929 rows; one further 2025 record (114\u5e7411\u670811\u65e5) is \u660e\u5929-phrased. Most records therefore carry the same-day (final) status for the title date; a minority (observed 2024+) are previous-evening announcements for the next day. CONSTRUCTION RULE: map each row's effective date from its \u4eca\u5929/\u660e\u5929 phrase, never from the title alone. The census's per-year counts attribute positives by title date, so a minority of 2024+ records shifts by +1 day; this does not change any split-capacity conclusion.",
+    "daily_view_not_parameterisable_2026_10_31": "probe_modern_label.py: /typh/daily/nds.html returns a byte-identical 13,113 B response for 6 date-parameter variants (?date=2024-10-03, ?d=1131003, ?ymd=1131003, ?yy&mm&dd, ...) and contains no form/date controls; the daily view answers the current day only and cannot serve historical labels. County-portal registers exist as a cross-check: data.gov.tw 84387 (Taichung, CSV \u897f\u5143\u5e74,\u6708,\u65e5,\u707d\u5bb3\u985e\u5225,\u72c0\u6cc1 - 80 rows 2018-07-10..2026-06-10, 7,304 B, fetched 2026-10-31) and 161017 (Taoyuan, opendata.tycg.gov.tw); they are per-county and not needed for the primary label path."
+  },
+  "next_action": "READY -> hand to advancement (novelty premise corrected 2026-11-04: verdict differentiated re-recorded after confronting kxykxyou/TyphoonDayoffPrediction's released bytes - notes.md 'Prior-art confrontation (2026-11-04)', recipe probe/prior_repo_confrontation_2026-11-04.py; the prior repo ships a closure-conditioned any-closure panel, same-day observation features, one random in-notebook split, no licence - not this task). ANTI-MIRROR constraints construction must keep: (1) positive class = county-wide FULL-DAY closure only, district-qualified and half-day rows excluded (may form a separate partial class); (2) every feature published before 19:00 Asia/Taipei on D-1 (CWA warning bulletins pinned by issuance timestamp; the 17:10/20:10 boundary bulletins decided per-bulletin); (3) population = ALL county-days inside land-warning periods 2001-2026 - warning days with no closure anywhere are scored negatives, never dropped; (4) temporal splits train 2001-2012 / eval 2013-2018 / holdout 2019-2026, clustered event-run counts (100 runs) reported beside scores, holdout sealed. Label extraction: DGPA archive attachments (Big5 pre-2024, UTF-8 2024+, first non-English FileConversion link in old records), classifier validated on the 4 recorded fixtures (13130: 13 full + 9 open; 13097: 1 partial; 7100: 5 full + 1 partial; 7018: 2 full + 19 open); 24 label-absent 2013 records excluded as unusable dates; county-portal CSVs (data.taipei, Taichung 84387, Taoyuan 161017) as cross-checks; DGPA SSL unverified-context caveat in notes.md. Then the gate order: full-worker qualification -> exact-byte acceptance -> reference/baseline scoring -> reporting, with quality.json.evaluation_contract per docs/PREDICTION-CONTRACT.md.",
+  "rejection_reason": null,
+  "review": "Five contracts reconciled 2026-10-31: redistribution SUPPORTED (DGPA \u653f\u5e9c\u7db2\u7ad9\u8cc7\u6599\u958b\u653e\u5ba3\u544a quoted - free, irrevocable, derivatives allowed, attribution; attribution-only condition, no sharealike - class A per the quoted declaration; data.gov.tw mirror ODDL 1.0), timing SUPPORTED (statutory announcement instant quoted from the DGPA operating rules; CWA TDB issuance timestamps verified on the archive structure 2026-10-22), target SUPPORTED (machine-parseable per-county statuses proven 2001-2026 with fixtures; 2013 coverage gap measured), split capacity SUPPORTED (measured: 216 closure dates, 1,333 county-day positives, 100 event clusters, both classes every year), not-a-mirror SUPPORTED (novelty_check differentiated; re-recorded 2026-11-04 after confronting the closest prior art, kxykxyou/TyphoonDayoffPrediction, from its released bytes - measured: closure-conditioned 153-date population, any-closure hand-mapped target, same-day observation features, one random in-notebook split, no licence; differentiation = full-day county-wide target, statutory pre-19:00-D-1 feature cutoff, unconditioned warning-day population, temporal splits with sealed holdout; anti-mirror constraints written into next_action and notes.md). Uncertainty carried into construction: the 'other'-phrase rows (up to 111/yr in 2025) and the \u660e\u5929-row minority need per-row sampling during the build; they change attribution, not feasibility.",
+  "jobs": [
+    {
+      "id": "east-asia-measure-001",
+      "status": "failed (deleted)",
+      "outcome": "INFRASTRUCTURE failure, not a scientific verdict: python:3.13-slim ships no xlrd, so all 64 OLE2/BIFF .xls pollen files parsed as valid=None and part_a crashed at agg['censored'] += rec['censored'] (KeyError) before the DGPA census ran; exit 1 at 46.0 s. The 64 per-file None lines in container.log are the .xls/.xlsx format split cited by jp-moe-pollen-exceedance's archive_format_split measurement. Diagnosed and recovered in the same tick by east-asia-measure-002 (same script; command prefixed \"pip install xlrd\"), the one permitted recovery. Evidence: .factory/east-asia-measure-001/reports/ (container.log, source.tar, manifest.json), staging release 429614137, jobs/east-asia-measure-001.json status deleted.",
+      "exit_code": 1,
+      "elapsed_seconds": 46.0
+    },
+    {
+      "id": "east-asia-measure-002",
+      "status": "succeeded (deleted)",
+      "server_id": 173635988,
+      "outcome": "Measure succeeded: pollen 113/113 files fetched (16 seasons 2006-2021 parsed; 2003-2005 unparsed, different layout), DGPA census 500/500 announcements, 0 fetch errors. Report collected to probe/measure_report_2026-10-31.json, sha256 58311d0f... equal to ledger asset 693888476 and re-verified against the staging asset of release 429618656 by the follow-up session; all 7 assets of both releases sha256-verified. Recorded figures recomputed from the report; positives total corrected to 1,333. Worker destroyed by the tick session; Hetzner read-back 2026-10-31: 0 servers, 0 primary IPs. Evidence: .factory/east-asia-measure-002/reports/, staging release 429618656, jobs/east-asia-measure-002.json status deleted.",
+      "exit_code": 0,
+      "elapsed_seconds": 280.2
+    }
+  ],
+  "artifacts": [],
+  "novelty_check": {
+    "checked_at": "2026-11-04T12:03:10+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "typhoon day off prediction Taiwan",
+      "\u98b1\u98a8\u5047 \u9810\u6e2c \u6a5f\u5668\u5b78\u7fd2",
+      "typhoon closure prediction dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "typhoon day off prediction Taiwan",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "\u98b1\u98a8\u5047 \u9810\u6e2c \u6a5f\u5668\u5b78\u7fd2",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "typhoon closure prediction dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "typhoon day off prediction Taiwan",
+          "hits": 255950,
+          "top": [
+            "Fig. 4 in Barn Swallow Nest Predation by a Recent Urban Invader, the Taiwan Whistling Thrush - Implications for the Evolution of Urban Avian Communities",
+            "A Study on Typhoon Eye Extraction from Cloud Imagery using Flat Maxima Enhancement",
+            "D7.1 Validation plan",
+            "Statistics of the Subgrid Cloud of an Idealized Tropical Cyclone at Convection-Permitting Resolution",
+            "H-gradient"
+          ]
+        },
+        {
+          "query": "\u98b1\u98a8\u5047 \u9810\u6e2c \u6a5f\u5668\u5b78\u7fd2",
+          "hits": 12125,
+          "top": [
+            "Repairing Engagement Failure in Modern Learning Systems through Motivational Narrative Engineering",
+            "Reconstructing Learning Sovereignty in the Post-Education Era through Knowledge Narrative Reconfiguration",
+            "\u610f\u8b58\u67d3\u2014The Portrait of Consciousness",
+            "From Learning Spirit Energy (LSE) to Social Spirit Energy (SSE): The Practice of Electronic-based Learning Theory in Personal Learning and Cooperative Learning",
+            "Robotic Narrative System: Next-Generation Syntax for Narrative Reasoning, Tonal Input, and Interactive Meaning Construction"
+          ]
+        },
+        {
+          "query": "typhoon closure prediction dataset",
+          "hits": 409227,
+          "top": [
+            "Urban Flood Warning Dataset",
+            "A Study on Typhoon Eye Extraction from Cloud Imagery using Flat Maxima Enhancement",
+            "D7.1 Validation plan",
+            "Statistics of the Subgrid Cloud of an Idealized Tropical Cyclone at Convection-Permitting Resolution",
+            "Mapped Landslide for Typhoon Ketsaan, Moalve and Tropical storm Podul in central Vietnam"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "typhoon day off prediction Taiwan",
+          "hits": 5,
+          "top": [
+            "Prediction of typhoon tracks using a generative adversarial network with observational and meteorological data",
+            "Strong enhancement of chlorophyll a concentration by a weak typhoon",
+            "Typhoon ASR Real-time: FastConformer-Transducer for Thai Automatic Speech Recognition",
+            "Recent BCP progress in Taiwan",
+            "Typhoon-S: Minimal Open Post-Training for Sovereign Large Language Models"
+          ]
+        },
+        {
+          "query": "\u98b1\u98a8\u5047 \u9810\u6e2c \u6a5f\u5668\u5b78\u7fd2",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "typhoon closure prediction dataset",
+          "hits": 5,
+          "top": [
+            "Prediction of typhoon tracks using a generative adversarial network with observational and meteorological data",
+            "Strong enhancement of chlorophyll a concentration by a weak typhoon",
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "Typhoon ASR Real-time: FastConformer-Transducer for Thai Automatic Speech Recognition"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'typhoon day off prediction Taiwan': 0 hit(s) - nothing notable\n- huggingface_datasets / '\u98b1\u98a8\u5047 \u9810\u6e2c \u6a5f\u5668\u5b78\u7fd2': 0 hit(s) - nothing notable\n- huggingface_datasets / 'typhoon closure prediction dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'typhoon day off prediction Taiwan': 255950 hit(s) - Fig. 4 in Barn Swallow Nest Predation by a Recent Urban Invader, the Taiwan Whistling Thrush - Implications for the Evolution of Urban Avian Communities, A Study on Typhoon Eye Extraction from Cloud Imagery using Flat Maxima Enhancement, D7.1 Validation plan, Statistics of the Subgrid Cloud of an Idealized Tropical Cyclone at Convection-Permitting Resolution, H-gradient\n- zenodo_records / '\u98b1\u98a8\u5047 \u9810\u6e2c \u6a5f\u5668\u5b78\u7fd2': 12125 hit(s) - Repairing Engagement Failure in Modern Learning Systems through Motivational Narrative Engineering, Reconstructing Learning Sovereignty in the Post-Education Era through Knowledge Narrative Reconfiguration, \u610f\u8b58\u67d3\u2014The Portrait of Consciousness, From Learning Spirit Energy (LSE) to Social Spirit Energy (SSE): The Practice of Electronic-based Learning Theory in Personal Learning and Cooperative Learning, Robotic Narrative System: Next-Generation Syntax for Narrative Reasoning, Tonal Input, and Interactive Meaning Construction\n- zenodo_records / 'typhoon closure prediction dataset': 409227 hit(s) - Urban Flood Warning Dataset, A Study on Typhoon Eye Extraction from Cloud Imagery using Flat Maxima Enhancement, D7.1 Validation plan, Statistics of the Subgrid Cloud of an Idealized Tropical Cyclone at Convection-Permitting Resolution, Mapped Landslide for Typhoon Ketsaan, Moalve and Tropical storm Podul in central Vietnam\n- arxiv_preprints / 'typhoon day off prediction Taiwan': 5 hit(s) - Prediction of typhoon tracks using a generative adversarial network with observational and meteorological data, Strong enhancement of chlorophyll a concentration by a weak typhoon, Typhoon ASR Real-time: FastConformer-Transducer for Thai Automatic Speech Recognition, Recent BCP progress in Taiwan, Typhoon-S: Minimal Open Post-Training for Sovereign Large Language Models\n- arxiv_preprints / '\u98b1\u98a8\u5047 \u9810\u6e2c \u6a5f\u5668\u5b78\u7fd2': 0 hit(s) - nothing notable\n- arxiv_preprints / 'typhoon closure prediction dataset': 5 hit(s) - Prediction of typhoon tracks using a generative adversarial network with observational and meteorological data, Strong enhancement of chlorophyll a concentration by a weak typhoon, The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, Typhoon ASR Real-time: FastConformer-Transducer for Thai Automatic Speech Recognition",
+    "prior_art": [
+      "kxykxyou/TyphoonDayoffPrediction (github.com/kxykxyou/TyphoonDayoffPrediction; 2022-2023 class project, last push 2023-02-13, no licence; measured 2026-11-04 from its own released bytes: station_dayoff_neat.csv 87,669 rows / 3,366 county-date pairs / 153 closure-announcement dates 2001-07-30..2021-10-12, ALL 153 carry >=1 county positive, 1,056 positives = 31.4%; features = same-day station weather joined one_to_one on ObsDate; final target TmrDayoff = next-day closure from full-day-D observation aggregates (data_ver2_transform.R); single random train_test_split(test_size=0.2) in DCT_model_training.ipynb, no shipped splits, no holdout, no scored contract)",
+      "sciexplore2024.colife.org.tw C0089 (2024 Taiwan science-fair report: typhoon-day-off model from scraped CWA typhoon database; PDF only, no shipped data)",
+      "stwater20/typhoon (frontend toy estimator, \u5a1b\u6a02\u53c3\u8003\u7528, no dataset)"
+    ],
+    "theirs": "The prior repo ships a closure panel + notebooks: population = 153 DGPA announcement dates, all closure-conditioned (every date has >=1 county closed; after its day-shift the target day is also announcement-conditioned, so 'warning active but nobody closes anywhere' never appears as a training row); target = hand-mapped any-closure binary (mapping code absent from the repo; raw scraped text contains district-qualified and half-day closures); features = same-day daily observation aggregates (complete only after the statutory 19:00-22:00 D-1 announcement) + typhoon-list attributes; evaluation = one random 80/20 split inside a notebook with a confusion matrix/ROC image, no split files, no holdout, no runner contract, no licence; coverage ends 2021-10-12. The science-fair report and the toy tool publish no data at all. The publisher (DGPA/CWA) provides the raw archives only.",
+    "ours": "A valid forecasting contract the prior art does not provide: target = county-wide FULL-DAY closure (\u5168\u65e5\u505c\u6b62\u8fa6\u516c\u53ca\u4e0a\u8ab2) with district-qualified and half-day closures excluded from the positive class; prediction instant pinned to the statutory announcement window (19:00-22:00 Asia/Taipei on D-1, quoted from the DGPA operating rule) with every feature restricted to data published before 19:00 D-1 (CWA warning bulletins by issuance timestamp, prior closure status, county identity); population = ALL county-days inside typhoon land-warning periods 2001-2026 (unconditioned: warning days where no county closes anywhere are scored rows, both classes present every year, 1,333 county-day positives over 100 clustered event runs); disjoint temporal splits train 2001-2012 / eval 2013-2018 / holdout 2019-2026 with clustered-count reporting and a sealed holdout; scored, runner-compatible artifact under class A licence (DGPA \u958b\u653e\u5ba3\u544a quoted in notes.md). Construction constraints that keep it differentiated: drifting to an any-closure binary on announcement dates with same-day observations would reproduce their formulation and turn this into a mirror.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "split_strategy": "County-day event panel from the DGPA archive (label) + CWA TDB warning periods and bulletins (population and features). Population: county-days within typhoon land-warning periods 2001-2026 for the 22 counties. Label: county-wide full-day closure on the effective date (phrase-mapped \u4eca\u5929/\u660e\u5929; district/school-qualified rows and half-day closures are excluded from the positive class - they may form a separate partial class). Candidate windows (temporal, disjoint): train 2001-2012 (measured by the east-asia-measure-002 census: 491 county-day positives over 91 announcement records), eval 2013-2018 (403 positives measured over 138 records; note 2013 has 24 label-absent records - usable dates only), holdout 2019-2026 (439 positives measured over 271 records). Both classes present in every year 2001-2026 (min 2 positives, 2020). Clustered effective sample: 100 event runs with full closures (a national closure day contributes 22 correlated positives) - clustered counts must be reported with scores."
 }
