@@ -1,3 +1,68 @@
+## 2026-11-04 (08:10Z) - discovery tick (South & South-East Asia): cpcb-aqi-exceedance REOPENED from dropped - the missing publisher licence evidence is now read (GODL-India via the OGD platform instrument, Wayback + live AIKosh corroboration) and XKDR remeasured; india-datagovin-portal reopen condition (b) fired but every reachable vantage is still refused, so the unlock is now a named operator config step
+
+Discovery-only session, regional focus South & Southeast Asia (operator tick: India data.gov.in/IMD/CPCB,
+Indonesia BPS, Philippines PSA, Thailand, Vietnam, Malaysia). No construction, qualification, packaging,
+publication or advancement of any other candidate; no worker launched (EUR 0 spent); bounded anonymous
+coordinator probes only. All the region's named portals carry recorded blockers, so the tick worked the
+two recorded reopen conditions that were cheaply testable from here; both settled decisively.
+
+- cpcb-aqi-exceedance (IN, dropped -> INVESTIGATING): the drop's blocker was "the publisher's own
+  terms were never read; the only redistribution evidence was a republisher's", with reopen condition
+  "only if CPCB publishes its own explicit reuse licence". This session read the instruments and the
+  condition is MET through the Government of India's own open-data instrument: (1) CPCB's own site
+  copyright policy (read live 2026-11-04, cpcb.gov.in/copyright-policy/): restrictive "unless otherwise
+  indicated" - download to file/printer only, other use needs approval; (2) the data.gov.in resource
+  page for the dataset CPCB contributes (resource 3b01bcb8-0b14-4abf-b6f2-c1bfd384ba69, contributor
+  "MoEFCC / Central Pollution Control Board", updated 31/12/2025) read via Wayback snapshot
+  20251231005230 (the live portal is unreachable from every vantage we control - see below): "The
+  content published on data.gov.in is owned by the respective Ministry/State/Department/Organization
+  and licensed under the Government Open Data License - India" + "All rights reserved except
+  published datasets/resources and metadata"; (3) GODL-India v1.0 terms read (Wayback 20170328213105 of
+  data.gov.in's own licence page): worldwide, royalty-free, non-exclusive, commercial and derivative
+  use permitted, attribution-only, NO share-alike clause => class A; (4) live corroboration readable
+  without the blocked route: AIKosh (IndiaAI) registry lists the dataset "License: GODL license",
+  source org MoEFCC/CPCB. licence_class C -> A; XKDR's own compilation licence read (GitHub README:
+  CC BY 4.0, credit XKDR Forum + CPCB CAAQM). Remeasured XKDR (demo key still published but rotated;
+  tier reads 2024 bulk files only): export stamped 2026-09-30, 196.5M rows, 207 months 2009-01..2026-03,
+  558 stations = 553 cpcb_caaqm + 5 us_embassy (provenance mix recorded; task population = cpcb_caaqm
+  stream only, 549 stations list PM2.5); eval-window 2024 coverage measured (534 stations with PM2.5,
+  466 full-year, 6,025 cpcb station-months; monthly-mean >90 share Jan .317 / Jul-Sep .004, annual
+  .1027 - winter-clustered positives); last_seen distribution: ZERO PM2.5 stations live into 2026, so
+  the proposed holdout shrinks to 2025 (330 stations), 135 stations started <=2019-01 for train depth.
+  next_action carries the ordered to-ready list (full-key per-window DAILY class + clustered counts,
+  NAAQS threshold fixture from CPCB's own Daily AQI Bulletin, vintage policy, za-cct-style cross-row
+  bounded-exposure design input, five-contract reconciliation). Probe outputs retained in
+  candidates/cpcb-aqi-exceedance/probe/out/.
+- india-datagovin-portal (IN, stays parked, blocker SHARPENED): reopen condition (b) fired -
+  independent evidence the portal is publicly reachable again (Entireweb Status "operating normally
+  (2 November 2026)", smooth 30-day trend; the publisher's own X account announced maintenance 2026-09-30
+  and "The OGD Platform is operational now" 2026-10-21). But the route block persists and is now
+  clearly vantage-class, not outage: 2026-11-04 coordinator probe - apex/api TCP-refused (curl exit 7),
+  www Akamai edge 503 "Fail to connect" (cannot reach origin); the r.jina.ai reader vantage gets the
+  IDENTICAL refusal (ERR_CONNECTION_REFUSED at apex, 503 at www) - not our network class alone;
+  Wayback CDX shows even the Internet Archive crawler got 403s on 2026-09-08/18. New capability
+  recorded: GODL per-resource claims ARE verifiable without a live route via Wayback snapshots of
+  catalog pages (proved on the CPCB resource - that is what reopened cpcb). The enumeration itself
+  still cannot run; the remaining unlock is an operator step: add a worker location whose vantage can
+  reach data.gov.in to config allowed_locations (currently hel1 only, recorded-blocked), or a
+  licence-bearing catalogue mirror. No further coordinator/hel1 re-probing before that decision.
+- Other regional records re-read, not re-probed (their recorded blockers stand and their watch
+  triggers are not due): IMD free-list watch is quarterly (last measured 2026-10-28; next due late
+  January); vietnam-nso re-probe is quarterly (opened 2026-10-20, due January); air4thai and BMKG
+  need operator-authorized class-C licence enquiries; malaysia-river needs the operator's two
+  decisions; OJK's unpark is licence-blocked first (no grant on its terms page); BPS/PSA stay dropped
+  on the statistics-mandate aggregate-only defect; my-pricecatcher's v-next rework is
+  advancement-owned. These are coverage statements, not "no viable source exists" claims.
+- Hygiene: check-candidate cpcb OK (investigating) + india OK (parked) + --all rc=0 (129 records);
+  discovery-coverage rc=0 (dropped 50->49, investigating 17->18, live 51, live non-US 45/51 = 88%);
+  suite 708/708 OK. No worker, no token use, no release/tag/manifest/destination bytes touched.
+
+Next action (a fresh session can carry it out): discovery owns cpcb-aqi-exceedance's to-ready list
+(record.next_action, in order: full-key or OpenAQ per-window daily class counts first); the operator's
+standing decisions (za-cct (a)/(b)/(c); unhcr; the cqc private-staging flip) are unchanged and not
+part of this tick.
+
+
 ## 2026-11-04 (06:46Z) - watcher follow-up: cqc-chd-baseline-001 verified already recorded (5a6aa3f) and acknowledged with its .factory marker; cleanup re-confirmed read-only
 
 Watcher brief, one terminal job observed (cqc-chd-baseline-001: succeeded,

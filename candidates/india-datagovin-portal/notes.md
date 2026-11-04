@@ -100,3 +100,41 @@ publisher/edge side. Candidate stays parked (access failure is not a scientific 
 Reopen on an Indian-routing vantage, independent public-reachability evidence, or a
 licence-bearing mirror; the GODL-India licence read for CPCB resources is still unverified and
 cpcb-aqi-exceedance remains dropped until it is read.
+
+## 2026-11-04 session (regional tick) - reopen condition (b) FIRED on third-party evidence; every reachable vantage still refused
+
+### Third-party evidence that the portal is publicly reachable again (condition (b))
+    Entireweb Status page (via search, read 2026-11-04): "Open Government Data Platform is
+    operating normally right now (2 November 2026)... running smoothly with no reported outages"
+    (smooth 30-day trend, 1 user report 21 h before, 0 in the last hour).
+    Publisher's own X account @DataPortalIndia: 2026-09-30 "The OGD Platform is currently under
+    maintenance."; 2026-10-21 "The OGD Platform is operational now. Thank you for your patience
+    and support."
+    => the 2026-10-20 and 2026-10-30 blocks measured by this project fall inside/just after the
+    publisher's own maintenance window - but the block has NOT lifted for the vantages we can reach
+    (below), so it is now clearly a vantage-class block, not a global outage.
+
+### Reachability re-measured 2026-11-04 (coordinator, ~08:02Z; one probe, reopen enumeration step 0)
+    curl https://data.gov.in/        -> exit 7, connection refused, 0.59 s (HTTP 000)
+    curl https://api.data.gov.in/    -> exit 7, connection refused, 0.71 s (HTTP 000)
+    curl https://www.data.gov.in/    -> HTTP 503 "Service Unavailable - Fail to connect",
+                                        Akamai edge 2a02:26f0:1c80:3::212:be9b,
+                                        ref 6.98b51202.1793779317.1b2f3ceb (edgesuite)
+    Same-session third-party reader vantage (r.jina.ai fetcher, NOT our network):
+    https://www.data.gov.in/resource/... -> "Target URL returned error 503: Service Unavailable"
+    https://data.gov.in/catalog/...       -> "net::ERR_CONNECTION_REFUSED"
+    Wayback CDX shows the Internet Archive's own crawler received 403 on
+    data.gov.in/government-open-data-license-india on 2026-09-08 and 2026-09-18
+    (last 200 capture of that page: 2023-02-13).
+
+### What this changes
+    - The blocker is sharper: the portal serves some vantages (third-party monitor, the search
+      backend that indexes www.data.gov.in pages) and refuses the classes this project can reach
+      (coordinator, hel1 [recorded 2026-10-30], and the r.jina.ai reader vantage).
+    - GODL per-resource claims ARE verifiable without a live route, via Wayback snapshots of
+      catalog/resource pages (latest 200 snapshot of the CPCB resource page: 2025-12-31). PROVED
+      this session: that snapshot is the licence evidence that reopened cpcb-aqi-exceedance.
+    - The original enumeration's CPCB sub-item is therefore DONE (GODL claim read and quoted;
+      cpcb-aqi-exceedance reopened; see its notes 2026-11-04).
+    - Remaining unlock is an operator step: add a worker location whose vantage can reach
+      data.gov.in to config allowed_locations (currently hel1 only), or a licence-bearing mirror.
