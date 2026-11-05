@@ -1,0 +1,68 @@
+{
+  "job": {
+    "id": "dvsa-mot-build-001",
+    "candidate": "dvsa-mot-next-test-outcome",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cpx32",
+    "location": "hel1",
+    "cpus": 4,
+    "memory_mb": 8192,
+    "timeout_minutes": 100,
+    "lifetime_minutes": 140,
+    "max_disk_mb": 30000,
+    "max_artifact_mb": 8,
+    "what": "Construct the dvsa-mot-next-test-outcome artifact on a worker: download the 20 per-year DVSA/DfT anonymised MOT result files (2005-2016 txt.gz + 2017-2022 zips at data.dft.gov.uk, 2023-2024 zips at the DVSA S3 origin; the 2024 zip byte-pinned to the 2026-10-19 measurement), stream-parse class-4 rows of md5-sampled vehicles (~0.1%), join consecutive completed tests per vehicle, label the next test's initial failure (F/PRS vs P), features strictly from the prior test and earlier, splits by prior-test year (train 2009-2018 / eval 2019-2021 / holdout 2022-2023.11, right-censoring cutoff 2023-11-30), then run the gate 1.5.0 on the FULL artifact on the worker, --accept the exact bytes, and compute the pre-registered reference triad (post-acceptance). No performance metric exists before acceptance; the deciding model-vs-triad check runs in a later baseline job.",
+    "stopping_condition": "a failed build or gate stops the job with the reports preserved for collection; a failed gate is a recorded finding requiring diagnosis before any rebuild; no re-tuning of threshold, window, label or features after any score.",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/dvsa-mot-next-test-outcome/source/build.py",
+        "bytes": 51583,
+        "sha256": "885ac98bc7da2f13041a6f2575d462f5bd21cec4cef9bf75eae8a48c376b33db"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/dvsa-mot-next-test-outcome/source/run.sh",
+        "bytes": 1915,
+        "sha256": "6f28052d8aa4fa203fb453213e3bfe62343306e1fbb61de6f2c697ef96c42610"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/dvsa-mot-next-test-outcome/source/score.py",
+        "bytes": 18081,
+        "sha256": "4b52fd9d9c1ca7854b3df93409673fa04bdad0160149a5df85766d5cbf2ebc62"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.32",
+  "rate_ceiling_eur": "0.08",
+  "reserved_hours": 4,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "1e57d7ceee039a1932e2fd1c33288c26c68a0d3f71e30c2ebf9288f10b746c2a",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "running",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-05T18:33:02.397729+00:00",
+  "expires": 1793911982,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0692400000000000",
+  "server_id": 174661065,
+  "known_hosts": "/opt/data/dataset-factory/.factory/dvsa-mot-build-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168"
+}

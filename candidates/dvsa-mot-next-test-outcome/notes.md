@@ -64,9 +64,34 @@ What is ours: full-history next-test outcome prediction (prior-test history
 features incl. defect categories), frozen temporal splits 2010-2018/2019-2021/
 2022-2024, leakage-disciplined shipped columns, scored runner contract.
 
-## Next action (construction, advancement session)
+## Construction (launched 2026-11-05, job dvsa-mot-build-001)
 
-See record.json `next_action`. Key construction constraints measured here:
-dedup by total order (test_id repeats), vehicle_id never the runner id column,
-next-test fields + their failure items are label-source and excluded, class-4
-bounding to cut the ~23 GB download / ~115 GB processing estimate.
+GO executed per the recorded next_action. Full preflight, design decisions,
+pre-registered triad and deciding rule live in `record.json`
+(`measurements.construction_preflight_2026_11_05`) and in the headers of
+`source/build.py` / `source/score.py`. Key deltas from the original sketch, all
+pre-registered before any score:
+
+- Splits are by PRIOR-test year (the prediction instant), not next-test year:
+  the next test's date is label-side timing and cannot ship, so next-test-year
+  windows are unverifiable from the rows. Train priors 2009-2018, eval
+  2019-2021, holdout 2022-2023.11; right-censoring cutoff 2023-11-30 (priors
+  on/after it are excluded wholesale and counted).
+- Class 4 only, both sides of every pair; vehicles hash-sampled
+  md5(vehicle_id) mod 1000 == 0 (~0.1%); ABR/ABA excluded and counted;
+  defect-item features omitted in v1 (test_id is measured NOT unique, so the
+  item join is ambiguous - documented, not silent).
+- MEASURED 2026-11-05: data.dft.gov.uk IGNORES Range headers (a ranged probe
+  streamed ~1.08 GB before being killed). DfT-era schemas are therefore measured
+  by the build itself; the DVSA S3 origin still answers ranged reads. The 2024
+  zip is byte-pinned (1,531,265,132 bytes, 12 monthly members, header
+  verbatim).
+- Dry run on synthetic three-era fixtures (headerless pipe, headered pipe,
+  single- and 12-member zips): build exit 0, gate 1.5.0 45/45 PASS, --accept
+  ACCEPTED, triad machinery exercised. The declared cross-row probe measured the
+  blind-join exposure as designed (synthetic eval 420/570 rows covered, 0
+  mismatches); access is isolated_rows. Fixture numbers are not findings.
+
+Status: worker cpx32 (server 174661065, hel1) running the build; expected
+reports and the collection/baseline standing order are in `record.json`
+`next_action`.

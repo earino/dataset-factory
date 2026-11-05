@@ -1,0 +1,19 @@
+{
+  "id": "dvsa-mot-build-001",
+  "candidate": "dvsa-mot-next-test-outcome",
+  "image": "python:3.13-slim",
+  "command": [
+    "sh",
+    "/workspace/run.sh"
+  ],
+  "server_type": "cpx32",
+  "location": "hel1",
+  "cpus": 4,
+  "memory_mb": 8192,
+  "timeout_minutes": 100,
+  "lifetime_minutes": 140,
+  "max_disk_mb": 30000,
+  "max_artifact_mb": 8,
+  "what": "Construct the dvsa-mot-next-test-outcome artifact on a worker: download the 20 per-year DVSA/DfT anonymised MOT result files (2005-2016 txt.gz + 2017-2022 zips at data.dft.gov.uk, 2023-2024 zips at the DVSA S3 origin; the 2024 zip byte-pinned to the 2026-10-19 measurement), stream-parse class-4 rows of md5-sampled vehicles (~0.1%), join consecutive completed tests per vehicle, label the next test's initial failure (F/PRS vs P), features strictly from the prior test and earlier, splits by prior-test year (train 2009-2018 / eval 2019-2021 / holdout 2022-2023.11, right-censoring cutoff 2023-11-30), then run the gate 1.5.0 on the FULL artifact on the worker, --accept the exact bytes, and compute the pre-registered reference triad (post-acceptance). No performance metric exists before acceptance; the deciding model-vs-triad check runs in a later baseline job.",
+  "stopping_condition": "a failed build or gate stops the job with the reports preserved for collection; a failed gate is a recorded finding requiring diagnosis before any rebuild; no re-tuning of threshold, window, label or features after any score."
+}

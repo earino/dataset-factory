@@ -1,3 +1,66 @@
+## 2026-11-05 (18:35Z) - advancement session: dvsa-mot-next-test-outcome construction LAUNCHED (job dvsa-mot-build-001, server 174661065, cpx32/hel1, running) after a full local dry run; gate 1.5.0 passed 45/45 on synthetic three-era fixtures before any worker cycle was spent
+
+Candidate dvsa-mot-next-test-outcome (the brief's only (construct) candidate,
+verdict GO, licence class A / OGL v3.0), chosen per the recorded next action: no
+actionable packaged release exists (cqc and za-cct-substation remain
+awaiting_operator human waits, untouched). No remediation hold is active.
+
+- PREFLIGHT (coordinator, bounded): CKAN package_show re-read for both datasets
+  (both OGL v3.0); all 20 per-year result-file URLs confirmed (12 txt.gz
+  2005-2016, 6 DfT zips 2017-2022, 2023 zip mirrored on the DVSA S3 origin,
+  2024 S3 zip). MEASURED: data.dft.gov.uk IGNORES Range headers - a ranged probe
+  of dft_test_result_2019.zip streamed ~1.08 GB before I killed it; the probe
+  script was fixed to CKAN-only and DfT-era schemas are measured by the build
+  itself (observed headers recorded in summary.json; unmappable schema fails
+  loudly). No bulk data on the coordinator beyond that aborted probe.
+- DESIGN, pre-registered in record.json BEFORE launch (no score has ever existed
+  for this candidate): splits moved from next-test-year to PRIOR-test-year
+  windows (train priors 2009-2018 / eval 2019-2021 / holdout 2022-2023.11) -
+  the next test's date is label-side timing and cannot ship, so the gate cannot
+  check next-test-year windows; right-censoring cutoff 2023-11-30 excludes the
+  short-gap-retest tail wholesale (counted); population bounded to class 4 with
+  deterministic vehicle hash sampling (md5 mod 1000 == 0, ~0.1%); ABR/ABA
+  excluded and counted; defect-item features omitted in v1 (test_id measured NOT
+  unique, so the item join is ambiguous - documented); vehicle_id ships as a
+  declared high-cardinality feature and cluster key; row_key = vehicle + pair
+  ordinal. Triad pre-registered: persistence_prior_result, calendar_make_week,
+  vehicle_train_rate (+ degenerate global_rate; majority accuracy);
+  cluster-aware paired bootstrap, cluster = vehicle_id; headroom ONLY if the
+  model beats EVERY member with a 95% CI excluding zero and its own AUC CI sits
+  above 0.5; triad dominance -> DROP.
+- DRY RUN (scratch only): synthetic fixtures spanning all three file eras
+  (headerless pipe 2005-2008, headered pipe 2009-2016, single-member zips
+  2017-2023, 12-member pinned 2024 zip), with duplicate rows, ABR rows,
+  other-class rows and the censoring cutoff. build exit 0; the REAL gate on the
+  synthetic extract: 45/45 PASS; --accept ACCEPTED; score.py triad machinery
+  exercised end-to-end; the declared cross-row probe measured the blind-join
+  label exposure exactly as designed (synthetic eval 420/570 rows covered, 0
+  mismatches; a later pair's prior_initial_fail IS the earlier pair's label) -
+  access is isolated_rows, exposure recorded not denied. Two descriptor defects
+  were caught by the dry run and fixed BEFORE launch (prior_test_date needed
+  high-cardinality declaration; split_windows were not written).
+- LAUNCH: assemble-job OK (bundle sha256 1e57d7ce..., 225,280 B, gate bundled
+  from the skill at 4fab8a34...); worker plan OK (reservation 0.32 EUR, 4 h,
+  rate ceiling 0.08/h); LAUNCHED 18:33:02Z - server 174661065 (cpx32, hel1,
+  0.06924 EUR/h provider-measured), expires 19:53Z. November spend after
+  reservation: ~0.40 EUR of the 15 EUR construction allowance (0.08 afdb +
+  0.32 this job).
+- Record: status=ready (constructing is outside the check-candidate vocabulary;
+  the job ledger carries the in-flight state), jobs[0] = the launch receipt,
+  measurements.construction_preflight_2026_11_05 added, next_action = the
+  collection + baseline standing order. check-candidate dvsa OK;
+  check-candidate --all OK.
+
+Next action (a fresh session can carry it out): collect dvsa-mot-build-001
+(`sh scripts/scout-factory worker collect dvsa-mot-build-001`); require the
+gate's exit 0 on the FULL artifact and exact-byte --accept in the collected
+reports BEFORE quoting any number; then assemble + launch the baseline bundle
+(dvsa-mot-baseline-001: fetch artifact from the staging release, re-accept
+before any score, run the harness train.py/validate.sh unmodified, then the
+pre-registered deciding check vs every triad member on identical eval rows,
+cluster = vehicle_id). A failed gate is a recorded finding: diagnose first, at
+most one rebuild per structural defect. No re-tuning after any score.
+
 ## 2026-11-05 (17:24Z) - advancement session: afdb-project-cancellation constructed, qualified (gate 1.5.0 44/44), accepted and decided end-to-end on the worker - the pre-registered triad check returned NO demonstrated headroom (model 0.6394 vs country prior 0.5491, cluster-aware CI contains zero) -> DROPPED per the rule written before any score; both workers destroyed with provider read-back
 
 Candidate afdb-project-cancellation, chosen per the brief's actionable list (freshly

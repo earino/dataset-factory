@@ -1,6 +1,6 @@
 {
  "id": "dvsa-mot-next-test-outcome",
- "status": "investigating",
+ "status": "ready",
  "verdict": "go",
  "created_at": "2026-10-19T17:00:41.144098+00:00",
  "domain": "vehicle roadworthiness testing / recurrent inspection outcomes",
@@ -41,8 +41,8 @@
   "Publisher caveats to carry onto any release, read from the CKAN notes 2026-10-19: 'This data set comes from data held by the Driver and Vehicle Standards Agency (DVSA). It is not classed as an official statistic'; the 2018 MOT regime change affected the information presented; the 2017 file was revised in June 2022 to include missing test results.",
   "Vehicle identity is pseudonymised by the publisher (vehicle_id is a pseudonym over registration+VIN) - measured in the row sample; no personal data ships."
  ],
- "construction_script": null,
- "split_strategy": "Temporal by the NEXT test's year (the label year): train next-tests 2010-2018, eval 2019-2021, holdout 2022-2024; tests 2005-2009 usable only as prior-history priming, never as labelled rows. Measured anchor (2024-08 month prefix, 34,924 rows): initial-fail (F+PRS) 22.1%, clean-pass 77.3%, ABR+ABA 0.55% - both classes amply present every month. Positives cluster by vehicle (19,328 distinct vehicle_ids in the 34,924-row prefix; multiple tests per vehicle per month are normal), so the vehicle is the clustered unit and vehicle_id must NOT be the runner id column: the row id is the unique next-test key, prior-history features are precomputed at construction, and the raw vehicle pseudonym ships only as a declared high-cardinality column if at all.",
+ "construction_script": "candidates/dvsa-mot-next-test-outcome/source/build.py (job dvsa-mot-build-001)",
+ "split_strategy": "Temporal on the PREDICTION INSTANT (the prior completed class-4 test's date, the latest shipped knowable date): train priors 2009-01-01..2018-12-31, eval 2019-01-01..2021-12-31, holdout 2022-01-01..2023-11-30. CHANGED from the original next-test-year windows (train next-tests 2010-2018 / eval 2019-2021 / holdout 2022-2024) BEFORE any construction or score: the gate checks split windows against the declared time_column, and the next test's date is label-side timing information that cannot ship, so next-test-year windows are unverifiable from the rows; prior-year windows keep every check coherent with available data (label years shift ~+1, boundary lead-time overlap documented). Right-censoring cutoff: priors on/after 2023-12-01 are excluded wholesale (counted) so no row needs a next test beyond the 2024-12 data end - the excluded tail is exactly where short-gap post-failure retests would otherwise survive an annual-cycle censoring and bias prevalence. Population bounds (all pre-registered before any score): class 4 only (both sides of every pair; other classes counted and skipped), vehicles deterministically hash-sampled md5(vehicle_id) mod 1000 == 0 (~0.1%, outcome-independent, fixed before any split), completed tests only (ABR/ABA <0.6% measured - excluded from both sides and counted), pairs are consecutive completed class-4 tests in (test_date, completed_date, file order) after dedup of exact duplicate projected rows (test_id is NOT unique - measured 2026-10-19). Tests 2005-2008 are prior-history priming only. vehicle_id ships as a declared high-cardinality feature and is the event/cluster key; the runner id column is row_key (vehicle_id + pair ordinal, unique by construction).",
  "measurements": {
   "zip_shape_2026_10_19": {
    "method": "ranged HTTP reads only (zip central directory + partial member decompression; ~14 ranged requests, ~4.5 MB transferred for the whole measurement)",
@@ -52,13 +52,42 @@
   "prefix_base_rate_2026_10_19": "First 4 MB of test_result_202408.csv = 34,924 rows: P 27,026 (77.3%), F 6,190 (17.7%), PRS 1,516 (4.3%), ABR 157, ABA 35 -> initial-fail 22.1%, final-fail 17.7%. test_type: NT 29,058 / RT 5,866. test_class_id: 4 -> 32,073; 7 -> 1,911; 2 -> 734; 1 -> 149; 5 -> 53; 3 -> 4. 19,328 distinct vehicle_ids.",
   "key_uniqueness_warning_measured": "test_id is NOT unique: 6,336 test_id values appear more than once within the one-month prefix (top test_id 1934795005 appears 36 times; the file's first two rows are byte-identical). Construction must define a total order and dedup explicitly - keying or paging on test_id alone would repeat or drop rows.",
   "cross_check_against_published_summary_products": "Prefix initial-fail 22.1% / final-fail 17.7% (August 2024, all classes, predominantly class 4) against the publisher's DVSA/MOT/01: FY2025-26 classes 3&4 initial 27.51% / final 22.30%, classes 1&2 13.40%, class 7 34.00%. Same magnitude and class ordering (August is a historically lenient month and the prefix mixes classes); no contradiction.",
-  "extraction_cost": "Measured on the coordinator class: the whole shape measurement was ~14 ranged requests / ~4.5 MB / seconds. Construction is worker-scale: 1.53 GB compressed per year (2024 measured; other years labelled estimates) and ~7.7 GB uncompressed per year, so a 2010-2024 build is roughly 23 GB download and ~115 GB uncompressed processing - ESTIMATE derived from the single measured year; re-measure one more year on the worker before committing to the full window. Bounding to class 4 plus adjacent classes cuts this sharply."
+  "extraction_cost": "Measured on the coordinator class: the whole shape measurement was ~14 ranged requests / ~4.5 MB / seconds. Construction is worker-scale: 1.53 GB compressed per year (2024 measured; other years labelled estimates) and ~7.7 GB uncompressed per year, so a 2010-2024 build is roughly 23 GB download and ~115 GB uncompressed processing - ESTIMATE derived from the single measured year; re-measure one more year on the worker before committing to the full window. Bounding to class 4 plus adjacent classes cuts this sharply.",
+  "construction_preflight_2026_11_05": {
+   "source_access": "CKAN package_show re-read 2026-11-05 (both datasets OGL v3.0): DfT package carries 40 resources including all 20 per-year RESULT files - test_result_2005..2016.txt.gz and dft_test_result_2017..2022.zip at data.dft.gov.uk/anonymised-mot-test/test_data/, dft_test_result_2023.zip mirrored at the DVSA S3 origin, MOT+testing+data+results+(2024).zip at the DVSA S3 origin. Failure-item files exist per year but are NOT used in v1: they join by test_id, which is measured NOT unique (6,336 repeat values in one month's prefix), so the join is ambiguous; the reduction is documented, not silent.",
+   "range_header_finding": "MEASURED 2026-11-05: data.dft.gov.uk IGNORES Range headers - a ranged probe of dft_test_result_2019.zip streamed ~1.08 GB before being killed; the coordinator-side probe was aborted and no DfT bulk transfer happens on the coordinator. Consequence: DfT-era schemas (2005-2022) cannot be pre-measured from the coordinator and are measured BY the build itself, which records every observed header/delimiter in summary.json and fails loudly on an unmappable schema. The DVSA S3 origin answers ranged reads (2026-10-19 measurement unchanged).",
+   "vintage_pin": "The 2024 zip is byte-pinned to the 2026-10-19 measurement: 1,531,265,132 bytes, 12 monthly members test_result_202401..202412.csv, 15-column header verified verbatim; the build asserts all three and refuses on drift. The other 19 files were never fetched before, so the build RECORDS their sha256 as the construction vintage pin (a rebuild must match).",
+   "dry_run_2026_11_05": "Full build+gate+accept+score machinery exercised on synthetic fixtures spanning all three file eras (headerless pipe 2005-2008, headered pipe 2009-2016, single-member zips 2017-2023, 12-member pinned 2024 zip), including duplicate rows, ABR rows, other-class rows and the censoring cutoff. Gate 1.5.0: 45/45 PASS on the synthetic extract; --accept ACCEPTED; the declared cross-row probe measured the blind-join exposure (synthetic eval coverage 420/570 rows, 0 mismatches - a later pair's prior_initial_fail equals the earlier pair's label by construction, which is exactly the exposure the probe exists to measure); access is isolated_rows. Fixture numbers are NOT findings and are never quoted.",
+   "pre_registered_triad": "Deciding members (written before any construction or score, mirrored in source/score.py): persistence_prior_result (the prior test's own initial-fail flag - the last observed outcome), calendar_make_week (train-estimated rate per make x ISO week-of-year, make then global fallback), vehicle_train_rate (train-estimated rate per vehicle_id - the panel identity prior). Supplementary: global_rate (degenerate, Brier only), majority_class accuracy. DECIDING RULE: headroom ONLY if the full model beats EVERY deciding member with a cluster-aware paired bootstrap 95% CI excluding zero in the model's favour AND the model's own cluster-bootstrap AUC CI lies entirely above 0.5; triad dominance -> DROP. Clusters = vehicle_id. Per-prior-year reporting mandatory (May-2018 regime change; 2020-21 pandemic test extensions).",
+   "schema_risk": "The 2005-2022 file schemas are unmeasured until the build runs (Range ignored at DfT). The build maps by header name with a positional fallback for headerless eras, asserts test_result values within {P,F,PRS,ABR,ABA}, requires a non-zero class-4 sampled row count per year, and records every observed header; an unmappable schema fails the job loudly with the evidence in the collected logs (one bounded worker cycle at risk, accepted deliberately)."
+  }
  },
- "jobs": [],
+ "jobs": [
+  {
+   "id": "dvsa-mot-build-001",
+   "launched_at": "2026-11-05T18:33:02Z",
+   "server_id": 174661065,
+   "server_type": "cpx32",
+   "location": "hel1",
+   "ipv4": "2.29.159.168",
+   "provider_hourly_eur": "0.06924",
+   "reservation_eur": "0.32",
+   "bundle_sha256": "1e57d7ceee039a1932e2fd1c33288c26c68a0d3f71e30c2ebf9288f10b746c2a",
+   "what": "construct -> gate 1.5.0 on the full artifact on the worker -> exact-byte --accept -> pre-registered reference triad; no performance metric before acceptance",
+   "status": "running",
+   "expected_reports": [
+    "summary.json",
+    "qualification-dvsa-mot-next-test-outcome.json",
+    "acceptance-dvsa-mot-next-test-outcome.txt",
+    "references-dvsa-mot-next-test-outcome.json"
+   ],
+   "recorded_at": "2026-11-05T18:34:32.697745+00:00"
+  }
+ ],
  "artifacts": [],
  "rejection_reason": null,
  "review": null,
- "next_action": "GO to construction (advancement session owns it). Construction step: on a worker, download per-year results and failure-item zips for the chosen window (2010-2024), sort by (vehicle_id, test_date, completed_date) for a total order and dedup explicitly (test_id repeats are measured), join each vehicle's consecutive tests, label next-test initial-fail (F/PRS positive, P negative, ABR/ABA resolved and documented), features strictly from the previous test and earlier (static vehicle attributes + history including mileage deltas and prior defect categories from the item files), exclude every next-test field and its defect items from the shipped columns, freeze train next-year 2010-2018 / eval 2019-2021 / holdout 2022-2024, declare vehicle_id as high-cardinality (never the runner id column; row id = unique next-test key), pin the DVSA/MOT/01 aggregate rates as the cross-check fixture, then run the qualification gate on the worker over the full artifact.",
+ "next_action": "Collect dvsa-mot-build-001 (worker cpx32, hel1). Expected /output reports: summary.json (per-file receipts + population + per-year tables), qualification-dvsa-mot-next-test-outcome.json (gate 1.5.0), acceptance-*.txt, references-*.json (pre-registered triad, post-acceptance). Require gate exit 0 on the FULL artifact on the worker and exact-byte --accept BEFORE quoting any number. Then assemble + launch dvsa-mot-baseline-001 (baseline bundle: fetch the artifact from the staging release, re-accept against the bundled gate report BEFORE any score, run the benchmark's train.py/validate.sh unmodified, then the pre-registered deciding check: model vs every triad member, cluster-aware paired bootstrap, cluster = vehicle_id). A failed gate is a recorded finding: diagnose first, at most one rebuild per structural defect. No re-tuning of threshold, window, label or features after any score.",
  "jurisdiction": {
   "country": "GB",
   "region": "Europe",
