@@ -1,4 +1,65 @@
-## 2026-11-05 (19:55Z) - advancement session: dvsa-mot-build-001 FAILED by its pre-registered fail-loud rule at an undocumented 2015 source value ('ABRVE'); diagnosed from collected evidence, worker destroyed with read-back; repair pre-registered as dvsa-mot-build-002; no gate run, no acceptance, no triad, no score - nothing quotable
+## 2026-11-05 (21:55Z) - discovery tick (South & South-East Asia): cpcb-aqi-exceedance READY - the reopen next_action's discovery-owned steps executed end-to-end (full 2019-2025 panel daily counts measured anonymously in 166 API queries, splits re-cut ONCE before any score on a measured 2025 export hole, threshold bound to CPCB's own AQI instrument, Delhi severe-day fixture confirmed on both sides, OpenAQ enumerated and ruled out by a 2023-2024 gap); XKDR full-key bulk path recorded as MISSING ACCESS (email signup); watch triggers re-checked; no construction, no score
+
+Discovery-only session, South & South-East Asia focus (India data.gov.in/IMD/CPCB, Indonesia BPS,
+Philippines PSA, Thailand, Vietnam, Malaysia). No construction, qualification, packaging,
+publication or advancement; no worker launched (EUR 0); anonymous coordinator probes + one
+supported-browser read of the XKDR signup page only; no release byte, tag, manifest or
+destination touched.
+
+- cpcb-aqi-exceedance (IN, investigating -> READY; the only lead worked, chosen because every
+  other regional record carries a recorded verdict/blocker and this record's next_action was
+  discovery-owned). Step 1 measured WITHOUT the email-gated full key: the XKDR demo tier's
+  "2024 bulk files only" restriction is enforced on /v1/files (2019 Range GET 403, 2024 -> 206)
+  but NOT on /v1/measurements (2019 monthly 200, x-tier: demo) - so the full-panel daily class
+  counts ran anonymously: 166 requests, 716,750 station-days, 84 months x 2 station-batches,
+  zero truncated responses (probe/probe_cpcb_full_window_2026_11_05.py). MEASURED 2025 EXPORT
+  HOLE: no cpcb pm25 rows for 2025-01..03 or 2025-10..12, partial Apr-Aug, one day 2025-09-01
+  -> the proposed holdout-2025 was a winter-free 1.74% tail, so splits were RE-CUT once before
+  any score (afdb precedent; both cuts preserved): train 2019-2022 339,557 station-days / 63,735
+  positives (18.8%), eval 2023 154,003 / 20,773 (13.5%), holdout 2024 175,624 / 19,254 (11.0%);
+  the 2025-04..09 tail (47,566 / 829 / 329 stations) excluded and counted. Threshold bound to the
+  publisher's own instrument (CPCB About-AQI PDF + AQI-Calculator.xlsx: PM2.5 24-hr Poor band
+  lower edge 91 ug/m3). Known-event fixture bound to CPCB's Daily AQI Bulletin 2024-11-18
+  (Delhi Severe 494, PM2.5, 36/39 stations) AND confirmed in the measured panel (36/36 complete
+  Delhi station-days TRUE, means 235-731 ug/m3; the 2 exceptions are n=11/n=9 incomplete days).
+  OpenAQ enumerated anonymously (Wayback capture of v2 locations country=IN + S3 year-dirs for
+  all 937 cpcb pm25 locationids): per-year 2019:203 .. 2022:365, 2023:0, 2024:0, 2025:332 - a
+  decisive ingestion gap means OpenAQ cannot carry the re-cut eval/holdout years; XKDR is the
+  only channel for all three windows. Full free XKDR key needs an EMAIL+NAME signup (Cloudflare
+  Turnstile; form read in the supported browser) - no project email identity exists, recorded
+  as MISSING ACCESS with three operator options; the anonymous measurements-API batching path
+  stays the default construction channel. Five contracts reconciled in record.review (timing =
+  retrospective scope with the current-vintage and trailing-completeness assumptions declared);
+  record.next_action carries the ordered construction handoff. check-candidate OK.
+- Watch triggers re-checked (all recorded in the four records' measurements): IMD free list
+  unchanged (aggregate-only; park stands); BMKG hosts reachable, no new bulk channel (park
+  stands, operator options unchanged); data.gov.vn still dark in DNS (park stands); data.gov.in
+  still refused from every project vantage (operator worker-location step unchanged). BPS and
+  PSA OpenSTAT not re-probed (recorded steady-state aggregate-only drops, reopen conditions not
+  fired); Singapore catalog diff not run (recent enumeration, quarterly cadence). No padding
+  with US sources.
+- Session defects recorded honestly: a transient XKDR 401 window 20:33-20:44Z (same key 200
+  before/after; separate standing Cloudflare 403 error-1010 on the literal Python-urllib UA);
+  my own fetch bug (hardcoded Feb-29 -> HTTP 400 end-must-be-date) was first mis-diagnosed as
+  origin flakiness, then pinned by the 400 body and fixed (calendar.monthrange).
+- Hygiene: check-candidate --all rc=0 (135 records; ready 17, live 52, live non-US 46/52 = 88%);
+  suite python3 -m unittest discover -s tests 723/723 OK (33.0 s); discovery-coverage rc=0.
+  candidates/fenz-incident-data/ left untracked for its owner (concurrent writer, not this
+  session). No credentials in any probe (all anonymous; the demo key is the publisher's own
+  front-page constant); scratch rows file stays in /opt/data/cache/scratch (auto-pruned);
+  retained evidence committed under candidates/cpcb-aqi-exceedance/probe/.
+
+Next action (advancement owns it): construct cpcb-aqi-exceedance per record.next_action -
+worker build from the pinned XKDR export via anonymous demo-key batching (or a full key if the
+operator supplies one), splits train 2019-2022 / eval 2023 / holdout 2024, then the standing
+order (full-artifact gate 1.5 -> exact-byte --accept -> pre-registered triad deciding rule ->
+reporting; holdout never opened in dev). The operator's open items from this tick: the XKDR
+email/key decision (optional - the anonymous path works) and the unchanged data.gov.in
+worker-location decision.
+
+
+
+## 2026-11-05 (19:55Z) - advancement session: dvsa-mot-build-001 FAILED by its pre-registered fail-loud rule at an undocumented 2015 source value ('ABRVE'); diagnosed from collected evidence, worker destroyed with provider read-back; repair pre-registered as dvsa-mot-build-002; no gate run, no acceptance, no triad, no score - nothing quotable
 
 Candidate dvsa-mot-next-test-outcome (the brief's build queue; chosen because its
 construction job dvsa-mot-build-001 was launched at 18:33:02Z by the previous session

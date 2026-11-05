@@ -141,3 +141,97 @@ Independent live corroboration (readable without the blocked route), 2026-11-04:
 Probe outputs retained: probe/out/{xkdr_meta_2026_11_04.json, xkdr_stations_2026_11_04.json,
 pm25_cpcb_stations_2026_11_04.json, xkdr_pm25_monthly_2024_2026_11_04.json,
 wayback_resource_page_lic_extracts_20261104.txt}; script: probe/probe_cpcb_reopen_2026_11_04.py.
+
+## 2026-11-05 session (regional tick: South & South-East Asia) - steps 1-4 of the reopen next_action EXECUTED; full-panel daily counts measured, splits re-cut on a measured 2025 export hole, threshold bound, fixture confirmed; status -> READY
+
+### XKDR channel, measured (all anonymous; scripts probe/probe_cpcb_full_window_2026_11_05.py + probe_sea_watch_triggers_2026_11_05.py)
+- Transient 401 window 20:33-20:44Z: every request (incl. /v1/meta) answered 401 with the same
+  front-page demo key that returned 200 before and after; no rotation (page byte-identical), no
+  cookies involved. Separately and standing: Cloudflare 403 "error code: 1010" for the literal
+  'Python-urllib' UA only - curl, curl-UA-urllib, custom UA and the browser all pass.
+- Demo-tier boundary is /v1/files, not /v1/measurements:
+    GET /v1/files/v1/measurements/year=2019/month=01/data.parquet  (Range 0-1023) -> 403
+    GET /v1/files/v1/measurements/year=2024/month=11/data.parquet (Range 0-1023) -> 206
+    GET /v1/files -> 200: 207 monthly parquets, 409,568,028 B / 196,521,834 rows, plus
+    v1/stations.parquet (27,232 B), v1/parameters.parquet (1,366 B)
+    GET /v1/measurements?...start=2019-01-01&end=2019-01-31&agg=monthly -> 200, x-tier: demo,
+    x-truncated: false, 144 station-months -> the front-page "2024 bulk files only" prose
+    describes /v1/files; full-history QUERY access is anonymous at the demo tier.
+- FULL-PANEL RUN (84 months x 2 station-batches, agg=daily, PM2.5, cpcb_caaqm only): 166 requests,
+  ~500 s wall on the 4-vCPU coordinator, 716,750 station-days streamed, zero truncated responses.
+  One fetch defect fixed mid-run: hardcoded Feb-29 produced end=2019-02-29 -> HTTP 400
+  {"error":"request_error","detail":"end must be YYYY-MM-DD"} (the first 'transient 400'
+  diagnosis was wrong - it was this bug; replaced with calendar.monthrange).
+  Output: probe/out/xkdr_daily_counts_2019_2025_2026_11_05.json (per-month, state-month triples,
+  both window cuts). The earlier zero-count artifact from the 401 window was deleted, not kept
+  as evidence (its content is this paragraph).
+
+### The 2025 export hole -> one re-cut BEFORE any score (measured, both cuts preserved)
+- Monthly all-station queries (parameter=PM2.5&agg=monthly): 2025-01 -> 5 rows, 2025-03 -> 4,
+  2025-10 -> 2, 2025-12 -> 2, 2026-01 -> 2 (the 2-5 rows are the 5 us_embassy monitors - the
+  cpcb stream has none). Panel months present: 2025-04..2025-08 (~320 stations, 9.2-9.7k
+  station-days/month) plus ONE day 2025-09-01 (294 station-days). NO cpcb pm25 rows for
+  2025-01..03 or 2025-10..12. The 2026-11-04 "stream effectively ends 2025-12" reading was wrong
+  in both directions: it ends 2025-09-01 AND Jan-Mar 2025 is missing.
+- Consequence: the proposed holdout-2025 would be a winter-free 1.74%-prevalence tail.
+  RE-CUT (the afdb no-score precedent): train 2019-2022 / eval 2023 / holdout 2024.
+  Measured: train 339,557 station-days / 63,735 positives (18.77%) / 390 stations / 85 state-x-season
+  cells / 1,267 positive days; eval 2023 154,003 / 20,773 (13.49%) / 511 / 90 / 357;
+  holdout 2024 175,624 / 19,254 (10.96%) / 529 / 92 / 358. Excluded tail 2025-04..09:
+  47,566 / 829 (1.74%) / 329 stations - counted, declared, never scored.
+
+### Threshold bound to the publisher's instrument + fixture confirmed on both sides
+- CPCB 'About National Air Quality Index' PDF (cpcb.gov.in/displaypdf.php?id=bmF0aW9uYWwtYWly
+  LXF1YWxpdHktaW5kZXgvQWJvdXRfQVFJLnBkZg==, 298,817 B, retained probe/out/about_aqi.pdf):
+  PM2.5 24-hourly breakpoints Moderately Polluted (101-200) 61-90 ug/m3; Poor (201-300) 91-120;
+  Very Poor 121-250; Severe 250+. Corroborated by CPCB's AQI-Calculator.xlsx
+  (app.cpcbccr.com/ccr_docs/AQI-Calculator.xlsx): 61.0-90.0 -> 101-200; 91.0-120.0 -> 201-300.
+- CPCB Daily AQI Bulletin 2024-11-18 (cpcb.gov.in/upload/Downloads/AQI_Bulletin_20241118.pdf,
+  52,671 B, retained): Delhi Severe 494, prominent pollutant PM2.5, 36/39 stations; Bahadurgarh
+  453, Bhiwadi 447, Dharuhera 447, Ghaziabad 438, Bhiwani 429, Churu 401 Severe; Faridabad 367
+  Very Poor. MEASURED from the panel rows: 38 Delhi cpcb station-days on 2024-11-18; all 36
+  complete ones (n>=18h) label TRUE (means 235.7-731.5 ug/m3); the 2 exceptions are incomplete
+  days (n=11, n=9) - matching the bulletin's 36/39 participating stations. Caveat recorded: the
+  bulletin averages 4PM-4PM and takes the worst sub-index - a category-level cross-check, not a
+  numeric reproduction. Bulletin 2024-11-17 retained alongside.
+
+### OpenAQ archive enumerated (anonymous) - decisive 2023-2024 gap
+- Wayback capture 20230425092626id_ of api.openaq.org/v2/locations?limit=10000&country=IN
+  (3,459,137 B valid JSON; the plain fetch returns a 9,058 B wrapper - the id_ modifier is
+  required): 1,765 IN locations; 989 government; 978 source 'Central Pollution Control Board'
+  (312 also 'data.gov.in'); 937 with pm25 (ids 13..363603); the 5 embassy monitors appear as
+  'U.S. Department of State India - *' (corroborating the us_embassy exclusion); meta license
+  'CC BY 4.0d'.
+- S3 year-dir enumeration of all 937 (one LIST each): 447 have any archive. Per-year location
+  counts 2015:7 2016:40 2017:40 2018:182 2019:203 2020:270 2021:324 2022:365 2023:0 2024:0
+  2025:332 2026:327; 316 follow 2022 -> (gap) -> 2025; ZERO have any 2023/2024 files.
+  => OpenAQ's India ingestion stopped ~Oct 2022 and resumed 2025; it cannot carry eval-2023 or
+  holdout-2024 and has no 2023 at all. XKDR is the only channel carrying all three re-cut
+  windows. Evidence: probe/out/{openaq_in_locations_2023_04_25_compact.json,
+  openaq_cpcb_937_year_coverage_2026_11_05.json}; scripts probe/probe_openaq_*_2026_11_05.py.
+
+### Full free XKDR key - MISSING ACCESS (operator)
+- Signup page read in the supported browser: EMAIL (required), NAME (required), affiliation and
+  purpose (optional), accept_terms checkbox ('I will credit the data sources (CPCB and the US
+  Department of State) and XKDR Forum in any publication' - consistent with our attribution
+  practice), Cloudflare Turnstile; 'Free and instant... your key appears on the next page.'
+- No project email identity exists on this host (himalaya not configured; no recorded convention
+  for third-party signups), so the key was not obtainable this session. Options recorded for the
+  operator: (a) supply/authorize an email for the signup, (b) provide a full key directly, or
+  (c) leave construction on the anonymous measurements-API batching path (viable and measured).
+
+### Regional watch triggers (probe/probe_sea_watch_triggers_2026_11_05.py, all anonymous)
+- IMD free list (dsp.imdpune.gov.in/home_freedataaccess.php): HTTP 200, 45,487 B; 'station' and
+  'gridded' absent from the free list - aggregate products only; park stands.
+- BMKG repogempa.bmkg.go.id/eventcatalog and data.bmkg.go.id: HTTP 200 both; no new anonymous
+  bulk historical channel evident; park stands (operator options a/b/c unchanged).
+- data.gov.vn / www.data.gov.vn: getent rc=2 both - still dark in DNS; park stands.
+- data.gov.in: www 503, api TCP-refused (Errno 111) - unchanged from 2026-11-04; the operator's
+  worker-location decision is the only unlock; park stands.
+- BPS and PSA OpenSTAT: NOT re-probed - both carry recorded steady-state task-shape drops
+  (aggregate-only statistics publishers) with reopen conditions that have not fired.
+- Singapore data.gov.sg catalog diff: NOT run this tick (the recorded quarterly enumeration is
+  ~467 requests and the last full enumeration is recent); unpark trigger unchanged.
+
+Five contracts reconciled in record.review; status investigating -> ready (the buffer's ready
+candidate for this region). Construction handoff order in record.next_action.
