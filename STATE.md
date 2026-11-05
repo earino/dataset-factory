@@ -1,3 +1,100 @@
+## 2026-11-05 (15:15Z) - advancement session: nws-tornado-warning-verification preflight DONE (both anchors reproduce EXACTLY; the recorded Arkansas fixture was contradicted by measurement and corrected BEFORE launch from the paper's own text + the IEM emergency archive; product_text/IBW fetch EXCLUDED on the measured 500-warning sample) and nws-tornado-build-001 LAUNCHED (server 174626604) - still running at the run-time budget stop, the running job is the recorded handoff
+
+Scheduled advancement session. Release work first: no packaged candidate is
+actionable (za-cct v2026.11, cqc and ns-bwa all stay `awaiting_operator:
+true` - human waits, untouched). No remediation hold is active. The job
+ledger held no non-terminal jobs at session start. From the operator's
+actionable list, nws-tornado-warning-verification was chosen per the
+pre-registered SESSION DECISION 2026-11-05 in its own record (the prior
+session recorded the plan; this session executed it). ibama stays blocked on
+the operator's anchor-scope decision; austender licence-blocked;
+za-municipal-audit not launchable; acnc's next step is the operator's
+choice.
+
+- PREFLIGHT (construct-only, no performance metric anywhere; coordinator
+  bounded per the recorded plan; probe scripts + JSON outputs retained in
+  candidates/nws-tornado-warning-verification/probe/):
+  - ANCHORS REPRODUCE EXACTLY: 2013 = 1,832 raw features / 441 verified /
+    94 WFOs / 170 active days / 100 verified days / FAR 0.7593; 2023 =
+    2,531 / 656 / 96 / 201 / 115 / 0.7408. The 2023 file changed bytes
+    (28,389,049 -> 28,383,984) while every count held: live recomputation,
+    stable counts - this is the measured current-vintage basis now declared
+    in quality.json. cow response shape is events.features; the publisher's
+    own stats block agrees with the raw feature counts in both anchor years.
+  - FIXTURE CORRECTED BEFORE LAUNCH (evidence-based repair of the record's
+    expectation, not a launch under a wrong pin): the record said the
+    2022-04-16 storm's warnings "must read verify=false" and attributed the
+    false-alarm stat to "Keylon 2025". The paper at arXiv 2510.25011 is
+    actually Wolff et al. 2025 (Keylon 2025 is the performance.commerce.gov
+    FAR KPI it cites), and its own words are "3 tornado emergency false
+    alarms, all of which were issued for the same nontornadic thunderstorm
+    in northern Arkansas on 16 April 2022" with "false real-time reports of
+    tornado damage". The IEM tornado-emergency archive the paper used
+    (api/1/nws/emergencies.json) identifies the three warnings: LZK #49
+    (00:09Z), LZK #50 (00:45Z), MEG #40 (01:05Z, AR) - one storm crossing
+    the LZK/MEP boundary. MEASURED cow verdicts: TRUE / TRUE / FALSE - the
+    false real-time tornado LSrs that later surveys reclassified as
+    straight-line wind REMAIN in the LSR archive and verify two of the
+    three. Consequence recorded: the task label is REPORT-based (LSR
+    archive), the paper's 0.03 emergency FAR is SURVEY-based (NCEI
+    tracks); the 89-emergency cross-check is reframed as the documented
+    semantics caveat, NOT an expected reproduction. The build now asserts
+    the measured verdicts (1/1/0) plus the Joplin known-positive event (SGF
+    2011 #31 22:17Z and #32 22:48Z verify=1, measured on the 2011-05-22 day
+    pull; #28/#29/#30 recorded as measured context only).
+  - DUPLICATE STRUCTURE MEASURED: cow emits byte-identical duplicate
+    features (2013 FWD #33 x2; Joplin #28/#30 x2) and its own stats count
+    them. Build rule pinned: drop byte-identical duplicates; same-key
+    disagreeing verify refuses the build; raw feature counts are the
+    anchor unit.
+  - product_text/IBW FETCH EXCLUDED from v1 on the measured 500-warning
+    sample: 500/500 OK, p50 458 ms / 1,598 B -> ~40k fetches >= 61 min at
+    5 workers, over the 60-min worker lifetime on fetches alone. Decision
+    recorded either way per the plan; a v2 should probe IEM's bulk AFOS
+    archive channel instead.
+- CONSTRUCTION SOURCE WRITTEN (candidates/.../source/): build.py
+  (construct only: 17 year-pulls 2008-2024, dedupe rule, hard anchors, 5
+  per-warning fixtures, row ledger, stats cross-checks, quality.json with
+  the full evaluation_contract - use=retrospective_research,
+  access=isolated_rows, vintage=as_of with the declared current-vintage
+  assumption, selection=prediction_time, training_label_timing=unverified,
+  cross_row_audit with empty probes + the no-cross-row-feature rationale;
+  label-source/post-hoc columns excluded from every CSV), run.sh (fixed
+  construct -> full-artifact gate -> exact-byte --accept -> score.py
+  order), score.py (references on identical eval rows only: majority,
+  persistence with the declared 30-min outcome-availability assumption,
+  calendar/identity train-only logit priors, per-issue-year tables,
+  day-clustered paired bootstrap; holdout never opened), job.json +
+  bundle.json. LOCAL DRY RUN green on the cached anchor years (2013 ->
+  1,831 rows / 441 positives / 100 positive days; 2023 -> 2,531 / 656 /
+  115; construct-only, no gate run locally - the worker's full-artifact run
+  is authoritative). score.py's first execution was the synthetic smoke
+  test (test_score_smoke.py) - machinery green, no real-data figure exists
+  on this host. DEVIATION documented in the record: the full model (stock
+  runner) is a separate baseline job per the za-cct/cqc pattern, so the
+  pre-registered triad completes in two jobs; the deciding rule is applied
+  in the record once the runner number exists.
+- nws-tornado-build-001 LAUNCHED 2026-11-05T14:38:05Z (server 174626604,
+  cx23/hel1, EUR 0.04 reservation, canonical gate 4fab8a34 bundled,
+  timeout 45 min, lifetime 60 min). STILL RUNNING at the 15:12Z run-time
+  budget stop, 34 min in. THE RUNNING JOB IS THE HANDOFF: record.next_action
+  now orders collect -> verify the ladder in the collected bytes (gate
+  ok:true -> ACCEPTED -> references) -> destroy with provider read-back ->
+  the full-model baseline job -> the pre-registered deciding rule
+  (unchanged: headroom ONLY if the full model beats EVERY reference on
+  identical eval rows with the day-clustered paired bootstrap 95% CI
+  excluding zero in the model's favour; reference dominance -> DROP;
+  inconclusive -> HOLD; no re-tuning after any score). If it expired
+  uncollected: worker status reconciles it deleted, then the ONE changed
+  retry as nws-tornado-build-002.
+- Checks: check-candidate nws OK after every record update; check-candidate
+  --all rc=0 (134 records); suite python3 -m unittest discover -s tests
+  723/723 OK (34.1 s). No qualification, acceptance or score exists yet on
+  any artifact - nothing measured is quotable beyond the preflight
+  measurements above. candidates/fenz-incident-data/ left untracked
+  (concurrent writer, not this session). No release byte, tag, manifest,
+  destination or visibility touched.
+
 ## 2026-11-05 (13:19Z) - discovery tick (Latin America): run-time budget stopped the session at queue review, before any source probe - no lead opened, no verdict; the tick's durable output is the measured LatAm queue state plus a prioritized shortlist with exact first probes (primary: Brazil SINAN/dengue municipal-week exceedance; reuses the datasus-sinasc TABNET + CKAN licence-evidence recipe)
 
 Discovery-only session, Latin America focus (BR dados.gov.br/INPE/DATASUS, MX datos.gob.mx,
