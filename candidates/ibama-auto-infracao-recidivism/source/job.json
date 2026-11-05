@@ -1,0 +1,19 @@
+{
+  "id": "ibama-build-002",
+  "candidate": "ibama-auto-infracao-recidivism",
+  "image": "python:3.13-slim",
+  "command": [
+    "sh",
+    "/workspace/run.sh"
+  ],
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 4096,
+  "timeout_minutes": 45,
+  "lifetime_minutes": 60,
+  "max_disk_mb": 6000,
+  "max_artifact_mb": 96,
+  "what": "ONE-CHANGED-RETRY relaunch of ibama-build-001 (the repair this defect class is entitled to; no construction logic beyond the named cross-check changed). -001's fixture stage PASSED on the worker and the build refused at the TP_PESSOA_INFRATOR cross-check: 15 rows (0.002%) on the 2026-11-05 vintage disagree with the digit-based classification PER ROW, while the record's measured anchor is PER-YEAR AGGREGATE equality ('2023: PF 9,929 = cpf11 9,929; PJ 6,376 = cnpj14 6,376', ibama-probe-002) - the first build enforced a per-row rule the recorded evidence never measured, so the repair enforces the anchor exactly as measured (per-year aggregate, probe's own digit expressions, refusal names the offending years) and MEASURES the per-row disagreement instead (count + samples in summary.json; 15 rows is recorded as publisher data noise, not a source change). The retained fixture test now covers both sides: balanced label flips pass with the disagreement measured, an unbalanced flip fails the aggregate anchor loudly (seen red locally before this launch). Everything else is unchanged from -001: first construction of the READY candidate per the operator's actionable-build list; entity-instant panel, valid 11/14-digit normalized keys (LGPD: hashed, never raw), splits train 2005-2015 / eval 2016-2019 / holdout 2022-2025 by lavratura year with the 2026 tail right-censored at max-lavratura-minus-365d (counted), 2020-21 dip excluded as context but still labeling; prior-history features strictly earlier than the instant; cross-row contract declared access=isolated_rows with the two reverse-history probes the gate executes over the full artifact; standing order construct -> full-artifact gate 1.5 -> exact-byte accept -> reference triad BEFORE any model figure -> runner baseline; the deciding rule was pre-registered in the record BEFORE the first launch and is unchanged.",
+  "stopping_condition": "fixture, build, gate or acceptance failure -> collect diagnostics, diagnose, record; ONE rebuild per structural defect class is permitted, a second failure of the same class is a recorded blocker, never a blind retry. A reference-dominance outcome in score.py is a recorded measurement, not a retry trigger. The blob is a daily overwrite: a pinned-vintage change between plan and launch is recorded drift, not a failure."
+}

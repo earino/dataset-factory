@@ -1,0 +1,115 @@
+{
+  "job": {
+    "id": "ibama-build-001",
+    "candidate": "ibama-auto-infracao-recidivism",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 4096,
+    "timeout_minutes": 45,
+    "lifetime_minutes": 60,
+    "max_disk_mb": 6000,
+    "max_artifact_mb": 96,
+    "what": "First construction of ibama-auto-infracao-recidivism (ibama-build-001), the READY candidate from the 2026-10-30/11-04 Latin America ticks, per the operator's actionable-build list and the record's pre-registered next_action (construction owned by ADVANCEMENT, standing order construct -> full-artifact gate 1.5 on the worker -> exact-byte acceptance -> reference triad BEFORE any model figure -> runner baseline). Task: at the instant IBAMA issues an auto de infracao (lavratura) against an entity, predict whether the same entity (normalized CPF/CNPJ digits) receives another auto within the following 365 publisher-local days. Population: one row per (entity, auto) instant, valid 11/14-digit entity key, full 365-day label window inside the pinned vintage; splits by lavratura year train 2005-2015 / eval 2016-2019 / holdout 2022-2025 (2020-21 enforcement dip excluded as context but still labeling; the 2026 tail right-censored and excluded, counted). The build downloads the CURRENT daily export and pins it (the 2026-11-03 probe vintage sha256 4db18814... is a nearby-vintage REFERENCE: drift recorded, never asserted), normalizes entity keys to bare digits before joining/hashing (LGPD: raw identifiers never shipped), dedupes on SEQ_AUTO_INFRACAO with conflict-refusal, keeps Cancelado/Excluido/Substituido rows in the population (their current status is post-hoc and never shipped), and computes prior-history features strictly earlier than the instant. In-build anchors: TP_PESSOA classification cross-check (exact, fail-loud), independent SQL label recomputation (0 mismatches required), row-ledger reconciliation, both-classes-per-window, written-files-vs-declarations verification, and a synthetic-zip fixture test (labels at the 365/366-day boundaries, same-day successors, gap-window successors, punctuated-variant entity merging, censoring, ledger) that runs BEFORE the live source is touched. CROSS-ROW CONTRACT: the entity-instant panel is structurally self-answering under row joins (a T+365d re-autuacao is a later row's prior-history feature and its own existence answers the earlier row's label), so quality.json declares access=isolated_rows with two declared reverse-history probes the gate executes over the full artifact (next_auto_gap_recovery via days_since_prev_auto < 365, and the ABS-style prior-count-growth window probe); the exposure is expected, measured and recorded, and the enforced restricted protocol travels with the artifact (nz-ea lesson). Post-acceptance score.py computes the pre-registered reference triad on identical eval rows only (persistence recency/count/count-rate, identity entity-history and auto-count-history, calendar month-rate and calendar-identity, global-rate, majority-class accuracy) with cluster-aware paired bootstrap CIs by entity and per-eval-year structural reporting; the holdout is never opened. The deciding rule was pre-registered in the candidate record BEFORE this launch: the full runner-contract model (separate baseline job) must beat EVERY reference on identical eval rows for any headroom claim; a reference matching or beating the model with a CI excluding zero on the deficit side is 'no demonstrated headroom under this protocol' and drops the candidate per the wb-loan/unhcr-corridor precedent. NO performance metric is computed before exact-byte acceptance; run.sh stops each stage on failure and preserves diagnostics.",
+    "stopping_condition": "fixture, build, gate or acceptance failure -> collect diagnostics, diagnose, record; ONE rebuild per structural defect class is permitted, a second failure of the same class is a recorded blocker, never a blind retry. A reference-dominance outcome in score.py is a recorded measurement, not a retry trigger. The blob is a daily overwrite: a pinned-vintage change between plan and launch is recorded drift, not a failure.",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/ibama-auto-infracao-recidivism/source/build.py",
+        "bytes": 65856,
+        "sha256": "d34e02bf937d84253d9dee03339ea264cf4362b4c2b7bd29f8e8ad3dd7b952fc"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ibama-auto-infracao-recidivism/source/run.sh",
+        "bytes": 2843,
+        "sha256": "54f696dc37689a5de34b375d129ef8c53e3e583f959ec7914cff5fa20d47c90a"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/ibama-auto-infracao-recidivism/source/score.py",
+        "bytes": 18906,
+        "sha256": "ad30b4834aba77d9f6238b604c4b30b237cef6f337ad506e3d4015082f30ab28"
+      },
+      {
+        "bundled_as": "test_fixture.py",
+        "source": "candidates/ibama-auto-infracao-recidivism/source/test_fixture.py",
+        "bytes": 14495,
+        "sha256": "8c92fd5ae15238871f745c8d7151a5352c6151a465e0c6889422a5f9a70d3dc1"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 256000,
+  "source_sha256": "592f924bf0787b656dbeb41e36225e5be40cad0ae23004e8da964a9c46ce0231",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-05T06:35:48.258870+00:00",
+  "expires": 1793864148,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 174567305,
+  "known_hosts": "/opt/data/dataset-factory/.factory/ibama-build-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "ibama-build-001",
+    "status": "failed",
+    "uploaded": true,
+    "image_id": "sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1",
+    "image_digests": [
+      "python@sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1"
+    ],
+    "exit_code": 1,
+    "oom_killed": false,
+    "elapsed_seconds": 64.3,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 434858732,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-fabafe8395e97a243db1",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-fabafe8395e97a243db1/manifest.json",
+    "assets": [
+      {
+        "id": 712356136,
+        "size": 943,
+        "sha256": "e43c1bbcdc5cdb8a9981c47c93da7a9c569c68b8dde6a0f46ceeb49d5de76b6a"
+      },
+      {
+        "id": 712356215,
+        "size": 256000,
+        "sha256": "592f924bf0787b656dbeb41e36225e5be40cad0ae23004e8da964a9c46ce0231"
+      },
+      {
+        "id": 712356277,
+        "size": 1079,
+        "sha256": "f8d3f9170c55e79dfda886b4df565745724d4049b5c0aee9c53119c95a4610a1"
+      },
+      {
+        "id": 712356356,
+        "size": 7087,
+        "sha256": "e363370252093643a161d4042d6db94ad63355edf1592888114a2ceb1e1019b2"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-05T06:38:36.699902+00:00",
+  "deleted_at": "2026-11-05T06:41:30.981916+00:00"
+}

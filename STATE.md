@@ -1,3 +1,89 @@
+## 2026-11-05 (06:51Z) - advancement session: ibama-auto-infracao-recidivism construction attempted (ibama-build-001, -002); BOTH refused at the TP_PESSOA cross-check for the same defect class -> recorded BLOCKER per the pre-registered stopping condition, no third launch
+
+Scheduled advancement session. Release work first: za-cct v2026.11 and cqc stay
+`awaiting_operator: true` (human waits; untouched). No remediation hold is
+active. From the operator's actionable list, ibama-auto-infracao-recidivism
+(class A, advancement-owned, fully measured record) was chosen: acnc's next
+step is the operator's choice, austender is licence-blocked, za-municipal-audit
+is not launchable.
+
+- PREFLIGHT + PRE-REGISTRATION BEFORE ANY SCORE (record
+  `preflight_2026_11_05`): entrypoint review (rows chosen by the panel pass;
+  artifact written streaming per entity group; qualification = run.sh stage 2
+  over the full artifact; acceptance = stage 3; first performance metric =
+  score.py stage 4, after exact-byte acceptance, holdout never opened);
+  cross-row design declared access=isolated_rows with TWO reverse-history
+  probes the gate executes (next_auto_gap_recovery, prior_count_growth_365d) -
+  the entity-instant panel is structurally self-answering, the exposure is
+  measured not hidden (both probes shape-verified on a synthetic fixture:
+  probe 0 covered 3/1/3 rows with the one documented 365-day boundary mismatch,
+  probe 1 low-coverage as designed); the deciding rule (full runner model must
+  beat EVERY simple reference on identical eval rows; reference dominance with
+  CI excluding zero on the deficit side -> drop per the wb-loan/unhcr
+  precedent) was written into the record BEFORE the first launch.
+- CONSTRUCTION SOURCE WRITTEN (candidates/.../source/): build.py (construct
+  only: pinned live download, digit-normalized hashed entity keys (LGPD),
+  SEQ dedupe with conflict-refusal, entity-instant panel with prior-history
+  features, right-censoring at max-lavratura-minus-365d, SQL label cross-check,
+  row-ledger reconciliation), score.py (reference triad, cluster bootstrap by
+  entity), run.sh (fixture -> build -> gate -> accept -> references),
+  test_fixture.py (synthetic zip: 365/366-day boundaries, same-day and
+  gap-window successors, punctuated-variant merging, censoring, ledger,
+  balanced-vs-unbalanced anchor flips red/green), job.json, bundle.json
+  (ibama-build). Fixture green locally; gate --selftest green; the gate was
+  also shape-run on the tiny fixture extract (all contract/timing/splits/
+  runner checks pass; the 3 failures are pure 14-row fixture artifacts).
+- ibama-build-001 (server 174567305, EUR 0.04 reserved): fixture PASSED on the
+  worker, then the build REFUSED at normalize_entities - 15 rows (0.002%) on
+  the 2026-11-05 vintage disagree with the digit-based classification PER ROW;
+  the record's measured anchor is PER-YEAR AGGREGATE equality (probe cited
+  2023 only). Diagnosed from build_error.json; worker destroyed and confirmed
+  (status deleted). ONE changed retry: the anchor enforced as measured +
+  per-row disagreement measured instead of fatal; fixture extended both ways
+  (balanced flips pass and are measured - seen green; an unbalanced flip
+  fails loudly - seen red).
+- ibama-build-002 (server 174568349, EUR 0.04 reserved): fixture PASSED, then
+  REFUSED again at the same anchor - the all-years aggregate equality ALSO
+  never held: the record's anchor was measured on 2023 only, and the
+  2026-11-05 vintage carries 1-5 label-noise rows per PRE-2015 year (measured
+  offenders 1994-1998, list truncated at 5; 2023-era aggregates hold).
+  SECOND failure of the same defect class -> recorded BLOCKER, no third
+  launch (stopping condition honored). Worker destroyed and confirmed.
+- BLOCKER RECORDED (record.blocker_2026_11_05) with three options for the
+  anchor's scope; recommendation for the next session: (a) enforce the
+  aggregate anchor on the era the record measured (2023+), measure per-year
+  deltas everywhere as diagnostics, then relaunch as ibama-build-003 with an
+  otherwise unchanged bundle. The blocker is about which form of the recorded
+  anchor the build may enforce - the panel never uses TP_PESSOA (entity_kind
+  is digit-deterministic and the column ships nowhere), so the task's validity
+  is untouched. Staging releases 434858732 / 434865187 carry both build_error
+  diagnostics; ledger reconciled; both workers deleted (provider-confirmed).
+- Spend: EUR 0.08 reserved across the two failed jobs (both under the
+  November allowance; no other worker this session). No release byte, tag,
+  manifest or destination touched. No scoring, qualification or acceptance
+  occurred on any artifact; NOTHING is quotable from either attempt except the
+  refusal diagnostics. check-candidate ibama OK after every record update.
+
+Next action (a fresh session can carry it out): record the anchor-scope
+decision per record.blocker_2026_11_05 (recommendation (a)), update the
+fixture red/green to that scope, relaunch ibama-build-003, then the standing
+order (gate -> accept -> references -> baseline job -> the pre-registered
+deciding rule).
+
+Follow-up (worker-status runner, 2026-11-05): both failed jobs re-verified
+against the staging evidence before close-out - fetched build_error.json +
+container log per job into .factory/ibama-build-00{1,2}/reports/, all four
+sha256 digests match the ledger, and the recorded diagnoses are confirmed
+word-for-word (-001: fixture PASSED then the per-row 15-row TP_PESSOA
+refusal at normalize_entities; -002: fixture PASSED then the all-years
+aggregate refusal naming 1994-1998 offender years). Provider read-back
+GET /v1/servers = 0 servers; 174567305 and 174568349 both absent
+(deletion provider-confirmed, not just requested). No qualification,
+acceptance or score exists for either attempt; the blocker stands and no
+third launch was made. check-candidate --all rc=0 (133 records), suite
+723/723 OK, factory doctor / check-runtime --source-only /
+check-suitability all OK at this commit.
+
 ## 2026-11-05 (04:33Z) - discovery tick (United Kingdom): tc-gv-licence-application-outcome OPENED (investigating) - the Traffic Commissioners' weekly Applications and Decisions gazette is a case-grain OGL-A register with exact listing-instant timing and reference-number-exact outcome linkage; the one unresolved contract is split counts + archive coverage (named worker probe). Three recorded unpark/reopen questions re-checked and answered with evidence; no new Companies House probe (re-checked 2026-11-03)
 
 Discovery-only session. No construction, qualification, packaging, publication or
