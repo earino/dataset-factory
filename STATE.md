@@ -1,4 +1,87 @@
-## 2026-11-05 (11:35Z) - advancement session: nws-tornado-warning-verification chosen as the primary candidate and its full construction plan pre-registered in the record; the session run-time budget stopped execution before build.py was written - no worker, no fetch, no score, no release byte touched
+## 2026-11-05 (13:19Z) - discovery tick (Latin America): run-time budget stopped the session at queue review, before any source probe - no lead opened, no verdict; the tick's durable output is the measured LatAm queue state plus a prioritized shortlist with exact first probes (primary: Brazil SINAN/dengue municipal-week exceedance; reuses the datasus-sinasc TABNET + CKAN licence-evidence recipe)
+
+Discovery-only session, Latin America focus (BR dados.gov.br/INPE/DATASUS, MX datos.gob.mx,
+CL, CO, AR). The runtime's wrap-up notice arrived during context review, so NO source was
+probed this tick: no candidate record created or modified, no verdict issued, no worker
+launched (EUR 0), no release byte, tag, manifest or destination touched. Everything below
+is queue review from current records plus scripts/discovery-coverage.py (134 records,
+live 53, live non-US 47/53 = 89%; LatAm 12 records) - recorded so the next tick starts at
+the probes, not at the queue scan.
+
+- LATAM INVENTORY (from current records, not history): BR 5 - camara-bill-advancement
+  (investigating, review hold, "NONE until the review hold is lifted" - advancement-owned),
+  inpe-foco-municipal-onset (investigating, next step is advancement-owned construction),
+  datasus-sinasc-cesarean-share-decline (ready, go), ibama-auto-infracao-recidivism (ready,
+  BLOCKED on the operator's anchor-scope decision, blocker_2026_11_05),
+  tcu-obra-paralisacao (parked; reopen only via unblocked egress or dados.gov.br mirror).
+  MX 2 - conagua-dam-drought-onset (ready, go, advancement-owned),
+  denue-establishment-exit (parked; unpark = verifiable historical DENUE editions, PK-magic
+  check). CO 2 - icfes-saber11 (investigating; decisive step needs an INBOX the environment
+  lacks = operator), ideam-rio-nivel (investigating; remaining steps are Wayback CDX
+  harvest + join = worker). CL 2 - both dropped with recorded evidence (chilecompra on the
+  authorized-baseline negative headroom finding, CI excluding zero; sag-residuos licence C).
+  AR 1 - ecobici dropped (bike-share demand formulation taken, task not novel).
+  Conclusion: every live LatAm record already has an owner (advancement) or a named
+  external blocker (operator decision/inbox/worker), so this region's queue value is in NEW
+  leads, and none of the dropped/parked ones has recorded new evidence to reopen on.
+- PORTFOLIO GAP the shortlist is built on (fact about the bench, from the live-record
+  list): no arbovirus/epidemiological-incidence task exists in the portfolio (closest is
+  who-flunet-activity-exceedance, a different pathogen, population, publisher and grain);
+  AQ exceedance is already carried by cpcb/air4thai/bvl-zoom comparators; fire/inspection/
+  procurement/register-outcome domains each already have 2+ comparators.
+- SHORTLIST for the next LatAm tick, priority order, each with its cheapest decisive probe
+  (hypotheses to verify, not findings):
+  1. BR SINAN dengue (DATASUS/SVS) - municipal-week notification-exceedance task.
+     Prospective user: municipal health secretariats planning vector-control response.
+     First probes, in order: (a) licence from the publisher's own instrument - find the
+     SINAN dengue/arbovirose package on dadosabertos.saude.gov.br (CKAN package
+     __NEXT_DATA__ license_id, exactly the method recorded in
+     candidates/datasus-sinasc-.../record.json license_evidence; NOTE that record's
+     unresolved cc-by-package vs site-footer CC BY-ND conflict and its resolution rule -
+     apply the same dataset-instrument-governs reading, record the conflict again, do not
+     assume it away); (b) channel: TABNET sinan dengon table family
+     (tabnet.datasus.gov.br/cgi/tabcgi.exe?sinan/dengon/...) - confirm which year-files
+     exist (dengon 2014+ era vs earlier dengue tables), whether Semana_Epidemiologica is a
+     tabulable dimension at municipality grain, and notification-week vs symptom-onset
+     fields (DT_NOTIFIC vs DT_SIN_PRI) for the timing contract; reuse the bounded
+     formato=prn POST recipe in
+     candidates/datasus-sinasc-.../probe/probe_tabnet_parto.py (latin-1 percent-escape).
+     The decisive uncertainty is timing/vintage: notification-delay revision means the
+     municipal-week series is continuously restated; if no dated-vintage evidence exists,
+     frame as retrospective archive-vintage with the current-vintage assumption declared
+     (cbsa/sinasc precedent) - gate 1.5 evaluation_contract path.
+     THEN, before any build: novelty check vs DengAI (DrivenData, San Juan/Iquitos
+     city-level case counts) and InfoDengue (Fiocruz reports, not a scored ML-ready
+     benchmark) - differentiation expected at population (thousands of BR municipalities),
+     target (threshold exceedance, not case count), features, splits; must be recorded,
+     not assumed.
+  2. MX SNSP/INEGI monthly municipal crime incidence (fuero común, 2015+, dados.gob.mx) -
+     municipality-month robbery-with-violence exceedance. First probes: licence instrument
+     on the SNSP/INEGI dataset page (INEGI soft-404 trap recorded in
+     denue-establishment-exit - probe with content, never HTTP status); publication lag of
+     the monthly file; municipality-code stability across the series.
+  3. BR Cemaden daily municipality risk/alerts + S2ID disaster recognition portarias -
+     municipality-day alert-escalation or disaster-confirmation task. First probes:
+     machine-readable historical alert archive existence (cemaden portal / dados.gov.br
+     entries) and S2ID (s2id.gov.br) export depth; licence instrument for each. Risk:
+     Cemaden portal access may be gated - a blocked page is inaccessible evidence, not
+     absent terms.
+  4. CO SECOP (datos.gov.co, Socrata) contract early-termination/adición occurrence -
+     ONLY if differentiated from austender-contract-amendment-occurrence (AU, ready) and
+     chilecompra-tender-outcome (CL, dropped on negative headroom): a mirror-by-design of
+     the amendment-occurrence task on another publisher is not novelty; a termination/
+     liquidation target with different semantics may be. Differentiation must be recorded
+     first, before any cost is spent.
+- COVERAGE of the tick's named publishers this session: none probed (budget); the queue
+  scan above is the full coverage achieved. No padding with US sources.
+- CONCURRENT WRITER: candidates/fenz-incident-data/ still untracked at session close,
+  NOT created by this session; left untouched and excluded from this commit.
+- Checks at close-out: check-candidate --all rc=0 (134 records; CA 16, live 53, live
+  non-US 47/53); suite python3 -m unittest discover -s tests result recorded in the
+  report; CI for the pushed commit checked and recorded. No candidate record was touched,
+  so no per-record check was applicable beyond the full run.
+
+
 
 Scheduled advancement session. Release work first: no packaged candidate is
 actionable (za-cct v2026.11 and cqc stay `awaiting_operator: true` - human
