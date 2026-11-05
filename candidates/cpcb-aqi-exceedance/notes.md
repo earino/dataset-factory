@@ -235,3 +235,117 @@ wayback_resource_page_lic_extracts_20261104.txt}; script: probe/probe_cpcb_reope
 
 Five contracts reconciled in record.review; status investigating -> ready (the buffer's ready
 candidate for this region). Construction handoff order in record.next_action.
+
+## 2026-11-05 (late) - advancement session: construction design finalized pre-launch; build.py drafted (UNTESTED - no dry run yet, no worker launched, no gate run, nothing scored)
+
+Primary candidate chosen per the 2026-11-05 21:55Z STATE next_action (advancement
+owns the cpcb-aqi-exceedance construction). No actionable packaged release exists
+(cqc, za-cct-substation, ns-bwa all carry awaiting_operator: true - human waits,
+untouched). Job ledger reconciled: no running or pending jobs (dvsa-mot-build-001
+collected+destroyed 19:52Z; afdb-build-001 succeeded 17:01Z today and is the freshest
+proven gate-1.5 worker template - its source/ is the structural pattern used here).
+
+### Preflight measurements (this session, anonymous demo key, bounded - 4 requests;
+### retained: probe/out/preflight_build_design_2026_11_05.json)
+
+- /v1/meta vintage-pin field confirmed: exported_at = "2026-09-30T11:25:11+00:00",
+  measurements.rows = 196,521,834. Both are now hard anchors in build.py (a re-export
+  refuses the build).
+- cpcb_caaqm PM2.5 station count re-confirmed: 549 (anchor).
+- Delhi 2024-11-18 severe-day fixture RE-VERIFIED on the label side: 38 station-days,
+  36 complete (n>=18), 36/36 mean > 90 ug/m3. Asserted exactly in build.py.
+- Monsoon negative-control day measured: 2023-08-15 all-India: 425 station-days,
+  389 complete, 1 exceed. Pre-registered as a TROUGH BOUND (>= 300 complete,
+  <= 4 exceed) in build.py - an all-or-nothing "0 positives" fixture would be wrong
+  (the record's own seasonal proxy says ~0.4% of monsoon station-days still exceed).
+
+### Design finalized BEFORE any score (pre-registration; no score, gate or
+### acceptance has ever existed for this candidate)
+
+- Layout/identity (za-cct precedent, gate-1.5-proven): id_columns = [station_day]
+  (station_id|date, unique); station_id and date ship as declared
+  high_cardinality FEATURES (station identity is hidden from the runner otherwise,
+  and state_name enables the pre-registered state-x-season climatology reference to
+  be computed from shipped columns); event_key_column = date (the clustered event =
+  the winter day; matches the record's distinct_positive_days counts);
+  expected_duplicate_ids = 0; id_columns_are_entity_keys = true.
+- Splits by prediction instant D: train 2019-2022 / eval 2023 / holdout 2024;
+  2025-04..09 tail excluded+counted; 2025 hole months asserted empty.
+- Row = station-day with n_hours(D) >= 18 AND labelable D+1 (row present, n >= 18);
+  unlabelable excluded AND counted per split AND per month (exclusion seasonality
+  recorded in summary.json - the monsoon co-movement of thin D+1 days is a declared,
+  measurable limitation, not a hidden one).
+- Label: D+1 24-hr mean > 90 ug/m3 (strict; CPCB Poor-band lower edge).
+- Features (21): station_id, state_name, date, day_of_week, month, doy_sin, doy_cos,
+  pm25_mean/max/min, n_hours, pm25_mean_lag1..3, pm25_mean_7d + pm25_days_valid_7d,
+  pm25_mean_30d + pm25_days_valid_30d, pm25_hist_mean_90d, days_since_gt90,
+  exceed_count_30d. Missing policy: -1.0 sentinels + explicit count columns; rolling
+  windows require 4/10/30 valid days. All features are functions of hourly readings
+  through day D only. NOTE: this adds station_id + state_name (coarse identity,
+  knowable at prediction time) to the discovery tick's "trailing stats + calendar
+  only" summary - a pre-launch design finalization, recorded here BEFORE any score,
+  with the reason (identity enables the pre-registered climatology reference; the
+  prediction question's "the station's own history" is unchanged - identity is the
+  station's own metadata).
+- Timing: kind=event_time, 23:59 IST on day D; administrative_record source_kind;
+  day-D trailing completeness at the instant is the DECLARED ASSUMPTION (CPCB
+  intraday latency unmeasured; the publisher's 4 PM bulletin shows incomplete
+  station participation). evaluation_contract: use=retrospective_research,
+  access=isolated_rows, training_label_timing=unverified, vintage=current_snapshot
+  (single 2026-09-30 export pinned), selection=prediction_time with the
+  outcome-observability D+1 rule declared and its seasonality recorded.
+- Cross-row exposure declared + probed (gate 1.5 reverse-history): entity
+  station_id, offset 1 day, left=pm25_mean, gt 90 - row D+1's pm25_mean IS row D's
+  label operand; trailing-aggregate exposure (D+2..D+91) declared in probes_note.
+- Hard panel anchors asserted exactly (from record window_counts_2026_11_05):
+  716,750 fetched rows; 339,557/154,003/175,624/47,566 per window; 63,735/20,773/
+  19,254/829 valid-day positives per window; 549 stations; Delhi fixture; monsoon
+  bound. Any drift refuses the build loudly (one worker cycle at risk, accepted).
+- Channel: anonymous demo-key /v1/measurements batching (84 months x 2 batches,
+  ~168 requests, X-Truncated asserted false per batch). Demo-key rotation fallback:
+  re-read the front-page constant once on auth refusal (rotation observed once;
+  the key is the publisher's own published anonymous constant, not a credential).
+- Job sizing planned: cpx32/hel1, timeout 100 min, lifetime 140 (reservation 0.32
+  EUR), memory 8192 MB, max_artifact_mb 300 (shipped extract estimated 100-150 MB
+  from ~550-610k eligible rows x 23 columns), max_disk 30000.
+
+### Handoff - exact remaining steps for a fresh session (in order)
+
+1. Read this note + record.next_action; the design above is final pre-registration.
+2. Write source/score.py (adapt afdb-project-cancellation/source/score.py): triad on
+   EVAL rows only = station persistence (score = pm25_mean, the most recent observed
+   daily value; report binary [pm25_mean>90] agreement as supplementary),
+   state-x-season climatology (train-estimated rate per state_name x season(D+1);
+   state rate then global train rate fallbacks), majority/global_rate (constant;
+   AUC null, accuracy + brier). Supplementary: station_train_rate. Station-clustered
+   paired bootstrap (cluster = station_id, 1000 resamples, fixed seed), per-month
+   AUC/Brier within eval 2023, per-split + per-month prevalence. Holdout never read.
+   DECIDING RULE (pre-registered, before any score): headroom ONLY if the full model
+   beats EVERY triad member on identical eval rows with a station-clustered paired
+   bootstrap 95% CI excluding zero in the model's favour AND the model's own
+   cluster-bootstrap AUC CI lies above 0.5 (degenerate constant member). Triad
+   dominance -> recorded defect; drop or re-target (the skill's
+   persistence-dominance rule).
+3. Write source/run.sh (fixed order: build -> qualify -> accept -> score, mirroring
+   dvsa-mot's run.sh), source/job.json (id cpcb-aqi-build-001, image
+   python:3.13-slim, sh /workspace/run.sh, cpx32/hel1, cpus 4, memory_mb 8192,
+   timeout_minutes 100, lifetime_minutes 140, max_disk_mb 30000, max_artifact_mb
+   300), source/bundle.json (files: build.py, run.sh, score.py, qualify_dataset.py
+   from skills/dataset-qualification/scripts/; overrides matching job.json).
+4. LOCAL DRY RUN first (no worker money): python3 source/build.py --synthetic
+   --out <scratch>/extract --work-dir <scratch>/work; then the REAL gate:
+   python3 skills/dataset-qualification/scripts/qualify_dataset.py <extract> --json
+   --report <scratch>/qualification.json; then --accept; then score.py against the
+   synthetic extract. Fix anything the dry run catches BEFORE launch (dvsa's dry
+   run caught two descriptor defects pre-launch; this build.py is UNTESTED - expect
+   the dry run to find something).
+5. Record this design block in record.json (construction pre-registration; keep
+   check-candidate green) - or confirm the next_action already covers it.
+6. python3 scripts/assemble-job.py <bundle>; sh scripts/scout-factory worker plan;
+   launch. Collect, then the standing order (gate 1.5 full artifact on worker ->
+   exact-byte --accept -> triad -> report; holdout sealed).
+
+Build script: candidates/cpcb-aqi-exceedance/source/build.py exists but is UNTESTED
+(no synthetic dry run was run - the session hit its wall-clock budget first). Treat
+step 4 as mandatory before launch. Nothing was launched, scored, gated or accepted
+this session; no EUR was spent.

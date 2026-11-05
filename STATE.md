@@ -1,3 +1,55 @@
+## 2026-11-05 (23:35Z) - advancement session: cpcb-aqi-exceedance construction design finalized pre-launch + build.py drafted and synthetic-smoked; NO worker launched, NO gate run, NO score, EUR 0 spent
+
+Candidate cpcb-aqi-exceedance (the 21:55Z discovery tick's recorded next_action:
+"advancement owns it - construct per record.next_action"). No actionable packaged
+release (cqc, za-cct-substation, ns-bwa all awaiting_operator: true - human waits,
+untouched). Job ledger reconciled: zero running/pending jobs.
+
+- PREFLIGHT (anonymous demo key, 4 bounded requests, evidence retained at
+  probe/out/preflight_build_design_2026_11_05.json): /v1/meta vintage-pin field
+  confirmed (exported_at "2026-09-30T11:25:11+00:00", 196,521,834 rows - both now
+  hard build anchors); 549 cpcb pm25 stations re-confirmed; Delhi 2024-11-18
+  severe-day fixture re-verified on the label side (38 station-days / 36 complete /
+  36 exceed); monsoon negative-control day MEASURED 2023-08-15 (425/389 complete/
+  1 exceed) -> pre-registered as a trough bound (>=300 complete, <=4 exceed), not
+  an all-zero claim (the record's seasonal proxy says ~0.4% of monsoon station-days
+  still exceed).
+- DESIGN finalized BEFORE any score (full pre-registration block in
+  candidates/cpcb-aqi-exceedance/notes.md; no score, gate or acceptance has ever
+  existed for this candidate): za-cct-style layout (id=station_day composite,
+  station_id+date as declared high-card FEATURES, event_key=date), splits by
+  prediction instant train 2019-2022/eval 2023/holdout 2024, n>=18 eligibility +
+  D+1 labelability (excluded AND counted per split AND per month), 21 trailing-
+  PM25+calendar+identity features with -1.0 sentinels, hard panel anchors asserted
+  exactly (716,750 rows; 339,557/154,003/175,624/47,566 per window; 63,735/20,773/
+  19,254/829 valid-day positives; 549 stations; both fixtures), cross-row exposure
+  declared + offset-1 gt-90 probe, evaluation_contract (retrospective_research /
+  isolated_rows / training_label_timing unverified / current_snapshot vintage
+  pinned / prediction_time selection with the D+1 observability rule and its
+  seasonality recorded). Design deviation from the tick's one-line summary
+  recorded honestly: station_id + state_name added as identity features (enables
+  the pre-registered state-x-season climatology reference from shipped columns).
+- BUILD DRAFTED: candidates/cpcb-aqi-exceedance/source/build.py (fetch via
+  anonymous demo-key monthly x 2-station-batch /v1/measurements with vintage pin,
+  X-Truncated refusal, front-page-key rotation fallback; --synthetic local mode).
+  Synthetic smoke rc=0 end-to-end (train 6,597 rows/650 pos; eval 1,643/180; holdout
+  1,670/181; both classes everywhere; gate minimums cleared; exclusions counted:
+  thin_day 0, unlabelable 545/545 in eval/holdout). One real fetch-loop bug found
+  by review and fixed pre-commit (tuple % int crash each December). The draft is
+  NOT yet dry-run through the REAL gate + --accept + score.py - that is mandatory
+  before launch (dvsa's dry run caught two descriptor defects pre-launch).
+- EUR 0; no worker, no bundle assembled, nothing scored, nothing quotable.
+
+Next action (a fresh session can carry it out): per the ordered handoff in
+candidates/cpcb-aqi-exceedance/notes.md - write source/score.py (pre-registered
+triad: station persistence, state-x-season climatology, majority; station-clustered
+paired bootstrap; eval rows only; deciding rule already pre-registered), source/
+run.sh + job.json (cpcb-aqi-build-001, cpx32/hel1, timeout 100, lifetime 140,
+memory 8192, max_artifact_mb 300) + bundle.json, then the mandatory local dry run
+(synthetic extract -> REAL gate 1.5.0 -> --accept -> score.py), then record
+pre-registration sync, assemble-job, plan, launch. The dvsa-mot-build-002 repair
+remains queued behind it (separate candidate, unchanged).
+
 ## 2026-11-05 (21:55Z) - discovery tick (South & South-East Asia): cpcb-aqi-exceedance READY - the reopen next_action's discovery-owned steps executed end-to-end (full 2019-2025 panel daily counts measured anonymously in 166 API queries, splits re-cut ONCE before any score on a measured 2025 export hole, threshold bound to CPCB's own AQI instrument, Delhi severe-day fixture confirmed on both sides, OpenAQ enumerated and ruled out by a 2023-2024 gap); XKDR full-key bulk path recorded as MISSING ACCESS (email signup); watch triggers re-checked; no construction, no score
 
 Discovery-only session, South & South-East Asia focus (India data.gov.in/IMD/CPCB, Indonesia BPS,
