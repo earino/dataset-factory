@@ -395,5 +395,110 @@ class UNHCRCorridorSyntheticRehearsal(unittest.TestCase):
                             "a duplicated row id must fail the gate")
 
 
+class FetchWafHardening(unittest.TestCase):
+    """Pins the 2026-11-05 HDX AWS-WAF diagnosis into the build's fetch.
+
+    HDX answers unrecognised User-Agents with HTTP 202 +
+    `x-amzn-waf-action: challenge` and a zero-length body; urllib treats
+    202 as success. The fetch must (a) send urllib's honest default UA,
+    (b) refuse a challenge with the observed evidence, (c) refuse a 200
+    with a zero-length body, (d) leave no plausible partial file behind,
+    and (e) succeed on a normal 200. build.py is loaded with
+    exec(compile(...)) so no __pycache__ lands beside the bundled source.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        import threading
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+        seen = []
+
+        class Handler(BaseHTTPRequestHandler):
+            def _record(self):
+                seen.append({"path": self.path,
+                             "ua": self.headers.get("User-Agent", "")})
+
+            def do_GET(self):
+                self._record()
+                if self.path == "/ok.csv":
+                    body = b"Year,Country of Origin Code\n2000,ABC\n"
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/csv")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.send_header("Last-Modified", "Thu, 20 Aug 2026 15:33:49 GMT")
+                    self.end_headers()
+                    self.wfile.write(body)
+                elif self.path == "/challenge.csv":
+                    # The exact failure shape HDX served the worker: a
+                    # success-class status, the WAF action header, no body.
+                    self.send_response(202)
+                    self.send_header("Content-Type", "text/html; charset=UTF-8")
+                    self.send_header("X-Amzn-Waf-Action", "challenge")
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+                elif self.path == "/empty.csv":
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/csv")
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+                else:
+                    self.send_response(404)
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+
+            def log_message(self, format, *args):  # noqa: A002 - base signature
+                pass
+
+        cls.seen = seen
+        cls.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        cls.base = f"http://127.0.0.1:{cls.server.server_address[1]}"
+        cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
+        cls.thread.start()
+        cls.tmp = Path(tempfile.mkdtemp(prefix="unhcr-corridor-fetch-"))
+        namespace: dict = {"__name__": "unhcr_build_under_test"}
+        exec(compile(BUILD.read_text(encoding="utf-8"), str(BUILD), "exec"),
+             namespace)
+        cls.fetch = staticmethod(namespace["fetch"])
+        cls.fast = {"attempts": 2, "backoff_seconds": 0.01}
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.server.shutdown()
+        cls.server.server_close()
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def test_13_normal_200_fetch_succeeds_with_default_ua(self):
+        dest = self.tmp / "ok.csv"
+        info = self.fetch(self.base + "/ok.csv", dest, **self.fast)
+        self.assertEqual(info["bytes"], dest.stat().st_size)
+        self.assertGreater(info["bytes"], 0)
+        self.assertEqual(info["sha256"],
+                         hashlib.sha256(dest.read_bytes()).hexdigest())
+        self.assertEqual(info["last_modified"], "Thu, 20 Aug 2026 15:33:49 GMT")
+        self.assertTrue(self.seen, "the server must have observed the request")
+        self.assertTrue(self.seen[-1]["ua"].startswith("Python-urllib/"),
+                        "fetch must send urllib's honest default User-Agent, "
+                        "not a custom string the HDX WAF challenges")
+
+    def test_14_waf_challenge_refused_with_evidence(self):
+        dest = self.tmp / "challenge.csv"
+        with self.assertRaises(SystemExit) as caught:
+            self.fetch(self.base + "/challenge.csv", dest, **self.fast)
+        message = str(caught.exception)
+        self.assertIn("x-amzn-waf-action='challenge'", message)
+        self.assertIn("HTTP 202", message)
+        self.assertIn("source fetch failed after 2 attempts", message)
+        self.assertFalse(dest.exists(),
+                         "a refused fetch must not leave a file that reads as data")
+
+    def test_15_zero_length_200_body_refused(self):
+        dest = self.tmp / "empty.csv"
+        with self.assertRaises(SystemExit) as caught:
+            self.fetch(self.base + "/empty.csv", dest, **self.fast)
+        self.assertIn("zero-length body", str(caught.exception))
+        self.assertFalse(dest.exists())
+
+
 if __name__ == "__main__":
     unittest.main()

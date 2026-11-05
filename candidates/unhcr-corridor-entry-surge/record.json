@@ -1,8 +1,8 @@
 {
   "id": "unhcr-corridor-entry-surge",
-  "status": "ready",
+  "status": "dropped",
   "created_at": "2026-11-04T20:05:47.903568+00:00",
-  "updated_at": "2026-11-04T22:44:40Z",
+  "updated_at": "2026-11-05T02:52:57Z",
   "domain": "forced displacement / annual asylum-corridor entry events",
   "prediction_question": "For an asylum corridor (country of origin O, country of asylum H) whose total government-procedure asylum applications FIRST reach at least 500 in year T0 (its entry year), will the corridor's total applications over the two following years (T0+1 and T0+2) reach at least twice the T0 total? One row per corridor, taken once at first crossing; a useful prediction enables two-year reception and processing-capacity planning for newly-arrived flows. Measured fallback design (also one-shot, decided before any score): will the crossing year's flow grow by more than 25% in T0+1.",
   "prediction_time": "Publication-lag nowcast at the annual instant: the first refresh of the UNHCR HDX global package (data.humdata.org, dataset unhcr-population-data-for-world) that carries the entry year T0's data (observed cadence: refreshes 2026-06-11/19/22 and 2026-08-20T15:33:49Z; the 2026-08-20 file carries years 2000-2025). Features are the corridor's published yearly totals for years <= T0 only. The outcome years T0+1/T0+2 are unpublished and unavailable on this channel at the instant (first published ~mid T0+2/T0+3); for historical rows the outcome window has partially elapsed at the instant - no 'window follows the instant' claim is made (the abs-visitor-arrivals-direction / unhcr-refugee-data-finder posture). Corridors entering 2025 are live strict forecasts: their whole outcome window 2026-2027 follows the 2026-08-20 instant. Dated example in notes.md (AFG->USA).",
@@ -43,7 +43,47 @@
     "known_event_fixtures": "AFG->USA T0=2021 (533; 2020: 44) outcome 25,082+19,320=44,402 >= 1,066 TRUE (post-Aug-2021 Taliban takeover); VEN->COL T0=2017 (582; 2016: 316) outcome 2,592+10,479=13,071 >= 1,164 TRUE; SYR->DEU T0=2000 left-censored, FALSE; UKR->POL T0=2014 (2,511) outcome 2,295+1,194=3,489 < 5,022 FALSE (2022 Ukraine displacement is mostly EU temporary protection, absent from this stream); SSD->ETH T0=2025 (50,148) live strict-forecast row.",
     "fetch_cost_measured": "1 request, 8,669,567 bytes, 3.11 s on the coordinator (2026-11-04); no bulk transfer beyond the single source CSV; all aggregates computed locally from the pinned file.",
     "probes": "candidates/unhcr-corridor-entry-surge/probe_hdx_oneshot.py (population, base rates, coverage, fixtures, live edge); probe_hdx_oneshot_designs.py (design table, momentum association, capacity under momentum-eligibility); both read the pinned CSV and reproduce every number quoted here.",
-    "measured_on": "2026-11-04, coordinator, from sha256-pinned source d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950"
+    "measured_on": "2026-11-04, coordinator, from sha256-pinned source d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950",
+    "hdx_waf_ua_probe_2026_11_05": {
+      "measured_at": "2026-11-05T02:45:41Z",
+      "measured_from": "coordinator, anonymous, bounded (64-256 B ranged reads; no full dataset transferred)",
+      "finding": "data.humdata.org fronts downloads with AWS WAF (server: awselb/2.0). An unrecognised User-Agent receives HTTP 202, x-amzn-waf-action: challenge, content-length 0 - urllib treats 202 as success, which is how the -002 worker came to write an empty panel. Recognised tool UAs are served the file (content-length 8,669,567, the recorded pin size).",
+      "user_agent_results": {
+        "dataset-factory/unhcr-corridor-build": "202 challenge, empty",
+        "Mozilla/5.0 (browser-shaped)": "202 challenge, empty",
+        "dataset-factory/1.0 (research; mailto:...)": "202 challenge, empty",
+        "Python-urllib/3.x (urllib default)": "200, 8,669,567 B",
+        "curl/8.5.0": "200, 8,669,567 B",
+        "Wget/1.21.4": "200, 8,669,567 B",
+        "python-requests/2.32.3": "200, 8,669,567 B"
+      },
+      "note": "The former custom UA fetched the same URL successfully on 2026-11-04, so the challenge began in the window between the two fetches; treat any future HDX fetch failure that returns 202 + empty as this same WAF action and re-probe with a recognised UA rather than retrying blindly."
+    },
+    "construction_outcome_unhcr_corridor_003": {
+      "measured_at": "2026-11-05T02:52:57Z",
+      "artifact_version": "0473275c81266071 (gate 1.5.0, exact-byte ACCEPTED on the worker)",
+      "rows": "train 363 (35.0% pos, 106 clusters) / eval 202 (48.5% pos, 80 clusters) / holdout 159 (45.3% pos, 64 clusters); 724 shipped rows",
+      "prevalence_shift": "train 35.0% -> eval 48.5% positives (out-of-distribution as well as temporal); holdout 45.3%",
+      "references_on_identical_eval_rows": {
+        "identity_combined": "AUC 0.5515, Brier 0.2745",
+        "identity_only_host": "AUC 0.5528, Brier 0.2900",
+        "identity_only_origin": "AUC 0.5024, Brier 0.3421",
+        "momentum_bucket_rate": "AUC 0.5346, Brier 0.2671",
+        "momentum_raw": "AUC 0.4496, Brier 2.76",
+        "persistence_state_rate": "AUC 0.5286, Brier 0.2676",
+        "persistence_last_value": "AUC 0.4447, Brier 7,215,238",
+        "global_rate": "degenerate constant, no ranking information",
+        "majority_class": "accuracy 0.5149 on this split (fitted on train)"
+      },
+      "deciding_check_measured": {
+        "momentum_raw_vs_identity_combined": "observed difference -0.1019, cluster-bootstrap 95% CI [-0.2159, +0.0075], 150 resamples over 155 surge_cluster keys",
+        "momentum_bucket_rate_vs_identity_combined": "observed difference -0.0169, cluster-bootstrap 95% CI [-0.1562, +0.1095], 150 resamples",
+        "identity_dominates": true,
+        "verdict": "identity_prior_dominates_no_headroom"
+      },
+      "per_eval_entry_year_note": "2015 identity 0.423 / bucket 0.528; 2016 0.481/0.626; 2017 0.539/0.568; 2018 0.491/0.433; 2019 identity 0.829 (the largest eval year); 2020 (6 rows) bucket 1.0 vs identity 0.4 - single-year reversals in both directions, no stable momentum advantage in any year",
+      "interpretation": "Under this pre-registered protocol (annual grain, one row per corridor at first >=500-application year, momentum-eligible, eval entry years 2015-2020) no momentum-family reference beats the identity-only prior: identity_combined AUC 0.5515 tops every reference measured, and both deciding pairs have observed differences in identity's favor with intervals containing zero. momentum_raw at 0.4496 and persistence_last_value at 0.4447 sit below 0.5 - the mean-reversion property the discovery association measured, not a defect. identity_combined itself is barely above chance: there is no demonstrated useful signal for this task shape. This is a measured negative finding under one protocol; it does not prove every competent model must fail, and the rule pre-registered its consequence before any score existed: drop, like the wb-loan precedent. The full model / runner baseline job was never warranted (headroom was the precondition) and the holdout remains sealed."
+    }
   },
   "jobs": [
     {
@@ -53,12 +93,28 @@
       "outcome": "launch REFUSED by the provider: API POST servers returned HTTP 412 before any server existed. Diagnosis (read-only probes, 2026-11-04 22:40-22:42Z): Hetzner's documented 412 = resource_unavailable - 'the requested resource is currently unavailable (e.g. not available for order)'; known shapes are a server-type+location combination temporarily unavailable and, since 2025-07, primary-IP allocation unavailable (POST /servers with public_net.enable_ipv4 implicitly allocates a primary IPv4). Ruled out by direct measurement: SSH key 'scout-worker' present in the project; cx23 available and priced in hel1 (EUR 0.0106/h gross, fetched live); provider inventory 0 servers / 0 primary IPs in project AND account after the failure. INFRASTRUCTURE failure with a named source, not a scientific verdict and not a job defect - the same cx23/hel1 launches succeeded at 20:33-20:41Z the same day.",
       "evidence": "ledger record created 2026-11-04T22:36:50Z, expires 23:21:50Z, server_id null; provider read-back 0/0; bundle assembled at .factory/jobs/unhcr-corridor-001 (159,156 B, source sha256 0791e722390804680177ca0cac3b31d60d2c2f42ded7bbc9b0cfbc6bbe5d20fb, gate 1.5.0 4fab8a34...); EUR 0.04 reservation retained by policy",
       "reservation_eur": "0.04"
+    },
+    {
+      "id": "unhcr-corridor-002",
+      "attempted_at": "2026-11-05T02:02:38Z",
+      "status": "collected-then-deleted (ledger jobs/unhcr-corridor-002.json; server 174547804 destroyed with provider 404 read-back)",
+      "outcome": "FAILED at the source fetch, 9.3 s into the container, exit 1. The build's single un-retried GET wrote a 0-byte file: HDX answered HTTP 202 with x-amzn-waf-action: challenge and a zero-length body. Reproduced and isolated from the coordinator 2026-11-05 (see measurements.hdx_waf_ua_probe_2026_11_05): the AWS WAF in front of data.humdata.org (awselb/2.0) challenges unrecognised User-Agent strings - the build's former custom UA 'dataset-factory/unhcr-corridor-build' and a plain browser UA both get 202 + empty, while urllib's default UA and curl/wget/requests strings are served the file. Server-side policy change (the same custom UA fetched the 8,669,567-byte pin successfully on 2026-11-04), not a worker, construction or provider defect. The construction itself never ran; no rows, labels or features were touched and no score exists.",
+      "evidence": "staging release 434681365 (assets verified by collect: source.tar 256,000 B, container.log 713 B, manifest.json 5,157 B), local copy .factory/unhcr-corridor-002/result.json; container.log: 'panel sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 (0 bytes)' + 'panel CSV has no header'; worker 174547804 destroyed 2026-11-05T02:42:10Z, provider read-back 0 servers / 0 primary IPs",
+      "reservation_eur": "0.04"
+    },
+    {
+      "id": "unhcr-corridor-003",
+      "attempted_at": "2026-11-05T02:42:43Z",
+      "status": "succeeded-collected-then-deleted (ledger jobs/unhcr-corridor-003.json; server 174550077 destroyed with provider 404 read-back, 0 servers / 0 primary IPs)",
+      "outcome": "COMPLETED LADDER, all stages green, in order (container.log lines 1-810): (1) construct: fresh HDX worker fetch 8,669,567 B in 2.5 s, sha256 d5808616c3d10d33925d4df5a3182a2028dd574d111e843cc207455ba45fe950 = the discovery pin EXACTLY (the repaired fetch); every hard anchor reproduced exactly - train 363/127/106, eval 202/98/80, holdout 159/72/64 rows/positives/events, full-population cross-check 653/214/153, 230/103/83, 170/73/64; all six known-event fixtures green; cross-row label-operand recovery ZERO in every split; 724 rows written. (2) gate 1.5.0 on the FULL artifact: ok=true, failed_checks=[]. (3) exact-byte --accept: ACCEPTED, qualified artifact 0473275c81266071. (4) score.py references, its FIRST real execution, strictly after acceptance, eval rows only, holdout never opened. The pre-registered deciding check returned identity_prior_dominates_no_headroom -> per the rule written before any score, the candidate DROPS for no demonstrated headroom (the wb-loan precedent). No re-tuning of threshold, eligibility, label or windows after the score.",
+      "evidence": "staging release 434717809 (assets verified by collect; container.log + qualification + references + the 5 extract files); local .factory/unhcr-corridor-003/result.json; worker destroyed 2026-11-05T02:51:55Z, provider read-back 0/0",
+      "reservation_eur": "0.04"
     }
   ],
   "artifacts": [],
-  "rejection_reason": null,
+  "rejection_reason": "No demonstrated headroom over identity-only priors, measured on the accepted artifact by the pre-registered deciding check: identity_combined (AUC 0.5515) dominates both momentum references (momentum_raw 0.4496, momentum_bucket_rate 0.5346) on identical eval rows; both deciding pairs' observed differences favor identity (cluster-bootstrap 95% CIs contain zero). Per the rule written into the record before any score existed, this is the DROP branch (the wb-loan-disbursement-completion precedent). Construction, gate 1.5.0, exact-byte acceptance and scoring all succeeded - this is a task-utility verdict, not an infrastructure or qualification failure. The next1_g25 fallback stays behind a fresh operator decision only.",
   "review": "Five contracts reconciled 2026-11-04 on written evidence (details and dated example in notes.md): (1) Redistribution SUPPORTED - cc-by-igo re-verified live on the package today; class A; conditions carry to LICENSE.md; no unhcr.org scraping. (2) Timing SUPPORTED with the documented current-vintage assumption - annual publication-lag nowcast instant, outcome years unpublished at the instant, live 2025-entrant rows strict forecasts; the archive is revised in place so values are construction-time vintage, sha256-pinned (parent-record posture); no claim of historical operational availability of today's vintages. (3) Target SUPPORTED - label operands (T0+1/T0+2 totals) excluded from features by the one-row-per-corridor structure; observed-zero vs host-silent censoring measured; eligibility from at-instant information only. (4) Split capacity SUPPORTED with margin for the primary design (eval 103/83, holdout 73/64 vs gate 30/20; momentum-eligibility variant also passing); the direct next-year-2x analogue measured not viable (25/28) and recorded. (5) Not a mirror SUPPORTED - differentiated verdict recorded via check-novelty.py; no released corridor-grain first-crossing task with fixed splits and a scored contract exists; prior art is EU-only monthly panel forecasting or unreleased systems. LIMITATION recorded for construction: rows share origins across windows, so a later entrant's origin-level aggregate can contain components of an earlier entrant's outcome years - partial information, not the parent's exact-copy exposure; the gate 1.5.0 cross-row probe must run on the built artifact with the aggregate features declared. This record formulates the operator's recorded reopen condition (unhcr-refugee-data-finder, 2026-11-02): the one-shot design removes the adjacent-row self-answering structurally; the aggregate-outcome label is the operator's second named shape.",
-  "next_action": "RETRY PROTOCOL (the ONE changed retry this infrastructure failure is entitled to, per the recorded stopping condition - the named source is Hetzner 412 resource_unavailable; nothing about the job or its source changes, only the attempt ID): (1) at/after 2026-11-05T00:21:50Z (the -001 entry's expiry 23:21:50Z + 60-minute cleanup grace) run `sh scripts/scout-factory worker status unhcr-corridor-001` so reconcile closes it as deleted ('No server found after expiry and cleanup grace; reservation retained') - the launcher hard-refuses new jobs while any non-deleted ledger entry exists, and the ledger must never be hand-edited around that invariant; confirm 0 servers / 0 primary IPs again. (2) Edit candidates/unhcr-corridor-entry-surge/source/job.json id -> 'unhcr-corridor-002' (a recorded attempt ID is never relaunched), re-assemble (python3 scripts/assemble-job.py unhcr-corridor-entry-surge), plan, launch. (3) The worker order is fixed in run.sh: construct -> gate 1.5.0 on the FULL artifact (fresh HDX fetch; sha compared to the d5808616 pin, anchors 363/127/106, 202/98/80, 159/72/64 asserted) -> exact-byte --accept -> score.py references (its first real execution). (4) On completion: collect, verify gate ok=true failed_checks=[] + ACCEPTED + fixtures + corridor-grain probe coverage 0, DESTROY the worker (provider 404 read-back), record the ladder beside the pre-registered deciding check (preflight_unhcr_corridor_001.deciding_check_preregistered) and apply it: headroom demonstrated -> the runner-contract baseline job is next; no_demonstrated_headroom or identity_prior_dominates -> hold/drop per the pre-registered rule with the negative finding preserved. (5) If the -002 launch ALSO fails with 412 resource_unavailable: that is a recorded blocker - preserve the evidence, record it in STATE.md and this record, and report; never a blind retry loop. Local preflight state (all reusable, no score exists): the pinned-source dry run reproduced every anchor and passed gate 1.5.0 with zero failed checks (dry run; the worker's full-artifact run remains authoritative), the rehearsal suite tests/test_unhcr_corridor_build.py is 12/12 green, and the deciding check is pre-registered in preflight_unhcr_corridor_001.",
+  "next_action": "None pending. The candidate is DROPPED on the pre-registered rule with the negative finding preserved in measurements.construction_outcome_unhcr_corridor_003. The staged evidence (staging release 434717809: extract, qualification report 0473275c81266071, references, container.log) and the local report .factory/unhcr-corridor-003/result.json remain readable; the holdout was never opened by any stage. The parent record (unhcr-refugee-data-finder) keeps its reopen condition; any new task instance from this source (e.g. the next1_g25 change/onset shape) requires a fresh operator decision and a fresh construct->qualify->accept->score cycle with its own pre-registered deciding check. A one-shot corridor design without demonstrated momentum headroom must not be re-tuned to chase a score.",
   "novelty_check": {
     "checked_at": "2026-11-04T20:22:58+00:00",
     "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",

@@ -210,23 +210,62 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def fetch(url: str, dest: Path) -> dict:
+def fetch(url: str, dest: Path, attempts: int = 3, backoff_seconds: float = 5.0) -> dict:
+    """Download a source file, refusing WAF challenges and empty bodies.
+
+    data.humdata.org fronts its downloads with AWS WAF (awselb). A
+    User-Agent it does not recognise is answered with HTTP 202,
+    `x-amzn-waf-action: challenge` and a zero-length body; urllib treats
+    202 as success, so the first worker run wrote an empty file and only
+    failed far downstream ("panel CSV has no header"). Measured
+    2026-11-05 from the coordinator: this build's former custom UA and a
+    browser UA are challenged, while urllib's own default UA
+    (Python-urllib/3.x) and the curl/wget/requests strings are served the
+    file - so no UA override is sent: the default both passes the WAF and
+    truthfully names this client. A challenge header, a non-200 status or
+    a zero-length body fails the attempt with the observed evidence;
+    bounded retries cover transient failures, then the fetch gives up
+    loudly rather than leaving a plausible empty file.
+    """
     started = time.time()
-    request = urllib.request.Request(
-        url, headers={"User-Agent": "dataset-factory/unhcr-corridor-build"})
-    with urllib.request.urlopen(request, timeout=300) as response:
-        last_modified = response.headers.get("Last-Modified")
-        with dest.open("wb") as handle:
-            size = 0
-            while True:
-                chunk = response.read(1 << 20)
-                if not chunk:
-                    break
-                handle.write(chunk)
-                size += len(chunk)
-    return {"url": url, "bytes": size, "last_modified": last_modified,
-            "seconds": round(time.time() - started, 1),
-            "sha256": sha256_file(dest)}
+    failure = "not attempted"
+    for attempt in range(1, attempts + 1):
+        request = urllib.request.Request(url)
+        partial = dest.with_name(dest.name + ".part")
+        try:
+            with urllib.request.urlopen(request, timeout=300) as response:
+                status = response.status
+                waf_action = response.headers.get("X-Amzn-Waf-Action")
+                last_modified = response.headers.get("Last-Modified")
+                if waf_action is not None or status != 200:
+                    failure = (f"attempt {attempt}: HTTP {status} "
+                               f"x-amzn-waf-action={waf_action!r}")
+                else:
+                    with partial.open("wb") as handle:
+                        size = 0
+                        while True:
+                            chunk = response.read(1 << 20)
+                            if not chunk:
+                                break
+                            handle.write(chunk)
+                            size += len(chunk)
+                    if size:
+                        # Only a complete, non-empty body ever lands at dest.
+                        partial.replace(dest)
+                        return {"url": url, "bytes": size,
+                                "last_modified": last_modified,
+                                "seconds": round(time.time() - started, 1),
+                                "sha256": sha256_file(dest)}
+                    failure = f"attempt {attempt}: HTTP 200 with a zero-length body"
+        except OSError as exc:
+            # URLError (connection refused/timeout/DNS) is an OSError subclass.
+            failure = f"attempt {attempt}: {type(exc).__name__}: {exc}"
+        if partial.exists():
+            partial.unlink()
+        if attempt < attempts:
+            time.sleep(backoff_seconds)
+    raise SystemExit(f"source fetch failed after {attempts} attempts: "
+                     f"{url} ({failure})")
 
 
 def fmt_num(value) -> str:

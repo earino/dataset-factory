@@ -1,4 +1,71 @@
-## 2026-11-05 (01:30Z) - discovery tick (Europe - EU/EEA): ec-state-aid-investigation-opening worked to a decided verdict - PARKED on measured access evidence (dataset record licence null, portal legal notice only behind a JS catch-all shell) plus a measured recent-vintage coverage gap (notification filter returns 0 for 2025-2026 while 3,862/3,106 SA cases are indexed); the Oct-30 probe counts were reconciled into the record; no new lead opened, buffer unchanged
+## 2026-11-05 (02:55Z) - advancement session: unhcr-corridor-entry-surge constructed, qualified, accepted and scored end-to-end on the worker; the pre-registered deciding check returned identity_prior_dominates_no_headroom -> the candidate DROPS for no demonstrated headroom, exactly the rule written before any score
+
+Scheduled advancement session. Release work first: za-cct v2026.11 stays
+`awaiting_operator: true` (the flip plus the independent auditor's verdict are
+the operator's; untouched, and a human wait preempts nothing). No remediation
+hold is active. From the operator's actionable list, unhcr-corridor-entry-surge
+was the candidate whose record.next_action ordered exactly this session's work
+(the recorded -002 retry protocol).
+
+- RETRY PROTOCOL EXECUTED AS RECORDED: -001 reconciled to deleted by
+  `worker status` at 02:01:13Z (expiry + grace passed), provider inventory
+  confirmed 0 servers / 0 primary IPs. -002 launched (the ONE changed retry the
+  412 was entitled to; cx23/hel1 succeeded this time, server 174547804) and
+  FAILED 9.3 s in at the source fetch: HDX answered HTTP 202,
+  `x-amzn-waf-action: challenge`, zero-length body; urllib treats 202 as
+  success, so the build wrote an empty file and refused it ("panel CSV has no
+  header"). Diagnosed BEFORE any retry, from the coordinator: reproduced twice
+  with the build's exact request shape; isolated to the User-Agent (AWS WAF in
+  front of data.humdata.org, server awselb/2.0) - the former custom UA
+  `dataset-factory/unhcr-corridor-build` and a browser UA get 202 + empty,
+  while urllib's default UA, curl, wget and python-requests are served the
+  8,669,567-byte file. Server-side policy change (the same custom UA fetched
+  the pin successfully on 2026-11-04). Recorded in the record as
+  measurements.hdx_waf_ua_probe_2026_11_05.
+- THE ONE FETCH REPAIR (source-fetch defect class; no construction logic,
+  threshold, label, split or feature touched): fetch() now sends urllib's
+  honest default UA, refuses a challenge / non-200 / zero-length body with the
+  observed evidence, retries three times bounded, and moves only a complete
+  non-empty body into place via a .part sibling. Pinned by three new
+  red/green rehearsal tests (tests/test_unhcr_corridor_build.py now 15/15;
+  all three were seen failing on the pre-fix fetch). -002's worker destroyed
+  with provider 404 read-back before -003 was assembled.
+- unhcr-corridor-003 (server 174550077) SUCCEEDED, 21.3 s, ladder in the fixed
+  order, every stage green: construct (fresh worker fetch 8,669,567 B, sha256
+  d5808616... = the discovery pin EXACTLY; anchors 363/127/106, 202/98/80,
+  159/72/64 and the full-population cross-check 653/214/153, 230/103/83,
+  170/73/64 all exact; six fixtures green; cross-row label-operand recovery
+  ZERO per split; 724 rows) -> gate 1.5.0 on the FULL artifact ok=true
+  failed_checks=[] -> exact-byte --accept ACCEPTED (artifact 0473275c81266071)
+  -> score.py references, its FIRST real execution, eval rows only, holdout
+  sealed. Evidence: staging release 434717809 + local
+  .factory/unhcr-corridor-003/result.json; worker destroyed 02:51:55Z,
+  provider read-back 0/0.
+- DECIDING CHECK APPLIED AS PRE-REGISTERED (no re-tuning after scores): on
+  identical eval rows, identity_combined AUC 0.5515 tops every reference
+  (momentum_bucket_rate 0.5346, momentum_raw 0.4496, identity_only_host
+  0.5528, identity_only_origin 0.5024, persistence_state_rate 0.5286,
+  persistence_last_value 0.4447, majority accuracy 0.5149). Both deciding
+  pairs favor identity (momentum_raw vs identity_combined -0.1019, CI
+  [-0.2159, +0.0075]; momentum_bucket_rate vs identity_combined -0.0169, CI
+  [-0.1562, +0.1095]; 150 cluster-bootstrap resamples over 155 surge_cluster
+  keys). verdict identity_prior_dominates_no_headroom -> the DROP branch
+  (wb-loan precedent), status now `dropped` with the negative finding
+  preserved in measurements.construction_outcome_unhcr_corridor_003.
+  Prevalence shift train 35.0% -> eval 48.5% -> holdout 45.3% recorded; the
+  full model / runner baseline was never warranted (headroom was the
+  precondition); the holdout was never opened. The next1_g25 fallback stays
+  behind a fresh operator decision only.
+- Hygiene: worker -002 and -003 both collected then destroyed (provider
+  read-back 0 servers / 0 primary IPs after each); EUR ledger for 2026-11
+  carries three 0.04 reservations (-001/-002/-003), far inside the EUR 20
+  allowance with the EUR 5 release reserve untouched; no token exposure (the
+  WAF probes were anonymous; the staging token was read in-process for asset
+  downloads only); no release byte, tag, manifest, destination or visibility
+  touched; candidates/fenz-incident-data/ left untracked for its owner;
+  check-candidate --all and the full suite run in the close-out below.
+
+
 
 Discovery-only session. Regional focus Europe - EU/EEA (Eurostat, EEA, ECDC, EFSA,
 national statistical offices and sector regulators; start at data.europa.eu). No
