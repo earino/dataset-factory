@@ -1,3 +1,60 @@
+## 2026-11-05 (11:35Z) - advancement session: nws-tornado-warning-verification chosen as the primary candidate and its full construction plan pre-registered in the record; the session run-time budget stopped execution before build.py was written - no worker, no fetch, no score, no release byte touched
+
+Scheduled advancement session. Release work first: no packaged candidate is
+actionable (za-cct v2026.11 and cqc stay `awaiting_operator: true` - human
+waits, untouched). No remediation hold is active (#17 closed 2026-10-24; no
+hold line in STATE.md is newer). The job ledger holds no non-terminal jobs (the
+2026-11-05 06:51Z close-out provider-confirmed both ibama workers deleted; this
+session's jobs scan found no non-terminal record).
+
+- CANDIDATE CHOICE from the operator's actionable list, with the recorded
+  reasons for the ones passed over: ibama-auto-infracao-recidivism is BLOCKED
+  pending the operator's anchor-scope decision (blocker_2026_11_05; a third
+  build needs that decision recorded first); austender-contract-amendment-
+  occurrence is licence-blocked (declared endpoint terms unreadable); 
+  za-municipal-audit-opinion is not launchable (timing evidence gap);
+  acnc-charity-ais-deadline-compliance's next step is the operator's choice
+  (triad complete with an interval-supported negative finding). Of the
+  remaining ready/GO candidates, nws-tornado-warning-verification was chosen
+  on value + construction reliability: anonymous stable JSON API (IEM cow),
+  no cookies/scraping/anti-bot, ~500 MB total across 17 year-pulls at a
+  measured 20-28 MB / 40-60 s each, year-level anchors already measured
+  (2013: 1,832 events / 441 verified; 2023: 2,531 / 656), class A public
+  domain, novelty differentiated, clustered-positive capacity measured
+  (100-115 verified days per measured year).
+- PLAN RECORDED (record.next_action, block `SESSION DECISION 2026-11-05`):
+  bounded construct-only preflight (2013 + 2023 anchor reproduction EXACT or
+  the build refuses, ibama-style; a 2022-04-16 day pull to pin the
+  northern-Arkansas false-alarm fixture per-warning before launch); v1 feature
+  scope = cow per-event fields only with product_text/IBW fetch excluded
+  unless the 500-warning sample proves it cheap (decision recorded either
+  way); label-source/post-hoc columns absent from every CSV; splits
+  2008-2018 / 2019-2021 / 2022-2024; id (year, wfo, eventid) + product_id
+  tiebreaker; event_key = issue date; evaluation_contract with
+  retrospective_research + isolated_rows + declared current-vintage
+  assumption + prediction_time selection; run.sh order construct -> full
+  gate -> exact-byte accept -> score.py; reference triad on identical eval
+  rows (persistence = most recent earlier same-WFO warning's verify with the
+  30-min outcome-availability assumption declared; calendar-only = WFO +
+  cyclical day-of-year/hour + train-only seasonal prior; full model via the
+  runner; majority constant; per-year AUC/Brier and prevalence; day-clustered
+  paired bootstrap).
+- PRE-REGISTERED deciding rule, written before any score: headroom only if
+  the full model beats EVERY reference on identical eval rows with the
+  day-clustered paired bootstrap 95% CI excluding zero in the model's favour;
+  reference dominance -> drop (wb-loan/unhcr precedent); inconclusive ->
+  hold with the negative finding preserved; no re-tuning after any score.
+- Stopped by the session run-time budget notice before any construction code
+  was written. This session produced the decision + plan only; nothing
+  measured or scored, no artifact, no job, no spend (EUR 0).
+- NEXT ACTION (fresh session, unblocked): execute the recorded plan -
+  preflight (3 bounded pulls, construct-only, record the pinned fixture list
+  and the 2013/2023 anchor reproduction), write source/build.py + run.sh +
+  score.py + quality.json descriptor + job.json/bundle.json, assemble, plan,
+  launch nws-tornado-build-001 (one worker, lifetime 60 min, EUR ~0.10).
+- Checks: check-candidate for the touched record and check-candidate --all;
+  suite; commit/push + CI for the pushed commit recorded in the report.
+
 ## 2026-11-05 (08:00Z) - discovery tick (Canada): cbsa-land-border-wait-exceedance OPENED (investigating; CBSA hourly border-wait archive, OGL class A, worker count pass = the one gate left) and iaac-registry-assessment-termination's decisive coordinator sample RESOLVED (dated terminal-event share 83-96%, novelty differentiated recorded; cohort extraction = worker prerequisite)
 
 Discovery-only session. No construction, qualification, packaging, publication or
