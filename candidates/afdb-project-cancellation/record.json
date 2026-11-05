@@ -46,7 +46,7 @@
       "job": "afdb-panel-probe-001",
       "server": "174640740 (cx23/hel1, 2 vCPU, 1024 MB container, EUR 0.04 reserved)",
       "result": "succeeded, exit 0, oom_killed false; job wallclock 20.5 s; requests 62; bytes downloaded 172859806",
-      "staging_release": "435425973 (private earino/dataset-factory-staging; summary.json sha256 a324477c1df5b6b2a5aeb8fa361499be6d227ab04430c8a23769c5fc2da40f93, 63,190 B)",
+      "staging_release": "435425973 (private earino/dataset-factory-staging, tag job-afdb-panel-probe-001; staging manifest.json sha256 a324477c1df5b6b2a5aeb8fa361499be6d227ab04430c8a23769c5fc2da40f93, 63,190 B, embeds the job result. Label corrected by the 2026-11-05 follow-up: this digest was first recorded as 'summary.json', but the worker's output/summary.json is a separate 44,298 B asset - see staging_asset_accounting_followup_2026_11_05)",
       "cleanup": "worker destroyed 2026-11-05T16:20:10Z with provider read-back: GET /v1/servers/174640740 -> 404 not_found; GET /v1/servers -> 0 total; GET /v1/primary_ips -> 0 total",
       "reachability_worker": "all 57/57 afdb.org IATI XML URLs answered HTTP 200 from the Hetzner worker (the dws.gov.za lesson tested explicitly: worker egress 2.29.159.168); registry package_search refreshed from the worker: 57 datasets, license_id cc-by on 57/57; zero fetch failures, zero retries",
       "extraction_cost": "57 files, 172859806 B (164.5 MiB) total; fetch wallclock 7.2 s; job wallclock 20.5 s; largest file afdb-multinational 31111196 B; budget used: 62/130 requests, 165/400 MB",
@@ -871,7 +871,39 @@
         }
       },
       "grain_nuance": "13 positive rows carry no recipient-country element (11 holdout, 2 eval): multinational/regional operations. The construction must define the cluster key as country-or-region and declare it as positive_events.",
-      "codelist": "activity-status machine-readable codelist not retrieved: raw.githubusercontent.com/IATI/codelists ActivityStatus.xml -> 404; iatistandard.org codelist page -> 200 (280,851 B, not parsed). The status labels used are the publisher's own from MapAfrica's stats endpoint (measured 2026-11-04): 1 Approved, 2 Ongoing, 3 Completed, 5 Cancelled."
+      "codelist": "activity-status machine-readable codelist not retrieved: raw.githubusercontent.com/IATI/codelists ActivityStatus.xml -> 404; iatistandard.org codelist page -> 200 (280,851 B, not parsed). The status labels used are the publisher's own from MapAfrica's stats endpoint (measured 2026-11-04): 1 Approved, 2 Ongoing, 3 Completed, 5 Cancelled.",
+      "staging_asset_accounting_followup_2026_11_05": {
+        "verified_by": "2026-11-05 watcher follow-up (16:34Z), read-only: GitHub releases API GET /repos/earino/dataset-factory-staging/releases/435425973 - 4 assets present, each name/size/sha256 read back; manifest.json downloaded and its sha256 recomputed locally, equal to the API digest; its files table maps every part to a logical path; part digests equal the API digests",
+        "assets": [
+          {
+            "logical_path": "output/summary.json",
+            "asset": "file-0000-part-0000",
+            "size": 44298,
+            "sha256": "215c20d9e9727deb6dfcc3f98f072c77554ed6e8195e9f139b897aea1fbe0b0f"
+          },
+          {
+            "logical_path": "source.tar (job input bundle)",
+            "asset": "file-0001-part-0000",
+            "size": 112640,
+            "sha256": "b5fab84afbb607180e16fcdc52653f9914652d0ffd0bcaac521c1b73bd37c989",
+            "matches": "jobs/afdb-panel-probe-001.json source_sha256/source_bytes (exact)"
+          },
+          {
+            "logical_path": "container.log",
+            "asset": "file-0002-part-0000",
+            "size": 4687,
+            "sha256": "56fc2b4b4b5c0b2c0403c5c62ddcc40b1cfcc58b1f99030fdadd22dfad5a35e6"
+          },
+          {
+            "logical_path": "manifest.json (staging manifest; embeds the job result)",
+            "asset": "manifest.json",
+            "size": 63190,
+            "sha256": "a324477c1df5b6b2a5aeb8fa361499be6d227ab04430c8a23769c5fc2da40f93"
+          }
+        ],
+        "correction": "the 2026-11-05 discovery session's staging_release string named the 63,190 B a324477c... asset 'summary.json'; that asset is the staging manifest.json. The worker's output/summary.json is file-0000-part-0000, 44,298 B, sha256 215c20d9e9727deb6dfcc3f98f072c77554ed6e8195e9f139b897aea1fbe0b0f. No recorded digest was wrong - the label was; corrected in the same field",
+        "ci_on_recording_commit": "fcffeed37b535021db44a519977e509f89086891 (the discovery tick that recorded this probe's outcome; HEAD == origin/main at verification): Actions run 42063878395, event push, completed/success, checked 2026-11-05 via api.github.com repos/earino/dataset-factory/actions/runs?head_sha= (anonymous, public repo)"
+      }
     }
   },
   "jurisdiction": {
@@ -1030,7 +1062,8 @@
       "reserved_eur": "0.04",
       "staging_release": 435425973,
       "deleted_at": "2026-11-05T16:20:10Z",
-      "provider_readback": "GET /servers/174640740 -> 404 not_found; /servers 0; /primary_ips 0"
+      "provider_readback": "GET /servers/174640740 -> 404 not_found; /servers 0; /primary_ips 0",
+      "followup_2026_11_05": "staging release 435425973 accounted 4/4 assets (API digests + manifest.json mapping; source.tar matches the ledger source_sha256); asset label corrected; CI on fcffeed green (run 42063878395); handled by the 16:34Z watcher follow-up"
     }
   ],
   "artifacts": [],

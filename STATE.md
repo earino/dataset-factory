@@ -1,3 +1,32 @@
+## 2026-11-05 (16:34Z) - follow-up: afdb-panel-probe-001 verified handled - staging release 435425973 accounted 4/4 assets with exact digests; one asset label corrected (the 63,190 B a324477c... asset is the staging manifest.json, not "summary.json"; the worker's output/summary.json is file-0000-part-0000, 44,298 B, sha256 215c20d9...); CI green on fcffeed (run 42063878395); no construction, no score, nothing else touched
+
+Watcher follow-up for afdb-panel-probe-001 (succeeded, exit 0, 20.5 s; outcome already
+recorded by the 16:22Z discovery tick at fcffeed, HEAD == origin/main). This session
+verified and accounted only:
+
+- Collection complete: .factory/afdb-panel-probe-001/result.json present and equal to the
+  ledger-embedded result; jobs/afdb-panel-probe-001.json status "deleted".
+- Durable copies: staging release 435425973 (private, tag job-afdb-panel-probe-001)
+  holds all 4 expected assets; name/size/digest read back via the releases API today
+  and mapped through manifest.json (downloaded 63,190 B, sha256 recomputed locally =
+  a324477c...): output/summary.json = file-0000-part-0000 (44,298 B, 215c20d9...),
+  source.tar = file-0001-part-0000 (112,640 B, b5fab84a... = ledger source_sha256
+  exact), container.log = file-0002-part-0000 (4,687 B, 56fc2b4b...), manifest.json
+  (a324477c...). Asset accounting + the label correction written into
+  record.measurements.worker_panel_probe_2026_11_05 (script kept:
+  candidates/afdb-project-cancellation/record_followup_2026_11_05.py, asserts every
+  observed value before writing).
+- Cleanup: worker 174640740 provider-confirmed destroyed 2026-11-05T16:20:10Z (404,
+  0 servers, 0 primary IPs) as recorded by the discovery tick; not re-run here.
+- CI: exact commit fcffeed (the outcome recording) -> Actions run 42063878395, push,
+  completed/success, checked anonymously against the public repo.
+- candidates/fenz-incident-data/ (another writer's untracked work) inspected and
+  preserved untouched; no release, tag, manifest, destination or allowance touched.
+
+Next action unchanged (advancement owns it): construct afdb-project-cancellation on a
+worker from the pinned 57-file vintage, then the standing order (gate 1.5 -> exact-byte
+accept -> rate-triad deciding check on eval rows only -> reporting).
+
 ## 2026-11-05 (16:22Z) - discovery tick (Africa): afdb-project-cancellation NOW READY (the record's discovery-owned steps 1-3 executed end-to-end: novelty verdict recorded, worker pass 57/57 XML reachable at 164.5 MiB / 7.2 s, split counts measured and re-cut ONCE before any score to clear the gate, 230-vs-191 reconciliation resolved); UNECA opened and CLOSED as an aggregate-indicator gateway (uneca-ecastats-coverage, dropped); Morocco re-check 699 unchanged (park stands); no construction, no score
 
 Discovery-only session, Africa focus (operator tick: South Africa data.gov.za/SAPS/StatsSA,
