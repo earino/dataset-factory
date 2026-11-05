@@ -42,7 +42,8 @@ awaiting_operator human waits, untouched). No remediation hold is active.
 - LAUNCH: assemble-job OK (bundle sha256 1e57d7ce..., 225,280 B, gate bundled
   from the skill at 4fab8a34...); worker plan OK (reservation 0.32 EUR, 4 h,
   rate ceiling 0.08/h); LAUNCHED 18:33:02Z - server 174661065 (cpx32, hel1,
-  0.06924 EUR/h provider-measured), expires 19:53Z. November spend after
+  0.06924 EUR/h provider-measured), expires 20:53Z (140-minute lifetime; the
+  job's own run timeout is 100 minutes). November spend after
   reservation: ~0.40 EUR of the 15 EUR construction allowance (0.08 afdb +
   0.32 this job).
 - Record: status=ready (constructing is outside the check-candidate vocabulary;
