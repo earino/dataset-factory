@@ -1,3 +1,60 @@
+## 2026-11-05 (01:30Z) - discovery tick (Europe - EU/EEA): ec-state-aid-investigation-opening worked to a decided verdict - PARKED on measured access evidence (dataset record licence null, portal legal notice only behind a JS catch-all shell) plus a measured recent-vintage coverage gap (notification filter returns 0 for 2025-2026 while 3,862/3,106 SA cases are indexed); the Oct-30 probe counts were reconciled into the record; no new lead opened, buffer unchanged
+
+Discovery-only session. Regional focus Europe - EU/EEA (Eurostat, EEA, ECDC, EFSA,
+national statistical offices and sector regulators; start at data.europa.eu). No
+construction, qualification, packaging, publication or advancement; no worker
+launched (EUR 0); bounded anonymous coordinator probes only; no release byte, tag,
+manifest or destination touched anywhere.
+
+- QUEUE CHOSEN FROM CURRENT RECORDS: Europe carries 33 records; the EU subset (15)
+  has ONE ready (eu-transparency-register-removal - the buffer), one verdict-go
+  awaiting advancement (eea-uwwtd-plant-poor-performance), one investigating lead
+  whose recorded next probe is discovery-owned and cheap (ec-state-aid-
+  investigation-opening), and two investigating leads whose recorded next steps are
+  advancement/worker work (efsa-health-claim-opinion-outcome needs an SPA request
+  capture plus a Wiley browser test; eu-ombudsman-inquiry-outcome is a ~1,300-POST
+  panel build). The state-aid licence question was the region's highest decision
+  value per unit cost, so it was the one lead worked. NO new candidate was opened:
+  the buffer has its ready candidate and no new source was probed, which is a
+  coverage statement, not a claim that the region holds no viable source.
+- RECONCILED FROM GIT, NOT FROM PROSE: probe/sa_*.py and the three JSON outputs were
+  committed at 5fe48f5 (2026-11-01) but never entered the record, which still said
+  "nothing measured". Verified the outputs in git and recorded them: population = SA
+  cases with caseNotificationDate (ex-officio excluded), label = distinct case with a
+  DecisionTypeA44 (Art. 108(2)) decision per initiation year; total 1,083 distinct
+  opening cases 1993-2026; per-year notified/openings e.g. 2004 1444/120, 2011
+  1055/54, 2019 2803/54, 2023 4845/1, 2024 2106/0. MEASURED CAVEAT: the notified
+  filter returns 0 for 2025-2026 although 3,862/3,106 SA cases are indexed for those
+  years, so notification-date coverage is incomplete for the newest vintage and
+  recent-year counts are not usable split evidence; opening prevalence also falls from
+  ~5-8% (2000s) to ~0.3% (2015+), a regime property any task definition must state.
+- LICENCE PROBE RUN THIS SESSION (probe/probe_licence_2026_11_05.py, retained):
+  data.europa.eu hub record 200/59,502 B with licence null on dataset AND
+  distribution, one JSON distribution pointing at the 704,703,783 B S3 object
+  (modified 2026-11-02); competition-cases.ec.europa.eu returns the identical
+  56,823-byte SPA shell for /, /legal-notice, /en/legal-notice, /about and
+  /api/config (catch-all - inaccessible evidence, not proof terms are absent); S3
+  HEAD carries no licence metadata and a DeleteOldODPLogs lifecycle
+  (x-amz-expiration 2026-12-04); bucket listing 403. The EC general legal notice
+  (CC BY 4.0 unless otherwise indicated) was read for the sibling EFSA record but is
+  deliberately NOT used as a dataset grant. => licence_class C.
+- VERDICT: parked / park. Reopen when (a) the dataset-specific reuse instrument is
+  readable (supported browser on the portal's legal notice/about page, or a licence
+  field appearing on the portal record) AND (b) notification/decision coverage is
+  measured in the JSON dump itself for the intended split years (ranged samples, not
+  the search index). Then check-novelty.py (state aid must be shown distinct from the
+  published merger-control task and DG COMP Scoreboard aggregates), five-contract
+  reconciliation, split re-measurement on the pinned dump digest (the object is
+  regenerated). record.next_action carries the exact order.
+- Regional coverage honesty: efsa-health-claim-opinion-outcome, eu-ombudsman-inquiry-
+  outcome, eea-uwwtd-plant-poor-performance and eu-transparency-register-removal keep
+  their recorded next steps and owners; the dropped EU records (ec-infringement,
+  ecdc-atlas, echa-svhc, efsa-one-health, euipo-opposition, rasff, ted, eutl
+  published) keep their recorded reasons and were not re-probed.
+- Hygiene: check-candidate ec-state-aid-investigation-opening OK (status=parked);
+  full suite and --all run in the close-out below; candidates/fenz-incident-data/
+  left untracked for its owner; no token exposure; no release or destination change.
+
 ## 2026-11-04 (22:50Z) - advancement session: unhcr-corridor-entry-surge construction built, rehearsed and preflighted end-to-end; the unhcr-corridor-001 launch was REFUSED BY THE PROVIDER (Hetzner 412 resource_unavailable, no server ever created) - the one changed retry is recorded with its timed ledger window and a fresh attempt ID
 
 Scheduled advancement session. Release work first: za-cct v2026.11 stays

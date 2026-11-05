@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+"""Record the 2026-11-05 EU/EEA discovery-tick findings for
+ec-state-aid-investigation-opening.
+
+Reconciles the record with probe evidence that was committed on 2026-10-30
+(probe/sa_*.py + sa_year_counts.json + sa_notified_split_counts.json) but never
+entered the record, and records the licence probe run 2026-11-05.
+"""
+import json
+import os
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+REC = os.path.join(HERE, "record.json")
+
+r = json.load(open(REC))
+
+r["sources"] = [
+    {
+        "name": "EU Competition: State Aid case publications (DG COMP state aid register republished as a data.europa.eu dataset; JSON)",
+        "url": "https://data.europa.eu/data/datasets/fa8d67be-d050-42a4-97ff-9e849805acf9~~1",
+        "api": "https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-SA.json",
+        "access": (
+            "portal record read 2026-11-05 via the data.europa.eu hub search API "
+            "(200, 59,502 B): one JSON distribution, accessURL "
+            "competition-cases.ec.europa.eu/search?caseInstrument=SA, downloadURL the S3 object, "
+            "distribution modified 2026-11-02; the object measured by ranged GET 2026-10-30 "
+            "(Content-Length 703,863,715 B) and HEAD 2026-11-05 (704,703,783 B, Last-Modified "
+            "2026-11-03T03:49:43Z, no licence metadata, lifecycle rule DeleteOldODPLogs with "
+            "x-amz-expiration 2026-12-04). The publisher's search API "
+            "(webgate.ec.europa.eu/es/search-api/rest/search, apiKey CS_PROD_ODSE_PROD, used by the "
+            "public site) answered bounded per-year aggregate and distinct-case queries."
+        ),
+        "licence": "NONE STATED at the dataset level: the portal record's licence field is null; the S3 object carries no licence metadata (probe_licence_2026_11_05.py, 2026-11-05).",
+    }
+]
+
+r["licence_class"] = "C"
+r["licence_note"] = (
+    "Class C - the publisher's dataset-specific reuse instrument was not readable from any "
+    "vantage used. The EC's general legal notice (commission.europa.eu/legal-notice_en, read "
+    "2026-11-03 for the sibling EFSA record) states CC BY 4.0 unless otherwise indicated, but a "
+    "general policy page is not the dataset's own instrument and the dataset record states no "
+    "licence. Standing policy for unresolved class C sources applies."
+)
+r["license_evidence"] = [
+    "data.europa.eu hub search API dataset record fa8d67be-d050-42a4-97ff-9e849805acf9~~1, read 2026-11-05: 'licence': null on the dataset AND on its single JSON distribution; distribution downloadURL https://compcases-open-data-portal-files-prod.s3.eu-west-1.amazonaws.com/case-data-SA.json, modified 2026-11-02.",
+    "competition-cases.ec.europa.eu legal-notice / en/legal-notice / about / api/config, fetched 2026-11-05: every path returns the same 56,823-byte SPA shell (200 text/html) - a catch-all; the plain-HTML landing page carries no footer legal/licence/reuse link. This is inaccessible evidence, not proof that terms are absent: the dataset-specific notice is only readable in a JS browser, which this session did not spend its remaining budget on.",
+    "S3 HEAD case-data-SA.json 2026-11-05: standard S3 headers only; no x-amz-meta licence field; bucket listing (?list-type=2) returns 403 AccessDenied, so no beside-the-dump licence/manifest file is publicly enumerable.",
+    "EC general legal notice (commission.europa.eu/legal-notice_en, read 2026-11-03): 'Unless otherwise indicated, the reuse of Commission documents is authorised under CC BY 4.0' - a general policy page, explicitly NOT used here as a dataset grant per the discovery skill's class-C rule.",
+]
+
+r["status"] = "parked"
+r["verdict"] = "park"
+r["rejection_reason"] = (
+    "PARKED on an ACCESS/evidence blocker (not on task shape): (1) LICENCE - the dataset-specific "
+    "reuse instrument is unreadable from every vantage used: the data.europa.eu record's licence "
+    "field is null, and every competition-cases.ec.europa.eu path returns a catch-all SPA shell "
+    "(56,823 B) whose legal notice needs a JS browser; the EC general legal notice is not the "
+    "dataset's own grant. Reopen when a dataset-specific reuse instrument is readable (e.g. the "
+    "portal's legal-notice/about page read in the supported browser, or a licence field appearing "
+    "on the portal record). (2) VINTAGE/LABEL COVERAGE - the measured notified-population filter "
+    "(caseNotificationDate exists) returns 0 cases for initiation years 2025-2026 while the same "
+    "index returns 3,862 and 3,106 SA cases for those years, so recent-vintage notification/decision "
+    "coverage is not yet established; any split design must resolve this first (the 2015+ opening "
+    "prevalence also collapses to ~0.3%, a regime property to design around). Novelty sweep not yet "
+    "run; it becomes due only after (1) and (2) resolve."
+)
+
+r["measurements"] = {
+    "licence_probe_2026_11_05": (
+        "Read-only, bounded, anonymous (probe/probe_licence_2026_11_05.py): (a) data.europa.eu hub "
+        "record 200 / 59,502 B, licence null, 1 JSON distribution, downloadURL the S3 object, "
+        "modified 2026-11-02; (b) landing page 200 / 56,823 B with no legal/licence/reuse links in "
+        "plain HTML; (c) /legal-notice, /en/legal-notice, /about and /api/config all return the "
+        "identical 56,823-byte shell (catch-all); (d) S3 HEAD 704,703,783 B, Last-Modified "
+        "2026-11-03T03:49:43Z, no licence metadata, x-amz-expiration 2026-12-04 (DeleteOldODPLogs); "
+        "(e) S3 bucket listing 403."
+    ),
+    "channel_2026_10_28": (
+        "Opened from the EU/EEA tick's channel search: the register's long-standing web application "
+        "(online since 2001, updated daily per DG COMP's State aid Scoreboard documentation) is now "
+        "additionally published as a machine-readable JSON dataset on data.europa.eu."
+    ),
+    "probe_evidence_2026_10_30_committed": {
+        "what": (
+            "Probe scripts and outputs committed at 5fe48f5 (2026-11-01) but never entered this "
+            "record; verified present in git this session: probe/sa_range_probe.py (ranged GET "
+            "sampling of the 704 MB case-data-SA.json), sa_decompose.py, sa_exact_openings.py, "
+            "sa_final_counts.py, sa_nodec_sample.py; outputs sa_year_counts.json, "
+            "sa_notified_split_counts.json, sa_opening_cases_exact.json."
+        ),
+        "population_and_label": (
+            "Population: SA cases with a recorded caseNotificationDate (ex-officio cases, which have "
+            "no notification instant, excluded). Label: a distinct case number carrying at least one "
+            "DecisionTypeA44 decision (Article 108(2) formal investigation opening), counted per case "
+            "initiation year."
+        ),
+        "all_case_counts_by_initiation_year": (
+            "sa_year_counts.json 1993-2026, e.g. 1993 17 cases/6 openings; 2004 1601/145; 2011 "
+            "1098/149; 2014 1535/84; 2019 2825/199; 2020 4089/32; 2021 4437/18; 2022 3851/6; 2023 "
+            "5041/6; 2024 5433/6; 2025 3862/8; 2026 3106/0."
+        ),
+        "notified_population_counts": (
+            "sa_notified_split_counts.json 1995-2026, notified cases / opening cases: 1995 21/4; "
+            "2000 516/53; 2004 1444/120; 2008 1569/42; 2011 1055/54; 2014 1481/31; 2015 3009/10; "
+            "2019 2803/54; 2020 4025/10; 2021 4364/6; 2022 3749/2; 2023 4845/1; 2024 2106/0; "
+            "2025 0/0; 2026 0/0."
+        ),
+        "exact_case_level_openings": (
+            "sa_opening_cases_exact.json: distinct case numbers with an A44 decision per initiation "
+            "year, TOTAL 1,083 over 1993-2026 (e.g. 2004 120, 2011 54, 2019 55, 2023 3, 2025 4, "
+            "2026 0)."
+        ),
+        "measured_coverage_caveat": (
+            "The notified-population filter returns 0 for 2025-2026 although sa_year_counts.json "
+            "reports 3,862 and 3,106 SA cases initiated in those years: notification-date coverage "
+            "in the live index/search API is incomplete for the most recent vintage, so recent-year "
+            "counts are NOT usable as split evidence. Additionally the opening prevalence drops from "
+            "~5-8% (2000s) to ~0.3% (2015+), a regime change that any task definition must state."
+        ),
+        "not_measured": (
+            "Per-field schema documentation for the shipped features (the 704 MB dump's full field "
+            "set was range-sampled, not enumerated); label observability reconciliation for "
+            "no-decision cases (sa_nodec_sample.py only printed a sample); the dated worked example; "
+            "the novelty sweep (check-novelty.py); the licence instrument itself."
+        ),
+    },
+}
+
+r["next_action"] = (
+    "PARKED until a reopening event. The ONE cheapest reopening probe, when the supported browser "
+    "is available (a later discovery tick): open https://competition-cases.ec.europa.eu/ in the "
+    "browser and read the dataset-specific legal-notice / about page (the plain-HTTP route is a "
+    "catch-all SPA shell), quoting the licence/permission text into license_evidence. In the same "
+    "session, resolve the recent-vintage coverage gap by measuring notification-date coverage in "
+    "the JSON dump itself (ranged samples of caseNotificationDate across 2024-2026 vintages) rather "
+    "than the search index, and sample the label-operand semantics for a handful of no-decision "
+    "cases. Only after the licence is readable AND notification/decision coverage is measured for "
+    "the intended split years: run scripts/check-novelty.py (state-aid decision prediction must be "
+    "shown distinct from the published merger-control task and from DG COMP Scoreboard aggregate "
+    "statistics), then reconcile the five discovery contracts and re-measure split windows on the "
+    "dump vintage that construction will pin (the object is regenerated - lifecycle rule "
+    "DeleteOldODPLogs, x-amz-expiration 2026-12-04 - so the build must pin its own digest). "
+    "Construction, if it ever proceeds, stays in the standard order: construction -> full-worker "
+    "qualification -> exact-byte acceptance -> reference/model scoring -> reporting."
+)
+
+json.dump(r, open(REC, "w"), indent=2, ensure_ascii=False)
+open(REC, "a").write("\n")
+print("record written:", REC)
+print("status:", r["status"], "| verdict:", r["verdict"], "| licence_class:", r["licence_class"])
