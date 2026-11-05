@@ -1,0 +1,24 @@
+{
+  "id": "dvsa-mot-baseline-001",
+  "candidate": "dvsa-mot-next-test-outcome",
+  "image": "python:3.13-slim",
+  "command": [
+    "sh",
+    "/workspace/run.sh"
+  ],
+  "server_type": "cpx32",
+  "location": "hel1",
+  "cpus": 4,
+  "memory_mb": 8192,
+  "timeout_minutes": 75,
+  "lifetime_minutes": 120,
+  "max_disk_mb": 8000,
+  "max_artifact_mb": 8,
+  "fetch": {
+    "repo": "earino/dataset-factory-staging",
+    "release": null,
+    "assets": []
+  },
+  "what": "Runner-contract baseline on the accepted dvsa-mot-next-test-outcome artifact, fetched from the private staging release created by dvsa-mot-build-001 (FILL release id + asset digests from the staging manifest after collection; the launcher refuses a null release): re-accept the five fetched files against the gate's own collected report BEFORE any score, materialize the runner workdir (public train+eval only), run the benchmark's own train.py and validate.sh unmodified, then the PRE-REGISTERED deciding check: the full model's per-row eval scores (same code path as validate.py, runner unmodified) vs every triad member (persistence_prior_result, calendar_make_week, vehicle_train_rate) on the identical eval rows, cluster-aware paired bootstrap, cluster = vehicle_id; plus the model's own cluster-bootstrap AUC CI for the degenerate global-rate member. Triad dominance -> DROP per the pre-registered rule. Contract only, no agent loop, no holdout score.",
+  "stopping_condition": "re-accept failure refuses scoring before any number exists; a failed runner contract is a recorded blocker, never rescored ad hoc; the deciding verdict (either direction) is a recorded finding, not a retry trigger - no re-tuning of threshold, window, label or features after any score."
+}
