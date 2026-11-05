@@ -1,0 +1,42 @@
+{
+  "id": "uneca-ecastats-coverage",
+  "status": "dropped",
+  "created_at": "2026-11-05T16:25:00+00:00",
+  "domain": "international-organisation statistical publishing (regional commission portal record, UNECA)",
+  "prediction_question": "No task carried to formulation: this is a publisher-coverage record for the Africa tick (operator named UNECA). UNECA's statistical product ECAStats (ecastats.uneca.org/data) was measured end-to-end this session: it is an aggregate indicator gateway - 27 theme-level indicator data products, 7,390 indicators, 2,955,076 data points across 1970-2028 for 54 countries - republishing series that originate predominantly from OTHER publishers (World Bank, IMF, FAO, UNDP, national statistical offices; 66 listed datasources). No event-grain, unit-grain or register product exists anywhere in its API surface, so no prediction instant could be stated for any product and no task was opened.",
+  "prediction_time": "n/a - no event-grain product exists in the measured API surface, so no publication instant or feature-availability window could be stated. The aggregate series carry only period labels (years 1970-2028).",
+  "target_definition": "n/a - no label source could be defined: the surface carries indicator time series, not dated outcomes of identifiable events or entities.",
+  "jurisdiction": {
+    "country": "ET",
+    "region": "Africa",
+    "publisher": "United Nations Economic Commission for Africa (UNECA / African Centre for Statistics), Addis Ababa - publisher of the ECAStats data portal",
+    "recorded_at": "2026-11-05"
+  },
+  "sources": [
+    {
+      "name": "ECAStats - UNECA statistical data portal ('Africa's Statistics. One Gateway.')",
+      "url": "https://ecastats.uneca.org/data/",
+      "api": "Vue SPA backed by a documented OpenAPI 3.0.1 service at https://ecastats.uneca.org/ecastats.api/swagger/v1/swagger.json (API base https://ecastats.uneca.org/ecastats.api/api, found via the SPA JS bundle /data/assets/index-B9a3nMaS.js). Endpoints measured live 2026-11-05: /api/countries, /api/data-products, /api/datasources, /api/general/summary, /api/topics all HTTP 200 JSON. Reachability: ecastats.uneca.org 200 from this coordinator with a plain client; data.uneca.org does not resolve; www.uneca.org/data is 404.",
+      "license": "unstated on the portal: the SPA bundle carries only a copyright line ('© Copyright {year}') plus Terms of Use and Privacy SPA routes; no CC/OGL-style open-licence instrument surfaced anywhere in the API or the bundle. The Terms of Use page is an SPA shell to a plain client and was NOT read in the supported browser - the decisive blocker is task shape, not licence. Not classified.",
+      "access": "Open, anonymous, fast (all probes 2026-11-05 from the coordinator, plain HTTP)."
+    }
+  ],
+  "license_evidence": [
+    "Own probe, 2026-11-05: the SPA JS bundle (index-B9a3nMaS.js, 189,533 bytes) contains the footer strings {termsOfUse: 'Terms of Use', privacy: 'Privacy', copyright: '© Copyright {year}'} and no licence grant, CC reference or open-data statement. The /data/terms and /data/about routes return the SPA shell (client-side rendering), so no terms text is readable by a plain HTTP client.",
+    "The 66-datasource listing (/api/datasources) attributes the underlying series to World Bank, IMF, FAO, UNDP and national sources - ECAStats is a redistribution gateway, so even a portal-level open licence would not substitute for each upstream publisher's terms.",
+    "Per the standing class-C policy an unstated licence would close a new lead on its own; here the task-shape evidence below is already decisive, so the licence instrument was not chased further."
+  ],
+  "construction_script": null,
+  "split_strategy": "n/a - no task-shaped series exists; nothing to split.",
+  "measurements": {
+    "api_surface_2026_11_05": "OpenAPI 3.0.1 spec (title 'ACS ECAStats API', 'An API for accessing country profiles, indicators, and time series data') enumerated in full: ~100 endpoints, ALL of them country/subregion/theme/indicator/time-series/chart/subscription/search surfaces (e.g. /api/SubIndicator/timeSeries/{rootIndicatorId}, /api/country-profile/{countryId}/{themeId}, /api/data-viz/*, /api/subscribe/*). No unit-grain, event-grain, project, register or listing product anywhere in the spec.",
+    "data_products_2026_11_05": "/api/data-products: 27 products, all theme-level indicator collections (Health: 28 indicators/115 sub-indicators/112,711 data points; SDGs; Climate change; ...). /api/general/summary: 7,390 indicators, 2,955,076 data points, min year 1970, max year 2028, 54 countries, 15 subregions. /api/topics: 25 topics (SDG 5,329 sub-indicators/804,895 data points; Climate 140/81,706; ...).",
+    "datasources_2026_11_05": "/api/datasources: 66 datasources, predominantly OTHER publishers (World Bank data.worldbank.org, IMF, FAO FAOSTAT, UNDP, plus national sources) - ECAStats republishes third-party indicator series rather than publishing primary event-grain records.",
+    "reachability_2026_11_05": "ecastats.uneca.org/ and /data/ HTTP 200 from this coordinator (plain client, no challenge); backing API discovered from the JS bundle; data.uneca.org: no DNS; www.uneca.org/data: 404. Same-session control: the 2026-11-04 Africa tick probe 01 also recorded ecastats.uneca.org -> 200 redirecting to /data.",
+    "family_landscape": "Aggregate-indicator portals are the recorded weak-task family on this bench (statcan-wds-aggregate-series park with three negative re-checks; the afdb record's AIH/Knoema note), and African macro-indicator series are a crowded raw-mirror space (electricsheepafrica HF organisation, 100+ standardized African indicator datasets, recorded in ma-datagovma-coverage)."
+  },
+  "artifacts": [],
+  "novelty_check": null,
+  "rejection_reason": "DROP (task shape, measured; licence secondary and unstated). ECAStats is a republishing gateway for aggregate indicator series: every product in the measured API surface is a country/indicator/theme time-series collection, and the underlying series belong to 66 mostly-third-party datasources (World Bank, IMF, FAO, UNDP, national sources). No event-grain or unit-grain product exists, so no prediction task can be formulated at any grain this project uses - the same measured family defect as statcan-wds-aggregate-series (aggregate-only = weak task value), compounded here by the mirror risk: the primary series are already published open by their own publishers. The portal's licence is also unstated (© copyright footer only), a class-C posture that would close a new lead on its own. This drop is about the ECAStats portal surface measured 2026-11-05, NOT about everything UNECA publishes.",
+  "next_action": "Closed for ECAStats. Reopen ONLY if: (a) a unit-grain or event-grain, ongoing, dated series appears in the ECAStats API surface or a successor UNECA data product - re-census is two anonymous calls (GET /ecastats.api/swagger/v1/swagger.json for new endpoint families; GET /ecastats.api/api/data-products for new product types), do not re-enumerate to re-verify the recorded finding; or (b) UNECA publishes a primary register with per-record dates (e.g. a project/procurement/licensing register) - then it is a NEW candidate with its own licence and novelty checks under the publisher's own instrument, not a reopen of this shape verdict. Do not read the SPA-routed Terms of Use for this verdict; if a new product is ever probed, read the licence instrument first, in the supported browser if the SPA blocks plain clients."
+}

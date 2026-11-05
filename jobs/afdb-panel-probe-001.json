@@ -1,0 +1,2080 @@
+{
+  "job": {
+    "id": "afdb-panel-probe-001",
+    "candidate": "afdb-project-cancellation",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 1024,
+    "timeout_minutes": 15,
+    "lifetime_minutes": 30,
+    "max_disk_mb": 2500,
+    "max_artifact_mb": 8,
+    "image": "python:3.12-slim",
+    "command": [
+      "python3",
+      "/workspace/probe.py"
+    ],
+    "what": "Discovery-owned read-only aggregate probe for afdb-project-cancellation, executing the record's next_action steps (2)+(3) in one pass. (1) Fresh IATI registry inventory from the worker (57 afdb datasets expected, license cc-by on each). (2) Worker-side reachability + bounded extraction of every afdb.org IATI XML resource URL (~57 files, ~140 MB expected): per-file status/bytes/sha256/seconds, one bounded retry per failure, abort at half-blocked. (3) Full-panel aggregate counts from the XML only - counts, no labelled rows, no task construction: status histogram (reconcile vs MapAfrica 230 cancelled / datastore 191), duplicate identifiers, terminal population per approval-year window with both classes for the proposed train<=2000 / eval 2001-2010 / holdout 2011-2023 splits, clustered country x year positive counts, censoring and eligibility accounting for status 1/2 (planned-end backlog), completed/cancelled actual-end presence, type-2-vs-type-1 offset distribution, per-file sha256 pinning the source vintage for construction. (4) IATI ActivityStatus codelist corroboration from a non-gated channel; MapAfrica plain-client control fetch (expected Cloudflare challenge, recorded not retried). Bounds: <=130 HTTP requests, <=400 MB total download, 45 s per request, 12-minute internal deadline inside the 15-minute job. No credentials in the container. Results to stdout (container.log) and /output/summary.json."
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 112640,
+  "source_sha256": "b5fab84afbb607180e16fcdc52653f9914652d0ffd0bcaac521c1b73bd37c989",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-05T16:10:36.316253+00:00",
+  "expires": 1793896836,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 174640740,
+  "known_hosts": "/opt/data/dataset-factory/.factory/afdb-panel-probe-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "afdb-panel-probe-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "image_id": "sha256:e695ab189fa2d082b1c61c69a6b888a5adeca61ceeccad107b1ed2a125721a9e",
+    "image_digests": [
+      "python@sha256:e695ab189fa2d082b1c61c69a6b888a5adeca61ceeccad107b1ed2a125721a9e"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 27.8,
+    "summary": {
+      "job": "afdb-panel-probe-001",
+      "started_utc": "2026-11-05T16:12:12Z",
+      "bounds": {
+        "requests": 130,
+        "bytes_total": 419430400,
+        "per_request_s": 45,
+        "deadline_s": 720
+      },
+      "complete": true,
+      "steps": [
+        {
+          "step": "egress_ip",
+          "ip": "2.29.159.168",
+          "status": 200
+        },
+        {
+          "step": "registry_inventory",
+          "http": 200,
+          "datasets": 57,
+          "xml_urls": 57,
+          "license_ids": {
+            "cc-by": 57
+          },
+          "first_last": [
+            [
+              "afdb-algeria",
+              "afdb-angola"
+            ],
+            [
+              "afdb-zimbabwe",
+              "libya"
+            ]
+          ]
+        },
+        {
+          "step": "iati_codelist",
+          "result": {
+            "xml": {
+              "status": 404,
+              "bytes": null,
+              "head": ""
+            },
+            "iatistandard_html": {
+              "status": 200,
+              "bytes": 280851,
+              "head": "\n\n<!DOCTYPE html>\n<!--[if lt IE 7]>      <html class=\"no-js lt-ie9 lt-ie8 lt-ie7\"> <![endif]-->\n<!--[if IE 7]>         <html class=\"no-js lt-ie9 lt-ie8\"> <![endif]-->\n<!--[if IE 8]>         <html class=\"no-js lt-ie9\"> <![endif]-->\n<!--[if gt IE 8]><!--> <html class=\"no-js\"> <!--<![endif]-->\n    <head>\n        <title>\n            \n                \n                    \n                        Activi"
+            }
+          }
+        },
+        {
+          "step": "fetch_summary",
+          "urls_attempted": 57,
+          "ok": 57,
+          "failed": 0,
+          "total_bytes": 172488241,
+          "fetch_wallclock_s": 7.2,
+          "per_file": [
+            {
+              "d": "afdb-algeria",
+              "b": 793198,
+              "s": 200,
+              "sha256": "7817d83c692f0429",
+              "t": 0.39
+            },
+            {
+              "d": "afdb-angola",
+              "b": 2017511,
+              "s": 200,
+              "sha256": "fdf3453887c37713",
+              "t": 0.38
+            },
+            {
+              "d": "afdb-benin",
+              "b": 3459797,
+              "s": 200,
+              "sha256": "dda51b4f887f3f0b",
+              "t": 0.14
+            },
+            {
+              "d": "afdb-botswana",
+              "b": 1259974,
+              "s": 200,
+              "sha256": "47621e12c4ea5424",
+              "t": 0.16
+            },
+            {
+              "d": "afdb-burkinafaso",
+              "b": 3847853,
+              "s": 200,
+              "sha256": "8612ff1cb150c453",
+              "t": 0.11
+            },
+            {
+              "d": "afdb-burundi",
+              "b": 2276998,
+              "s": 200,
+              "sha256": "25e01a74446eaa7d",
+              "t": 0.11
+            },
+            {
+              "d": "afdb-cameroon",
+              "b": 3881643,
+              "s": 200,
+              "sha256": "9beb672f5100bc02",
+              "t": 0.17
+            },
+            {
+              "d": "afdb-capeverde",
+              "b": 2458410,
+              "s": 200,
+              "sha256": "6248fb13753dd9f2",
+              "t": 0.11
+            },
+            {
+              "d": "afdb-centralafricanrepublic",
+              "b": 1680576,
+              "s": 200,
+              "sha256": "c3dec5b9324ba09d",
+              "t": 0.09
+            },
+            {
+              "d": "afdb-chad",
+              "b": 2723500,
+              "s": 200,
+              "sha256": "68d6fa049b8897a8",
+              "t": 0.1
+            },
+            {
+              "d": "afdb-ci",
+              "b": 3258632,
+              "s": 200,
+              "sha256": "4cb2d695c903a12b",
+              "t": 0.11
+            },
+            {
+              "d": "afdb-comoros",
+              "b": 1197529,
+              "s": 200,
+              "sha256": "3ac02657ca88f525",
+              "t": 0.1
+            },
+            {
+              "d": "afdb-congo",
+              "b": 1149848,
+              "s": 200,
+              "sha256": "c31470a8599c3ca5",
+              "t": 0.11
+            },
+            {
+              "d": "afdb-djibouti",
+              "b": 1627150,
+              "s": 200,
+              "sha256": "ffa49df2652d7845",
+              "t": 0.11
+            },
+            {
+              "d": "afdb-drc",
+              "b": 3269809,
+              "s": 200,
+              "sha256": "47fa6ca3a791a1c6",
+              "t": 0.11
+            },
+            {
+              "d": "afdb-egypt",
+              "b": 3108761,
+              "s": 200,
+              "sha256": "5b00daa0ef71c65d",
+              "t": 0.15
+            },
+            {
+              "d": "afdb-equatorialguinea",
+              "b": 1190991,
+              "s": 200,
+              "sha256": "1b03c2c986815108",
+              "t": 0.09
+            },
+            {
+              "d": "afdb-eritrea",
+              "b": 867878,
+              "s": 200,
+              "sha256": "427904f7b6cc3ada",
+              "t": 0.1
+            },
+            {
+              "d": "afdb-ethiopia",
+              "b": 3162558,
+              "s": 200,
+              "sha256": "050dccd55561347e",
+              "t": 0.11
+            },
+            {
+              "d": "afdb-gabon",
+              "b": 1772342,
+              "s": 200,
+              "sha256": "3edececd2866cb30",
+              "t": 0.1
+            },
+            {
+              "d": "afdb-gambia",
+              "b": 2204709,
+              "s": 200,
+              "sha256": "7013425aa66c9842",
+              "t": 0.12
+            },
+            {
+              "d": "afdb-ghana",
+              "b": 4043666,
+              "s": 200,
+              "sha256": "4241c1574cfa72ec",
+              "t": 0.13
+            },
+            {
+              "d": "afdb-guinea",
+              "b": 2517296,
+              "s": 200,
+              "sha256": "45f8926370670278",
+              "t": 0.12
+            },
+            {
+              "d": "afdb-guineabissau",
+              "b": 2018698,
+              "s": 200,
+              "sha256": "efd6737a1c251808",
+              "t": 0.11
+            },
+            {
+              "d": "afdb-kenya",
+              "b": 4912277,
+              "s": 200,
+              "sha256": "6bd14e3d76892da8",
+              "t": 0.13
+            },
+            {
+              "d": "afdb-lesotho",
+              "b": 2622242,
+              "s": 200,
+              "sha256": "b59d4c5003caa8ca",
+              "t": 0.12
+            },
+            {
+              "d": "afdb-liberia",
+              "b": 1514241,
+              "s": 200,
+              "sha256": "279afa59b00800ff",
+              "t": 0.12
+            },
+            {
+              "d": "afdb-madagascar",
+              "b": 3434145,
+              "s": 200,
+              "sha256": "e86d41e1b491f37e",
+              "t": 0.14
+            },
+            {
+              "d": "afdb-malawi",
+              "b": 3616688,
+              "s": 200,
+              "sha256": "68fb70b487f1c660",
+              "t": 0.11
+            },
+            {
+              "d": "afdb-mali",
+              "b": 3728758,
+              "s": 200,
+              "sha256": "ee1667c1820ea4b7",
+              "t": 0.11
+            },
+            {
+              "d": "afdb-mauritania",
+              "b": 2220564,
+              "s": 200,
+              "sha256": "d8e148d59b0dfb56",
+              "t": 0.11
+            },
+            {
+              "d": "afdb-mauritius",
+              "b": 932825,
+              "s": 200,
+              "sha256": "6fd1817ed8e7da70",
+              "t": 0.09
+            },
+            {
+              "d": "afdb-morocco",
+              "b": 5820447,
+              "s": 200,
+              "sha256": "dc12f7f27869bc3a",
+              "t": 0.15
+            },
+            {
+              "d": "afdb-mozambique",
+              "b": 3954337,
+              "s": 200,
+              "sha256": "fb1fe6ac28a35706",
+              "t": 0.12
+            },
+            {
+              "d": "afdb-multinational",
+              "b": 31111196,
+              "s": 200,
+              "sha256": "01fe1be370d5caf8",
+              "t": 0.36
+            },
+            {
+              "d": "afdb-namibia",
+              "b": 1598222,
+              "s": 200,
+              "sha256": "531798b9a2f7abde",
+              "t": 0.1
+            },
+            {
+              "d": "afdb-niger",
+              "b": 2819476,
+              "s": 200,
+              "sha256": "8f248318a1d65cd7",
+              "t": 0.13
+            },
+            {
+              "d": "afdb-nigeria",
+              "b": 3578616,
+              "s": 200,
+              "sha256": "b722a1c4dfc1f51d",
+              "t": 0.12
+            },
+            {
+              "d": "afdb-nonsovereign",
+              "b": 5298542,
+              "s": 200,
+              "sha256": "e21b38e32903cce4",
+              "t": 0.12
+            },
+            {
+              "d": "afdb-org",
+              "b": 549077,
+              "s": 200,
+              "sha256": "5e234b740518a9d9",
+              "t": 0.07
+            },
+            {
+              "d": "afdb-rwanda",
+              "b": 3103921,
+              "s": 200,
+              "sha256": "e2e6fcce07b1c298",
+              "t": 0.13
+            },
+            {
+              "d": "afdb-saotome",
+              "b": 1145985,
+              "s": 200,
+              "sha256": "4f6111c50929f758",
+              "t": 0.08
+            },
+            {
+              "d": "afdb-senegal",
+              "b": 4973762,
+              "s": 200,
+              "sha256": "bfbe8cd63b76990b",
+              "t": 0.11
+            },
+            {
+              "d": "afdb-seychelles",
+              "b": 1032558,
+              "s": 200,
+              "sha256": "3f362364ec3307f5",
+              "t": 0.1
+            },
+            {
+              "d": "afdb-sierraleone",
+              "b": 2048412,
+              "s": 200,
+              "sha256": "33c14bd11955a3dc",
+              "t": 0.1
+            },
+            {
+              "d": "afdb-somalia",
+              "b": 1453983,
+              "s": 200,
+              "sha256": "3c357b7cd8641011",
+              "t": 0.09
+            },
+            {
+              "d": "afdb-southafrica",
+              "b": 839540,
+              "s": 200,
+              "sha256": "2e8c1efa162887cc",
+              "t": 0.08
+            },
+            {
+              "d": "afdb-southsudan",
+              "b": 951014,
+              "s": 200,
+              "sha256": "ed5b75d9ab8ef8d7",
+              "t": 0.1
+            },
+            {
+              "d": "afdb-sudan",
+              "b": 1424489,
+              "s": 200,
+              "sha256": "7e8e48a4de36a705",
+              "t": 0.1
+            },
+            {
+              "d": "afdb-swaziland",
+              "b": 1810992,
+              "s": 200,
+              "sha256": "df8276bb3c2f3695",
+              "t": 0.09
+            },
+            {
+              "d": "afdb-tanzania",
+              "b": 4857556,
+              "s": 200,
+              "sha256": "f93dca1f09ac37a7",
+              "t": 0.13
+            },
+            {
+              "d": "afdb-togo",
+              "b": 1840415,
+              "s": 200,
+              "sha256": "d9ca40210fd172f3",
+              "t": 0.11
+            },
+            {
+              "d": "afdb-tunisia",
+              "b": 4526529,
+              "s": 200,
+              "sha256": "0c41f6e97fb4edca",
+              "t": 0.13
+            },
+            {
+              "d": "afdb-uganda",
+              "b": 3977403,
+              "s": 200,
+              "sha256": "a4f0865b4a575e56",
+              "t": 0.13
+            },
+            {
+              "d": "afdb-zambia",
+              "b": 3051706,
+              "s": 200,
+              "sha256": "dd0bee76c45eb2fa",
+              "t": 0.1
+            },
+            {
+              "d": "afdb-zimbabwe",
+              "b": 1882261,
+              "s": 200,
+              "sha256": "cf16c47115d9746a",
+              "t": 0.09
+            },
+            {
+              "d": "libya",
+              "b": 66735,
+              "s": 200,
+              "sha256": "a806e7d132c6386a",
+              "t": 0.07
+            }
+          ]
+        },
+        {
+          "step": "mapafrica_plain_client_control",
+          "status": 403,
+          "error": "HTTP 403",
+          "body_head": "<!DOCTYPE html><html lang=\"en-US\"><head><title>Just a moment...</title><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><meta http-e"
+        }
+      ],
+      "requests_used": 62,
+      "bytes_downloaded": 172859806,
+      "wallclock_s": 20.5,
+      "registry": {
+        "http": 200,
+        "datasets": 57,
+        "xml_urls": 57,
+        "license_ids": {
+          "cc-by": 57
+        }
+      },
+      "fetches": [
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatialgeriadata.xml",
+          "t0": 1793895135.7440572,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "793198",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 793198,
+          "sha256": "7817d83c692f0429b08539818933ca6a13232ae213f13595568235fe415d098f",
+          "elapsed_s": 0.39,
+          "dataset": "afdb-algeria",
+          "index": 0
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatiangoladata.xml",
+          "t0": 1793895136.1379242,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "2017511",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 2017511,
+          "sha256": "fdf3453887c377137bb7f1e6cacbcb467389967f1235e99315f2c59aea348051",
+          "elapsed_s": 0.38,
+          "dataset": "afdb-angola",
+          "index": 1
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatibenindata.xml",
+          "t0": 1793895136.5146863,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3459797",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 3459797,
+          "sha256": "dda51b4f887f3f0b70ed7edcefeed1bc17be4506a4f427f90b77f02aa7434f32",
+          "elapsed_s": 0.14,
+          "dataset": "afdb-benin",
+          "index": 2
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatibotswanadata.xml",
+          "t0": 1793895136.6522877,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1259974",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 1259974,
+          "sha256": "47621e12c4ea542495eb3399fdd9b0b107dd948ce8f19a3889a370ed7f3ac0ec",
+          "elapsed_s": 0.16,
+          "dataset": "afdb-botswana",
+          "index": 3
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatiburkinafasodata.xml",
+          "t0": 1793895136.8087943,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3847853",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 3847853,
+          "sha256": "8612ff1cb150c4531cfddfd55fce56890f515c7803b85d3dea0d6698d18a44a0",
+          "elapsed_s": 0.11,
+          "dataset": "afdb-burkinafaso",
+          "index": 4
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatiburundidata.xml",
+          "t0": 1793895136.9175289,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "2276998",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 2276998,
+          "sha256": "25e01a74446eaa7ded061eeadaca386d1005100e271c82d338486a19263a4328",
+          "elapsed_s": 0.11,
+          "dataset": "afdb-burundi",
+          "index": 5
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iaticameroondata.xml",
+          "t0": 1793895137.0235262,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3881643",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 3881643,
+          "sha256": "9beb672f5100bc02f7575b968940493307ced12d98563937e8f63ac0a4b24545",
+          "elapsed_s": 0.17,
+          "dataset": "afdb-cameroon",
+          "index": 6
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iaticapeverdedata.xml",
+          "t0": 1793895137.1895714,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "2458410",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 2458410,
+          "sha256": "6248fb13753dd9f24b26c594be740145d0d14f496f2e46d55a4b8bbaa803aec5",
+          "elapsed_s": 0.11,
+          "dataset": "afdb-capeverde",
+          "index": 7
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iaticardata.xml",
+          "t0": 1793895137.2963624,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1680576",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 1680576,
+          "sha256": "c3dec5b9324ba09d6837b736493c821007bf31964187c36ca72a3b2941c24152",
+          "elapsed_s": 0.09,
+          "dataset": "afdb-centralafricanrepublic",
+          "index": 8
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatichaddata.xml",
+          "t0": 1793895137.389801,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "2723500",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 2723500,
+          "sha256": "68d6fa049b8897a8a01d8410e6445de072bcc50e6046aee9e1b2d39e9a29e990",
+          "elapsed_s": 0.1,
+          "dataset": "afdb-chad",
+          "index": 9
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iaticotedivoiredata.xml",
+          "t0": 1793895137.4942675,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3258632",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 3258632,
+          "sha256": "4cb2d695c903a12b4aab61dd7769bca7192e7ea890ca3b6bb3111ea6ec6bd631",
+          "elapsed_s": 0.11,
+          "dataset": "afdb-ci",
+          "index": 10
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iaticomorosdata.xml",
+          "t0": 1793895137.605674,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1197529",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 1197529,
+          "sha256": "3ac02657ca88f5251c33d531978bbfcf20c4806f3a1ffb3eaf15ab61a0723d50",
+          "elapsed_s": 0.1,
+          "dataset": "afdb-comoros",
+          "index": 11
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iaticongodata.xml",
+          "t0": 1793895137.7040374,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1149848",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 1149848,
+          "sha256": "c31470a8599c3ca541b60a0f2cb209778e434cbd986672c5393abf6a7c2d7df8",
+          "elapsed_s": 0.11,
+          "dataset": "afdb-congo",
+          "index": 12
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatidjiboutidata.xml",
+          "t0": 1793895137.8101203,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1627150",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 1627150,
+          "sha256": "ffa49df2652d78459f820cd2985d3b5d5d817fb84f0899b1fef20cd76b9fcb14",
+          "elapsed_s": 0.11,
+          "dataset": "afdb-djibouti",
+          "index": 13
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatidrcdata.xml",
+          "t0": 1793895137.9171135,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3269809",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 3269809,
+          "sha256": "47fa6ca3a791a1c67e1581030d8e09aeb1e5d5f2698418b952c6451bb1d72337",
+          "elapsed_s": 0.11,
+          "dataset": "afdb-drc",
+          "index": 14
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatiegyptdata.xml",
+          "t0": 1793895138.0244792,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3108761",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 3108761,
+          "sha256": "5b00daa0ef71c65d74ce1835557a11c6d8316bb9fd6caced8e1b60ee7c140845",
+          "elapsed_s": 0.15,
+          "dataset": "afdb-egypt",
+          "index": 15
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatiequatorialguineadata.xml",
+          "t0": 1793895138.1718316,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1190991",
+          "last_modified": "Tue, 03 Nov 2026 12:05:17 GMT",
+          "bytes": 1190991,
+          "sha256": "1b03c2c986815108036cfb4040a82b941906b210c3ec4da76aae07c6b7f41080",
+          "elapsed_s": 0.09,
+          "dataset": "afdb-equatorialguinea",
+          "index": 16
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatieritreadata.xml",
+          "t0": 1793895138.263753,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "867878",
+          "last_modified": "Tue, 03 Nov 2026 12:04:26 GMT",
+          "bytes": 867878,
+          "sha256": "427904f7b6cc3ada375b68aa757625c96b560aa28a3e2a94e2517551f29f0c87",
+          "elapsed_s": 0.1,
+          "dataset": "afdb-eritrea",
+          "index": 17
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatiethiopiadata.xml",
+          "t0": 1793895138.3628178,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3162558",
+          "last_modified": "Tue, 03 Nov 2026 12:04:26 GMT",
+          "bytes": 3162558,
+          "sha256": "050dccd55561347ee7e62b676b5538087989211093723bab4784aa0829adf0dc",
+          "elapsed_s": 0.11,
+          "dataset": "afdb-ethiopia",
+          "index": 18
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatigabondata.xml",
+          "t0": 1793895138.4724336,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1772342",
+          "last_modified": "Tue, 03 Nov 2026 12:04:26 GMT",
+          "bytes": 1772342,
+          "sha256": "3edececd2866cb30482e74ea00cc989b2f90f17726f4fdb0195bf8d7c9077e6c",
+          "elapsed_s": 0.1,
+          "dataset": "afdb-gabon",
+          "index": 19
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatigambiadata.xml",
+          "t0": 1793895138.570547,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "2204709",
+          "last_modified": "Tue, 03 Nov 2026 12:04:25 GMT",
+          "bytes": 2204709,
+          "sha256": "7013425aa66c9842fee8583fa7324af63b3379c0d24b30abacc7b29a25cac8d8",
+          "elapsed_s": 0.12,
+          "dataset": "afdb-gambia",
+          "index": 20
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatighanadata.xml",
+          "t0": 1793895138.6891453,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "4043666",
+          "last_modified": "Tue, 03 Nov 2026 12:04:25 GMT",
+          "bytes": 4043666,
+          "sha256": "4241c1574cfa72ecf788b22e0a75bed44783efa67c2677aed3e59b3d44c2f75e",
+          "elapsed_s": 0.13,
+          "dataset": "afdb-ghana",
+          "index": 21
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatiguineadata.xml",
+          "t0": 1793895138.8206837,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "2517296",
+          "last_modified": "Tue, 03 Nov 2026 12:04:25 GMT",
+          "bytes": 2517296,
+          "sha256": "45f8926370670278b506089bde4fd920b6a5ed6135e144925915e2d2c43b6aef",
+          "elapsed_s": 0.12,
+          "dataset": "afdb-guinea",
+          "index": 22
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatiguineabissaudata.xml",
+          "t0": 1793895138.9417548,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "2018698",
+          "last_modified": "Tue, 03 Nov 2026 12:04:25 GMT",
+          "bytes": 2018698,
+          "sha256": "efd6737a1c251808dd4f44753f701ac6886ae85e4a5a88614c12a7d6e2fdb2fa",
+          "elapsed_s": 0.11,
+          "dataset": "afdb-guineabissau",
+          "index": 23
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatikenyadata.xml",
+          "t0": 1793895139.052675,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "4912277",
+          "last_modified": "Tue, 03 Nov 2026 12:04:25 GMT",
+          "bytes": 4912277,
+          "sha256": "6bd14e3d76892da8a3ffea320754ee50ab6fb92f952c3195812a103a10e7a3ac",
+          "elapsed_s": 0.13,
+          "dataset": "afdb-kenya",
+          "index": 24
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatilesothodata.xml",
+          "t0": 1793895139.1787062,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "2622242",
+          "last_modified": "Tue, 03 Nov 2026 12:04:25 GMT",
+          "bytes": 2622242,
+          "sha256": "b59d4c5003caa8cabce6f7b3c826b996605b930ab05d3328625d5e619f8645bd",
+          "elapsed_s": 0.12,
+          "dataset": "afdb-lesotho",
+          "index": 25
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatiliberiadata.xml",
+          "t0": 1793895139.2974844,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1514241",
+          "last_modified": "Tue, 03 Nov 2026 12:04:25 GMT",
+          "bytes": 1514241,
+          "sha256": "279afa59b00800ff19905a5cfc05176012515771c6191de95b7c625dc26260ff",
+          "elapsed_s": 0.12,
+          "dataset": "afdb-liberia",
+          "index": 26
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatimadagascardata.xml",
+          "t0": 1793895139.4131644,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3434145",
+          "last_modified": "Tue, 03 Nov 2026 12:04:25 GMT",
+          "bytes": 3434145,
+          "sha256": "e86d41e1b491f37e854a9d9d1c7b82e97165bd82499f465d6f28911c575931ea",
+          "elapsed_s": 0.14,
+          "dataset": "afdb-madagascar",
+          "index": 27
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatimalawidata.xml",
+          "t0": 1793895139.5544348,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3616688",
+          "last_modified": "Tue, 03 Nov 2026 12:04:25 GMT",
+          "bytes": 3616688,
+          "sha256": "68fb70b487f1c6607f814f0ce63d754c30c0868fa45a14b9993720b76322c699",
+          "elapsed_s": 0.11,
+          "dataset": "afdb-malawi",
+          "index": 28
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatimalidata.xml",
+          "t0": 1793895139.6646838,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3728758",
+          "last_modified": "Tue, 03 Nov 2026 12:04:25 GMT",
+          "bytes": 3728758,
+          "sha256": "ee1667c1820ea4b730e48085ca114b5f323544187aa61723a8e9ddf31b9116a0",
+          "elapsed_s": 0.11,
+          "dataset": "afdb-mali",
+          "index": 29
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatimauritaniadata.xml",
+          "t0": 1793895139.7753932,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "2220564",
+          "last_modified": "Tue, 03 Nov 2026 12:04:25 GMT",
+          "bytes": 2220564,
+          "sha256": "d8e148d59b0dfb5622e072e9239294e763ead433333e7144b6256271b7f45c05",
+          "elapsed_s": 0.11,
+          "dataset": "afdb-mauritania",
+          "index": 30
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatimauritiusdata.xml",
+          "t0": 1793895139.8886828,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "932825",
+          "last_modified": "Tue, 03 Nov 2026 12:04:25 GMT",
+          "bytes": 932825,
+          "sha256": "6fd1817ed8e7da70236b06db5ad6ce84d88f89a1cb8bb938bac8d75e88dc2a22",
+          "elapsed_s": 0.09,
+          "dataset": "afdb-mauritius",
+          "index": 31
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatimoroccodata.xml",
+          "t0": 1793895139.9822114,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "5820447",
+          "last_modified": "Tue, 03 Nov 2026 12:04:25 GMT",
+          "bytes": 5820447,
+          "sha256": "dc12f7f27869bc3abac1fa6478e9351264db311cc5513c7c1de681cf4b91fae6",
+          "elapsed_s": 0.15,
+          "dataset": "afdb-morocco",
+          "index": 32
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatimozambiquedata.xml",
+          "t0": 1793895140.129244,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3954337",
+          "last_modified": "Tue, 03 Nov 2026 12:03:22 GMT",
+          "bytes": 3954337,
+          "sha256": "fb1fe6ac28a35706b4c834d52d9d998e45b4d53556900045c915430364300039",
+          "elapsed_s": 0.12,
+          "dataset": "afdb-mozambique",
+          "index": 33
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatimultinationaldata.xml",
+          "t0": 1793895140.2464433,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "31111196",
+          "last_modified": "Tue, 03 Nov 2026 12:03:22 GMT",
+          "bytes": 31111196,
+          "sha256": "01fe1be370d5caf8a0b551fed0e9d1525ccf1bbf67765ae50da72d5d557d04f9",
+          "elapsed_s": 0.36,
+          "dataset": "afdb-multinational",
+          "index": 34
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatinamibiadata.xml",
+          "t0": 1793895140.6084342,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1598222",
+          "last_modified": "Tue, 03 Nov 2026 12:02:51 GMT",
+          "bytes": 1598222,
+          "sha256": "531798b9a2f7abded37467889d688743e1d69bae7f008094d6fe001d636fa194",
+          "elapsed_s": 0.1,
+          "dataset": "afdb-namibia",
+          "index": 35
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatinigerdata.xml",
+          "t0": 1793895140.7061043,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "2819476",
+          "last_modified": "Tue, 03 Nov 2026 12:02:51 GMT",
+          "bytes": 2819476,
+          "sha256": "8f248318a1d65cd729c4b1665138aafecb6f4ac69075e257b8d5ee7e5a3ff46e",
+          "elapsed_s": 0.13,
+          "dataset": "afdb-niger",
+          "index": 36
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatinigeriadata.xml",
+          "t0": 1793895140.8363616,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3578616",
+          "last_modified": "Tue, 03 Nov 2026 12:02:51 GMT",
+          "bytes": 3578616,
+          "sha256": "b722a1c4dfc1f51d3161f34053add05bd0c6d4f23a264e3dfd9e344263a1677d",
+          "elapsed_s": 0.12,
+          "dataset": "afdb-nigeria",
+          "index": 37
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatinonsovereignprojectsdata.xml",
+          "t0": 1793895140.959681,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "5298542",
+          "last_modified": "Tue, 03 Nov 2026 12:02:51 GMT",
+          "bytes": 5298542,
+          "sha256": "e21b38e32903cce47ce3fbff14a4c902cca3ad736e76dc2b73e164824015522d",
+          "elapsed_s": 0.12,
+          "dataset": "afdb-nonsovereign",
+          "index": 38
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatiorganisationdata.xml",
+          "t0": 1793895141.0797927,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "549077",
+          "last_modified": "Thu, 02 Jul 2026 12:21:58 GMT",
+          "bytes": 549077,
+          "sha256": "5e234b740518a9d9903848de99db6bafbbf289215ee5a9d296a1782612997801",
+          "elapsed_s": 0.07,
+          "dataset": "afdb-org",
+          "index": 39
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatirwandadata.xml",
+          "t0": 1793895141.1543837,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3103921",
+          "last_modified": "Tue, 03 Nov 2026 12:02:51 GMT",
+          "bytes": 3103921,
+          "sha256": "e2e6fcce07b1c298f3b41893a7153df73995b7d8612e5880b6ea251cb0a00e30",
+          "elapsed_s": 0.13,
+          "dataset": "afdb-rwanda",
+          "index": 40
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatisaotomeandprincipedata.xml",
+          "t0": 1793895141.2835515,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1145985",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 1145985,
+          "sha256": "4f6111c50929f75834fcba9fb1efee66bc89f4d45979595592d03c9d36ed9a44",
+          "elapsed_s": 0.08,
+          "dataset": "afdb-saotome",
+          "index": 41
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatisenegaldata.xml",
+          "t0": 1793895141.3680453,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "4973762",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 4973762,
+          "sha256": "bfbe8cd63b76990b0bc33fa8dc9b7c6a3188d0b4532c880c103dfc542ab18412",
+          "elapsed_s": 0.11,
+          "dataset": "afdb-senegal",
+          "index": 42
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatiseychellesdata.xml",
+          "t0": 1793895141.4826741,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1032558",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 1032558,
+          "sha256": "3f362364ec3307f54b9005e9bf8201b72340fec33a9af5054e74fea0188b6208",
+          "elapsed_s": 0.1,
+          "dataset": "afdb-seychelles",
+          "index": 43
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatisierraleonedata.xml",
+          "t0": 1793895141.5876722,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "2048412",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 2048412,
+          "sha256": "33c14bd11955a3dc7f368e08a5e4c3714f2facedde929bb41375954b76776222",
+          "elapsed_s": 0.1,
+          "dataset": "afdb-sierraleone",
+          "index": 44
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatisomaliadata.xml",
+          "t0": 1793895141.6901393,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1453983",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 1453983,
+          "sha256": "3c357b7cd8641011eccd556876d973b428451469b2c81d6509cecf52a12ce1ec",
+          "elapsed_s": 0.09,
+          "dataset": "afdb-somalia",
+          "index": 45
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatisouthafricadata.xml",
+          "t0": 1793895141.7807446,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "839540",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 839540,
+          "sha256": "2e8c1efa162887cc62f698b0aafdc79401d128c8910bbad2c316985359f227fd",
+          "elapsed_s": 0.08,
+          "dataset": "afdb-southafrica",
+          "index": 46
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatisouthsudandata.xml",
+          "t0": 1793895141.8638902,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "951014",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 951014,
+          "sha256": "ed5b75d9ab8ef8d784ba87022d69a4eb7e64235f26e959644f6b34ab90add40a",
+          "elapsed_s": 0.1,
+          "dataset": "afdb-southsudan",
+          "index": 47
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatisudandata.xml",
+          "t0": 1793895141.9617238,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1424489",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 1424489,
+          "sha256": "7e8e48a4de36a705e24e26c0d1542237f2b2722a3360b4d2788f7618b2cae8f5",
+          "elapsed_s": 0.1,
+          "dataset": "afdb-sudan",
+          "index": 48
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatiswazilanddata.xml",
+          "t0": 1793895142.0622811,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1810992",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 1810992,
+          "sha256": "df8276bb3c2f3695423447bd6f7adce2559b0f08c04ee92e3c843b6141031f15",
+          "elapsed_s": 0.09,
+          "dataset": "afdb-swaziland",
+          "index": 49
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatitanzaniadata.xml",
+          "t0": 1793895142.1569467,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "4857556",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 4857556,
+          "sha256": "f93dca1f09ac37a7818760e41c8f1b4cf461bb55421ae6bcaba2b041bf13a23d",
+          "elapsed_s": 0.13,
+          "dataset": "afdb-tanzania",
+          "index": 50
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatitogodata.xml",
+          "t0": 1793895142.2903404,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1840415",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 1840415,
+          "sha256": "d9ca40210fd172f37eec72ddb64e5be405aedea0fb8e8cd0b83735a784e8ca46",
+          "elapsed_s": 0.11,
+          "dataset": "afdb-togo",
+          "index": 51
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatitunisiadata.xml",
+          "t0": 1793895142.3999374,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "4526529",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 4526529,
+          "sha256": "0c41f6e97fb4edca984c8ccd62a621e7582d40e1e78ccbaeb2d8e3c239523d00",
+          "elapsed_s": 0.13,
+          "dataset": "afdb-tunisia",
+          "index": 52
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatiugandadata.xml",
+          "t0": 1793895142.5298338,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3977403",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 3977403,
+          "sha256": "a4f0865b4a575e56995a9c5d810e0d6b7f3a87e6f419f607e3d378df9b1f520e",
+          "elapsed_s": 0.13,
+          "dataset": "afdb-uganda",
+          "index": 53
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatizambiadata.xml",
+          "t0": 1793895142.6630716,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "3051706",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 3051706,
+          "sha256": "dd0bee76c45eb2fa1369e51c95022db93cc06f8274ef757b29e8a20a05665718",
+          "elapsed_s": 0.1,
+          "dataset": "afdb-zambia",
+          "index": 54
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatizimbabwedata.xml",
+          "t0": 1793895142.7642918,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "1882261",
+          "last_modified": "Tue, 03 Nov 2026 12:02:15 GMT",
+          "bytes": 1882261,
+          "sha256": "cf16c47115d9746a21025fd529730705fad84e654d6f0b4b85ae43c482ff51e5",
+          "elapsed_s": 0.09,
+          "dataset": "afdb-zimbabwe",
+          "index": 55
+        },
+        {
+          "url": "https://www.afdb.org/sites/default/files/iati/iatilibyadata.xml",
+          "t0": 1793895142.8581736,
+          "status": 200,
+          "content_type": "text/xml",
+          "content_encoding": null,
+          "content_length_header": "66735",
+          "last_modified": "Tue, 03 Nov 2026 12:04:25 GMT",
+          "bytes": 66735,
+          "sha256": "a806e7d132c6386a63fcaa4127dd65c8e915e24fd3a83cee2db656ff106938dd",
+          "elapsed_s": 0.07,
+          "dataset": "libya",
+          "index": 56
+        }
+      ],
+      "counts": {
+        "activities_total": 5188,
+        "duplicate_identifiers": 0,
+        "status_histogram": {
+          "3": 3897,
+          "5": 191,
+          "2": 819,
+          "1": 281
+        },
+        "status_outside_1235": {},
+        "terminal_missing_type1": 0,
+        "terminal_missing_type3": 38,
+        "completed_with_actual_end": 3889,
+        "completed_without_actual_end": 8,
+        "cancelled_with_actual_end": 0,
+        "cancelled_without_actual_end": 191,
+        "type2_type1_offset_days": {
+          "n": 5059,
+          "median": 75,
+          "min": 0,
+          "max": 2392,
+          "negatives": 0
+        },
+        "type2_type1_offset_days_cancelled": {
+          "n": 185,
+          "median": 78
+        },
+        "censored": {
+          "n": 1100,
+          "planned_end_le_2015": 0,
+          "planned_end_le_2020": 1,
+          "planned_end_le_2026": 271,
+          "planned_end_missing": 173,
+          "min_type1_year": 2007
+        },
+        "distinct_sectors_vocab1": 57,
+        "multinational_rows": 0,
+        "per_approval_year": {
+          "1967": {
+            "term": 1,
+            "pos": 0,
+            "neg": 1,
+            "cens": 0
+          },
+          "1968": {
+            "term": 2,
+            "pos": 0,
+            "neg": 2,
+            "cens": 0
+          },
+          "1969": {
+            "term": 4,
+            "pos": 1,
+            "neg": 3,
+            "cens": 0
+          },
+          "1970": {
+            "term": 6,
+            "pos": 0,
+            "neg": 6,
+            "cens": 0
+          },
+          "1971": {
+            "term": 10,
+            "pos": 0,
+            "neg": 10,
+            "cens": 0
+          },
+          "1972": {
+            "term": 16,
+            "pos": 1,
+            "neg": 15,
+            "cens": 0
+          },
+          "1973": {
+            "term": 14,
+            "pos": 0,
+            "neg": 14,
+            "cens": 0
+          },
+          "1974": {
+            "term": 39,
+            "pos": 0,
+            "neg": 39,
+            "cens": 0
+          },
+          "1975": {
+            "term": 42,
+            "pos": 3,
+            "neg": 39,
+            "cens": 0
+          },
+          "1976": {
+            "term": 37,
+            "pos": 2,
+            "neg": 35,
+            "cens": 0
+          },
+          "1977": {
+            "term": 49,
+            "pos": 3,
+            "neg": 46,
+            "cens": 0
+          },
+          "1978": {
+            "term": 62,
+            "pos": 0,
+            "neg": 62,
+            "cens": 0
+          },
+          "1979": {
+            "term": 53,
+            "pos": 5,
+            "neg": 48,
+            "cens": 0
+          },
+          "1980": {
+            "term": 51,
+            "pos": 0,
+            "neg": 51,
+            "cens": 0
+          },
+          "1981": {
+            "term": 61,
+            "pos": 5,
+            "neg": 56,
+            "cens": 0
+          },
+          "1982": {
+            "term": 56,
+            "pos": 5,
+            "neg": 51,
+            "cens": 0
+          },
+          "1983": {
+            "term": 62,
+            "pos": 4,
+            "neg": 58,
+            "cens": 0
+          },
+          "1984": {
+            "term": 65,
+            "pos": 6,
+            "neg": 59,
+            "cens": 0
+          },
+          "1985": {
+            "term": 70,
+            "pos": 7,
+            "neg": 63,
+            "cens": 0
+          },
+          "1986": {
+            "term": 71,
+            "pos": 3,
+            "neg": 68,
+            "cens": 0
+          },
+          "1987": {
+            "term": 80,
+            "pos": 4,
+            "neg": 76,
+            "cens": 0
+          },
+          "1988": {
+            "term": 67,
+            "pos": 2,
+            "neg": 65,
+            "cens": 0
+          },
+          "1989": {
+            "term": 105,
+            "pos": 8,
+            "neg": 97,
+            "cens": 0
+          },
+          "1990": {
+            "term": 109,
+            "pos": 8,
+            "neg": 101,
+            "cens": 0
+          },
+          "1991": {
+            "term": 130,
+            "pos": 7,
+            "neg": 123,
+            "cens": 0
+          },
+          "1992": {
+            "term": 103,
+            "pos": 9,
+            "neg": 94,
+            "cens": 0
+          },
+          "1993": {
+            "term": 121,
+            "pos": 13,
+            "neg": 108,
+            "cens": 0
+          },
+          "1994": {
+            "term": 19,
+            "pos": 1,
+            "neg": 18,
+            "cens": 0
+          },
+          "1995": {
+            "term": 7,
+            "pos": 1,
+            "neg": 6,
+            "cens": 0
+          },
+          "1996": {
+            "term": 24,
+            "pos": 1,
+            "neg": 23,
+            "cens": 0
+          },
+          "1997": {
+            "term": 89,
+            "pos": 8,
+            "neg": 81,
+            "cens": 0
+          },
+          "1998": {
+            "term": 107,
+            "pos": 6,
+            "neg": 101,
+            "cens": 0
+          },
+          "1999": {
+            "term": 55,
+            "pos": 4,
+            "neg": 51,
+            "cens": 0
+          },
+          "2000": {
+            "term": 84,
+            "pos": 4,
+            "neg": 80,
+            "cens": 0
+          },
+          "2001": {
+            "term": 97,
+            "pos": 7,
+            "neg": 90,
+            "cens": 0
+          },
+          "2002": {
+            "term": 88,
+            "pos": 6,
+            "neg": 82,
+            "cens": 0
+          },
+          "2003": {
+            "term": 88,
+            "pos": 2,
+            "neg": 86,
+            "cens": 0
+          },
+          "2004": {
+            "term": 107,
+            "pos": 1,
+            "neg": 106,
+            "cens": 0
+          },
+          "2005": {
+            "term": 66,
+            "pos": 1,
+            "neg": 65,
+            "cens": 0
+          },
+          "2006": {
+            "term": 108,
+            "pos": 2,
+            "neg": 106,
+            "cens": 0
+          },
+          "2007": {
+            "term": 80,
+            "pos": 0,
+            "neg": 80,
+            "cens": 1
+          },
+          "2008": {
+            "term": 92,
+            "pos": 0,
+            "neg": 92,
+            "cens": 2
+          },
+          "2009": {
+            "term": 148,
+            "pos": 6,
+            "neg": 142,
+            "cens": 2
+          },
+          "2010": {
+            "term": 111,
+            "pos": 4,
+            "neg": 107,
+            "cens": 0
+          },
+          "2011": {
+            "term": 141,
+            "pos": 3,
+            "neg": 138,
+            "cens": 0
+          },
+          "2012": {
+            "term": 110,
+            "pos": 3,
+            "neg": 107,
+            "cens": 6
+          },
+          "2013": {
+            "term": 182,
+            "pos": 6,
+            "neg": 176,
+            "cens": 7
+          },
+          "2014": {
+            "term": 136,
+            "pos": 2,
+            "neg": 134,
+            "cens": 12
+          },
+          "2015": {
+            "term": 123,
+            "pos": 6,
+            "neg": 117,
+            "cens": 29
+          },
+          "2016": {
+            "term": 131,
+            "pos": 2,
+            "neg": 129,
+            "cens": 33
+          },
+          "2017": {
+            "term": 92,
+            "pos": 5,
+            "neg": 87,
+            "cens": 40
+          },
+          "2018": {
+            "term": 69,
+            "pos": 3,
+            "neg": 66,
+            "cens": 73
+          },
+          "2019": {
+            "term": 71,
+            "pos": 7,
+            "neg": 64,
+            "cens": 88
+          },
+          "2020": {
+            "term": 90,
+            "pos": 0,
+            "neg": 90,
+            "cens": 43
+          },
+          "2021": {
+            "term": 25,
+            "pos": 1,
+            "neg": 24,
+            "cens": 109
+          },
+          "2022": {
+            "term": 42,
+            "pos": 1,
+            "neg": 41,
+            "cens": 150
+          },
+          "2023": {
+            "term": 16,
+            "pos": 2,
+            "neg": 14,
+            "cens": 142
+          },
+          "2024": {
+            "term": 3,
+            "pos": 0,
+            "neg": 3,
+            "cens": 150
+          },
+          "2025": {
+            "term": 1,
+            "pos": 0,
+            "neg": 1,
+            "cens": 131
+          },
+          "2026": {
+            "term": 0,
+            "pos": 0,
+            "neg": 0,
+            "cens": 82
+          }
+        },
+        "windows": {
+          "train": {
+            "rows": 1871,
+            "positives": 121,
+            "negatives": 1750,
+            "positive_rate": 0.0647,
+            "distinct_countries_terminal": 52,
+            "distinct_countries_with_positives": 42,
+            "positive_country_year_cells": 107,
+            "positives_in_cells_with_ge2": 26,
+            "top_clusters": [
+              [
+                "LR|1984",
+                3
+              ],
+              [
+                "MW|1990",
+                3
+              ],
+              [
+                "DZ|1993",
+                2
+              ],
+              [
+                "AO|1989",
+                2
+              ],
+              [
+                "AO|1983",
+                2
+              ],
+              [
+                "BI|1990",
+                2
+              ],
+              [
+                "CI|1997",
+                2
+              ],
+              [
+                "GQ|1985",
+                2
+              ],
+              [
+                "GW|1987",
+                2
+              ],
+              [
+                "LR|1982",
+                2
+              ],
+              [
+                "NE|1984",
+                2
+              ],
+              [
+                "SL|1991",
+                2
+              ]
+            ],
+            "top_positive_countries": [
+              [
+                "LR",
+                8
+              ],
+              [
+                "AO",
+                7
+              ],
+              [
+                "BI",
+                7
+              ],
+              [
+                "CI",
+                6
+              ],
+              [
+                "GW",
+                6
+              ],
+              [
+                "NE",
+                5
+              ],
+              [
+                "RW",
+                5
+              ],
+              [
+                "CM",
+                4
+              ],
+              [
+                "GA",
+                4
+              ],
+              [
+                "MW",
+                4
+              ]
+            ]
+          },
+          "eval": {
+            "rows": 985,
+            "positives": 29,
+            "negatives": 956,
+            "positive_rate": 0.0294,
+            "distinct_countries_terminal": 52,
+            "distinct_countries_with_positives": 21,
+            "positive_country_year_cells": 26,
+            "positives_in_cells_with_ge2": 6,
+            "top_clusters": [
+              [
+                "DZ|2002",
+                2
+              ],
+              [
+                "CF|2009",
+                2
+              ],
+              [
+                "EG|2001",
+                2
+              ],
+              [
+                "AO|2001",
+                1
+              ],
+              [
+                "AO|2003",
+                1
+              ],
+              [
+                "BJ|2002",
+                1
+              ],
+              [
+                "BF|2009",
+                1
+              ],
+              [
+                "CM|2006",
+                1
+              ],
+              [
+                "CI|2002",
+                1
+              ],
+              [
+                "GQ|2009",
+                1
+              ],
+              [
+                "LR|2009",
+                1
+              ],
+              [
+                "MG|2006",
+                1
+              ]
+            ],
+            "top_positive_countries": [
+              [
+                "MU",
+                3
+              ],
+              [
+                "DZ",
+                2
+              ],
+              [
+                "AO",
+                2
+              ],
+              [
+                "CF",
+                2
+              ],
+              [
+                "EG",
+                2
+              ],
+              [
+                "MR",
+                2
+              ],
+              [
+                null,
+                2
+              ],
+              [
+                "BJ",
+                1
+              ],
+              [
+                "BF",
+                1
+              ],
+              [
+                "CM",
+                1
+              ]
+            ]
+          },
+          "holdout": {
+            "rows": 1228,
+            "positives": 41,
+            "negatives": 1187,
+            "positive_rate": 0.0334,
+            "distinct_countries_terminal": 55,
+            "distinct_countries_with_positives": 17,
+            "positive_country_year_cells": 34,
+            "positives_in_cells_with_ge2": 12,
+            "top_clusters": [
+              [
+                "None|2015",
+                3
+              ],
+              [
+                "TN|2013",
+                3
+              ],
+              [
+                "None|2014",
+                2
+              ],
+              [
+                "NG|2018",
+                2
+              ],
+              [
+                "SL|2013",
+                2
+              ],
+              [
+                "BJ|2019",
+                1
+              ],
+              [
+                "CF|2012",
+                1
+              ],
+              [
+                "EG|2015",
+                1
+              ],
+              [
+                "EG|2021",
+                1
+              ],
+              [
+                "ER|2019",
+                1
+              ],
+              [
+                "KE|2017",
+                1
+              ],
+              [
+                "ML|2017",
+                1
+              ]
+            ],
+            "top_positive_countries": [
+              [
+                null,
+                11
+              ],
+              [
+                "TN",
+                6
+              ],
+              [
+                "ML",
+                3
+              ],
+              [
+                "NG",
+                3
+              ],
+              [
+                "EG",
+                2
+              ],
+              [
+                "MA",
+                2
+              ],
+              [
+                "GN",
+                2
+              ],
+              [
+                "SL",
+                2
+              ],
+              [
+                "SD",
+                2
+              ],
+              [
+                "BJ",
+                1
+              ]
+            ]
+          },
+          "recent": {
+            "rows": 4,
+            "positives": 0,
+            "negatives": 4,
+            "positive_rate": 0.0,
+            "distinct_countries_terminal": 4,
+            "distinct_countries_with_positives": 0,
+            "positive_country_year_cells": 0,
+            "positives_in_cells_with_ge2": 0,
+            "top_clusters": [],
+            "top_positive_countries": []
+          }
+        }
+      }
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 435425973,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-53577aa67fc1c03fc6c9",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-53577aa67fc1c03fc6c9/manifest.json",
+    "assets": [
+      {
+        "id": 713981888,
+        "size": 44298,
+        "sha256": "215c20d9e9727deb6dfcc3f98f072c77554ed6e8195e9f139b897aea1fbe0b0f"
+      },
+      {
+        "id": 713981988,
+        "size": 112640,
+        "sha256": "b5fab84afbb607180e16fcdc52653f9914652d0ffd0bcaac521c1b73bd37c989"
+      },
+      {
+        "id": 713982133,
+        "size": 4687,
+        "sha256": "56fc2b4b4b5c0b2c0403c5c62ddcc40b1cfcc58b1f99030fdadd22dfad5a35e6"
+      },
+      {
+        "id": 713982239,
+        "size": 63190,
+        "sha256": "a324477c1df5b6b2a5aeb8fa361499be6d227ab04430c8a23769c5fc2da40f93"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-05T16:18:14.438284+00:00",
+  "deleted_at": "2026-11-05T16:20:10.944822+00:00"
+}

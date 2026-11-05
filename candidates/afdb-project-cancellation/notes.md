@@ -89,3 +89,42 @@ triad shows the label carries signal beyond country/sector/decade rate tables.
 Kill: triad dominance (third measured instance of the WB family defect), or worker-side
 extraction blocked with no clean fallback channel, or the registry population cannot support
 the eligibility rule (e.g. the historical backfill proves incomplete against MapAfrica).
+
+## Worker panel probe 2026-11-05 (executed next_action steps 1-3)
+
+Probe recipe: probe/probe_worker_panel_001.py (durable copy), staged at
+.factory/job-sources/afdb-panel-probe-001/, job id afdb-panel-probe-001,
+cx23/hel1, EUR 0.04 reserved. Result: succeeded exit 0, 20.5 s job wallclock.
+Staging release 435425973 (private). Worker destroyed 16:20:10Z with provider
+read-back (GET /servers/174640740 -> HTTP 404 not_found; /servers 0; /primary_ips 0).
+
+Measured (all numbers in record.measurements.worker_panel_probe_2026_11_05):
+
+- REACHABILITY: 57/57 afdb.org IATI XML URLs HTTP 200 from the Hetzner worker
+  (egress 2.29.159.168). Registry refreshed from the worker: 57 datasets, cc-by
+  57/57. Zero failures, zero retries. The dws.gov.za risk (coordinator access
+  not proving worker access) is settled affirmatively for this source.
+- COST: 172,488,241 B across 57 files in 7.2 s fetch / 20.5 s total; largest file
+  afdb-cameroon 3,881,643 B; 62/130 request budget. All 57 sha256 digests recorded
+  as the source vintage pin for construction.
+- POPULATION: 5,188 activities, 0 duplicate identifiers; status {1:281, 2:819,
+  3:3897, 5:191}. RECONCILIATION RESOLVED: registry 191 cancelled = datastore
+  191; MapAfrica's 230 is a larger, different population (6,000 activities).
+- TERMINAL: 4,088 rows; 0 missing type-1 dates (instant stateable for every scored
+  row); 38 missing planned end; 0/191 cancelled carry an actual end.
+- TIMING: type-2 follows type-1 by median 75 days (n=5,059; 0 negative offsets).
+- CENSORING: 1,100 status-1/2 rows, all approvals 2007+ (min type-1 2007);
+  planned_end <=2015: 0, <=2020: 1, <=2026: 271, missing: 173.
+- SPLITS: the 2026-11-04 proposal (train <=2000 / eval 2001-2010 / holdout
+  2011-2023) measures 121/29/41 positives - eval is ONE SHORT of the gate's 30.
+  Re-cut before any score: eval 2001-2011 = 1,126 rows/32 positives/27-29 cells;
+  holdout 2012-2023 = 1,118/38/31-33 cells; train unchanged. Every bound clears
+  the gate (30 positives, 20 events).
+- GRAIN: 13 positive rows carry no recipient-country (multinational); event key
+  must be country-or-region x approval year.
+- CODELIST: machine-readable ActivityStatus.xml 404; labels used are MapAfrica's
+  own (1 Approved, 2 Ongoing, 3 Completed, 5 Cancelled), measured 2026-11-04.
+
+Verdict: READY. The construction-time deciding check stays the pre-registered
+rate triad (see record.next_action); neither row-level data nor any score exists
+on this host.

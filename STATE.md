@@ -1,3 +1,81 @@
+## 2026-11-05 (16:22Z) - discovery tick (Africa): afdb-project-cancellation NOW READY (the record's discovery-owned steps 1-3 executed end-to-end: novelty verdict recorded, worker pass 57/57 XML reachable at 164.5 MiB / 7.2 s, split counts measured and re-cut ONCE before any score to clear the gate, 230-vs-191 reconciliation resolved); UNECA opened and CLOSED as an aggregate-indicator gateway (uneca-ecastats-coverage, dropped); Morocco re-check 699 unchanged (park stands); no construction, no score
+
+Discovery-only session, Africa focus (operator tick: South Africa data.gov.za/SAPS/StatsSA,
+Kenya, Nigeria, Ghana, Morocco, AfDB, UNECA). No construction, qualification, packaging,
+publication or advancement; one worker launched for a read-only aggregate probe (EUR 0.04,
+inside the November allowance and outside the EUR 5 release reserve); nothing scored; no
+release byte, tag, manifest or destination touched.
+
+- afdb-project-cancellation (CI, was investigating -> READY). The 2026-11-04 Africa tick left a
+  discovery-owned next_action; steps 1-3 were executed this session, in order:
+  - NOVELTY RECORDED via scripts/check-novelty.py (the tick had hand-gathered evidence but the
+    script verdict was absent): differentiated, 4 queries, fresh catalogue searches, ours/theirs/
+    prior-art stated (WB IEG rating literature, Chinese-vs-WB remote-sensing study; no AfDB
+    cancellation task or ML-ready splits).
+  - WORKER PASS afdb-panel-probe-001 (server 174640740, cx23/hel1, EUR 0.04, timeout 15 min):
+    succeeded exit 0, 20.5 s, staging release 435425973; worker DESTROYED 16:20:10Z with provider
+    read-back (GET /v1/servers/174640740 -> 404 not_found; /servers 0; /primary_ips 0).
+    Probe = candidates/afdb-project-cancellation/probe/probe_worker_panel_001.py (parser smoke-
+    tested on the retained saotome XML before launch: 42/42 activities, 32 completed/type-4).
+  - MEASURED: 57/57 afdb.org IATI XML URLs HTTP 200 FROM THE WORKER (the dws.gov.za lesson tested
+    explicitly; egress 2.29.159.168); registry refreshed from the worker 57 datasets cc-by 57/57;
+    5,188 activities, 0 duplicate identifiers; status {1:281, 2:819, 3:3897, 5:191};
+    172,488,241 B across 57 files in 7.2 s fetch (20.5 s job); all 57 sha256 recorded as the
+    construction vintage pin. Terminal 4,088 rows, 0 missing type-1 dates (instant stateable for
+    every scored row), 0/191 cancelled carry an actual end; type-2 follows type-1 by median 75 d;
+    censored statuses 1/2 = 1,100 rows ALL approvals 2007+ (historical backfill complete for the
+    scored era; 271 with planned_end <=2026, 173 missing a planned end).
+  - RECONCILIATION RESOLVED: registry XML 191 cancelled = Code-for-IATI datastore 191 exactly;
+    MapAfrica's 230 is a larger different population (6,000 activities vs 5,188) - the 2026-11-04
+    open question is closed and the task population is the registry XML as already declared.
+  - SPLIT COUNTS + ONE PRE-SCORE RE-CUT: the proposed train<=2000 / eval 2001-2010 / holdout
+    2011-2023 measured 1,871/121, 985/29, 1,228/41 positives - eval is ONE SHORT of the gate's
+    MIN_EVAL_POSITIVES=30 (skills/dataset-qualification/scripts/qualify_dataset.py; events
+    MIN_DISTINCT_EVENTS=20). Re-cut BEFORE any construction or score, reason recorded: eval
+    2001-2011 = 1,126 rows/32 positives/27-29 country-year cells; holdout 2012-2023 =
+    1,118/38/31-33 cells; train unchanged. Every bound clears the gate; 2024+ (4 rows/0 pos) and
+    statuses 1/2 excluded and declared. The exact 2011/2012 cell integers are the build's declared
+    positive_events (bounded here; cannot change the gate outcome). 13 positive rows carry no
+    recipient-country (multinational) - event key = country-or-region x approval year.
+  - PRE-REGISTERED DECIDING RULE (unchanged in spirit, now with measured feasibility): reference
+    triad from TRAIN only (global rate, trailing country rate, trailing sector-x-decade rate) on
+    identical eval rows; headroom ONLY if the full model beats every triad member with a
+    clustered-bootstrap 95% CI excluding zero; triad dominance -> DROP as the third measured
+    WB-at-approval family defect; no re-tuning after any score; holdout never opened in dev.
+  - record.next_action carries the construction handoff order: construct from the pinned 57-file
+    digest set -> full-artifact gate 1.5 -> exact-byte --accept -> triad -> reporting.
+- uneca-ecastats-coverage (ET, NEW, DROPPED - task shape, measured). UNECA had no record; the
+  portal was measured end-to-end this session: ECAStats (ecastats.uneca.org/data) is a Vue SPA
+  over a documented OpenAPI 3.0.1 service (found via the JS bundle). ~100 endpoints, ALL
+  country/indicator/theme/time-series surfaces; 27 data products all theme-level indicator
+  collections; 7,390 indicators / 2,955,076 data points / 1970-2028 / 54 countries; 66 datasources
+  predominantly OTHER publishers (World Bank, IMF, FAO, UNDP, national sources) - a republishing
+  gateway, not a primary event-grain publisher. Licence unstated (© copyright footer; Terms of Use
+  is an SPA route unreadable to a plain client; not chased because the task-shape blocker is
+  decisive) = class C posture, which closes a new lead on its own. Reopen conditions recorded
+  (a unit-grain/event-grain dated series appearing in the API surface - two-call re-census; or a
+  primary UNECA register as a NEW candidate). This is about the ECAStats portal surface, not
+  everything UNECA publishes.
+- Morocco: the recorded re-census trigger was checked with one anonymous CKAN call -
+  package_search count=699, unchanged from 2026-10-30 (697 at the 2026-10-23 census). Trigger has
+  not fired; park stands; no title census. Recorded in ma-datagovma-coverage.measurements.
+- Named publishers re-checked against their recorded verdicts, no new probe spent: data.gov.za
+  stays at its measured NXDOMAIN (2026-11-04 tick; not re-probed); SAPS park stands (unpark =
+  written licence permission, operator/enquiry side); Kenya KNBS waits on the operator's CC BY-NC
+  decision, CBK stays dropped C; Nigeria NBS stays dropped D (reopen = operator agreement or a
+  different channel as a NEW candidate); Ghana portal stays dropped C (dead endpoints). No
+  padding with US sources.
+- Hygiene: check-candidate --all rc=0 (135 records; Africa 14, +1; live 53; ready 16, +1;
+  live non-US 47/53 = 89%); suite python3 -m unittest discover -s tests 723/723 OK (33.0 s);
+  discovery-coverage rc=0. candidates/fenz-incident-data/ left untracked for its owner
+  (concurrent writer, not this session). No credentials in any probe or record; no release,
+  destination or visibility change anywhere.
+
+Next action (advancement owns it): construct afdb-project-cancellation on a worker from the
+pinned 57-file vintage, then the standing order (gate 1.5 -> exact-byte accept -> rate-triad
+deciding check on eval rows only -> reporting). The other Africa records keep their recorded
+owners/blockers.
+
 ## 2026-11-05 (15:32Z) - follow-up: nws-tornado-build-001 FAILED by its own pinned refusal at 2016 GLD #38; diagnosed as a row-key grain defect - cow (year, wfo, eventid) is NOT a unique warning key (two distinct warnings 24 min apart share eventid 38); rebuild handed to advancement; worker destroyed with provider read-back
 
 Watcher follow-up session (failed-job event). The advancement session's
