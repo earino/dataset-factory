@@ -128,3 +128,49 @@ Measured (all numbers in record.measurements.worker_panel_probe_2026_11_05):
 Verdict: READY. The construction-time deciding check stays the pre-registered
 rate triad (see record.next_action); neither row-level data nor any score exists
 on this host.
+
+## Construction outcome 2026-11-05 (advancement session; jobs afdb-build-001 + afdb-baseline-001)
+
+Executed the record's standing order end-to-end on a worker, in the fixed order,
+with no step skipped:
+
+- CONSTRUCTION (afdb-build-001, server 174648468, 30.4 s): all 57 pinned afdb.org
+  XMLs fetched, every sha256 matched the afdb-panel-probe-001 vintage pin; the
+  terminal panel built exactly to the pre-registered windows - train 1,871/121
+  (107 cells), eval 1,126/32 (29 cells), holdout 1,087/38 (31 cells); anchors
+  (population 5,188; status histogram {3:3897, 5:191, 2:819, 1:281}; per-year
+  table) asserted exactly and all matched.
+- QUALIFICATION + ACCEPTANCE: gate 1.5.0 passed 44/44 on the full artifact;
+  exact-byte --accept ACCEPTED artifact 7313e7fc6972edfc... (staging release
+  435481585, private).
+- REFERENCE TRIAD (score.py, post-acceptance, identical 1,126 eval rows, train-only
+  estimates): trailing_country_rate 0.5491 (strongest), trailing_sector_decade_rate
+  0.4697, global_rate degenerate (Brier 0.0289), supplementary persistence_country_last
+  0.5287, majority-class accuracy 0.9716. Prevalence shift 6.47% -> 2.84% recorded;
+  eval years 2007/2008 carry zero positives (the outcome-observability selection
+  biting as declared).
+- FULL MODEL + DECIDING CHECK (afdb-baseline-001, server 174650265, 69.1 s): the
+  harness runner baseline (xgboost, unmodified, runner_files.unmodified true)
+  scores eval AUC 0.6394 (train.py and validate.py agree to 3.3e-6). Deciding
+  check, computed on identical eval rows with per-row model scores via
+  validate.py's own code path: beats trailing_sector_decade_rate (CI
+  [+0.0124, +0.3231]) and the degenerate global rate (model AUC CI
+  [0.5354, 0.7480] above 0.5), but the model-minus-country-prior cluster-aware
+  paired bootstrap CI is [-0.0765, +0.2546] - contains zero.
+
+Verdict per the rule written before any score: headroom NOT demonstrated;
+the strongest member is not beaten by a meaningful margin, so this is the third
+measured instance of the WB at-approval family defect and the candidate DROPS
+with the evidence preserved (private staging releases 435481585 and 435496906).
+The negative finding does not prove every competent model must lose - eval
+carries only 29 independent positive event cells, and the cluster-aware interval
+is wide because the positives are that clustered.
+
+Corrections recorded with evidence in record.measurements.construction_2026_11_05:
+the split_strategy prose's holdout row count (1,118 -> 1,087, an off-by-a-year
+slip in the re-cut arithmetic; windows and 38 positives were always right) and
+notes.md's no-country positives figure (13 -> 17; all 564 no-country terminal
+rows carry a recipient-region, so no row falls to the MULTINATIONAL bucket).
+
+Both workers destroyed with provider read-back (GET /servers/<id> -> 404).
+No holdout figure exists or is implied anywhere; the holdout stays sealed.

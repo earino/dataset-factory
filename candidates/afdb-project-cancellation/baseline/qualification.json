@@ -1,0 +1,572 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.5.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "4132bc2e03bc5e02a5d58175b1407a4f4ca8ab7ca3b743c320d0758bdf2b8d00",
+   "bytes": 144157
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "15d38c19f7bba8cece088620d4ef6769b8aff753e45355bc1aff4da9c0186d90",
+   "bytes": 87036
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "518f10ae708d55ddd87a13f1486f36756f9c8284ca6c95d99aff9dc56bd24563",
+   "bytes": 83914
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "b05caf82607378fb187e2cef06717b3511a07a5c0609f08b73f454f8e5c1849f",
+   "bytes": 878
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "067348010f5a17d44b9453a325136c6f1f30158d1a19e6b308126d18cca5cbaf",
+   "bytes": 11576
+  },
+  "artifact_version": {
+   "digest": "7313e7fc6972edfc7a8b927ed2d06255301cacd1766c92c87b5defc9125e8c7d",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'afdb-project-cancellation'",
+   "evidence": {}
+  },
+  {
+   "check": "contract.declared",
+   "ok": true,
+   "detail": "evaluation_contract required: intended use, access, vintage and evidence",
+   "evidence": {}
+  },
+  {
+   "check": "contract.scope",
+   "ok": true,
+   "detail": "use='retrospective_research'; access='isolated_rows'; eval is development, holdout is final",
+   "evidence": {}
+  },
+  {
+   "check": "contract.every_input_has_availability_evidence",
+   "ok": true,
+   "detail": "Every solver-visible non-target column needs availability evidence; missing: []",
+   "evidence": {}
+  },
+  {
+   "check": "contract.vintage_and_selection",
+   "ok": true,
+   "detail": "Vintage, selection and limitations must be explicit; declarations are not measurements",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_review",
+   "ok": true,
+   "detail": "Document applicable cross-row probes and every solver-visible auxiliary file",
+   "evidence": {}
+  },
+  {
+   "check": "contract.label_availability",
+   "ok": true,
+   "detail": "No full-row availability ledger: training-label timing UNVERIFIED; retrospective use only",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.every_column_could_be_scored",
+   "ok": true,
+   "detail": "every column was scored for leakage",
+   "evidence": {
+    "unscorable": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "approval_date@eval",
+     "approval_date@holdout",
+     "approval_date@train",
+     "event_key@eval",
+     "event_key@holdout",
+     "event_key@train",
+     "iati_identifier@eval",
+     "iati_identifier@holdout",
+     "iati_identifier@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "approval_date",
+     "event_key",
+     "iati_identifier"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='event_time' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "kind": "event_time",
+     "period": "D",
+     "days_after_period_end": 0,
+     "citation": "AfDB IATI activity files, activity-date type 1; registry https://iatiregistry.org/api/3/action/package_search?fq=organization:afdb (57 datasets, cc-by); the type-1 date is present on 100% of terminal rows (measured, probe afdb-panel-probe-001 2026-11-05)"
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "0 of 0 observed period_end -> published dates are usable",
+   "evidence": {
+    "observations": [],
+    "measured_lag_days": null,
+    "source_kind": "administrative_record"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 0d after the period, instant is 0d after it",
+   "evidence": {
+    "features_lag_days": 0,
+    "instant_lag_days": 0,
+    "measured_lag_days": null
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant kind is 'event_time' while features publish 0d after the period",
+   "evidence": {
+    "kind": "event_time",
+    "features_lag_days": 0
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as '2023'",
+   "evidence": {
+    "latest_period_used": "2023",
+    "fields": [
+     "approval_date",
+     "country_or_region",
+     "sector_code",
+     "finance_type",
+     "commitment_xdr",
+     "planned_span_days",
+     "era"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "2 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "commitment_xdr",
+      "unit": "XDR (IMF special drawing rights accounting units)",
+      "frame": "sum of iati:budget/value where budget@type=1 (original) in the current registry vintage; 0.0 when the activity carries no budget element"
+     },
+     {
+      "column": "planned_span_days",
+      "unit": "days",
+      "frame": "current-vintage activity-date type 3 (planned end) minus type 1 (approval); -1 sentinel with planned_end_missing=1 when type 3 is absent (38 terminal rows measured on the pinned vintage)"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "no external threshold, so no known-event fixture is required",
+   "evidence": {}
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'approval_date'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": "1967-01-01",
+      "end": "2001-01-01"
+     },
+     "eval": {
+      "start": "2001-01-01",
+      "end": "2012-01-01"
+     },
+     "holdout": {
+      "start": "2012-01-01",
+      "end": "2024-01-01"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 1871,
+     "positives": 121,
+     "negatives": 1750,
+     "positive_rate": 0.064671
+    },
+    "eval": {
+     "rows": 1126,
+     "positives": 32,
+     "negatives": 1094,
+     "positive_rate": 0.028419
+    },
+    "holdout": {
+     "rows": 1087,
+     "positives": 38,
+     "negatives": 1049,
+     "positive_rate": 0.034959
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 1871,
+     "positives": 121,
+     "negatives": 1750,
+     "positive_rate": 0.064671
+    },
+    "eval": {
+     "rows": 1126,
+     "positives": 32,
+     "negatives": 1094,
+     "positive_rate": 0.028419
+    },
+    "holdout": {
+     "rows": 1087,
+     "positives": 38,
+     "negatives": 1049,
+     "positive_rate": 0.034959
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "train": {
+      "positives": 121,
+      "distinct_events": 107
+     },
+     "eval": {
+      "positives": 32,
+      "distinct_events": 29
+     },
+     "holdout": {
+      "positives": 38,
+      "distinct_events": 31
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'event_key' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 107,
+     "eval": 29,
+     "holdout": 31
+    },
+    "declared": {
+     "train": {
+      "positives": 121,
+      "distinct_events": 107
+     },
+     "eval": {
+      "positives": 32,
+      "distinct_events": 29
+     },
+     "holdout": {
+      "positives": 38,
+      "distinct_events": 31
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 107,
+     "eval": 29,
+     "holdout": 31
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.064671,
+     0.028419,
+     0.034959
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "1967-04-21",
+      "max": "2000-12-21"
+     },
+     "eval": {
+      "min": "2001-03-01",
+      "max": "2011-12-29"
+     },
+     "holdout": {
+      "min": "2012-01-04",
+      "max": "2023-12-30"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "1967-04-21",
+      "max": "2000-12-21"
+     },
+     "eval": {
+      "min": "2001-03-01",
+      "max": "2011-12-29"
+     },
+     "holdout": {
+      "min": "2012-01-04",
+      "max": "2023-12-30"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": "1967-01-01",
+      "end": "2001-01-01"
+     },
+     "eval": {
+      "start": "2001-01-01",
+      "end": "2012-01-01"
+     },
+     "holdout": {
+      "start": "2012-01-01",
+      "end": "2024-01-01"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "1967-04-21",
+      "max": "2000-12-21"
+     },
+     "eval": {
+      "min": "2001-03-01",
+      "max": "2011-12-29"
+     },
+     "holdout": {
+      "min": "2012-01-04",
+      "max": "2023-12-30"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no iati_identifier appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "columns",
+     "id_columns",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "rows",
+     "split_description",
+     "target"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}

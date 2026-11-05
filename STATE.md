@@ -1,3 +1,89 @@
+## 2026-11-05 (17:24Z) - advancement session: afdb-project-cancellation constructed, qualified (gate 1.5.0 44/44), accepted and decided end-to-end on the worker - the pre-registered triad check returned NO demonstrated headroom (model 0.6394 vs country prior 0.5491, cluster-aware CI contains zero) -> DROPPED per the rule written before any score; both workers destroyed with provider read-back
+
+Candidate afdb-project-cancellation, chosen per the brief's actionable list (freshly
+READY at 16:22Z with a no-step-skipped standing order; the two packaged candidates
+are awaiting_operator human waits, untouched). Release work: none actionable
+(release_work_pending is empty; cqc and za-cct-substation both wait on the operator's
+flip). No remediation hold is active. EUR spend: 0.08 reserved (two cx23 jobs,
+build 30.4 s + baseline 69.1 s; both exited 0 and both servers are destroyed with
+provider read-back 404). No bulk data through the coordinator; the 164.5 MiB source
+never left workers; only compact reports (< 60 KB total) were collected, each
+sha256-verified against the staging manifest.
+
+- PREFLIGHT (before any worker): the build's source was authored fresh
+  (candidates/afdb-project-cancellation/source/{build.py,run.sh,score.py} +
+  baseline/{run.sh,materialize.py,report.py,qualification.json}); the 57-file
+  vintage pin, URL map and per-year anchor table were embedded in build.py from
+  the collected afdb-panel-probe-001 result (measured, not retyped). A scratch
+  dry-run exercised the parser against the real sao tome sample already on this
+  host (42 activities, budget sum and all date fields exact) and ran the whole
+  build+gate machinery on synthetic stub XMLs: the descriptor passed every
+  non-count gate check, so no worker cycle was spent on a shape defect. One
+  pre-launch reconciliation: the record's split_strategy prose said holdout
+  1,118 rows; the pinned-vintage per-year table measures 1,087 (the 16:22Z writer
+  subtracted 2012's 110 rows instead of 2011's 141 when re-cutting the eval
+  boundary; the pre-registered windows and the 38 positives were always
+  correct). The build asserts the true numbers and the record now carries the
+  correction with its evidence.
+- CONSTRUCTION (afdb-build-001, server 174648468, 30.4 s): all 57 pinned
+  afdb.org XMLs fetched with every sha256 matching the vintage pin; anchors
+  (population 5,188; histogram {3:3897, 5:191, 2:819, 1:281}; per-year table)
+  matched exactly; splits train 1,871/121/107 cells, eval 1,126/32/29 cells,
+  holdout 1,087/38/31 cells. Exclusions declared and counted (1,100 censored,
+  all approvals 2007+; 4 terminal 2024+ rows, 0 positives). No performance
+  metric computed anywhere in the build.
+- QUALIFICATION + ACCEPTANCE on the worker, full artifact: gate 1.5.0 passed
+  44/44 (failed_checks empty); exact-byte --accept ACCEPTED artifact
+  7313e7fc6972edfc7a8b927ed2d06255301cacd1766c92c87b5defc9125e8c7d. Private
+  staging release 435481585 holds the artifact + all reports.
+- REFERENCE TRIAD (score.py, post-acceptance, identical 1,126 eval rows,
+  train-only estimates): trailing_country_rate 0.5491 (strongest member),
+  trailing_sector_decade_rate 0.4697, global_rate degenerate (Brier 0.0289,
+  constant train rate 0.0647 vs eval 0.0284 - prevalence shift recorded),
+  supplementary persistence_country_last 0.5287, majority-class accuracy
+  0.9716. Per-approval-year eval table recorded; eval years 2007/2008 carry
+  zero positives (the outcome-observability selection biting exactly as the
+  contract declares).
+- FULL MODEL + PRE-REGISTERED DECIDING CHECK (afdb-baseline-001, server
+  174650265, 69.1 s): the fetched artifact was re-accepted against the bundled
+  gate report BEFORE any score (ACCEPTED 7313e7fc6972edfc...); the harness
+  runner baseline (train.py + validate.sh verbatim, digests match the read-only
+  clone) scored eval AUC 0.6394 with train.py and validate.py agreeing to
+  3.3e-6. The deciding check used the model's per-row eval scores via
+  validate.py's own code path (runner unmodified) and score.py's identical
+  triad definitions: beats trailing_sector_decade_rate decisively
+  (CI [+0.0124, +0.3231]) and the degenerate global rate (model AUC CI
+  [0.5354, +0.7480] entirely above 0.5), but model-minus-country-prior is
+  [-0.0765, +0.2546] - the interval CONTAINS ZERO. Per the rule recorded
+  before any construction ("headroom ONLY if the model beats EVERY member with
+  a cluster-aware 95% CI excluding zero"), headroom is NOT demonstrated: the
+  candidate DROPS with the evidence preserved - the third measured instance of
+  the WB at-approval family defect. The observed +0.0903 gap is reported as
+  inconclusive, not parity and not headroom; eval has only 29 independent
+  positive event cells, which is exactly why the pre-registered rule demanded
+  cluster-aware intervals. A reporting defect is recorded honestly:
+  report.py's agreement flag prints false only because its 1e-9 tolerance is
+  stricter than validate.py's 4-decimal log rounding (the scores agree to
+  3.3e-6). No holdout figure exists or is implied; the holdout stays sealed.
+- Record: status=dropped, rejection_reason + full measurements
+  (construction/references/baseline with commands, digests, staging releases
+  435481585 and 435496906, per-year tables, corrections), artifacts entry,
+  both jobs with provider read-backs, next_action None (dropped; reopen only as
+  a NEW task instance, e.g. a verified as-of country-year covariate join or a
+  change/onset label - never a re-tune of this label/threshold/splits).
+  check-candidate afdb-project-cancellation OK; check-candidate --all OK;
+  doctor OK.
+
+Next action (a fresh session can carry it out): the queue returns to the brief's
+actionable list - no actionable packaged release exists (cqc and
+za-cct-substation are awaiting_operator on the operator's flip; nothing for
+Scout to do there). The next advancement session should pick the next ready
+candidate per the licence-ranked queue (e.g. dvsa-mot-next-test-outcome (construct)
+whose next_action is a GO, or one of the remaining (build) candidates not carrying
+recorded blockers - ibama (TP_PESSOA blocker, no third launch without a recorded
+decision), austender (licence-blocked) and za-municipal-audit-opinion
+(feature-vintage question unresolved) are NOT launchable as they stand).
+
 ## 2026-11-05 (16:34Z) - follow-up: afdb-panel-probe-001 verified handled - staging release 435425973 accounted 4/4 assets with exact digests; one asset label corrected (the 63,190 B a324477c... asset is the staging manifest.json, not "summary.json"; the worker's output/summary.json is file-0000-part-0000, 44,298 B, sha256 215c20d9...); CI green on fcffeed (run 42063878395); no construction, no score, nothing else touched
 
 Watcher follow-up for afdb-panel-probe-001 (succeeded, exit 0, 20.5 s; outcome already

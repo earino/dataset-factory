@@ -1,0 +1,55 @@
+{
+  "id": "afdb-baseline-001",
+  "candidate": "afdb-project-cancellation",
+  "image": "python:3.13-slim",
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 2048,
+  "timeout_minutes": 45,
+  "lifetime_minutes": 90,
+  "max_disk_mb": 3000,
+  "max_artifact_mb": 16,
+  "what": "Runner-contract baseline on the accepted afdb-project-cancellation artifact 7313e7fc6972edfc7a8b927ed2d06255301cacd1766c92c87b5defc9125e8c7d (gate 1.5.0, 44/44 checks, exact-byte --accept ACCEPTED in job afdb-build-001), fetched from private staging release 435481585 rather than rebuilt: re-accept the five fetched files against the gate's own collected report BEFORE any score, materialize the runner workdir (public train+eval only; the private holdout is fetched for --accept over the full artifact but never copied into a workdir), run the benchmark's own train.py and validate.sh unmodified, then compute the PRE-REGISTERED deciding check: the full model's per-row eval scores (same code path as validate.py, runner unmodified) vs every triad member (global_rate, trailing_country_rate, trailing_sector_decade_rate) on the identical 1,126 eval rows, cluster-aware paired bootstrap, cluster = declared event_key. Construction-time references on the same rows (job afdb-build-001): trailing_country_rate 0.5491, trailing_sector_decade_rate 0.4697, global_rate degenerate, persistence_country_last 0.5287 (supplementary), majority-class accuracy 0.9716. Headroom is demonstrated ONLY if the model beats EVERY member with a CI excluding zero in its favour; triad dominance -> DROP per the pre-registered rule. Contract only, no agent loop, no holdout score.",
+  "stopping_condition": "re-accept failure refuses scoring before any number exists; a failed runner contract is a recorded blocker, never rescored ad hoc; the deciding verdict (either direction) is a recorded finding, not a retry trigger - no re-tuning of threshold, window, label or features after any score.",
+  "fetch": {
+    "repo": "earino/dataset-factory-staging",
+    "release": 435481585,
+    "assets": [
+      {
+        "asset_id": 714139908,
+        "dest": "extract/meta.json",
+        "size": 878,
+        "sha256": "b05caf82607378fb187e2cef06717b3511a07a5c0609f08b73f454f8e5c1849f"
+      },
+      {
+        "asset_id": 714140227,
+        "dest": "extract/quality.json",
+        "size": 11576,
+        "sha256": "067348010f5a17d44b9453a325136c6f1f30158d1a19e6b308126d18cca5cbaf"
+      },
+      {
+        "asset_id": 714140141,
+        "dest": "extract/public/train.csv",
+        "size": 144157,
+        "sha256": "4132bc2e03bc5e02a5d58175b1407a4f4ca8ab7ca3b743c320d0758bdf2b8d00"
+      },
+      {
+        "asset_id": 714140075,
+        "dest": "extract/public/eval.csv",
+        "size": 87036,
+        "sha256": "15d38c19f7bba8cece088620d4ef6769b8aff753e45355bc1aff4da9c0186d90"
+      },
+      {
+        "asset_id": 714139992,
+        "dest": "extract/private/holdout.csv",
+        "size": 83914,
+        "sha256": "518f10ae708d55ddd87a13f1486f36756f9c8284ca6c95d99aff9dc56bd24563"
+      }
+    ]
+  },
+  "command": [
+    "sh",
+    "/workspace/run.sh"
+  ]
+}
