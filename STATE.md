@@ -1,3 +1,53 @@
+## 2026-11-05 (19:55Z) - advancement session: dvsa-mot-build-001 FAILED by its pre-registered fail-loud rule at an undocumented 2015 source value ('ABRVE'); diagnosed from collected evidence, worker destroyed with read-back; repair pre-registered as dvsa-mot-build-002; no gate run, no acceptance, no triad, no score - nothing quotable
+
+Candidate dvsa-mot-next-test-outcome (the brief's build queue; chosen because its
+construction job dvsa-mot-build-001 was launched at 18:33:02Z by the previous session
+and needed collection). No actionable packaged release (cqc + za-cct-substation remain
+awaiting_operator human waits, untouched). No remediation hold active.
+
+- COLLECTED (19:45:48Z): container exit 1 after 1,737.9 s (29 min), uploaded=true
+  (total output 8 KB - no extract existed), staging release 435609197 holds
+  source.tar + container.log + manifest. Worker 174661065 destroyed 19:52:54Z;
+  `worker status` reconcile confirms provider-side "deleted".
+- DIAGNOSIS (container.log, preserved in .factory/dvsa-mot-build-001/): the build
+  parsed 2005-2014 cleanly (per-year receipts recorded in
+  measurements.build_failure_2015_abrve_2026_11_05; ABR+ABA ~0.55-0.7% matches the
+  pre-launch <0.6% estimate) and refused loudly at source_2015.txt.gz seq 18757 on
+  test_result='ABRVE' - not in the asserted {P,F,PRS,ABR,ABA}. All other fields of
+  that row are well-formed (empty mileage/completed_date = abandoned-row shape), so
+  it is a source VALUE anomaly, not a parse shift. The fail-loud assertion did
+  exactly what the pre-launch design accepted ("one bounded worker cycle at risk").
+- SECOND DEFECT confirmed by the same evidence: per-year sampled counts ~34-35k
+  completed class-4 tests/year imply a ~450-490k-row extract (~57-65 MB at ~128
+  B/row), so the launch's max_artifact_mb=8 would ALSO have refused the staging
+  upload even if the build had completed (catalog pattern: austin 131 MB->400;
+  msha 3.4 GB->4200; za-cct 8.4 MB->24). The pre-completion risk entry
+  (artifact_allowance_check_2026_11_05, written before the outcome) predicted this
+  directionally from the recorded 2026-10-19 anchors.
+- REPAIR PRE-REGISTERED in record.next_action (construction-side only; no score has
+  ever existed for this candidate, triad and deciding rule untouched):
+  (1) non-{P,F,PRS} results excluded from both sides of every pair and counted per
+  year with a distinct-value inventory into summary.json (target_definition already
+  reserves ABR/ABA handling "to be decided and documented at construction";
+  fail-loud stays for schema-level unmappability); (2) max_artifact_mb 8 -> 200;
+  (3) relaunch as dvsa-mot-build-002 with a deterministic cross-check that the
+  2005-2014 receipts reproduce exactly. One rebuild per structural defect: this is
+  the one allowed for this defect; a second value refusal after the inventory
+  repair is a new finding requiring fresh diagnosis.
+- EUR: reservation 0.32 EUR stands (29 min used of 140); November construction
+  spend ~0.40 EUR of 15 EUR.
+- check-candidate dvsa-mot-next-test-outcome OK; record now carries jobs[]=2
+  (launch receipt + failed attempt) and 9 measurement entries.
+
+Next action (a fresh session can carry it out): apply the two pre-registered repairs
+in candidates/dvsa-mot-next-test-outcome/source/{build.py,job.json}, assemble +
+plan + launch dvsa-mot-build-002, require the 2005-2014 reproduction cross-check,
+gate 1.5.0 exit 0 on the FULL artifact on the worker + exact-byte --accept before
+any number, references triad post-acceptance, then the dvsa-mot-baseline-001 bundle
+(fill fetch block + baseline/qualification.json from the build-002 staging release,
+re-accept before any score, harness runner verbatim, pre-registered deciding check,
+cluster = vehicle_id).
+
 ## 2026-11-05 (18:35Z) - advancement session: dvsa-mot-next-test-outcome construction LAUNCHED (job dvsa-mot-build-001, server 174661065, cpx32/hel1, running) after a full local dry run; gate 1.5.0 passed 45/45 on synthetic three-era fixtures before any worker cycle was spent
 
 Candidate dvsa-mot-next-test-outcome (the brief's only (construct) candidate,
