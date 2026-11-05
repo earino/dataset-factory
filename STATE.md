@@ -1,3 +1,101 @@
+## 2026-11-05 (08:00Z) - discovery tick (Canada): cbsa-land-border-wait-exceedance OPENED (investigating; CBSA hourly border-wait archive, OGL class A, worker count pass = the one gate left) and iaac-registry-assessment-termination's decisive coordinator sample RESOLVED (dated terminal-event share 83-96%, novelty differentiated recorded; cohort extraction = worker prerequisite)
+
+Discovery-only session. No construction, qualification, packaging, publication or
+advancement; no worker launched (EUR 0); bounded anonymous coordinator probes
+only; no release byte, tag, manifest or destination touched. Regional focus
+Canada (StatCan, ECCC, Health Canada, open.canada.ca). Queue chosen from current
+records: CA now 16 (2 ready advancement-owned, 1 packaged awaiting operator flip,
+1 published, 3 investigating, 3 parked, 6 dropped with recorded reopen conditions).
+
+- NEW CANDIDATE cbsa-land-border-wait-exceedance (CA, investigating, class A;
+  the strongest lead this tick). Publisher: Canada Border Services Agency via
+  open.canada.ca. Task: for a measured land port, at the snapshot-hour instant T
+  in CBSA's hourly border-wait archive (26 ports, 2010-01..2020-03, ~2.3M
+  office-hours), predict whether the traveller flow exceeds the CBSA highway
+  traveller service standard at ANY snapshot in (T, T+24h]. MEASURED (scripts
+  retained in candidates/.../probe/; commands in notes.md):
+  - LICENCE class A from the publisher's own instrument: license_id ca-ogl-lgo
+    on the package records; OGL-Canada 2.0 text fetched and quoted; attribution
+    statement required ("Contains information licensed under the Open Government
+    Licence - Canada"), carried to LICENSE.md at release; non-endorsement clause
+    noted.
+  - LABEL has external meaning: the service standard is documented on CBSA's
+    own pages, current + Wayback-pinned FY2014-15/FY2016-17/FY2017-18
+    (10 min Mon-Thu / 20 min Fri-Sun+holiday) with the July-August 20-min clause
+    appearing from FY2018-19; rule evolution recorded; FY2015-16 and pre-FY2014
+    forms are the named verification prerequisite (or the era-stable core 10/20
+    rule / a fixed threshold, both recorded as options).
+  - GRAIN: (office, hour); 2019 Q3 full quarter measured 99.8% grid-complete
+    (57,434 keys); quarterly files OVERLAP at boundaries and the 2010-2014
+    combined file overlaps the first quarterly - cross-file dedupe mandatory;
+    all 24 EN quarterly URLs measured HTTP 200, including the 2020 Q1 file
+    whose CKAN resource entry is MISSING (do not trust the CKAN list).
+  - DUPLICATES: publisher-acknowledged (changelog Known Issues) and measured:
+    20.8% of office-hours carry >1 row (max 15), conflicting values in 22% of
+    rows concentrated at the 6 busiest ports; deterministic any-row rule
+    recorded for the label.
+  - BASE RATES measured 2019 Q3: traveller >10 min 14.6%, >20 ~6-8%, >30 3.79%
+    of valid cells; multi-port positives (12 ports with >30-min cells).
+  - ERA DISCONTINUITY pinned: the hourly series definitively ENDED 2020-03-31
+    (Wayback 2021-11 capture: 24 quarterlies, no successor); the replacement
+    monthly service-standard file (26 ports x 79 months, 2019-04..2025-10,
+    complete panel measured) refreshes roughly ANNUALLY in practice (blob
+    Last-Modified 2025-12-16; range to-2024-10-31 at 2024-12/2025-01 captures,
+    to-2025-10-31 at 2026-01) despite the CKAN "Monthly" claim - so NO monthly
+    task opened; the monthly file is recorded as the publisher's own aggregate
+    for the built-in cross-check (11 overlap months 2019-04..2020-03).
+  - FRAMING: retrospective archive-vintage (no operational-download claim;
+    changelog documents only FR translation fixes + a 2016 column rename, so
+    current-vintage assumption recorded, abs-precedent posture); live-feed
+    self-collection (~3.3 KB/fetch) recorded as an optional future tail, not
+    part of the task.
+  - FIXTURES: COVID border closure 2020-03-21 measured on the 2020 Q1 file
+    (no-delay 77.6%->87.3%, >30-min minute-rows 3.9%->1.8%, max 298->75 -
+    direction confirmed, magnitude moderate, recorded as measured); long-weekend
+    fixtures deferred to the worker pass.
+  - NOVELTY differentiated (check-novelty recorded): HF API 'border wait' 0
+    hits; 'border crossing' only US BTS volume mirrors; prior art is
+    researcher-collected-sensor models at 4-6 US-border ports (US DOT 50534,
+    86608; Sage 2024) and CBSA's own CanBorder forecast app - none ships data,
+    splits or a scored contract on the CBSA series.
+  - NEXT (advancement, worker): one count pass over ~190 MB - per-window label
+    counts at candidate thresholds, grid completeness per era, duplicate-conflict
+    rate per era, and the monthly pct-met cross-check; acceptance criteria and
+    failure modes written into record.next_action; then ready/drop.
+- IAAC ADVANCED (iaac-registry-assessment-termination, still investigating; the
+  recorded coordinator-compatible next step was EXECUTED this tick): 60-page
+  stratified registry sample (24 Terminated / 24 Completed / 12 In progress,
+  direct urllib fetches measured working from this coordinator, 0 errors):
+  dated machine-parseable terminal-line share 83% Terminated / 96% Completed
+  after entity normalization (&nbsp;/&ndash; inside dates, comma-less forms);
+  3/24 Terminated pages have terminal wording with NO parsable date (named
+  fallback class); per-page cost 170,415 B / 3.00 s -> 6,600 pages ~= 1.12 GB /
+  5.5 h serial (worker, bounded concurrency); outcome wording 'likely to cause
+  significant adverse' 0/24 (expected-rare confirmed at sample scale); NO bulk
+  export exists; meta Status == MapServer state 60/60; FIRST lag distribution
+  measured (start->dated-event on Terminated: median 575 d, max 3,917 d) - the
+  censoring rule and holdout boundary now have a measured basis. Novelty check
+  RECORDED (differentiated; searches return only LCA-method ML papers).
+  Verdict updated from hold; remaining gate = cohort-scale extraction + lag
+  distribution (worker prerequisite, advancement-owned).
+- COVERAGE of the other tick-named publishers, with reasons: StatCan NOT
+  re-probed - statcan-wds-aggregate-series is parked as a source class with
+  three negative re-checks, the last 2026-10-30 (6 days ago); ECCC - the
+  recorded reopen paths (flood-warning verification) need a machine-readable
+  issued-warnings archive that ECCC does not publish; NPRI family already has
+  the ready exit candidate; Health Canada - all four recorded HC leads carry
+  recent drop/park verdicts with reopen conditions; the NOC drug-approval
+  register was considered and NOT opened (bench already carries two
+  regulatory-outcome candidates under active investigation; the two worked
+  leads outranked it this tick). No padding with US sources.
+- CONCURRENT WRITER: candidates/fenz-incident-data/ is an untracked directory
+  NOT created by this session (it was untracked at session start); left
+  untouched and excluded from this commit.
+- Checks: check-candidate OK for both touched records; check-candidate --all
+  rc=0 (134 records; CA 16, live 53, live non-US 47/53 = 89%). Suite
+  python3 -m unittest discover -s tests: 723/723 OK (33.4 s). CI for the
+  pushed commit checked and recorded in the report.
+
 ## 2026-11-05 (06:51Z) - advancement session: ibama-auto-infracao-recidivism construction attempted (ibama-build-001, -002); BOTH refused at the TP_PESSOA cross-check for the same defect class -> recorded BLOCKER per the pre-registered stopping condition, no third launch
 
 Scheduled advancement session. Release work first: za-cct v2026.11 and cqc stay

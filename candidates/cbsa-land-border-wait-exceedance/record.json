@@ -1,0 +1,217 @@
+{
+  "id": "cbsa-land-border-wait-exceedance",
+  "status": "investigating",
+  "created_at": "2026-11-05T08:12:45.006637+00:00",
+  "updated_at": "2026-11-05T08:40:00+00:00",
+  "domain": "border operations / queueing - service-standard exceedance nowcast at land ports of entry (Canada, federal)",
+  "prediction_question": "For a measured CBSA land port of entry P, at instant T = the publication timestamp of one of CBSA's hourly border-wait-time snapshots, using only hourly snapshots of the archive with timestamps <= T (port identity, hour-of-day, day-of-week, season, recent wait history and status vocabulary), will the port's traveller flow exceed the CBSA highway-traveller service standard at ANY hourly snapshot in the next 24 hours, i.e. the window (T, T+24h]? A useful prediction lets a traveller or dispatcher re-time or re-route a crossing a day ahead, the same decision CBSA's own CanBorder app supports with forecasts; it also lets CBSA compare ports against its published 95% compliance target.",
+  "prediction_time": "T = the snapshot hour of port P as printed in the archive's 'Updated' column (local-time string with a Canadian tz abbreviation; ADT/AST/EDT/EST/CDT/CST/MDT/MST/PDT/PST all measured in samples, each resolving to a fixed UTC offset; construction normalizes to UTC and states the offset table). Features are archive rows with Updated <= T. The target window (T, T+24h] is strictly after the instant; no part of it precedes T. RETROSPECTIVE, ARCHIVE-VINTAGE framing (recorded, not resolved to operational): the hourly archive is a frozen historical record published in batches (the 2010-2014 file and the 2014-2016Q1 quarterly files all carry CKAN created=2016-12-01; later quarters in batches 2017-03..2020-04; the series ends 2020-03-31 - Wayback capture 2021-11-23 shows 24 quarterly resources ending 2020-01..2020-03 and no successor, and the monthly service-standard file only appears by 2024-12), so the task claims no operational download availability at T; the files fetched today are one current vintage (the changelog documents FR translation fixes 2017-09-19 and a column rename 2016-07-20 as the only revisions; no EN data-value revision is documented, and current-vintage is the recorded assumption, same posture as the abs-visitor precedent). The self-collection option (hourly fetch of the live feed, ~3.3 KB per fetch, to build a fresh operational tail from now) is recorded as a possible extension, not part of this task.",
+  "target_definition": "Binary: 1 if the port's Travellers Flow cell at ANY hourly snapshot in (T, T+24h] exceeds the CBSA highway-traveller service standard; 0 if no valid traveller cell in the window exceeds it. Label source: the Travellers Flow cells of the target window's snapshots; they are excluded from solver-visible features by a common-cutoff design (no shipped row may expose another scored row's outcome - the abs-visitor/canadabuys blind-join defect class is a named gate check). Threshold rule: the publisher's own service standard, whose documented forms are 10 minutes on weekdays (Mon-Thu) and 20 minutes on weekends (Fri-Sun) and holidays for FY2014-15..FY2017-18, and from FY2018-19 additionally 'July to August: 20 minutes (7 days a week)' (all quoted from CBSA service-standard pages, current and Wayback-pinned, see measurements.service_standard_evolution). Construction picks ONE of: (a) era-correct full rule (needs the FY2010-11..FY2013-14 forms verified - named prerequisite; FY2014-15 back is verified), or (b) the era-stable core rule 10/20 weekday/weekend-holiday everywhere (conservative, verified FY2014-15..present), or (c) a fixed plain threshold (e.g. >20 min) if the standard-linked rule proves unstable. Valid label denominator: traveller cells whose value is a minute count or 'No delay' (dictionary: 'No delay' = five minutes or less). 'Closed' (outside operating hours), 'Not applicable' (business line unavailable) and 'Missed entry' (no wait recorded) are not outcomes: an (office, hour) whose whole target window has no valid traveller cell is ineligible and right-censored out, never imputed; eligibility is decided from information at T (the port's own status history) not from the outcome. In-hour duplicate rows (publisher-acknowledged) are collapsed by a deterministic rule fixed before scoring: label = exceedance of ANY reported value in the (office, hour) group ('any' semantics; a conservative choice for a warning-use task, robust to the measured duplicate conflict pattern).",
+  "sources": [
+    {
+      "name": "CBSA Historical Border Wait Times - Land Mode, open.canada.ca dataset 000fe5aa-1d77-42d1-bfe7-458c51dacfef (the task source)",
+      "url": "https://open.canada.ca/data/en/dataset/000fe5aa-1d77-42d1-bfe7-458c51dacfef",
+      "api": "https://open.canada.ca/data/en/api/3/action/package_show?id=000fe5aa-1d77-42d1-bfe7-458c51dacfef",
+      "files": {
+        "combined_2010_2014": "https://www.cbsa-asfc.gc.ca/data/bwt-taf-2010-2014-eng.csv (71,369,535 B, resource 3f5628d0; contains rows into 2014-04-04, overlapping the quarterly files - cross-file dedupe required)",
+        "quarterly_2014q2_2020q1": "https://www.cbsa-asfc.gc.ca/data/bwt-taf-<YYYY-MM-DD--YYYY-MM-DD>-en.csv, 24 files 2014-04-05..2020-03-31, ~5.0-13.5 MB each (5,705,884 B for 2019 Q3 measured download); ALL 24 EN files measured HTTP 200 on 2026-11-05, including bwt-taf-2020-01-01--2020-03-31-en.csv whose CKAN resource entry is MISSING from the package record (fetchable at the predictable URL; recorded so construction does not rely on the CKAN list)",
+        "data_dictionary": "https://www.cbsa-asfc.gc.ca/data/bwt-taf--ref.odt (8,509 B, version 2017-04-11; documents every column and the status-value table)",
+        "changelog": "https://www.cbsa-asfc.gc.ca/data/bwt-taf--changelog.txt (836 B; documents the 2016-07-20 column rename, the 2017-09-19 FR translation fixes, and the Known Issues note on duplicate records with conflicting values)"
+      },
+      "measured": "Anonymous HTTPS from the coordinator, 2026-11-05: one full quarter (2019 Q3 EN, 5,705,884 B) + one full quarter (2020 Q1 FR, 6,383,740 B; EN file exists but only FR was fetched for the closure fixture) + three bounded 60 KB range slices of the 2010-2014 file + HEAD status on all 24 EN quarterly URLs (all 200). Total archive estimate ~190 MB / ~2.3M distinct office-hours across 2010-01..2020-03 (estimate from measured file sizes and 2019-Q3 row density; exact counts are the named worker measurement).",
+      "licence": "Open Government Licence - Canada 2.0 (license_id ca-ogl-lgo on the package record)"
+    },
+    {
+      "name": "CBSA monthly service-standard summary, 'Historical Border Wait Times - 2019-04-01 to 2025-10-31' (resource 2b5853e4 of the same package) - cross-check product, NOT the task source",
+      "url": "https://open.canada.ca/data/dataset/000fe5aa-1d77-42d1-bfe7-458c51dacfef/resource/2b5853e4-41b4-4858-86dd-38012e30d5b8/download/land-bwt-opengov-en.csv",
+      "measured": "80,693 B fetched 2026-11-05: complete panel Port of Entry x Month x Fiscal Year x 'Percentage Met Service Standard', 26 ports x 79 months (2019-04..2025-10), 2,054 rows, 0 duplicates, values 59.03%..100.00%; blob Last-Modified 2025-12-16. Refresh history measured via Wayback + CKAN: range 'to 2024-10-31' at captures 2024-12-02 and 2025-01-17, 'to 2025-10-31' at capture 2026-01-16 and today; CKAN claims Maintenance and Update Frequency: Monthly but observed refresh is roughly annual (Dec 2024-era and Dec 2025-era events) with a ~2-month data lag - so NO operational monthly task is opened on it (its 26-port panel is also only 2,054 rows). Used as the publisher's own aggregate for the cross-check: for the 11 overlapping months 2019-04..2020-03 the archive-derived monthly exceedance share must reproduce the published percentage under the threshold rule in force, which empirically identifies the in-force rule for that era.",
+      "licence": "Open Government Licence - Canada 2.0 (same package)"
+    },
+    {
+      "name": "CBSA service-standard pages (the label's external meaning), current and Wayback-pinned",
+      "url": "https://www.cbsa-asfc.gc.ca/services/serving-servir/standards-normes-2026-2027-eng.html (current); http://web.archive.org/web/20170719071209/http://www.cbsa-asfc.gc.ca/services/serving-servir/standards-normes-2014-2015-eng.html (FY2014-15); .../20170128023922/...standards-normes-2016-2017-eng.html (FY2016-17); .../20170604062445/...standards-normes-2017-2018-eng.html (FY2017-18); .../20180728094303/...standards-normes-2018-2019-eng.html (FY2018-19)",
+      "measured": "All fetched 2026-11-05. Highway traveller primary processing standard, all eras: 'The wait times for travellers reaching the CBSA primary inspection booth ... will aim to be: [10 minutes on weekdays (Monday to Thursday); 20 minutes weekends (Friday, Saturday, Sunday) and holidays] [FY2018-19+: September to June: ... ; July to August: 20 minutes (7 days a week)]', Performance Target 95%. Performance results quoted: FY2014-15 97.1%, FY2020-21 99.35%, FY2024-25 94.97%, FY2025-26 96.9%.",
+      "licence": "Publisher's supporting documentation under the same GC web terms; used only as rule evidence, not as a data source."
+    },
+    {
+      "name": "CBSA Current Border Wait Times live feed, open.canada.ca dataset d4a716f5-a2fc-4c3c-88ed-451fe05900e4 - schema-drift evidence and optional collection target, NOT the task source",
+      "url": "https://www.cbsa-asfc.gc.ca/bwt-taf/bwt-eng.csv",
+      "measured": "3,270 B fetched 2026-11-05: 30 rows / 29 customs offices; schema has DRIFTED from the archive (columns 'Customs Office;; Location;; Last updated;; Commercial Flow - Canada bound;; Commercial Flow - U.S. bound;; Travellers Flow - Canada bound;; Travellers Flow - U.S. bound;;' with double-semicolon separators and both directions, vs the archive's single Canada-bound 'Commercial Flow'/'Travellers Flow'); per-row 'Last updated' semantics differ from the archive's hourly grid; one row measured 3 weeks stale (St. Stephen 2026-10-16) and one 'Closed'.",
+      "licence": "Open Government Licence - Canada 2.0 (license_id ca-ogl-lgo)"
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "You are free to: Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose. You must, where you do any of the above: Acknowledge the source of the Information by including any attribution statement specified by the Information Provider(s) and, where possible, provide a link to this licence. If the Information Provider does not provide a specific attribution statement ... you must use the following attribution statement: Contains information licensed under the Open Government Licence - Canada.",
+      "source": "Open Government Licence - Canada 2.0, https://open.canada.ca/en/open-government-licence-canada, fetched 2026-11-05"
+    },
+    {
+      "quote": "license_id: ca-ogl-lgo on open.canada.ca package records 000fe5aa-1d77-42d1-bfe7-458c51dacfef (Historical Border Wait Times - Land Mode) and d4a716f5-a2fc-4c3c-88ed-451fe05900e4 (Current Border Wait Times), organization cbsa-asfc, fetched via the CKAN package API 2026-11-05.",
+      "source": "open.canada.ca CKAN package records (the publisher's own catalogue instrument), fetched 2026-11-05"
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Temporal thirds on the frozen hourly archive 2010-01..2020-03, instant = snapshot hour; candidate windows train 2010-01..2016-12 / eval 2017-01..2018-12 / holdout 2019-01..2020-03 (each multi-year, disjoint, ordered; the 2020-03-21 COVID closure sits in the holdout's last 10 days and is a known-event fixture, not a whole-window effect). Clustering: (port, calendar-day) is the dependence unit (within-port serial correlation plus day-level demand shocks such as long weekends); clustered counts reported beside raw counts. Both classes expected in every window from measured per-port rates (12 ports with >30-min traveller exceedances in 2019 Q3 alone; 0 of 12 named busiest ports is all-negative), but exact per-window label counts at the chosen threshold rule are the FIRST construction measurement on the worker - the ~190 MB full archive is bulk work and stays off the coordinator; no sampled number is claimed as a total.",
+  "measurements": {
+    "catalogue_2026_11_05": "open.canada.ca CKAN package_search q='border wait': 4 datasets - Current BWT (d4a716f5, live CSVs only), Historical BWT Land (000fe5aa), Historical BWT Air (fe8020ad, monthly air-mode service-standard panel 31 KB - sibling noted, not opened), and an unrelated dataset. All license_id ca-ogl-lgo, org cbsa-asfc.",
+    "schema_and_vocabulary_2026_11_05": "Archive columns: 'CBSA Office,Location,Updated,Commercial Flow,Travellers Flow' in the 2010-2014 file (header renamed 2016-07-20 per changelog) vs 'Custom Office Name,...' in 2019-era quarterlies; FR files are cp1252-encoded with French headers/values ('Nom du bureau', 'Aucun delay' family). Status vocabulary per the publisher's data dictionary (ref.odt v2017-04-11): minute counts; 'No delay' = five minutes or less; 'Closed' = outside operating hours; 'Not applicable' = business line not available at that port; 'Missed entry' = no wait recorded for the period. Case drifts by era ('No Delay' in the 2010-2014 file, 'No delay' in 2019); parse case-insensitively. All five behaviours measured in samples.",
+    "grain_and_coverage_2026_11_05": "2019 Q3 EN full quarter (81,836 rows, 26 offices, 2019-06-30 21:00..2019-10-01 01:00): 57,434 distinct (office,timestamp) keys vs ~57,564 theoretical office-hours for 26 offices x the quarter = 99.8% complete hourly grid. The archive's grain is (office, hour). Quarterly files OVERLAP at boundaries (Q3 starts 2019-06-30 21:00 before its nominal 2019-07-01; ends 2019-10-01 01:00; the 2010-2014 combined file contains rows into 2014-04-04, overlapping the first quarterly) - cross-file dedupe on (office, UTC-normalized hour) is mandatory. 2020 Q1 FR (80,439 rows, 26 offices, 2019-12-31 23:00 CST..2020-04-01 00:00 EDT) confirms the same grid at the archive's end.",
+    "duplicate_conflicts_2026_11_05": "2019 Q3: 11,960 of 57,434 (20.8%) office-hours carry >1 row; max 15; group-size distribution 2:139, 3:11494, 4:213, 5:38, 6:32, 7:26, 8:2, 9:4, 10:2, 11:9, 15:1; 18,053 rows sit in duplicate groups with CONFLICTING values (22% of all rows), concentrated at the six busiest ports (Peace Bridge 4,035; Queenston-Lewiston 3,861; Pacific Highway 3,802; Douglas/Peace Arch 2,383; Rainbow 2,279; Aldergrove 1,693) - the size-3 groups often carry three different values (e.g. Aldergrove 2019-06-30 21:00: 30/13/2), while large groups are mostly repetition with one differing value (Pacific Highway 2019-07-06 10:00: 14x'70' + 1x'44'). The publisher's changelog acknowledges exactly this ('duplicate records (same location and timestamp) ... with conflicting border wait time values'). Any-row ('any reported value exceeds') semantics is the recorded label choice; construction fixes and documents it before scoring.",
+    "base_rates_2019q3_2026_11_05": "Traveller cells, 2019 Q3 (valid = minutes or no-delay = 80,630 of 81,836 rows; excluded: missed_entry 649, closed 557): minute-rows 30,390 (37.7% of valid) with mean 13.36 min, max 199. Per-cell exceedance: >5 min 22.6%, >10 min 14.6%, >15 min 10.1%, >30 min 3.79%, >60 min 0.75%. Per-port >30-min cells: Douglas/Peace Arch 1,212/3,318 (36.5%), Pacific Highway 803/4,687 (17.1%), Thousand Islands 106/338 (31.4%), St-Armand/Philipsburg 80/357 (22.4%), Aldergrove 224/2,401 (9.3%), Coutts 47/479 (9.8%), and 6 more ports positive; 2 of 25 ports with valid cells have zero >30 cells (small ports) - the exceedance population is concentrated but multi-port. Commercial flow exists at 23 of 26 offices in the quarter (not_applicable 14,987 rows) - a recorded optional variant, not the primary label.",
+    "known_event_fixture_2026_11_05": "COVID-19 US-Canada border closure to non-essential travel 2020-03-21 (named event, expected verdict: traveller delays become rarer). Measured on the 2020 Q1 FR file: pre-2020-03-21 70,856 rows, no-delay 77.6%, minute-rows 14,360, max 298, >30-min 566 (3.9% of minute-rows); post-2020-03-21 9,583 rows, no-delay 87.3%, minute-rows 1,015, max 75, >30-min 18 (1.8% of minute-rows). Direction confirmed, magnitude moderate (not a collapse - essential travel continued and the archive ends 10 days after the event); recorded as measured, not inflated. Second fixture family: long weekends (Canada Day, Civic Holiday, Labour Day) at the BC and Niagara ports - per-window counts come from the worker pass.",
+    "service_standard_evolution_2026_11_05": "Highway traveller service standard, publisher's own pages (current + Wayback): FY2014-15, FY2016-17, FY2017-18: '10 minutes on weekdays (Monday to Thursday); 20 minutes weekends (Friday, Saturday, Sunday) and holidays', target 95% (FY2014-15 result 97.1%). FY2018-19 onward: adds 'September to June:' prefix and 'July to August: 20 minutes (7 days a week)'. Current pages (FY2020-21..FY2026-27) keep that form; quoted results 99.35% (FY2020-21, pandemic), 94.97% (FY2024-25), 96.9% (FY2025-26). The FY2015-16 and FY2010-11..FY2013-14 forms were NOT found in this session - named verification prerequisite for the era-correct label rule (option (b) core 10/20 rule avoids the dependency).",
+    "monthly_cross_check_panel_2026_11_05": "The publisher's own monthly aggregate (source 2): 26 ports x 79 months 2019-04..2025-10, 2,054 rows, 0 duplicates, pct-met range 59.03..100.00; base rates for a monthly miss label: <100 65.5%, <99 47.9%, <97 34.3%, <95 26.1%, <90 13.8% (recorded for the cross-check design; a monthly task was NOT opened - the panel is small, own-history-only, and its observed refresh is annual despite the 'Monthly' claim). Cross-check plan for qualification: for the 11 overlap months 2019-04..2020-03, the archive-derived monthly share of office-hours meeting the in-force rule must reproduce the published pct-met within a stated tolerance; disagreement names the rule form actually used by the publisher.",
+    "archive_end_evidence_2026_11_05": "The hourly series definitively ended: Wayback capture 2021-11-23 of the dataset page shows the 24 quarterly resources ending 2020-01..2020-03 and NO successor resource; captures 2024-12-02 and 2025-01-17 show the monthly file at 'to 2024-10-31'; capture 2026-01-16 shows 'to 2025-10-31' (current); blob Last-Modified 2025-12-16. CKAN resource for the EN 2020 Q1 file is missing, but the file is live (HTTP 200, HEAD 2026-11-05) at the predictable URL - all 24 EN quarterly URLs measured 200.",
+    "fetch_cost_2026_11_05": "Coordinator, anonymous HTTPS: 2019 Q3 EN 5,705,884 B and 2020 Q1 FR 6,383,740 B each in a few seconds; monthly file 80,693 B; live feed 3,270 B; three 60 KB range slices of the 71,369,535 B combined file; 24 HEAD requests. Full harvest (worker, one job): 24 EN quarterly files (~5.0-13.5 MB each) + the 71.4 MB combined file ~= 190 MB across ~25 GETs; same machine class as canadabuys's measured ~8 s per 45 MB => minutes-scale, single standard worker job. Timezone normalization: 10 tz abbreviations measured, all fixed-offset Canadian zones.",
+    "novelty_searches_2026_11_05": "Hugging Face datasets API search 'border wait': 0 hits; 'border crossing': 5 hits, all US BTS monthly VOLUME mirrors or Africa logistics sets - none are wait-time series, none Canadian. Web search: no ML-ready dataset or benchmark on the CBSA series found. Adjacent prior art (models in papers, not shipped datasets): deep-learning crossing-delay prediction at the Niagara Frontier borders from researcher-collected Bluetooth data (US DOT report, rosap.ntl.bts.gov/view/dot/50534); Blue Water Bridge ISFC crossing-time regression (dot/86608); El Paso CV-data crossing-time estimation (Sage 2024); a 2026 multi-modal border-queue framework on SYNTHETIC data (arXiv 2608.27010). CBSA's own CanBorder app ships forecasted wait times as a product, not as data with splits. US-bound waits are a separate product (CBP bwt.cbp.gov / BTS), explicitly distinct from this Canada-bound series.",
+    "measured_on": "2026-11-05 from the coordinator, anonymous HTTPS only; scripts: candidates/cbsa-land-border-wait-exceedance/probe/ (measure_archive.py, measure_monthly.py reproduce the quoted numbers from the recorded URLs; fetch commands recorded in notes.md)"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "Five contracts at probe time: (1) Redistribution - SUPPORTED: OGL-Canada 2.0 on the publisher's own package record (ca-ogl-lgo), explicit copy/modify/publish/adapt/distribute grant incl. commercial use; class A; attribution statement required and carried to LICENSE.md. (2) Prediction timing - SUPPORTED WITH RECORDED SCOPE: instant = archive snapshot hour T, features = rows with Updated <= T, target window strictly after T, timezone table measured; the framing is RETROSPECTIVE/ARCHIVE-VINTAGE because the archive is frozen (ended 2020-03-31, successor evidence chain via Wayback) and was itself published in batches - no operational-download claim is made, current-vintage assumption recorded (abs precedent posture). (3) Target - SUPPORTED: label source = Travellers Flow cells after T, excludable via common-cutoff design (abs-visitor defect class named as a gate check); the threshold has external meaning from the publisher's documented service standard (rule forms pinned FY2014-15..present via the publisher's pages incl. Wayback); eligibility and censoring defined at the instant (Closed/Not applicable/Missed entry are statuses, not outcomes); publisher-acknowledged duplicate conflicts measured (20.8% of office-hours) with a deterministic any-row rule fixed before scoring. (4) Split capacity - PARTIALLY MEASURED: grain and per-cell base rates measured on two full quarters (2019 Q3 EN + 2020 Q1 FR) + three era slices; three disjoint multi-year windows fit the 2010-2020 span with both classes expected; exact per-window counts need one bulk worker pass (recorded as the prerequisite to ready; never extrapolated to a claimed total). (5) Not a mirror - differentiated (novelty check recorded): no ML-ready task on the CBSA series anywhere found; closest prior art is researcher-collected-sensor models at 4-6 ports and CBSA's own app forecasts - neither ships data, splits or a scored contract; the nearest bench family abs-visitor-arrivals-direction is a monthly aggregate direction task on a different publisher/population, and its known defect class is addressed here by design.",
+  "next_action": "One bounded worker measurement pass (advancement owns it), then ready/drop decision on measured criteria. Job: fetch all 24 EN quarterly files + the 2010-2014 combined file (~190 MB), sha256-pin each, normalize the Updated column to UTC, dedupe cross-file overlaps on (office, UTC hour), collapse in-hour duplicates with the any-row rule, and compute: (a) exact coverage (first/last timestamps, per-era office lists, office-hour grid completeness), (b) per-window (train 2010-01..2016-12 / eval 2017-01..2018-12 / holdout 2019-01..2020-03) eligible office-hours and label counts at the core 10/20 rule AND at a fixed >20-min threshold, with (port, day) clustered counts, (c) duplicate-conflict rate per era, (d) the 2019-04..2020-03 monthly pct-met cross-check against the publisher's monthly file under candidate rule forms. ACCEPTANCE CRITERIA to flip ready: every window carries both classes with >=1,000 clustered positives at the chosen threshold, grid completeness >=95% of office-hours in every window, and a monthly cross-check that reproduces the published pct-met under exactly one candidate rule form (or a documented disagreement). FAILURE MODES to record instead: any window below those counts (choose a different threshold or drop), or a cross-check that no rule form reproduces (label meaning becomes unverifiable - drop or redesign on the fixed-threshold label with the disagreement recorded). If ready: construction step = the same worker job extends to the full artifact build (features from snapshots <= T only, target window rows never shipped to the solver, statuses and calendar features shipped, Closed/Not-applicable censoring), expected artifact = train/eval/holdout CSVs + quality.json with evaluation_contract under the repository's construction path, decided by the standard gate -> exact-byte acceptance -> reference scoring in that order.",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Canada Border Services Agency (CBSA) via open.canada.ca",
+    "recorded_at": "2026-11-05"
+  },
+  "licence_class": "A",
+  "licence_note": "Open Government Licence - Canada 2.0 (attribution-only; no share-alike; commercial use and derivatives permitted). Attribution statement required in LICENSE.md: 'Contains information licensed under the Open Government Licence - Canada.' Source designation preserved; the dataset is labelled derived, never an official CBSA product. The licence's non-endorsement clause is respected in the card and README.",
+  "verdict": "investigating - all probed contracts support the task; one bulk per-window count pass (worker) remains before ready",
+  "novelty_check": {
+    "checked_at": "2026-11-05T08:17:25+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "border wait time prediction",
+      "border crossing time prediction dataset",
+      "CBSA border wait times machine learning",
+      "port of entry wait time forecast benchmark"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "border wait time prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "border crossing time prediction dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "CBSA border wait times machine learning",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "port of entry wait time forecast benchmark",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "border wait time prediction",
+          "hits": 536623,
+          "top": [
+            "Queue Wait Time Prediction in Supercomputers",
+            "Data from: Emergency Room Safer Transfer of Patients (ER-STOP): a quality improvement initiative at a community based hospital to improve the safety of emergency room patient handovers",
+            "MediQ: AI-based Patient Wait Time Prediction and Queue Management in OPD",
+            "Acceptable Wait Time Models at Transit Bus Stops",
+            "Predicting the impact of hydrocarbon saturation on T2 distribution curve of NMR logs \u2013 A case study"
+          ]
+        },
+        {
+          "query": "border crossing time prediction dataset",
+          "hits": 803687,
+          "top": [
+            "BORDER CUSTOMS SERVICE QUALITY AS AN INSTITUTIONAL CONSTRAINT ON TOURISM POTENTIAL: A GENERALIZED COST FRAMEWORK AND A COMPONENT DECOMPOSITION OF THE BORDER BARRIER",
+            "Dataset of border control technologies' acceptance from travellers perspective",
+            "CHEGARA BOJXONA POSTLARIDA TRANSPORT O'TISH YO'LAKLARIDA YUK AVTOMOBILLARINING TURIB QOLISH HOLATLARINI ANIQLASH",
+            "Trade Facilitation Agreements and Border Crossing Efficiency in East Africa: From Theory to Practice",
+            "Restricting the crossing of border in the system of non-tariff regulation of international trade and shaping the country's image"
+          ]
+        },
+        {
+          "query": "CBSA border wait times machine learning",
+          "hits": 544441,
+          "top": [
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database",
+            "DisMo: Disentangled Motion Representations for Open-World Motion Transfer",
+            "mushrooms"
+          ]
+        },
+        {
+          "query": "port of entry wait time forecast benchmark",
+          "hits": 5734592,
+          "top": [
+            "Data from: Emergency Room Safer Transfer of Patients (ER-STOP): a quality improvement initiative at a community based hospital to improve the safety of emergency room patient handovers",
+            "A Comparative Study of Transumbilical and Infra-Umbilical Port Insertion in Laproscopic Surgeries",
+            "Silicon Sample Benchmark \u2014 Tier 3 (direct effect forecast) secondary-2 Claude submission (team_16)",
+            "Silicon Sample Benchmark \u2014 Tier 3 (direct effect forecast) secondary-1 Gemini submission (team_16)",
+            "Open Technique Versus Blind Technique in Placement of Primary Ports in Laparoscopic Procedures"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "border wait time prediction",
+          "hits": 5,
+          "top": [
+            "Space-time distributions",
+            "Abnormal Spatial-Temporal Pattern Analysis for Niagara Frontier Border Wait Times",
+            "\"Wait, I'm Still Talking!\" Predicting the Dialogue Interaction Behavior Using Imagine-Then-Arbitrate Model",
+            "Gradient-Weighted, Data-Driven Normalization for Approximate Border Bases -- Concept and Computation",
+            "JANET: Joint Adaptive predictioN-region Estimation for Time-series"
+          ]
+        },
+        {
+          "query": "border crossing time prediction dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "Space-time distributions",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "Gradient-Weighted, Data-Driven Normalization for Approximate Border Bases -- Concept and Computation"
+          ]
+        },
+        {
+          "query": "CBSA border wait times machine learning",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey",
+            "Physics-Inspired Interpretability Of Machine Learning Models"
+          ]
+        },
+        {
+          "query": "port of entry wait time forecast benchmark",
+          "hits": 5,
+          "top": [
+            "Space-time distributions",
+            "Semi-Blind Fluid Antenna System: Port Selection via Statistical Analysis",
+            "Do VLMs Truly \"Read\" Candlesticks? A Multi-Scale Benchmark for Visual Stock Price Forecasting",
+            "Metrics for Bengali Text Entry Research",
+            "Benchmark Dataset for Precipitation Forecasting by Post-Processing the Numerical Weather Prediction"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'border wait time prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'border crossing time prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'CBSA border wait times machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'port of entry wait time forecast benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'border wait time prediction': 536623 hit(s) - Queue Wait Time Prediction in Supercomputers, Data from: Emergency Room Safer Transfer of Patients (ER-STOP): a quality improvement initiative at a community based hospital to improve the safety of emergency room patient handovers, MediQ: AI-based Patient Wait Time Prediction and Queue Management in OPD, Acceptable Wait Time Models at Transit Bus Stops, Predicting the impact of hydrocarbon saturation on T2 distribution curve of NMR logs \u2013 A case study\n- zenodo_records / 'border crossing time prediction dataset': 803687 hit(s) - BORDER CUSTOMS SERVICE QUALITY AS AN INSTITUTIONAL CONSTRAINT ON TOURISM POTENTIAL: A GENERALIZED COST FRAMEWORK AND A COMPONENT DECOMPOSITION OF THE BORDER BARRIER, Dataset of border control technologies' acceptance from travellers perspective, CHEGARA BOJXONA POSTLARIDA TRANSPORT O'TISH YO'LAKLARIDA YUK AVTOMOBILLARINING TURIB QOLISH HOLATLARINI ANIQLASH, Trade Facilitation Agreements and Border Crossing Efficiency in East Africa: From Theory to Practice, Restricting the crossing of border in the system of non-tariff regulation of international trade and shaping the country's image\n- zenodo_records / 'CBSA border wait times machine learning': 544441 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, DisMo: Disentangled Motion Representations for Open-World Motion Transfer, mushrooms\n- zenodo_records / 'port of entry wait time forecast benchmark': 5734592 hit(s) - Data from: Emergency Room Safer Transfer of Patients (ER-STOP): a quality improvement initiative at a community based hospital to improve the safety of emergency room patient handovers, A Comparative Study of Transumbilical and Infra-Umbilical Port Insertion in Laproscopic Surgeries, Silicon Sample Benchmark \u2014 Tier 3 (direct effect forecast) secondary-2 Claude submission (team_16), Silicon Sample Benchmark \u2014 Tier 3 (direct effect forecast) secondary-1 Gemini submission (team_16), Open Technique Versus Blind Technique in Placement of Primary Ports in Laparoscopic Procedures\n- arxiv_preprints / 'border wait time prediction': 5 hit(s) - Space-time distributions, Abnormal Spatial-Temporal Pattern Analysis for Niagara Frontier Border Wait Times, \"Wait, I'm Still Talking!\" Predicting the Dialogue Interaction Behavior Using Imagine-Then-Arbitrate Model, Gradient-Weighted, Data-Driven Normalization for Approximate Border Bases -- Concept and Computation, JANET: Joint Adaptive predictioN-region Estimation for Time-series\n- arxiv_preprints / 'border crossing time prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, Space-time distributions, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Gradient-Weighted, Data-Driven Normalization for Approximate Border Bases -- Concept and Computation\n- arxiv_preprints / 'CBSA border wait times machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'port of entry wait time forecast benchmark': 5 hit(s) - Space-time distributions, Semi-Blind Fluid Antenna System: Port Selection via Statistical Analysis, Do VLMs Truly \"Read\" Candlesticks? A Multi-Scale Benchmark for Visual Stock Price Forecasting, Metrics for Bengali Text Entry Research, Benchmark Dataset for Precipitation Forecasting by Post-Processing the Numerical Weather Prediction",
+    "prior_art": [
+      "Developing Predictive Border Crossing Delay Models (US DOT, rosap.ntl.bts.gov/view/dot/50534); Blue Water Bridge ISFC crossing-time models (US DOT 86608); connected-vehicle crossing-time estimation at Paso del Norte (Sage 2024, doi 10.1177/27541231241226730); multi-modal border-queue framework on synthetic data (arXiv 2608.27010); CBSA CanBorder app (forecast product, canada.ca/en/mobile/cbsa-canborder)"
+    ],
+    "theirs": "The publisher (CBSA) ships the raw archive, a live current-only feed, and CanBorder app forecasts (a product, not data with splits); academic prior art predicts crossing delay at 4-6 US-border ports from researcher-collected Bluetooth/connected-vehicle sensor data (US DOT 50534 Niagara Frontier deep-learning study, US DOT 86608 Blue Water Bridge ISFC regression, Sage 2024 El Paso CV study) with no shipped dataset; a 2026 arXiv framework (2608.27010) uses synthetic data; US-bound wait times are a separate CBP/BTS product; Hugging Face search returns only US BTS monthly volume mirrors; no public dataset, splits or scored task exists on the CBSA series.",
+    "ours": "First ML-ready public prediction task on the CBSA's own Canada-bound hourly border-wait archive (26 ports, 2010-01..2020-03, ~2.3M office-hours): reproducible construction from the official OGL-Canada series, temporal splits with a common-cutoff design against cross-row self-answering, censoring semantics for the published status vocabulary (Closed/Not applicable/Missed entry), a deterministic any-row rule for the publisher-acknowledged duplicate conflicts, and a label threshold tied to the publisher's documented service standard with the publisher's own monthly aggregate as a built-in cross-check.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

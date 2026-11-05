@@ -26,7 +26,7 @@
       "url": "https://iaac-aeic.gc.ca/050/evaluations/proj/<project_id>?culture=en-CA",
       "api": "Sampled 2026-10-30 (4 pages across all three states): each page carries a dated 'Latest update' line with the terminal or most-recent event (termination: proj 81027 'January 18, 2022 - The assessment process has been terminated'; determination: proj 84411 'August 29, 2023 - The National Capital Commission issued its Notice of Determination and determined that the project is not likely to cause significant adverse environmental effects'; designated-project decision: proj 80175 key-documents table with Notice of Commencement 2019-07-05 and Environmental Assessment Decision Statement 2021-01-11), plus a fixed metadata block (Assessment status, Start date, Proponent, Authorities, Assessment type, Nature of activity). Pages also link an 'All records' exploration view (iaac-aeic.gc.ca/050/evaluations/exploration?projDocs=<id>) - bulk-export capability NOT yet probed.",
       "license": "Open web publication of the Impact Assessment Agency of Canada; registry content falls under the OGL-Canada family per the package record that serves this registry inventory",
-      "access": "Anonymous HTML; www.iaac-aeic.gc.ca fetches work via the extraction backend (direct curl from this coordinator untested for this domain; canada.ca main-site fetches hang, see hc-canada-vigilance notes). Per-page clean text 8.6-150 KB (4 pages measured)."
+      "access": "Anonymous HTML; www.iaac-aeic.gc.ca direct fetches MEASURED WORKING from this coordinator 2026-11-05 (60/60 pages via urllib with a browser-style User-Agent, 0 errors, mean 3.00 s / 170,415 B per page); registry listing page probed for bulk export - none found."
     }
   ],
   "license_evidence": [
@@ -41,14 +41,15 @@
     "start_year_histogram": "By start year (Completed/InProg/Terminated): 2006 2/0/0, 2007 0/0/1, 2009 1/0/0, 2010 12/1/5, 2011 10/0/7, 2012 24/1/22, 2013 22/2/7, 2014 12/3/8, 2015 14/1/6, 2016 11/3/4, 2017 7/0/3, 2018 10/1/7, 2019 188/11/16, 2020 717/71/48, 2021 826/91/51, 2022 749/111/47, 2023 758/150/48, 2024 724/161/32, 2025 707/208/29, 2026 285/358/7. Category mix (top): Construction 2,593, Transport Industry 1,879, Water Management 440, Tourism 331, Waste Management 286, Environmental Management 281, Petroleum Industry 279, Energy 149, Mining Industry 144. Province mix (top): ON 1,322, BC 1,232, AB 1,038, QC 886, SK 566, NS 373, MB 355, NL 306.",
     "registry_page_samples_2026_10_30": "4 pages via extraction backend: 81027 Terminated (dated termination line 2022-01-18; non-designated project on federal lands), 84411 Completed (dated determination 2023-08-29, outcome wording 'not likely to cause significant adverse environmental effects'; clean text 149.8 KB mostly 'nearby assessments' nav noise), 80175 Completed designated CEAA-2012 project (key-documents table: Notice of Commencement 2019-07-05, EA Decision Statement 2021-01-11; 8.6 KB), 87425 In progress (dated latest update 2024-04-17, key-documents table with dates; 12.2 KB). Dated terminal events verified for 3/3 terminal-or-completed samples; sample size too small to generalize - the share of pages with parseable dated terminal events across the full cohort is the named next measurement.",
     "novelty_search_preliminary_2026_10_30": "Web search (queries: 'machine learning predicting environmental impact assessment outcome Canada decisions dataset', plus browsing of top results): no ML-ready benchmark or dataset found for predicting Canadian Impact Assessment Registry outcomes; results were CO2-emissions/LCA ML noise plus one Tandfonline review of AI-in-EIA literature (no registry-outcome task). A 2024 review of AI in EIA surfaced no outcome-prediction benchmark. Formal check-novelty.py with recorded verdict deferred until the bounded page-sample resolves extraction feasibility (investigating status).",
-    "cost_unknown_page_extraction": "Per-page extraction cost at cohort scale (6,600 pages) NOT yet measured - named as the next bounded measurement before any ready verdict."
+    "registry_page_stratified_sample_2026_11_05": "60-page stratified sample (24 Terminated + 24 Completed + 12 In progress, spread over start-years 2010-2026 with a 2019+ bias; seed 20261105; direct urllib fetches from the coordinator, 0 errors): (a) DATED machine-parseable terminal/most-recent event line in the page's 'Latest update' div, after entity normalization (&nbsp; &ndash; &mdash; appear inside dates and separators; one line uses 'March 10 2026' comma-less): Terminated 20/24 (83%; 2019+ subsample 11/14), Completed 23/24 (96%; 2019+ 13/14), In progress 11/12 (92%). 3/24 Terminated pages carry terminal wording with NO parsable date ('The permit holder will not be proceeding with this project.', 'The project, as proposed, has been cancelled .', 'The environmental assessment process has been terminated.') - a named fallback class for construction: the page meta 'Modified Date' exists (e.g. 2024-12-11) but is last-edit, not event date, so these rows are either event-date-missing or resolved from the page's key-documents table; the rule is fixed before scoring. (b) Per-page cost measured: mean 170,415 B, mean 3.00 s -> 6,600 pages ESTIMATES to ~1.12 GB and ~5.5 h serial (bounded-concurrency worker job; estimate from the 60-page mean, labeled as such). (c) Outcome wording among Completed: 'determined that the project is not likely to cause significant adverse environmental effects' 11/24; 'likely to cause' 0/24 (expected-rare CONFIRMED at sample scale); 14/24 carry determination wording of any form. (d) Bulk export: NONE found - the registry listing page (iaac-aeic.gc.ca/050/evaluations, 30,981 B fetched 2026-11-05) has no export/CSV/RSS/bulk markers; per-page extraction is the only channel for dated events. CROSS-CHECK: page meta 'Status' == MapServer project_state_en on 60/60. NEW timing measurement: start_date -> dated-event lag on the 20 dated Terminated pages: min 0, p25 224, median 575, p75 1,583, max 3,917 days (long-tailed; the latest-update date is a proxy for the termination event where the line IS the terminal event - noisy for a few pages whose latest update is post-termination); censoring rule and holdout boundary need the cohort-scale distribution. Retained scripts: probe/iaac_page_sample.py (fetch + first-pass parse) and probe/iaac_reanalyze.py (entity-normalized final numbers); raw per-page results iaac_pages_sample.json kept in the session scratch, not the repo.",
+    "cost_unknown_page_extraction": "RESOLVED 2026-11-05 by the 60-page stratified sample: mean 170,415 B and 3.00 s per page; 6,600-page cohort extraction ~= 1.12 GB, ~5.5 h serial - a bounded-concurrency worker prerequisite (see registry_page_stratified_sample_2026_11_05)."
   },
   "jobs": [],
   "artifacts": [],
   "rejection_reason": null,
   "review": null,
-  "next_action": "Bounded stratified sample of ~60-100 registry pages (states x start-years 2019-2026) on the coordinator or a worker: measure (a) share of pages exposing a dated, machine-parseable terminal event line (generalizing the 3/3 sample), (b) per-page fetch cost (bytes, seconds) and the total for 6,600 pages, (c) the determination-outcome wording mix - how often 'likely to cause significant adverse environmental effects' appears (decides whether the substantively richer label is ever frequent enough to be a secondary column or its own task; expected rare), (d) whether the 'All records' exploration view or the registry listing offers a bulk export that would replace per-page scraping. Then run scripts/check-novelty.py with recorded queries and a verdict. Timing contract needs the measured terminal-event lag distribution (start -> termination/determination) to fix the censoring rule and the holdout boundary. All cohort-scale extraction is a worker prerequisite, not coordinator work. NO construction was started in this session.",
-  "verdict": "hold",
+  "next_action": "Cohort-scale dated-event extraction is the remaining worker prerequisite (advancement owns it), then ready/drop on measured criteria. Job: with bounded concurrency, fetch all 6,600 registry pages (~1.12 GB, ~5.5 h serial estimate), sha256-pin the harvest, parse the dated Latest-update lines with the entity-normalized grammar already measured (&nbsp;/&ndash;/&mdash; inside dates, comma-less forms), and compute: (a) the FULL dated-terminal-event share per state and start-year (sample: Terminated 83%, Completed 96%), (b) the cohort-scale start->event lag distribution for BOTH terminal states (sample Terminated n=20: median 575 d, max 3,917 d) to fix the censoring rule and holdout boundary - a fixed-horizon censoring or a pushed-back holdout window, decided from the measured distribution, (c) the fate of the no-parsable-date terminal pages (sample 3/24 Terminated): event-date-missing class vs key-documents-table recovery, rule fixed before scoring, (d) per-window label counts for train 2019-2022 / eval 2023-2024 / holdout per the fixed censoring rule, with clustered counts. NOVELTY: the formal check is RECORDED (2026-11-05, verdict differentiated - see novelty_check; searches found only LCA-method ML papers, no registry-outcome task for any jurisdiction). ACCEPTANCE CRITERIA to flip ready: dated-event share >=80% in every state x era cell used, every window carries both classes with the censoring rule stated, and the lag distribution supports a holdout whose labels are observable by the archive end. FAILURE MODES to record instead: dated-event share below the threshold (timing contract unsupported - park with the measured share), or a censoring rule that leaves any window single-classed. NO construction was started; nothing here is scored or quotable as a base rate beyond the recorded sample.",
+  "verdict": "investigating - extraction feasibility RESOLVED at sample scale (dated terminal-event lines 83-96%, per-page 170 KB / 3.0 s, no bulk export, novelty differentiated); the remaining gate to ready is the cohort-scale dated-event extraction + lag distribution (worker prerequisite)",
   "jurisdiction": {
     "country": "CA",
     "region": "North America",
@@ -56,5 +57,139 @@
     "recorded_at": "2026-10-30"
   },
   "licence_class": "A",
-  "licence_note": "Open Government Licence - Canada 2.0 (ca-ogl-lgo) per the package record; attribution ('Source: Impact Assessment Agency of Canada' / appropriate acknowledgement) carries through to any release; our contribution dedicated CC0, source terms preserved."
+  "licence_note": "Open Government Licence - Canada 2.0 (ca-ogl-lgo) per the package record; attribution ('Source: Impact Assessment Agency of Canada' / appropriate acknowledgement) carries through to any release; our contribution dedicated CC0, source terms preserved.",
+  "novelty_check": {
+    "checked_at": "2026-11-05T08:24:56+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "impact assessment outcome prediction machine learning dataset",
+      "environmental impact assessment decision prediction Canada",
+      "IAAC registry machine learning",
+      "regulatory termination withdrawal prediction dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "impact assessment outcome prediction machine learning dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "environmental impact assessment decision prediction Canada",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "IAAC registry machine learning",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "regulatory termination withdrawal prediction dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "impact assessment outcome prediction machine learning dataset",
+          "hits": 1034847,
+          "top": [
+            "Student Performance Dataset for Learning Outcome Classification Using Machine Learning",
+            "An empirical study on machine learning algorithms for heart disease prediction",
+            "F.LO.O.D.S.A.F.E: Flood Localization and Observation for  Optimal Detection and Strategic Alert Forecasting Engine",
+            "Flood Impact Assessment through Machine Learning: Effectiveness of Government Intervention on Economic Loss Reduction in Spain",
+            "Campus Placement Prediction System using  Machine Learning"
+          ]
+        },
+        {
+          "query": "environmental impact assessment decision prediction Canada",
+          "hits": 843201,
+          "top": [
+            "Assessment of Environmental Effects in the Petrochemical Industry",
+            "THE IMPACT ASSESSMENT ACT REFERENCE (2023 SCC 23): REDEFINING FEDERAL ENVIRONMENTAL JURISDICTION",
+            "Del aspecto al impacto: taller de identificaci\u00f3n de aspectos, efectos e impactos ambientales mediante estudios de caso y coevaluaci\u00f3n entre pares",
+            "FEDECOM - D3.3 Multi-criteria decision integrating environmental impact assessment",
+            "SENSOR WEBS FOR ENVIRONMENTAL RESEARCH"
+          ]
+        },
+        {
+          "query": "IAAC registry machine learning",
+          "hits": 368664,
+          "top": [
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database",
+            "DisMo: Disentangled Motion Representations for Open-World Motion Transfer",
+            "mushrooms"
+          ]
+        },
+        {
+          "query": "regulatory termination withdrawal prediction dataset",
+          "hits": 449259,
+          "top": [
+            "The moment of termination of corporate legal relations",
+            "Threshold Calibration vs. Representation Choice in Multi-Label GHS Hazard Classification",
+            "Prevention of Opioid Addiction",
+            "Dataset for the Intronic Signaling Pathways System (ISPS): Structural and Interaction-Based Analysis of Intronic RNA Across Inflammatory Genes",
+            "Healthcare as a Drift-Amplifying System: Incentives, Suppression, and Termination Failure"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "impact assessment outcome prediction machine learning dataset",
+          "hits": 5,
+          "top": [
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "Prediction of the outcome of a Twenty-20 Cricket Match : A Machine Learning Approach",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey"
+          ]
+        },
+        {
+          "query": "environmental impact assessment decision prediction Canada",
+          "hits": 5,
+          "top": [
+            "Night-sky brightness monitoring in Hong Kong - a city-wide light pollution assessment",
+            "CAGI, the Critical Assessment of Genome Interpretation, establishes progress and prospects for computational genetic var",
+            "Group Fairness in Prediction-Based Decision Making: From Moral Assessment to Implementation",
+            "Selection of contributing factors for predicting landslide susceptibility using machine learning and deep learning model",
+            "Conditional assessment of the impact of a Hausman pretest on confidence intervals"
+          ]
+        },
+        {
+          "query": "IAAC registry machine learning",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey",
+            "Physics-Inspired Interpretability Of Machine Learning Models"
+          ]
+        },
+        {
+          "query": "regulatory termination withdrawal prediction dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "A Hybrid Approach to Information Retrieval and Answer Generation for Regulatory Texts",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "Robust Hedging of Withdrawal Guarantees (Extended Version)"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'impact assessment outcome prediction machine learning dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'environmental impact assessment decision prediction Canada': 0 hit(s) - nothing notable\n- huggingface_datasets / 'IAAC registry machine learning': 0 hit(s) - nothing notable\n- huggingface_datasets / 'regulatory termination withdrawal prediction dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'impact assessment outcome prediction machine learning dataset': 1034847 hit(s) - Student Performance Dataset for Learning Outcome Classification Using Machine Learning, An empirical study on machine learning algorithms for heart disease prediction, F.LO.O.D.S.A.F.E: Flood Localization and Observation for  Optimal Detection and Strategic Alert Forecasting Engine, Flood Impact Assessment through Machine Learning: Effectiveness of Government Intervention on Economic Loss Reduction in Spain, Campus Placement Prediction System using  Machine Learning\n- zenodo_records / 'environmental impact assessment decision prediction Canada': 843201 hit(s) - Assessment of Environmental Effects in the Petrochemical Industry, THE IMPACT ASSESSMENT ACT REFERENCE (2023 SCC 23): REDEFINING FEDERAL ENVIRONMENTAL JURISDICTION, Del aspecto al impacto: taller de identificaci\u00f3n de aspectos, efectos e impactos ambientales mediante estudios de caso y coevaluaci\u00f3n entre pares, FEDECOM - D3.3 Multi-criteria decision integrating environmental impact assessment, SENSOR WEBS FOR ENVIRONMENTAL RESEARCH\n- zenodo_records / 'IAAC registry machine learning': 368664 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, DisMo: Disentangled Motion Representations for Open-World Motion Transfer, mushrooms\n- zenodo_records / 'regulatory termination withdrawal prediction dataset': 449259 hit(s) - The moment of termination of corporate legal relations, Threshold Calibration vs. Representation Choice in Multi-Label GHS Hazard Classification, Prevention of Opioid Addiction, Dataset for the Intronic Signaling Pathways System (ISPS): Structural and Interaction-Based Analysis of Intronic RNA Across Inflammatory Genes, Healthcare as a Drift-Amplifying System: Incentives, Suppression, and Termination Failure\n- arxiv_preprints / 'impact assessment outcome prediction machine learning dataset': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, DOME: Recommendations for supervised machine learning validation in biology, Changing Data Sources in the Age of Machine Learning for Official Statistics, Prediction of the outcome of a Twenty-20 Cricket Match : A Machine Learning Approach, Learning Curves for Decision Making in Supervised Machine Learning: A Survey\n- arxiv_preprints / 'environmental impact assessment decision prediction Canada': 5 hit(s) - Night-sky brightness monitoring in Hong Kong - a city-wide light pollution assessment, CAGI, the Critical Assessment of Genome Interpretation, establishes progress and prospects for computational genetic var, Group Fairness in Prediction-Based Decision Making: From Moral Assessment to Implementation, Selection of contributing factors for predicting landslide susceptibility using machine learning and deep learning model, Conditional assessment of the impact of a Hausman pretest on confidence intervals\n- arxiv_preprints / 'IAAC registry machine learning': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey, Physics-Inspired Interpretability Of Machine Learning Models\n- arxiv_preprints / 'regulatory termination withdrawal prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, A Hybrid Approach to Information Retrieval and Answer Generation for Regulatory Texts, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Robust Hedging of Withdrawal Guarantees (Extended Version)",
+    "prior_art": [
+      "AI-in-EIA literature review (Tandfonline 2024, surfaced 2026-10-30, no outcome-prediction benchmark); LCA/ML methodology papers (Springer 2024, ICAR Tech Series 28, PMC12297617, MMU JIWE synthetic-data study) - different problem family (life-cycle inventory modeling, not regulatory process outcomes)"
+    ],
+    "theirs": "The publisher (IAAC) ships the registry itself and an inventory MapServer (attributes without dated terminal events); no bulk export of dated events exists (measured 2026-11-05). Searches for outcome-prediction datasets return only life-cycle-assessment (LCA) methodology ML papers (Springer, ICAR, PMC demolition-tool SD+RF study, synthetic-data net-effects regression) - none predicts regulatory assessment outcomes, none covers any impact-assessment registry, no jurisdiction. The 2026-10-30 preliminary search (Canadian IA outcome prediction) found the same negative; a 2024 review of AI-in-EIA surfaced no registry-outcome task.",
+    "ours": "First ML-ready prediction task on the Canadian Impact Assessment Registry lifecycle: at an assessment's registry start date, predict early termination (proponent withdrawal / process termination) vs running to a determination, over the full 6,600-project national cohort (2019+ IAA-era volume measured: ~650-970 starts/year, terminations every year 2019-2026), with per-project dated terminal events extracted from registry pages, temporal splits by start year, and an explicit censoring rule for in-progress cohorts.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
 }

@@ -158,3 +158,45 @@ unstructured or undated, timing cannot be supported and the lead parks.
 
 probe/iaac_layer_probe.py - liveness, counts, samples, full attribute fetch
 with cost measurement (reproduces every aggregate number above).
+
+## 2026-11-05 Canada discovery tick: 60-page stratified registry sample
+
+Answers the four next-action items from the 2026-10-30 session; run from the
+coordinator, anonymous, direct urllib fetches (the extraction backend is no
+longer needed for this domain — measured working).
+
+```
+python3 probe/iaac_page_sample.py    # inventory re-fetch (9 req, ~1 MB) +
+                                     # 60-page sample (24 Term / 24 Comp /
+                                     # 12 InProg, start-years 2010-2026,
+                                     # 2019+ bias, seed 20261105) + first parse
+python3 probe/iaac_reanalyze.py      # entity-normalized final numbers
+curl -sSL "https://iaac-aeic.gc.ca/050/evaluations?culture=en-CA"  # 30,981 B,
+                                              # grepped for export/csv/rss/bulk: none
+```
+
+Results (recorded in record.json registry_page_stratified_sample_2026_11_05):
+
+- Dated terminal/most-recent line after entity normalization
+  (&nbsp;/&ndash;/&mdash; inside dates and separators; comma-less forms):
+  Terminated 20/24 (83%), Completed 23/24 (96%), In progress 11/12 (92%).
+- 3/24 Terminated pages: terminal wording but NO parsable date
+  (81667, 84227, 80083) — the named fallback class; meta "Modified Date"
+  is last-edit, not event date.
+- Per-page cost: mean 170,415 B, 3.00 s → 6,600 pages ≈ 1.12 GB,
+  ≈ 5.5 h serial (ESTIMATE from the sample mean).
+- Outcome wording among Completed: "not likely to cause significant adverse
+  environmental effects" 11/24; "likely to cause" 0/24 (expected rare
+  confirmed at sample scale).
+- Bulk export: none on the listing page; per-page extraction is the channel.
+- Cross-check: page meta Status == MapServer state 60/60.
+- Timing: start→event lag on 20 dated Terminated pages: min 0, p25 224,
+  median 575, p75 1,583, max 3,917 days (long-tailed; cohort-scale
+  distribution is the worker prerequisite that fixes censoring/holdout).
+
+Novelty check recorded 2026-11-05 (verdict differentiated, see record.json
+novelty_check): searches return only LCA-method ML papers; no registry-outcome
+prediction dataset for any jurisdiction found.
+
+Status after this tick: still investigating; the remaining gate to ready is
+the cohort-scale extraction + lag distribution (worker, advancement-owned).
