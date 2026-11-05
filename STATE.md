@@ -1,3 +1,48 @@
+## 2026-11-05 (15:32Z) - follow-up: nws-tornado-build-001 FAILED by its own pinned refusal at 2016 GLD #38; diagnosed as a row-key grain defect - cow (year, wfo, eventid) is NOT a unique warning key (two distinct warnings 24 min apart share eventid 38); rebuild handed to advancement; worker destroyed with provider read-back
+
+Watcher follow-up session (failed-job event). The advancement session's
+handoff was the running job; the ledger was already collected by the
+watcher at 15:18:50Z. candidates/fenz-incident-data/ untouched
+(concurrent writer, preserved untracked).
+
+- FAILED exit 1 at 304.4 s, oom_killed false. No CSV, gate run,
+  acceptance or score ever existed; NOTHING was scored and no
+  performance metric exists for this artifact. Bounded diagnostics
+  fetched to .factory/nws-tornado-build-001/ (container.log 1,453 B,
+  staging-manifest.json 6,578 B; both sha256-verified against the
+  ledger; no bulk data through the coordinator). Staging release
+  435325965 preserves source.tar + container.log + manifest (digests
+  collect-verified).
+- DIAGNOSIS (construction defect class "duplicate-key verify
+  disagreement" per the stopping condition; refusal worked as pinned):
+  2008-2015 streamed cleanly (2013 anchor EXACT: 1832/441/1831,
+  dup_identical=1), then the build refused on 2016 GLD #38.
+  Discriminating probe probe/followup_2016_GLD_38.py (cow wfo=GLD
+  2016 TO.W; evidence probe/out/followup_2016_GLD_38.json): the two
+  features are TWO DISTINCT WARNINGS - 201605262355-KGLD-WFUS53-TORGLD
+  (23:55Z May 26, parea 656.6 km2, no LSRs, verify=false) and
+  201605270019-KGLD-WFUS53-TORGLD (00:19Z May 27, parea 4878.7 km2,
+  LSRs 124,125, verify=true), 24 min apart across the UTC day boundary.
+  Each verify is right for its own polygon; the refusal was a false
+  positive per the pinned rule. Rebuild scope + next checks recorded
+  in the record (next_action + measurements
+  .nws_tornado_build_001_failure_diagnosis): unique per-warning row key
+  incl. product_id; the kept_earliest branch re-examined so distinct
+  warnings both become rows; ledger-attributed row deltas (2008 -6 vs 3,
+  2009 -10 vs 5, 2011 -51 vs 41, 2012 -33 vs 6) explained before
+  relaunch; raw-feature anchors are key-independent and unchanged. ONE
+  rebuild per defect class = nws-tornado-build-002, ADVANCEMENT'S to
+  launch; no retry from this session.
+- CLEANUP (deletion confirmed by the provider, not requested-only):
+  worker 174626604 destroyed 2026-11-05T15:30:24Z (ledger deleted_at);
+  Hetzner read-back GET /servers/174626604 -> HTTP 404; primary-IP
+  listing: 0 IPs in the project, 2.29.159.168 absent. Zero accepted
+  artifacts existed (the build refused before the extract), so no
+  preservation obligation beyond the staged diagnostics.
+- Checks: scripts/check-candidate.py nws-tornado-warning-verification
+  rc=0. No release byte, tag, manifest, destination or visibility
+  touched. Next action for advancement is in the record.
+
 ## 2026-11-05 (15:15Z) - advancement session: nws-tornado-warning-verification preflight DONE (both anchors reproduce EXACTLY; the recorded Arkansas fixture was contradicted by measurement and corrected BEFORE launch from the paper's own text + the IEM emergency archive; product_text/IBW fetch EXCLUDED on the measured 500-warning sample) and nws-tornado-build-001 LAUNCHED (server 174626604) - still running at the run-time budget stop, the running job is the recorded handoff
 
 Scheduled advancement session. Release work first: no packaged candidate is
