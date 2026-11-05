@@ -1,3 +1,102 @@
+## 2026-11-05 (04:33Z) - discovery tick (United Kingdom): tc-gv-licence-application-outcome OPENED (investigating) - the Traffic Commissioners' weekly Applications and Decisions gazette is a case-grain OGL-A register with exact listing-instant timing and reference-number-exact outcome linkage; the one unresolved contract is split counts + archive coverage (named worker probe). Three recorded unpark/reopen questions re-checked and answered with evidence; no new Companies House probe (re-checked 2026-11-03)
+
+Discovery-only session. No construction, qualification, packaging, publication or
+advancement of existing candidates; no worker launched (EUR 0); bounded anonymous
+coordinator probes only; no release byte, tag, manifest or destination touched.
+Regional focus United Kingdom (ONS, NHS Digital, Defra, EA, Companies House,
+data.gov.uk). Queue chosen from current records: GB 15 records (2 published,
+1 packaged awaiting the operator's flip, 1 ready, 3 investigating with
+recorded owners, 4 parked, 5 dropped with recorded reopen conditions).
+
+- NEW CANDIDATE tc-gv-licence-application-outcome (GB, investigating; the only
+  lead opened this tick). Publisher: Traffic Commissioners for Great Britain
+  (Office of the Traffic Commissioner, DVSA-supported) - a GB regulator family
+  with zero bench coverage. Task: for a new goods-vehicle operator licence
+  application, at the instant its listing is published in the weekly
+  'Applications and Decisions' gazette (T; the 21-day statutory objection window
+  opens at publication), predict the resolution it reaches (granted without
+  public inquiry / called to inquiry under ground S13 / refused / withdrawn).
+  MEASURED (probe scripts + JSON outputs retained in the candidate dir; four
+  editions parsed, sha256-pinned in notes.md):
+  - LICENCE class A from the publisher's own instrument (guidance pages hosting
+    the gazettes, fetched 2026-11-05): "All content is available under the Open
+    Government Licence v3.0, except where otherwise stated"; no contrary
+    statement on any page or in the four sampled PDFs; the PDF front-page
+    "copies can be purchased" line recorded as a Reg-21 print relic caveat.
+  - STRUCTURE: every edition has the same 9-section layout; Section 1.1 lists
+    new applications (reference number = eventual licence number, class
+    R/SN/SI, applicant, directors, registered address, operating centre +
+    postcode, vehicle/trailer authorisation counts) and Sections 2.1/2.2/2.3/
+    2.4/4.1/4.2/5.1/5.2 publish the outcomes - routine grants included, so the
+    label is NOT censored. PI notices carry statutory ground codes, so
+    application inquiries (S13) are separable from enforcement (S26).
+  - TIMING exact: publication date + objection deadline printed on page 1;
+    volumes measured east AD-5611 (2026-10-28): 28 new applications/38
+    variations, 24 grants, 4 refusals; east AD-5308 (2021-01-06, Wayback copy):
+    22/14, 25 grants, 0 refusals; wales AD-8981 (2026-10-28): 6/12. Both
+    classes present in every sampled edition; refusals swing 0-4/area-week, so
+    per-window counts need the aggregate, not extrapolation.
+  - LINKAGE EXACT + fixtures: OF2093311 (Brownline UK Ltd) and OF2093050
+    (ULTRA LOGIK LIMITED) listed 29/07/2026 (AD-5598) -> granted in AD-5611
+    (28/10/2026); OF2088279 (SAGAL LOGISTICS LTD) listed 29/07/2026 -> REFUSED
+    in AD-5611 Section 2.2; OF2091916 (NEIL DRURY HAULAGE LTD) PI-noticed for
+    3 December 2026 = right-censored live-edge example.
+  - ARCHIVE CHANNELS (the one open contract): live area pages keep only the
+    current year (43 links each, east + wales); older live asset URLs 410
+    (measured); Wayback holds the page snapshots (26 monthly-collapsed 200s:
+    2015:1, 2019:1, 2020:6, 2021:2, 2022:11, 2023:1, 2024:1, 2025:1, 2026:2),
+    each carrying the trailing ~52 edition attachments, AND the gazette PDFs
+    themselves (ad_5308 fetched from a 2021 capture, parses; 2015 snapshot
+    carries no PDFs - pre-2016 format). UKGWA captures exist (ukgwa/20230103214402)
+    but its CDX endpoint served a TNA HTML shell this session. NET: realistically
+    retrievable ~2019/2020-2026 with gaps; the per-area per-edition coverage
+    ledger + national per-window counts are the NAMED next probe (worker
+    aggregate, ibama-probe precedent). Sibling leads recorded NOT opened:
+    operator-register exit (VOL weekly register CSVs + gazette sections 7/8),
+    PSV Notices and Proceedings. Novelty differentiated recorded via
+    check-novelty.py (3 queries, no ML-ready task or prediction literature on
+    operator licence applications found; nearest family members are our own
+    ipo-trademark (published) and ipa-tm (investigating) - different regulators
+    and domains).
+- RECORDED UNPARK/REOPEN QUESTIONS ANSWERED (evidence in the two records'
+  notes.md and below for bTB):
+  - ons-la-claimant-count-direction: the ONS 'Arlo' API host api.beta.ons.gov.uk
+    is now NXDOMAIN (worse than the 2026-10-21 TLS failure); no case-grain ONS
+    product surfaced; unpark condition unchanged, park stands.
+  - defra-la-household-recycling-rate: the publisher's own page states the
+    regular quarterly statistics release CEASED IN 2016 and historical ENV19
+    quarterly tables were England/region-grain, never LA; the WasteDataFlow
+    public channel exists (per-question quarterly data, free registration,
+    past years on data.gov.uk) but the park's measured-headroom blocker
+    (persistence ceiling 92.6-97.8%, ~10 threshold-crossing LAs/year) is
+    untouched by finer time grain; park stands, conditions (2)/(3) remain
+    operator-side.
+  - bTB reopen condition (recorded in STATE 2026-10-27; no candidate record):
+    data.gov.uk CKAN search "bovine tb herd" = 12 hits, all OGL but aggregates/
+    compensation/VNTR; the publisher's own 2025 epidemiology report still
+    describes ibTB as the interactive map. No herd-grain open extract with
+    dates; reopen condition still unmet.
+- Companies House NOT re-probed (the 2026-11-03 tick re-checked it and the
+  2026-10-19 measurement stands); NHS Digital stays covered by the 2026-11-03
+  statement (provider/area aggregates; case-grain HES is DARS-restricted);
+  EA's three live candidates keep their recorded owners (dvsa-mot GO is
+  advancement's, ea-bathing is on the assisted-audit hold, ea-flood-alert GO
+  is advancement's); ofsted (ready) and cqc (packaged) untouched. These are
+  coverage statements, not "no viable source exists" claims.
+- Hygiene: check-candidate tc-gv OK (investigating) + defra OK + ons OK; --all
+  and the full suite run below; no token exposure (all probes anonymous); no
+  worker, no job ledger change; the gazette PDFs stay in scratch (sha256-pinned,
+  24h sweep); the approval gate refused one exact-path scratch cleanup (rm -rf)
+  and it was NOT retried - the stray empty dir prunes with scratch.
+
+Next action (a fresh session can carry it out): the candidate record's
+next_action orders the work - discovery owns the bounded worker aggregate
+probe for tc-gv-licence-application-outcome (coverage ledger first, then
+per-area-year outcome counts, then label pre-registration), after which the
+five-contract reconciliation decides ready. The operator's standing decisions
+(za-cct flip relay, unhcr next1_g25 fallback behind a fresh decision) are
+unchanged and not part of this tick.
+
 ## 2026-11-05 (02:55Z) - advancement session: unhcr-corridor-entry-surge constructed, qualified, accepted and scored end-to-end on the worker; the pre-registered deciding check returned identity_prior_dominates_no_headroom -> the candidate DROPS for no demonstrated headroom, exactly the rule written before any score
 
 Scheduled advancement session. Release work first: za-cct v2026.11 stays

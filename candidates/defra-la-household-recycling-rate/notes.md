@@ -49,3 +49,31 @@ figures (~41-44% band; release: 41.2% of total LA-collected waste
 recycled/composted in 2024/25). England's household recycling rate has been
 flat-to-declining since 2016/17, which is why flips are rare.
 
+
+## Unpark-question re-check (2026-11-05, UK discovery tick, read-only)
+
+The recorded unpark condition (1) asked whether Defra's quarterly releases
+publish LA breakdowns, naming WasteDataFlow quarterly exports as the channel.
+
+- PUBLISHER'S OWN ANSWER (gov.uk "Local authority collected waste for England:
+  quarterly estimates", fetched 2026-11-05): "The regular publication of a
+  quarterly statistics release ceased in 2016. Whilst the data continues to be
+  collected quarterly, the statistics are now published on an annual basis."
+  The historical ENV19 quarterly tables were England/region-grain ("Estimates
+  of quarterly waste arisings and management for England", thousand tonnes) -
+  never LA breakdowns. One ad-hoc COVID edition (Apr-Jun 2020) only.
+- WASTEDATAFLOW (wastedataflow.org, fetched 2026-11-05): the channel DOES exist
+  - "the individual questions on waste collected and managed in WasteDataFlow
+  can be downloaded by the general public. Questions are completed quarterly
+  (annually in Scotland)" and "For English local authorities, past years' data
+  can be downloaded from data.gov.uk" - but behind a (free, public)
+  registration; not fetched this tick.
+- THE PARK STANDS ON ITS MEASURED HEADROOM BLOCKER, which finer time grain does
+  not address: the >=50% policy task is solved by persistence at 92.6-97.8%
+  accuracy with ~10 threshold-crossing LAs/year, and quarterly grain adds four
+  seasonally noisier observations of the same rare crossings rather than new
+  signal. The decline variant remains adjacent to the dropped nhs-ae
+  persistence-dominated family. Reopening still requires condition (2) (the
+  operator wants the annual-grain policy task with the persistence ceiling
+  accepted) or condition (3) (cross-sectional joins) - and flip counts would be
+  re-measured first either way.

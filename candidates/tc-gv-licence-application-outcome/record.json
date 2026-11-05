@@ -1,0 +1,224 @@
+{
+ "id": "tc-gv-licence-application-outcome",
+ "status": "investigating",
+ "created_at": "2026-11-05T04:28:06Z",
+ "updated_at": "2026-11-05T04:28:06Z",
+ "domain": "transport operator licensing / regulatory application-outcome prediction",
+ "prediction_question": "For a new goods-vehicle operator licence application in Great Britain, at the instant its listing is published in the Traffic Commissioners' weekly 'Applications and Decisions' (AD) gazette (instant T; the 21-day statutory objection window opens at publication), which resolution will the application reach: granted without a public inquiry, called to a public inquiry (ground code S13), refused, or withdrawn / grant not taken up?",
+ "prediction_time": "The publication date printed on page 1 of the AD edition that lists the application (Europe/London; measured example: east-of-England edition AD-5611 published 28/10/2026 with objection deadline 18/11/2026 = publication + 21 days). Features are exactly the fields of the listing as published: licence class (R/SN/SI), applicant name and legal form, director names, registered address, operating-centre address and postcode, vehicle and trailer authorisation counts, traffic area, publication week. Objections, representations and inquiry outcomes all occur strictly after T, so nothing in the feature set can encode the outcome path.",
+ "target_definition": "The outcome published in later editions of the same traffic area's AD gazette, linked EXACTLY by the application reference number (the OF-number, which is also the operator licence number; measured in both sample eras): Section 2.1/2.3 = granted without public inquiry; 2.2/2.4 = refused; 4.1 = withdrawn; 4.2 = grant not taken up; 5.1 = notice of public inquiry with a statutory ground code (S13 'Consideration of new application under Section 13' identifies application-related inquiries; S26 'disciplinary action under Section 26' belongs to existing holders and is excluded from this population), followed by 5.2 = decision taken at that inquiry. Candidate primary binary label (decided at construction, before any score): 1 = refused (2.2) or withdrawn/not taken up (4.1/4.2); 0 = granted. Label source columns (the outcome sections) are excluded from the feature set by construction.",
+ "sources": [
+  {
+   "name": "Traffic Commissioner Goods Vehicle Applications and Decisions - collection page",
+   "landing_page": "https://www.gov.uk/government/collections/traffic-commissioner-applications-and-decisions",
+   "publisher": "Traffic Commissioners for Great Britain (Office of the Traffic Commissioner, supported by DVSA)",
+   "licence": "OGL v3.0 (GOV.UK guidance pages hosting the product: 'All content is available under the Open Government Licence v3.0, except where otherwise stated', read 2026-11-05); no contrary statement found on the pages or in the sampled gazette PDFs"
+  },
+  {
+   "name": "Weekly A&D gazettes, per traffic area guidance pages (8 areas)",
+   "landing_page": "https://www.gov.uk/guidance/applications-and-decisions-for-the-east-of-england",
+   "other_areas": "london-and-the-south-east-of-england, north-east-of-england (north east), north-west-of-england, west-midlands, west-of-england, scotland, wales",
+   "format": "weekly PDF gazette, ~14-40 pages, publication number series per area (east AD-56xx, Wales AD-89xx)",
+   "licence": "OGL v3.0 via the hosting guidance pages; PDF front page carries a legacy 'copies can be purchased' print-distribution line, not a licence restriction"
+  },
+  {
+   "name": "Historical editions retrieval channel (live page keeps only the current year)",
+   "api": "http://web.archive.org/cdx/search/cdx?url=gov.uk/guidance/applications-and-decisions-for-the-east-of-england",
+   "note": "older live asset URLs return HTTP 410 (measured); Wayback holds both page snapshots (26 monthly-collapsed 200s, 2015-2026) and the gazette PDFs themselves (archived asset fetch proven: ad_5308, 422,289 B, parses). UKGWA captures exist (ukgwa/20230103214402 of a TC decisions page) but no machine listing endpoint was found this session.",
+   "licence": "Same GOV.UK guidance/collection pages (OGL v3.0 footer statement, measured 2026-11-05); retrieval-channel or auxiliary entry - licence re-read at construction"
+  },
+  {
+   "name": "Traffic Commissioner regulatory decisions service (2025+) and pre-2025 collections",
+   "landing_page": "https://www.gov.uk/traffic-commissioner-regulatory-decisions",
+   "note": "structured outcome vocabulary (application granted as applied for / in part / with conditions / refused / withdrawn; licence revoked etc.), filterable, atom feed; 232 decisions at probe time. Pre-2025: https://www.gov.uk/government/collections/regulatory-decisions-for-truck-bus-and-coach-operators-licience-and-safety-standards (2018-2024, individual decision pages; 2018-2022 via a UKGWA capture). Complementary cross-check channel for inquiry decisions, not the population record.",
+   "licence": "GOV.UK service/collection pages carrying the same OGL v3.0 footer statement (measured on the parent collection 2026-11-05); auxiliary cross-check channel"
+  },
+  {
+   "name": "Key Traffic Commissioner Data (transparency products) - auxiliary",
+   "landing_page": "https://www.gov.uk/government/collections/key-traffic-commissioner-data",
+   "note": "application processing times and public-inquiry listing timeliness; plus a weekly VOL register of all goods and PSV operator licence holders as CSVs on data.gov.uk (current-state register, updated weekly on Sundays) - usable as a label cross-check (granted OF-numbers present/absent) and a separate sibling lead (licence surrender/termination/revocation events are gazette sections 7.1/7.2/8)",
+   "licence": "GOV.UK collection + data.gov.uk CKAN records (uk-ogl licence ids); auxiliary channels, licence re-read at construction"
+  }
+ ],
+ "license_evidence": [
+  "GOV.UK guidance page hosting the gazettes (https://www.gov.uk/guidance/applications-and-decisions-for-the-east-of-england, HTML fetched 2026-11-05): footer states 'All content is available under the Open Government Licence v3.0, except where otherwise stated.' The same statement class covers the collection page and the other seven area pages; no contrary ('otherwise stated') licence text was found on any page or in the four sampled gazette PDFs (2021 and 2026 eras).",
+  "Caveat recorded, to be re-read at construction: the A&D PDF front page carries the legacy line 'Arrangements for copies to be purchased can be made by emailing enquiries@otc.gov.uk' - a print-distribution relic from Regulation 21 of the Goods Vehicles (Licensing of Operators) Regulations 1995, not a licence restriction; the same PDFs are freely downloadable under the OGL statement above. Construction re-reads the OGL terms and any Traffic-Commissioner-specific terms page before build."
+ ],
+ "jurisdiction": {
+  "country": "GB",
+  "region": "Europe",
+  "publisher": "Traffic Commissioners for Great Britain (Office of the Traffic Commissioner, supported by DVSA)",
+  "recorded_at": "2026-11-05"
+ },
+ "licence_class": "A",
+ "licence_note": "OGL v3.0 (class A): attribution 'Source: Traffic Commissioners for Great Britain' / 'Contains public sector information licensed under the Open Government Licence v3.0' carried into LICENSE.md at release per repo licensing policy; source terms preserved, our contribution CC0, code MIT.",
+ "construction_script": null,
+ "split_strategy": "Temporal splits on the LISTING publication date over the retrievable archive (candidate windows train 2021-2022 / eval 2023-2024 / holdout 2025-2026; the exact retrievable span and per-window counts are the named next measurement, not yet computed - sampled editions show both classes present and volumes of ~22-28 new applications per area-week in the east, ~6 in Wales). Both classes appear in every sampled edition (grants every week; refusals 0-4 per area-week, withdrawals 2-5, PI notices 1-8). Applications are one row each; an applicant can re-apply after refusal (repeat-applicant clustering must be measured at construction).",
+ "measurements": {
+  "gazette_structure_2026_11_05": "Every A&D edition has the same 9-section layout (contents page measured): 1.1 new applications / 1.2 variation applications / 2.1 new granted / 2.2 new refused / 2.3 variation granted / 2.4 variation refused / 3 Schedule 4 / 4.1 withdrawn / 4.2 grants not taken up / 5.1 notices of public inquiries to be held / 5.2 decisions taken at public inquiries / 5.3-5.4 transport manager inquiries / 6 operating centre reviews / 7.1 licences surrendered / 7.2 licences terminated / 8 licences revoked without public inquiry / 9 corrections. Each entry is prefaced by its reference number (e.g. OF2094843 SI ALEX ACOZMEI LTD, directors, registered address, operating centre + postcode, authorisation counts, transport manager where applicable).",
+  "sample_edition_volumes": {
+   "east_AD_5611_pub_2026_10_28_sha256_a1e1e06e8585095a": {
+    "pages": 32,
+    "new_applications": 28,
+    "variation_applications": 38,
+    "new_granted": 24,
+    "new_refused": 4,
+    "variation_refused": 3,
+    "withdrawn": 5,
+    "pi_notices": 6,
+    "pi_decisions": 2,
+    "surrendered": 5,
+    "terminated": 3
+   },
+   "east_AD_5598_pub_2026_07_29_sha256_c87112a87540accf": {
+    "new_applications": 25,
+    "pages": 40
+   },
+   "east_AD_5308_pub_2021_01_06_sha256_9dd88b899c05a7a3_wayback": {
+    "pages": 31,
+    "new_applications": 22,
+    "variation_applications": 14,
+    "new_granted": 25,
+    "new_refused": 0,
+    "variation_refused": 2,
+    "withdrawn": 2,
+    "pi_notices": 8,
+    "pi_decisions": 9
+   },
+   "wales_AD_8981_pub_2026_10_28_sha256_247581daa15c4b47": {
+    "pages": 14,
+    "new_applications": 6,
+    "variation_applications": 12,
+    "new_granted": 4,
+    "new_refused": 0,
+    "variation_refused": 0,
+    "withdrawn": 2,
+    "pi_notices": 1,
+    "pi_decisions": 3
+   }
+  },
+  "linkage_exact": "The reference number (OF + 7 digits; the eventual licence number) appears both in the Section 1.1 listing and in the outcome sections. Cross-edition fixtures measured 2026-11-05: OF2093050 SN ULTRA LOGIK LIMITED and OF2093311 R Brownline UK Ltd listed in AD-5598 (published 29/07/2026) and granted in AD-5611 Section 2.1 (published 28/10/2026); OF2088279 SI SAGAL LOGISTICS LTD listed in AD-5598 Section 1.1 and REFUSED in AD-5611 Section 2.2. Pending example (right-censoring at the live edge): OF2091916 NEIL DRURY HAULAGE LTD, PI noticed in AD-5611 Section 5.1 (S13) for a hearing on 3 December 2026 - outcome after the current archive edge.",
+  "archive_channels_2026_11_05": "LIVE: each area page keeps only the current calendar year (43 PDF links for 2026 on the east page, 43 on Wales; oldest live link Jan 2026). Old asset URLs return HTTP 410 (measured on ad_5308_6_January_2021.pdf). WAYBACK: 26 monthly-collapsed 200-status page snapshots (per-year: 2015:1, 2019:1, 2020:6, 2021:2, 2022:11, 2023:1, 2024:1, 2025:1, 2026:2); each snapshot carries the trailing ~52 edition attachments (2022 snapshot measured: 53 links, back to Jan 2021); archived gazette PDFs are themselves captured (ad_5308 fetched from Wayback 2021-08-11 capture, 422,289 B in 1.8 s, parses). The 2015 snapshot carries no PDF links (pre-2016 page format). UKGWA: captures of TC pages exist (ukgwa/20230103214402) but the CDX endpoint now serves a TNA HTML shell; machine listing unresolved this session. NET: realistically retrievable span ~2019/2020-2026 with gaps; the per-area per-edition coverage ledger is the first construction measurement.",
+  "extraction_cost_measured": "Per gazette: 355-576 KB, live fetch 0.1-2.0 s (four editions measured). Corpus estimate: 8 areas x ~52 editions/year x retrievable years (~6-7) = roughly 2,500-2,900 PDFs, ~1.0-1.5 GB - a worker job, never the coordinator; pypdf text extraction of one 32-page edition takes seconds locally.",
+  "population_note": "New applications only are the proposed population (~28/area-week east, ~6 Wales => very roughly 9-12k new applications/year nationally across 8 areas; exact national counts need the worker aggregate). Variation applications (~12-38/area-week) are a separate population (existing operators) - a declared design decision; the richest formulation may include them with a type flag.",
+  "sibling_channels_recorded_not_opened": "Driver-conduct decisions CSV (rolling 12 months only, 5,303 rows fetched 2026-11-05: hearing date, postcode prefix, name, birth year, LGV/PCV entitlement, decision, appeal outcome) - no published history, no task by itself, but proves the decision volume. PSV 'Notices and Proceedings' is the bus/coach sibling gazette (unmeasured). VOL weekly operator-licence register CSVs on data.gov.uk (current-state, per-area) + gazette sections 7.1/7.2/8 (surrender/termination/revocation events) together support a SEPARATE register-exit lead - recorded here, not opened, decision deferred until this candidate is decided.",
+  "stale_link_hazard": "The GOV.UK 'check vehicle operator licence applications' page links to https://www.vehicle-operator-licensing.service.gov.uk/search/check-vehicle-operator-decisions-applications which is NXDOMAIN from this vantage (2026-11-05, both bare and www forms) - the advertised structured search service is unreachable, so the PDF gazettes remain the population record.",
+  "hazards": [
+   "Refusal grounds (e.g. financial standing) are NOT in the listing - good for ex-ante validity, but if most refusals are driven by grounds invisible at T the achievable ceiling may be low; the refusal-grounds distribution is measurable from decision documents at construction and must be reported with any score.",
+   "Section volume drift across eras: 2021 and 2026 editions parse identically, but 2013-2016 era layouts (and the pre-2016 page format that carried no PDF attachments) are unverified; the coverage ledger decides the usable window.",
+   "Weekly refusal counts swing (0 in the 2021 sample week, 4 in the 2026 sample week): per-window class counts need the aggregate, not extrapolation from two editions.",
+   "Withdrawal semantics: 4.1 withdrawals are applicant choices, not regulator decisions; the binary label choice (refused-only vs refused-or-withdrawn) is a pre-registered construction decision.",
+   "Repeat applicants and multi-licence operators (e.g. GT Transport Services with three licence numbers in one decision) create entity clustering; cluster-aware splits/bootstrap by applicant name-key are required.",
+   "PI notices mix application inquiries (S13/S14) with enforcement (S26): the application-outcome population must filter by ground code, measured present in the notice text.",
+   "The gazette is a statutory public notice containing named individuals (directors, transport managers, drivers); construction should decide pseudonymisation of person names before any release (operator/centre fields are business data, cqc precedent for provider data)."
+  ]
+ },
+ "jobs": [],
+ "artifacts": [],
+ "rejection_reason": null,
+ "review": null,
+ "verdict": {
+  "status": "investigating",
+  "contracts": {
+   "redistribution": "SUPPORTED (class A): OGL v3.0 statement on the publisher's own pages hosting the product, read 2026-11-05; no contrary statement found; legacy 'purchased copies' line recorded as a caveat, re-read at construction.",
+   "prediction_timing": "SUPPORTED, unusually strong: the gazette itself is the dated statutory publication act (publication date + 21-day objection deadline printed on page 1); features are the listing as published; outcomes appear in later editions. The as-of evidence is the publication record itself, not file modification times.",
+   "target": "SUPPORTED: outcomes are published in the same weekly product family, linked by exact reference number; measured cross-edition fixtures for granted and refused cases plus a right-censored live-edge case; label sections excludable from features by construction.",
+   "split_capacity": "PARTIAL - the one unresolved contract: volumes and both classes are measured at sample level (4 editions, 2 areas, 2 eras; ~22-28 new applications/area-week east, refusals/withdrawals/PIs present in all), and ~6-7 retrievable years exist, but exact per-window counts and the per-area edition-coverage ledger need the bounded worker aggregate (ibama-probe precedent); samples are not counts.",
+   "not_a_mirror": "SUPPORTED at search level: no ML-ready or scored task found on UK operator licence applications (novelty check recorded 2026-11-05); the publisher provides the raw weekly gazette, processing times and a live register - not splits, labels or a benchmark. Application-outcome family comparators (ipo-trademark-registration-outcome published, ipa-tm-registration-outcome investigating) are different regulators, domains and feature spaces."
+  },
+  "uncertainty": "The split-capacity numbers and the true retrievable archive span (coverage ledger over Wayback/UKGWA per area, 2019-2026) are the one decisive uncertainty between investigating and a ready verdict; refusal/withdrawal base rates at national scale drive the label choice.",
+  "next": "Bounded worker aggregate probe (discovery-owned), then label pre-registration and five-contract reconciliation to ready."
+ },
+ "next_action": "Discovery owns the next step - a bounded worker aggregate probe (ibama-probe precedent, EUR 0.04-class): (1) enumerate every retrievable edition per area from the live pages (current year) + Wayback snapshots (2019-2026) and record the per-area per-edition COVERAGE LEDGER with missing weeks made explicit; probe UKGWA for a machine listing once, and record the result either way; (2) parse all retrievable editions and count new applications (1.1) and each outcome class (2.1/2.2/4.1/4.2/5.1-S13/5.2) per area-year - exact national counts, refusal/withdrawal/PI base rates, and candidate-window counts for train 2021-2022 / eval 2023-2024 / holdout 2025-2026 (or the widest ledger-supported window); (3) measure repeat-applicant clustering and the refusal-grounds distribution (from PI/decision documents where published) so the label ceiling is known; (4) PRE-REGISTER the primary label (refused-only vs refused-or-withdrawn vs multiclass incl. S13 inquiry referral) BEFORE any score. If the counts clear the gate minimums with both classes per window: five-contract reconciliation -> status ready with the construction handoff (worker build from pinned per-edition sha256s -> gate 1.5 -> exact-byte accept -> reference triad incl. identity/area and class-rate priors BEFORE any model figure). The sibling operator-register-exit lead (VOL register + gazette sections 7/8) stays UNOPENED until this candidate is decided.",
+ "novelty_check": {
+  "checked_at": "2026-11-05T04:31:00+00:00",
+  "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+  "queries": [
+   "operator licence application refusal prediction",
+   "traffic commissioner public inquiry outcome dataset",
+   "goods vehicle operator licence application machine learning benchmark"
+  ],
+  "evidence": {
+   "huggingface_datasets": [
+    {
+     "query": "operator licence application refusal prediction",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "traffic commissioner public inquiry outcome dataset",
+     "hits": 0,
+     "top": []
+    },
+    {
+     "query": "goods vehicle operator licence application machine learning benchmark",
+     "hits": 0,
+     "top": []
+    }
+   ],
+   "zenodo_records": [
+    {
+     "query": "operator licence application refusal prediction",
+     "hits": 312829,
+     "top": [
+      "Assistant en accessibilité, rendre accessible une activité d'analyse d'article",
+      "Exposure of operators, workers, residents and bystanders in risk assessment for plant protection products calculator (Version 30MAR2015)",
+      "A Hybrid Energy Storage System for flexibility provision: Modeling and Control design",
+      "CONDITIONS UNDER WHICH THE NORM OF AN ELEMENTARY OPERATOR OF LENGTH n ˃2 IS EXPRESSIBLE IN TERMS OF THE NORMS OF ITS COEFFICIENT OPERATORS",
+      "Bulgarian Resource Adequacy Assessment - 2022 Edition"
+     ]
+    },
+    {
+     "query": "traffic commissioner public inquiry outcome dataset",
+     "hits": 616313,
+     "top": [
+      "A long-term multi-scale traffic safety dataset for Jordan (1985–2024)",
+      "VULTURE public dataset",
+      "5G Traffic Capture Dataset: User Equipment Classification in the 5G Core",
+      "Outcome Convergence Principle (OCP)",
+      "IDS - JODHA: A Multimodal and Multi-Weather Traffic Dataset for Analyzing Agent Dynamics in Unstructured Environments"
+     ]
+    },
+    {
+     "query": "goods vehicle operator licence application machine learning benchmark",
+     "hits": 595187,
+     "top": [
+      "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+      "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+      "RGB and RGNIR Plastic Waste Database",
+      "Profiling Vehicles for Improved Small Cell Beam-Vehicle Pairing Using Multi-Armed Bandit",
+      "COMPREHENSIVE VEHICLE SERVICES & E-COMMERCE PLATFORM WITH PRICE PREDICTION USING ML"
+     ]
+    }
+   ],
+   "arxiv_preprints": [
+    {
+     "query": "operator licence application refusal prediction",
+     "error": "HTTPError",
+     "hits": null,
+     "top": []
+    },
+    {
+     "query": "traffic commissioner public inquiry outcome dataset",
+     "error": "HTTPError",
+     "hits": null,
+     "top": []
+    },
+    {
+     "query": "goods vehicle operator licence application machine learning benchmark",
+     "error": "TimeoutError",
+     "hits": null,
+     "top": []
+    }
+   ]
+  },
+  "evidence_summary": "- huggingface_datasets / 'operator licence application refusal prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'traffic commissioner public inquiry outcome dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'goods vehicle operator licence application machine learning benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'operator licence application refusal prediction': 312829 hit(s) - Assistant en accessibilité, rendre accessible une activité d'analyse d'article, Exposure of operators, workers, residents and bystanders in risk assessment for plant protection products calculator (Version 30MAR2015), A Hybrid Energy Storage System for flexibility provision: Modeling and Control design, CONDITIONS UNDER WHICH THE NORM OF AN ELEMENTARY OPERATOR OF LENGTH n ˃2 IS EXPRESSIBLE IN TERMS OF THE NORMS OF ITS COEFFICIENT OPERATORS, Bulgarian Resource Adequacy Assessment - 2022 Edition\n- zenodo_records / 'traffic commissioner public inquiry outcome dataset': 616313 hit(s) - A long-term multi-scale traffic safety dataset for Jordan (1985–2024), VULTURE public dataset, 5G Traffic Capture Dataset: User Equipment Classification in the 5G Core, Outcome Convergence Principle (OCP), IDS - JODHA: A Multimodal and Multi-Weather Traffic Dataset for Analyzing Agent Dynamics in Unstructured Environments\n- zenodo_records / 'goods vehicle operator licence application machine learning benchmark': 595187 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, Profiling Vehicles for Improved Small Cell Beam-Vehicle Pairing Using Multi-Armed Bandit, COMPREHENSIVE VEHICLE SERVICES & E-COMMERCE PLATFORM WITH PRICE PREDICTION USING ML\n- arxiv_preprints / 'operator licence application refusal prediction': unavailable (HTTPError)\n- arxiv_preprints / 'traffic commissioner public inquiry outcome dataset': unavailable (HTTPError)\n- arxiv_preprints / 'goods vehicle operator licence application machine learning benchmark': unavailable (TimeoutError)",
+  "prior_art": [
+   "none found: publisher transparency products only; nearest family members are our own ipo-trademark-registration-outcome (GB, published) and ipa-tm-registration-outcome (AU) - different regulators, domains and feature spaces; web search for prediction/ML on operator licensing returned only the publisher's own pages and the 1995 Act text"
+  ],
+  "theirs": "the Traffic Commissioners publish the raw weekly A&D gazettes, application processing-time statistics, a current-state weekly operator register, and (2025+) a structured regulatory-decisions search; nobody ships labels, splits or a scored contract; no ML or prediction literature was found on operator licence application outcomes",
+  "ours": "first ML-ready, temporally-split task on UK goods-vehicle operator licence applications: listing-instant structural features from the weekly statutory gazette, reference-number-exact outcome linkage (granted / S13 public-inquiry referral / refused / withdrawn), coverage ledger over the pruned-but-archived weekly editions",
+  "verdict": "differentiated",
+  "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+ }
+}

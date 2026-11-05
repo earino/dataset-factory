@@ -52,3 +52,15 @@ do not permit redistribution - a licence/access veto for an open dataset.
 Unpark question recorded in record.json next_action: an open, event/case-grain
 ONS release, or an operator request for a macro direction task (in which case
 compute base rates and seasonal-naive headroom first).
+
+## Unpark-question re-check (2026-11-05, UK discovery tick, read-only)
+
+- The ONS 'Arlo' API host (api.beta.ons.gov.uk) is now NXDOMAIN from the
+  coordinator (2026-11-05, curl: could not resolve host; both / and
+  /v1/datasets) - strictly worse than the 2026-10-21 measurement (TLS
+  incomplete, HTTP 000). The unpark condition's Arlo clause stays unmet.
+- No case/event-grain ONS release surfaced in this tick's UK sweep (business
+  demography remains published as aggregate counts; the claimant-count,
+  insolvency and deaths products remain area/aggregate series). The unpark
+  question is unchanged and next due whenever ONS announces a sub-aggregate
+  product; no further coordinator probing planned before that event.
