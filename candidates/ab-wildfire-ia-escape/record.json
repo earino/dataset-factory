@@ -216,6 +216,17 @@
    "verdict_scope": "eval split only (assessment years 2016-2020); the sealed holdout (2021-2025) was not evaluated and no holdout figure exists or is implied",
    "reading": "the stock runner beats every pre-registered triad member with day-clustered CIs excluding zero (persistence +0.0459 [+0.0154, +0.0871]; calendar/identity +0.2428 [+0.1911, +0.2998]; degenerate constant vs model AUC CI [0.9382, 0.9686]) - HEADROOM DEMONSTRATED under the pre-registered rule, on eval 2016-2020 only, holdout sealed. Recorded beside the construction-time finding: the simple logistic reference's edge over persistence is INCONCLUSIVE (+0.0111 [-0.0292, +0.0514]) - a simple linear reference does not demonstrably beat the one-feature persistence rule; the stock runner does. Not a tuning target: no label, threshold, window or feature may change to widen any gap.",
    "references_reproduction": "score.py's triad re-run in this job is byte-identical to the build job's collected references report except the accepted_report path field (deterministic fixed-seed bootstrap confirmed across independent executions)"
+  },
+  "github_staging_2026_11_07": {
+   "date": "2026-11-07",
+   "repository": "earino/ab-wildfire-ia-escape (private, id 1448854079)",
+   "package_commit": "d610ffe20959ce747635631fc8aba659be3b4823",
+   "release": "437179999 (v2026.11, non-draft at main)",
+   "files_pushed": 26,
+   "assets": "5/5 flat assets server-side digest-equal to MANIFEST.json (meta.json aeb2ef92..., public-train.csv 575649d5..., public-eval.csv d099e4cb..., private-holdout.csv 53583f4d..., quality.json 331a4ceb...)",
+   "anonymous_read_back": "404 (correctly private)",
+   "destinations_block": "release/ab-wildfire-ia-escape/DESTINATIONS.json github block written 2026-11-06T23:38:39Z with files_verified as the logical path list; huggingface block pending",
+   "note": "nothing public; the flip is the operator's single approval and waits for the independent pre-flip audit verdict unless waived"
   }
  },
  "jobs": [
@@ -251,12 +262,28 @@
    "collected_at": "2026-11-06T23:24:22.978574+00:00",
    "deleted_at": "2026-11-06T23:27:06.596734+00:00",
    "what": "runner-contract baseline on the accepted artifact (re-accept before any score, benchmark train.py + validate.sh unmodified, materialize from public splits only, holdout never copied into a workdir) plus the pre-registered model-vs-triad deciding check; see job record .factory/jobs/abwildfire-baseline-002 and jobs/ ledger"
+  },
+  {
+   "id": "abwildfire-publish-001",
+   "candidate": "ab-wildfire-ia-escape",
+   "status": "succeeded",
+   "transfer_status": "succeeded",
+   "transferred": "5/5 (failures [])",
+   "elapsed_seconds": 10.1,
+   "server_id": 174897047,
+   "server_type": "cx23",
+   "location": "hel1",
+   "staging_upload_release": "437181120 (job reports, private staging)",
+   "reservation_eur": "0.04",
+   "collected_at": "2026-11-06T23:37:54.051838+00:00",
+   "deleted_at": "2026-11-06T23:38:14.186866+00:00",
+   "what": "release-flagged transfer job: 5/5 accepted assets copied from staging release 437132110 into private earino/ab-wildfire-ia-escape release 437179999 (v2026.11) under flat names, each sha256 verified on arrival and server-side; bytes never through the coordinator; worker destroyed with provider 404 read-back (0 servers, 0 primary IPs) re-confirmed by record_github_block_2026_11_07.py"
   }
  ],
  "artifacts": [],
  "rejection_reason": null,
  "review": "All five discovery contracts reconciled against recorded evidence (probes and full transcripts in candidates/ab-wildfire-ia-escape/). (1) Redistribution: class A - OGL-Alberta v2.2 permits redistribution and derivatives; the attribution sentence and non-endorsement wording are recorded verbatim and carried into LICENSE.md; the personal-information exemption was checked against the shipped columns (position codes, not names). (2) Prediction timing: the instant is the publisher's own initial-assessment timestamp and every intended feature is documented 'at the time of initial assessment' by the publisher's dictionary - the strongest timing documentation of any source this bench has opened; post-instant families (cause, dispatch, suppression milestones) are excluded with measured ordering evidence; declared limitations: no timezone marker in timestamps (read as America/Edmonton, assumption to confirm) and a single current compilation (no historical per-fire vintages) - the task is labelled current-compilation retrospective, and evaluation_contract must state these assumptions plus the bounded revision-flip exposure (89 fires within +-20% of 100 ha). (3) Target: labels derive from the record's own post-instant fields (current_size, first_uc_date), excludable from shipped features; eligibility is assessment-based with 100% coverage - no outcome-conditioned selection; no censoring (terminal status on every row, 99.9% extinguished). (4) Split capacity: three disjoint year windows carry both classes for both labels (escape 1.86%/1.85%/4.11%; containment 3.2%/3.4%/9.8%), with same-day clustered counts recorded (independence scale = the extreme fire-weather day); the holdout's higher rate is the documented 2023 record season. (5) Not a mirror: the IA-escape family is precedented (WildfireIA US benchmark, Mesogeos, Zong et al. Alberta powerline subset, Korkola et al. Ontario, UAlberta IA-difficulty study) - none ships an all-cause, assessment-instant task on the regulator's own in-situ assessment observations with containment-milestone labels; WildfireIA's own abstract records that such 'response records' are non-public in the US, which is precisely the gap this source closes for a public jurisdiction. Novelty verdict 'differentiated' recorded by script. Residual uncertainties for construction: confirm the timezone reading against a publicly documented fire timeline; decide the already-controlled stratum's treatment for the containment label; winter/season scope decision.",
- "next_action": "Private staging, in order: (1) create the private GitHub repository earino/ab-wildfire-ia-escape and push the 24 package files as the initial commit, then create release v2026.11 non-draft at main and transfer the five accepted assets from staging release 437132110 into it via a release-flagged transfer worker job (asset ids resolved by digest match through publish-dataset.py --stream-test; verify server-side digests, anonymous API read-back must 404); (2) the fresh-consumer worker job on the released bytes (cqc consumer/source pattern, fetch block from the new release): gate 1.5.0 re-run, exact-byte --accept c2c8ceb5, baseline reproduce (both AUC prints 0.9554, CONTRACT OK), score.py references recomputed equal to measurements.json, reproduce_baseline.sh executed; (3) hf-publish.py --plan, --create --upload-small, the hf_publish worker job, --verify, --tag LAST; (4) release/ab-wildfire-ia-escape/DESTINATIONS.json both blocks (github first, files_verified as lists, top-level artifact_version c2c8ceb5...); (5) record -> packaged with packaged_at + structured artifacts[0] + awaiting_operator TRUE only after the pre-flip adversarial audit prompt is generated from the frozen manifest (skills/dataset-release/templates/pre-flip-audit-prompt.md, digests filled programmatically); then check-candidate --all, check-package, check-suitability, suite, CI for the exact commit. The flip is the operator's single approval and waits for the independent auditor's verdict unless waived. The cpcb flip remains the operator's.",
+ "next_action": "Private staging continues from the verified GitHub destination (repo earino/ab-wildfire-ia-escape, release 437179999, tag v2026.11 == main == d610ffe2, DESTINATIONS.json github block written): (1) the fresh-consumer worker job on the released bytes (cqc/cpcb consumer pattern; fetch block from release 437179999: meta.json 718800868-mapped, public-train.csv, public-eval.csv, private-holdout.csv, quality.json at the flat asset names; digests from MANIFEST.json) - gate 1.5.0 re-run, exact-byte --accept c2c8ceb5, get_dataset.py + sha256sum -c, baseline reproduce (both AUC prints 0.9554, CONTRACT OK, holdout never copied into a workdir), score.py references recomputed equal to measurements.json (fixed-seed CIs reproduce exactly), then APPEND the consumer check to the DESTINATIONS github block (merge, never replace); (2) hf-publish.py --plan, --create --upload-small, the hf_publish worker job, --verify, --tag LAST, then the DESTINATIONS huggingface block; (3) record -> packaged with packaged_at + structured artifacts[0] + awaiting_operator TRUE only after the pre-flip adversarial audit prompt is generated from the frozen manifest (skills/dataset-release/templates/pre-flip-audit-prompt.md, digests filled programmatically); then check-candidate --all, check-package, check-suitability, suite, CI for the exact commit. The flip is the operator's single approval. The cpcb flip remains the operator's.",
  "jurisdiction": {
   "country": "CA",
   "region": "North America",
