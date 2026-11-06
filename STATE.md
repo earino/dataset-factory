@@ -1,3 +1,74 @@
+## 2026-11-06 (00:55Z) - discovery tick (East Asia): tw-reservoir-drought-storage REOPENED parked -> investigating - the 2026-10-22 "no anonymous history" blocker is contradicted by a measured anonymous plain-HTTP history channel (WRA /Disaster/api/ReservoirHistoryApi/GetComparision: all 21 major reservoirs per request, daily 07:00 records back to ~2008 full-field, found by reading the SPA bundle chain in the browser); NOT ready - split counts need the worker panel pass; standing captures run (both UNCHANGED); no construction, no score, EUR 0
+
+Discovery-only session, regional focus East Asia (operator tick: Japan e-Stat/JMA,
+South Korea KOSIS/KMA, Taiwan, Hong Kong, Singapore). No construction, qualification,
+packaging, publication or advancement; no worker launched (EUR 0); bounded anonymous
+probes only (14 plain-client POSTs total + supported-browser reads of the publisher's
+own JS bundles). The recorded next action for this tick was executed first
+(standing-capture --all), then the regional sweep continued on the one lead whose
+blocker discovery could resolve with new evidence.
+
+- Standing captures (2nd entries, 2026-11-06T00:01:51Z): taipower-major-outage-register
+  UNCHANGED (still the 2024 vintage, 102 rows, 681 days behind - the yearly channel has
+  now slipped past two wet seasons; collector continues, >=4 distinct vintages remain the
+  reopen condition); afcd-red-tide-sightings UNCHANGED (1,931 rows, max Date of Report
+  2026-09-08, lag 59 days and growing - consistent with the recorded unstable-lag
+  finding; >=12 captures remain the reopen condition). Both ledgers committed.
+- tw-reservoir-drought-storage (TW, parked -> investigating, REOPENED on new
+  evidence): the 10-22 park recorded "no anonymously retrievable historical daily
+  storage series" - correct on the evidence it had, but incomplete. In the supported
+  browser, the fhyv2 Vue app bundle names its API bases and a front-end constant
+  'apikey' header (explaining the 10-22 401s on /Api/v2/*), and the SPA's comparison
+  tab iframes a legacy AngularJS page whose bundle names the REAL history channel:
+  POST https://fhy.wra.gov.tw/Disaster/api/ReservoirHistoryApi/GetComparision
+  (form-encoded ST_NO/StartDate/EndDate). MEASURED from a PLAIN client (no cookies,
+  no Referer, no apikey): 6/6 HTTP 200; all 21 major reservoirs in ONE request
+  (9,458 B); boundary-date semantics (a range returns only its two endpoint dates, so
+  a full daily panel = 1 request/day, ~8,800 requests for 2003-2026, 1.1-1.7 s and
+  ~9.5 KB per request measured - worker-side, not coordinator). Depth sampled: rates
+  null 2003/2005, 6/21 stations populated 2008, 18-19/21 by 2015. Known-episode
+  anchors all present: 2015-03-15 8 stations <0.30 (min 0.1607), 2021-04-15 12 <0.25
+  (min 0.0175), 2024-04-15 7 <0.30 (min 0.0569); chronic-low censoring measured
+  (20202/20501/20503 below 0.25 even in wet periods -> onset formulation required);
+  same-day visibility measured once (today's 07:00 records readable at ~08:45
+  Taipei). Five contracts reconciled in record.verdict: redistribution SUPPORTED
+  (class B; channel-page nuance - the /Disaster pages carry only a (c) footer while
+  the identical series is ODDL 1.0 on data.gov.tw 45501, whose own note routes
+  history to this site), timing SUPPORTED for a labelled retrospective task (07:00
+  observation, 09:30 entry statement, current-vintage assumption to declare; cpcb
+  precedent), target SUPPORTED (onset + chronic-low censoring recorded), split
+  capacity PARTIAL (the one gate to ready: exact per-window onset counts need the
+  full panel - a worker pass, never samples), not-a-mirror SUPPORTED at search level
+  (no packaged/split/scored reservoir-storage benchmark found; comparators are
+  literature studies - Korean dam storage forecasting EES 2026, Shihmen/Mingde
+  monthly capacity ESPR 2026, Shihmen typhoon inflow NHESS 2026 - and raw-data mirrors
+  ResOpsUS v2 / USGS low-storage metrics). check-candidate rc=0. NOT ready; no
+  labelled panel was built on the coordinator. Evidence retained:
+  probe_fhy_history_2026_11_06.py, probe_fhy_anchors_2026_11_06.py +
+  probe/out_fhy_anchors_2026_11_06.json in the candidate dir.
+- Regional coverage this tick: Korea options (a)/(b) not decided by the operator
+  (unchanged; KOSIS/KMA stay parked on the credential decision); Singapore catalog
+  diff not due (enumeration 2026-10-20, due after 2027-01-20); japan-estat-portal and
+  jma-typhoon-rapid-intensification terminal on task-level grounds (re-checked
+  against their records, unchanged); hk-datagov-portal and singapore-datagov-catalog
+  keep their operator family decisions. No new source opened - every remaining East
+  Asia portal record carries a verdict, and the one resolvable blocker was resolved.
+  No padding with US sources.
+- Hygiene: check-candidate --all rc=0; discovery-coverage rc=0 (135 records, live 53,
+  non-US 47/53 = 89%; East Asia 9 records, TW live 2 ready + 1 investigating);
+  suite 723/723 OK (33.1 s). candidates/fenz-incident-data/ left untracked for its
+  owner (concurrent writer, not this session). All probes anonymous; no credentials.
+
+Next action (a fresh session can carry it out): advancement/discovery boundary - the
+worker panel-count pass in tw-reservoir-drought-storage record.next_action is the one
+gate to ready (fetch ~8,800 day-requests via GetComparision for the 21 stations with
+a keep-alive session at a polite rate; compute per-station panel starts, per-window
+onset counts at 0.25/0.30, episode-clustered positives, chronic-low inventory; then
+threshold binding, five-contract re-reconciliation, check-novelty.py, ready-review).
+The standing East Asia watch items are unchanged: taipower >=4 vintages, red-tide
+>=12 captures, Singapore catalog diff after 2027-01-20, operator decisions on Korea
+options and the KOSIS/KMA credential.
+
 ## 2026-11-05 (23:35Z) - advancement session: cpcb-aqi-exceedance construction design finalized pre-launch + build.py drafted and synthetic-smoked; NO worker launched, NO gate run, NO score, EUR 0 spent
 
 Candidate cpcb-aqi-exceedance (the 21:55Z discovery tick's recorded next_action:
