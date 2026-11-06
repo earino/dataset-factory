@@ -1,3 +1,52 @@
+## 2026-11-06 (13:44Z) - follow-up (worker-status runner): cpcb-aqi-consumer-002 SUCCEEDED - the fresh-consumer verification of the cpcb-aqi-exceedance v2026.11 private release is GREEN on the released bytes (gate 1.5.0 PASSED, exact-byte --accept a749f0df, both AUC prints 0.9734 CONTRACT OK, references equal measurements.json, deciding check reproduced); worker 174810883 destroyed with provider 404 read-back; release-sequence step (1) closed, next is the recorded HF sequence steps (2)-(5); nothing public, holdout sealed
+
+Watcher follow-up for cpcb-aqi-consumer-002 (the single changed retry for the
+consumer-001 fetch-spec digest defect). The shared research mutex was this
+runner's for the whole invocation. Unrelated untracked work
+(candidates/fenz-incident-data/) inspected and left untouched.
+
+- COLLECTED: ledger status collected 13:38:55Z (result.json present); exit 0,
+  elapsed 1365 s, 10 assets uploaded to staging release 436540534. The host
+  fetch stage digest-verified 5/5 released assets of private release 436366305
+  (88,846,288 B, failures []).
+- BOUNDED REPORTS fetched by mapping staging assets through the staging
+  manifest and sha256-verified against both the ledger and the manifest: 8
+  files at .factory/cpcb-aqi-consumer-002/reports/ (consumer.txt, container.log,
+  accept.txt, baseline.log, qualification.txt, references.json,
+  deciding_check.json, versions.txt); source.tar d46b21d6 kept in staging and
+  equal to the local assembled bundle. No bulk CSV ever reached the
+  coordinator.
+- EVERY REQUIRED CHECK GREEN (read from consumer.txt/container.log, not from
+  exit 0): PACKAGE OK (24 files vs MANIFEST.json), get_dataset.py
+  re-verification OK, sha256sum -c 5/5 OK, gate 1.5.0 QUALIFICATION PASSED on
+  the full published artifact, exact-byte --accept ACCEPTED
+  a749f0df2f9dd0103d0ba56524e1cc3638242fbc4710b0cac99603bcdef0d959, declared
+  imports OK, baseline CONTRACT OK with both AUC prints 0.9734 and the private
+  holdout never copied into a workdir, 15 reference figures recomputed equal
+  to measurements.json, deciding check reproduced through the shipped train.py
+  + score.py (model-minus-persistence [0.0038, 0.0052], model-minus-climatology
+  [0.1002, 0.1252], model AUC CI [0.9713, 0.9753] entirely above 0.5, verdict
+  headroom_demonstrated). Optional rebuild-from-export not run (REPRODUCE.md
+  optional; build.py refuses any changed export). The consumer-001 defect chain
+  is closed by its one changed retry; no further consumer job is needed.
+- CLEANUP (deletion confirmed by the provider): worker 174810883 destroyed
+  13:42:34Z; GET /v1/servers/174810883 -> 404 not_found; project servers 0,
+  primary_ips 0.
+- Record: jobs[] -002 -> succeeded_and_deleted (collected/deleted timestamps,
+  staging release 436540534, outcome summary, provider read-back);
+  measurements.consumer_002_fresh_consumer_2026_11_06 written; next_action
+  step (1) closed, steps (2)-(5) (HF destination, DESTINATIONS.json,
+  packaged/awaiting_operator, checks) unchanged.
+
+Next action (also in record.next_action): the recorded HF
+sequence - hf-publish.py --plan then --create --upload-small, worker plan+launch
+of cpcb-aqi-hf-001, hf-publish.py --verify (exit 0 required), --tag LAST, then
+DESTINATIONS.json both blocks, record -> packaged with the pre-flip adversarial
+audit prompt generated programmatically from the frozen manifest,
+awaiting_operator TRUE, and the checks (check-candidate --all, check-package,
+check-suitability, full suite). The flip remains the operator's single
+approval and waits for the independent auditor's verdict unless waived.
+
 ## 2026-11-06 (13:12Z) - follow-up (worker-status runner): cpcb-aqi-consumer-001 FAILED pre-container at the fetch stage - a one-character digest transcription error in the job spec's public/eval.csv entry (position 36 'a' vs the frozen manifest's 'e'); the RELEASE ITSELF proven intact by live server-side read-back; the single changed retry cpcb-aqi-consumer-002 LAUNCHED and running (server 174810883); worker 174799070 destroyed with provider 404 read-back; no gate, acceptance or score ever ran on this job
 
 Watcher follow-up for cpcb-aqi-consumer-001 (cpcb-aqi-exceedance release sequence
