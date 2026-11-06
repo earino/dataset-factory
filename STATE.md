@@ -1,3 +1,45 @@
+## 2026-11-06 (15:25Z) - advancement session (cpcb-aqi-exceedance release): HF destination opened - private Hub repo created with the 10 small files (private: true confirmed by the API answer), bulk job cpcb-aqi-hf-001 launched and RUNNING at close (server 174825952); nothing public, holdout sealed
+
+Advancement tick on the operator's actionable list: release work outranks
+construction, so the session executed the recorded HF sequence steps (2)-(5)
+of the only packaged-track candidate, cpcb-aqi-exceedance.
+
+- GITHUB DESTINATION (step 1, already closed): untouched this session - private
+  release 436366305 stays verified (consumer-002 green earlier today).
+- HF --plan: re-run green - artifact a749f0df2f9dd0103d0ba56524e1cc3638242fbc4710b0cac99603bcdef0d959,
+  release_tag v2026.11, 10 small_uploads + 5 worker-uploaded assets, all equal
+  to the frozen package MANIFEST.json.
+- HF --create --upload-small: DONE with the write credential FILE
+  (huggingface-write.token, mode 0600; never exported to a shell var). The
+  command's own JSON answer recorded: repository earino/cpcb-aqi-exceedance,
+  acting_account earino, token_role write, created private: true, and the 10
+  small files uploaded (DATA_DICTIONARY.md, LICENSE-CC0-1.0.txt, LICENSE-MIT.txt,
+  LICENSE.md, LOADING.md, MANIFEST.json, README.md, SHA256SUMS, VERIFICATION.md,
+  measurements.json). The generated card is the uploaded README.md
+  (card.md source, test_hf_card 7/7 OK earlier today).
+- BULK UPLOAD: worker plan rc=0 (reservation EUR 0.04, rate ceiling EUR 0.02,
+  0 cloud calls, bundle source_sha256 7ba877ce), LAUNCHED 2026-11-06T14:43:40Z,
+  server 174825952, status running at close 15:23Z (40-min job timeout; server
+  lifetime/expires 16:23:40Z so the follow-up can collect+destroy). Job
+  cpcb-aqi-hf-001 fetches the five assets of private release 436366305 at the
+  recorded asset ids, verifies each digest on arrival, uploads to the private
+  Hub repo, verifies the Hub-reported digest, deletes the local copy, and runs
+  the documented load_dataset check. Bytes never pass through the coordinator.
+- RECORD: jobs[] + cpcb-aqi-hf-001 (running), next_action rewritten to the
+  exact remaining sequence (collect + acceptance, destroy + 404 read-back,
+  hf-publish --verify --worker-job, --tag LAST, DESTINATIONS.json github block,
+  record -> packaged + pre-flip audit prompt + awaiting_operator TRUE, checks,
+  commit/CI). The running worker is the handoff.
+
+Next action (also in record.next_action): collect cpcb-aqi-hf-001 when it
+finishes (worker-status follow-up), require the job report green on all five
+digests + the load_dataset check, destroy the worker with provider 404
+read-back, then hf-publish.py --verify (exit 0) and --tag LAST, then the
+DESTINATIONS.json github block, the packaged/awaiting_operator recording with
+the programmatically filled pre-flip audit prompt, and the checks
+(check-candidate --all, check-package, check-suitability, suite) with
+commit/push/CI. The flip stays the operator's single approval.
+
 ## 2026-11-06 (13:44Z) - follow-up (worker-status runner): cpcb-aqi-consumer-002 SUCCEEDED - the fresh-consumer verification of the cpcb-aqi-exceedance v2026.11 private release is GREEN on the released bytes (gate 1.5.0 PASSED, exact-byte --accept a749f0df, both AUC prints 0.9734 CONTRACT OK, references equal measurements.json, deciding check reproduced); worker 174810883 destroyed with provider 404 read-back; release-sequence step (1) closed, next is the recorded HF sequence steps (2)-(5); nothing public, holdout sealed
 
 Watcher follow-up for cpcb-aqi-consumer-002 (the single changed retry for the
