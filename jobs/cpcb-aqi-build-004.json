@@ -1,0 +1,808 @@
+{
+  "job": {
+    "id": "cpcb-aqi-build-004",
+    "candidate": "cpcb-aqi-exceedance",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cpx32",
+    "location": "hel1",
+    "cpus": 4,
+    "memory_mb": 8192,
+    "timeout_minutes": 100,
+    "lifetime_minutes": 140,
+    "max_disk_mb": 30000,
+    "max_artifact_mb": 300,
+    "what": "REPAIR ATTEMPT for cpcb-aqi-build-003 (refused 527.3 s at the Delhi known-event fixture: station_days 39 != 38, while complete_n18=36 and pos_n18=36 - the label claims - held exactly; the -002 count-anchor repair worked: no count refusal, internal consistency passed, probe deltas reported). Diagnosis (record measurements.attempt_003_refusal_2026_11_06): the fixture's station_days was transcribed from the 2026-11-05 preflight's PANEL-row count (38 Delhi stations with rows on 2024-11-18), but the build counts REGISTRY MEMBERSHIP; the retained 2026-11-04 snapshot and the live registry both carry 39 cpcb Delhi stations, and the publisher's own bulletin denominator is 36/39. Repair: fixture station_days 38 -> 39 (registry semantics, matching the publisher's instrument); complete_n18/pos_n18 unchanged; everything else identical to -003. Full construction from the pinned XKDR export (anonymous demo-key /v1/measurements batching, vintage pin exported_at 2026-09-30T11:25:11+00:00 + 196,521,834 rows), HARD anchors kept (549 stations, UNKNOWN_STATE sentinel, 2025 hole months empty, Delhi 39/36/36, monsoon 2023-08-15 >=300 complete / <=4 exceed), measured panel/per-window counts recorded in summary.json with internal consistency asserted (windows partition the panel; independent label-rule recount reproduces per-window positives), splits train 2019-2022 / eval 2023 / holdout 2024, label = D+1 24-hr mean PM2.5 > 90 ug/m3. Then gate 1.5.0 on the FULL artifact, exact-byte --accept, then score.py's pre-registered reference triad on eval rows. No performance metric in the build; holdout never read.",
+    "stopping_condition": "A failed hard anchor/fixture assertion, a failed internal-consistency check, a failed gate, a failed --accept or a truncated fetch stops the run with diagnostics uploaded; the extract is never scored. One rebuild per structural defect; no re-tuning of threshold, window, label or features after any score. This is the one rebuild for the Delhi-fixture operand defect; a refusal at the same fixture again is a new finding, not another retry.",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/cpcb-aqi-exceedance/source/build.py",
+        "bytes": 57727,
+        "sha256": "4c10003f0e41dd6d13832a826f0d55a69f7697d7f8e347cbe4b98fbe29f04153"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/cpcb-aqi-exceedance/source/run.sh",
+        "bytes": 1885,
+        "sha256": "7f1e04e39b4e69c63bb971b56a375c1bbef3356ffd3e140799d07414177ca399"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/cpcb-aqi-exceedance/source/score.py",
+        "bytes": 19640,
+        "sha256": "1ffefa53a13037afb76a5af24492917c5cbdb775ff56f83dde178b69ca9d9ae0"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.32",
+  "rate_ceiling_eur": "0.08",
+  "reserved_hours": 4,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 235520,
+  "source_sha256": "90fd916354115b53910118e42df6c3aea91a41a10011b18bc5fc4d92b8612e25",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-06T06:20:37.757924+00:00",
+  "expires": 1793954437,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0692400000000000",
+  "server_id": 174751006,
+  "known_hosts": "/opt/data/dataset-factory/.factory/cpcb-aqi-build-004/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "cpcb-aqi-build-004",
+    "status": "succeeded",
+    "uploaded": true,
+    "image_id": "sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc",
+    "image_digests": [
+      "python@sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 924.6,
+    "summary": {
+      "job": "cpcb-aqi-build-003",
+      "name": "cpcb-aqi-exceedance",
+      "synthetic_mode": false,
+      "source_channel": {
+        "requests": 168,
+        "truncated_batches": 0,
+        "unparseable_rows": 0,
+        "bytes": 54138890,
+        "key": "pinned",
+        "elapsed_s": 474.7
+      },
+      "panel": {
+        "rows_total": 717429,
+        "duplicate_station_days": 0,
+        "stations": 546,
+        "stations_without_state_name": 62,
+        "missing_state_sentinel": "UNKNOWN_STATE",
+        "window_station_days": {
+          "train_2019_2022": 339756,
+          "eval_2023": 154003,
+          "holdout_2024": 176104,
+          "tail_2025_04_09": 47566
+        },
+        "window_positives_n18": {
+          "train_2019_2022": 63748,
+          "eval_2023": 20773,
+          "holdout_2024": 19277,
+          "tail_2025_04_09": 829
+        },
+        "hole_2025_rows": 0,
+        "delhi_2024_11_18_fixture": {
+          "station_days": 39,
+          "complete_n18": 36,
+          "pos_n18": 36
+        },
+        "monsoon_2023_08_15_fixture": {
+          "complete_n18": 389,
+          "pos_n18": 1
+        },
+        "probe_reference_deltas": {
+          "note": "deltas vs the 2026-11-05 probe reference; reported, never asserted (the probe's scratch aggregation lost rows across a 401 window - record attempt_002_refusal_2026_11_06)",
+          "panel_rows_total": {
+            "probe": 716750,
+            "measured": 717429,
+            "delta": 679
+          },
+          "window_station_days": {
+            "train_2019_2022": {
+              "probe": 339557,
+              "measured": 339756,
+              "delta": 199
+            },
+            "eval_2023": {
+              "probe": 154003,
+              "measured": 154003,
+              "delta": 0
+            },
+            "holdout_2024": {
+              "probe": 175624,
+              "measured": 176104,
+              "delta": 480
+            },
+            "tail_2025_04_09": {
+              "probe": 47566,
+              "measured": 47566,
+              "delta": 0
+            }
+          },
+          "window_positives_n18": {
+            "train_2019_2022": {
+              "probe": 63735,
+              "measured": 63748,
+              "delta": 13
+            },
+            "eval_2023": {
+              "probe": 20773,
+              "measured": 20773,
+              "delta": 0
+            },
+            "holdout_2024": {
+              "probe": 19254,
+              "measured": 19277,
+              "delta": 23
+            },
+            "tail_2025_04_09": {
+              "probe": 829,
+              "measured": 829,
+              "delta": 0
+            }
+          }
+        }
+      },
+      "splits": {
+        "train": {
+          "rows": 288754,
+          "positives": 61075,
+          "positive_rate": 0.211512,
+          "distinct_positive_events": 1248,
+          "stations": 389
+        },
+        "eval": {
+          "rows": 126570,
+          "positives": 19819,
+          "positive_rate": 0.156585,
+          "distinct_positive_events": 351,
+          "stations": 509
+        },
+        "holdout": {
+          "rows": 145124,
+          "positives": 18222,
+          "positive_rate": 0.125562,
+          "distinct_positive_events": 352,
+          "stations": 529
+        }
+      },
+      "excluded": {
+        "thin_day": {
+          "train": 33586,
+          "eval": 18065,
+          "holdout": 20101
+        },
+        "unlabelable_next_day": {
+          "train": 17416,
+          "eval": 9368,
+          "holdout": 10879
+        },
+        "outside_windows": 42638
+      },
+      "per_split_per_month": {
+        "train": {
+          "2019-01": {
+            "rows": 3880,
+            "positives": 2118,
+            "excluded_unlabelable": 154
+          },
+          "2019-02": {
+            "rows": 3697,
+            "positives": 1220,
+            "excluded_unlabelable": 152
+          },
+          "2019-03": {
+            "rows": 4270,
+            "positives": 805,
+            "excluded_unlabelable": 156
+          },
+          "2019-04": {
+            "rows": 4006,
+            "positives": 878,
+            "excluded_unlabelable": 183
+          },
+          "2019-05": {
+            "rows": 4055,
+            "positives": 826,
+            "excluded_unlabelable": 212
+          },
+          "2019-06": {
+            "rows": 4124,
+            "positives": 337,
+            "excluded_unlabelable": 219
+          },
+          "2019-07": {
+            "rows": 4470,
+            "positives": 128,
+            "excluded_unlabelable": 233
+          },
+          "2019-08": {
+            "rows": 4350,
+            "positives": 29,
+            "excluded_unlabelable": 266
+          },
+          "2019-09": {
+            "rows": 4491,
+            "positives": 33,
+            "excluded_unlabelable": 248
+          },
+          "2019-10": {
+            "rows": 5055,
+            "positives": 1661,
+            "excluded_unlabelable": 232
+          },
+          "2019-11": {
+            "rows": 5025,
+            "positives": 2362,
+            "excluded_unlabelable": 192
+          },
+          "2019-12": {
+            "rows": 5085,
+            "positives": 2577,
+            "excluded_unlabelable": 219
+          },
+          "2020-01": {
+            "rows": 5336,
+            "positives": 2112,
+            "excluded_unlabelable": 203
+          },
+          "2020-02": {
+            "rows": 5189,
+            "positives": 1632,
+            "excluded_unlabelable": 182
+          },
+          "2020-03": {
+            "rows": 5490,
+            "positives": 348,
+            "excluded_unlabelable": 283
+          },
+          "2020-04": {
+            "rows": 4970,
+            "positives": 74,
+            "excluded_unlabelable": 238
+          },
+          "2020-05": {
+            "rows": 5189,
+            "positives": 203,
+            "excluded_unlabelable": 293
+          },
+          "2020-06": {
+            "rows": 5101,
+            "positives": 64,
+            "excluded_unlabelable": 286
+          },
+          "2020-07": {
+            "rows": 4995,
+            "positives": 25,
+            "excluded_unlabelable": 338
+          },
+          "2020-08": {
+            "rows": 4884,
+            "positives": 7,
+            "excluded_unlabelable": 395
+          },
+          "2020-09": {
+            "rows": 5286,
+            "positives": 103,
+            "excluded_unlabelable": 292
+          },
+          "2020-10": {
+            "rows": 5649,
+            "positives": 1935,
+            "excluded_unlabelable": 258
+          },
+          "2020-11": {
+            "rows": 5847,
+            "positives": 2718,
+            "excluded_unlabelable": 276
+          },
+          "2020-12": {
+            "rows": 6274,
+            "positives": 3179,
+            "excluded_unlabelable": 331
+          },
+          "2021-01": {
+            "rows": 6296,
+            "positives": 3085,
+            "excluded_unlabelable": 396
+          },
+          "2021-02": {
+            "rows": 5880,
+            "positives": 2222,
+            "excluded_unlabelable": 304
+          },
+          "2021-03": {
+            "rows": 6359,
+            "positives": 1501,
+            "excluded_unlabelable": 357
+          },
+          "2021-04": {
+            "rows": 6237,
+            "positives": 915,
+            "excluded_unlabelable": 329
+          },
+          "2021-05": {
+            "rows": 5779,
+            "positives": 188,
+            "excluded_unlabelable": 446
+          },
+          "2021-06": {
+            "rows": 5992,
+            "positives": 175,
+            "excluded_unlabelable": 460
+          },
+          "2021-07": {
+            "rows": 6607,
+            "positives": 47,
+            "excluded_unlabelable": 547
+          },
+          "2021-08": {
+            "rows": 7029,
+            "positives": 35,
+            "excluded_unlabelable": 427
+          },
+          "2021-09": {
+            "rows": 6764,
+            "positives": 8,
+            "excluded_unlabelable": 424
+          },
+          "2021-10": {
+            "rows": 6875,
+            "positives": 1006,
+            "excluded_unlabelable": 470
+          },
+          "2021-11": {
+            "rows": 7288,
+            "positives": 3780,
+            "excluded_unlabelable": 356
+          },
+          "2021-12": {
+            "rows": 7919,
+            "positives": 3907,
+            "excluded_unlabelable": 413
+          },
+          "2022-01": {
+            "rows": 7860,
+            "positives": 2980,
+            "excluded_unlabelable": 436
+          },
+          "2022-02": {
+            "rows": 7291,
+            "positives": 1873,
+            "excluded_unlabelable": 393
+          },
+          "2022-03": {
+            "rows": 8225,
+            "positives": 2020,
+            "excluded_unlabelable": 449
+          },
+          "2022-04": {
+            "rows": 7482,
+            "positives": 1653,
+            "excluded_unlabelable": 557
+          },
+          "2022-05": {
+            "rows": 7586,
+            "positives": 864,
+            "excluded_unlabelable": 648
+          },
+          "2022-06": {
+            "rows": 7388,
+            "positives": 394,
+            "excluded_unlabelable": 625
+          },
+          "2022-07": {
+            "rows": 7095,
+            "positives": 23,
+            "excluded_unlabelable": 706
+          },
+          "2022-08": {
+            "rows": 7512,
+            "positives": 46,
+            "excluded_unlabelable": 622
+          },
+          "2022-09": {
+            "rows": 7411,
+            "positives": 96,
+            "excluded_unlabelable": 632
+          },
+          "2022-10": {
+            "rows": 8159,
+            "positives": 1671,
+            "excluded_unlabelable": 586
+          },
+          "2022-11": {
+            "rows": 8238,
+            "positives": 3427,
+            "excluded_unlabelable": 452
+          },
+          "2022-12": {
+            "rows": 8764,
+            "positives": 3785,
+            "excluded_unlabelable": 540
+          }
+        },
+        "eval": {
+          "2023-01": {
+            "rows": 9427,
+            "positives": 3742,
+            "excluded_unlabelable": 579
+          },
+          "2023-02": {
+            "rows": 8987,
+            "positives": 2265,
+            "excluded_unlabelable": 531
+          },
+          "2023-03": {
+            "rows": 10143,
+            "positives": 1207,
+            "excluded_unlabelable": 734
+          },
+          "2023-04": {
+            "rows": 9765,
+            "positives": 816,
+            "excluded_unlabelable": 712
+          },
+          "2023-05": {
+            "rows": 9826,
+            "positives": 593,
+            "excluded_unlabelable": 846
+          },
+          "2023-06": {
+            "rows": 9734,
+            "positives": 196,
+            "excluded_unlabelable": 914
+          },
+          "2023-07": {
+            "rows": 9885,
+            "positives": 68,
+            "excluded_unlabelable": 1070
+          },
+          "2023-08": {
+            "rows": 10929,
+            "positives": 62,
+            "excluded_unlabelable": 872
+          },
+          "2023-09": {
+            "rows": 10649,
+            "positives": 104,
+            "excluded_unlabelable": 922
+          },
+          "2023-10": {
+            "rows": 11972,
+            "positives": 1633,
+            "excluded_unlabelable": 771
+          },
+          "2023-11": {
+            "rows": 12344,
+            "positives": 4807,
+            "excluded_unlabelable": 696
+          },
+          "2023-12": {
+            "rows": 12909,
+            "positives": 4326,
+            "excluded_unlabelable": 721
+          }
+        },
+        "holdout": {
+          "2024-01": {
+            "rows": 12776,
+            "positives": 4337,
+            "excluded_unlabelable": 790
+          },
+          "2024-02": {
+            "rows": 11864,
+            "positives": 1733,
+            "excluded_unlabelable": 707
+          },
+          "2024-03": {
+            "rows": 12498,
+            "positives": 828,
+            "excluded_unlabelable": 831
+          },
+          "2024-04": {
+            "rows": 11856,
+            "positives": 792,
+            "excluded_unlabelable": 807
+          },
+          "2024-05": {
+            "rows": 11794,
+            "positives": 1085,
+            "excluded_unlabelable": 983
+          },
+          "2024-06": {
+            "rows": 10980,
+            "positives": 385,
+            "excluded_unlabelable": 1023
+          },
+          "2024-07": {
+            "rows": 11377,
+            "positives": 68,
+            "excluded_unlabelable": 1086
+          },
+          "2024-08": {
+            "rows": 11602,
+            "positives": 44,
+            "excluded_unlabelable": 991
+          },
+          "2024-09": {
+            "rows": 11636,
+            "positives": 113,
+            "excluded_unlabelable": 923
+          },
+          "2024-10": {
+            "rows": 12975,
+            "positives": 1694,
+            "excluded_unlabelable": 803
+          },
+          "2024-11": {
+            "rows": 13182,
+            "positives": 4229,
+            "excluded_unlabelable": 712
+          },
+          "2024-12": {
+            "rows": 12584,
+            "positives": 2914,
+            "excluded_unlabelable": 1223
+          }
+        }
+      },
+      "exclusion_seasonality": {
+        "unlabelable_by_month": {
+          "2019-01": 154,
+          "2019-02": 152,
+          "2019-03": 156,
+          "2019-04": 183,
+          "2019-05": 212,
+          "2019-06": 219,
+          "2019-07": 233,
+          "2019-08": 266,
+          "2019-09": 248,
+          "2019-10": 232,
+          "2019-11": 192,
+          "2019-12": 219,
+          "2020-01": 203,
+          "2020-02": 182,
+          "2020-03": 283,
+          "2020-04": 238,
+          "2020-05": 293,
+          "2020-06": 286,
+          "2020-07": 338,
+          "2020-08": 395,
+          "2020-09": 292,
+          "2020-10": 258,
+          "2020-11": 276,
+          "2020-12": 331,
+          "2021-01": 396,
+          "2021-02": 304,
+          "2021-03": 357,
+          "2021-04": 329,
+          "2021-05": 446,
+          "2021-06": 460,
+          "2021-07": 547,
+          "2021-08": 427,
+          "2021-09": 424,
+          "2021-10": 470,
+          "2021-11": 356,
+          "2021-12": 413,
+          "2022-01": 436,
+          "2022-02": 393,
+          "2022-03": 449,
+          "2022-04": 557,
+          "2022-05": 648,
+          "2022-06": 625,
+          "2022-07": 706,
+          "2022-08": 622,
+          "2022-09": 632,
+          "2022-10": 586,
+          "2022-11": 452,
+          "2022-12": 540,
+          "2023-01": 579,
+          "2023-02": 531,
+          "2023-03": 734,
+          "2023-04": 712,
+          "2023-05": 846,
+          "2023-06": 914,
+          "2023-07": 1070,
+          "2023-08": 872,
+          "2023-09": 922,
+          "2023-10": 771,
+          "2023-11": 696,
+          "2023-12": 721,
+          "2024-01": 790,
+          "2024-02": 707,
+          "2024-03": 831,
+          "2024-04": 807,
+          "2024-05": 983,
+          "2024-06": 1023,
+          "2024-07": 1086,
+          "2024-08": 991,
+          "2024-09": 923,
+          "2024-10": 803,
+          "2024-11": 712,
+          "2024-12": 1223
+        },
+        "thin_day_by_month": {
+          "2019-01": 248,
+          "2019-02": 234,
+          "2019-03": 255,
+          "2019-04": 338,
+          "2019-05": 398,
+          "2019-06": 425,
+          "2019-07": 413,
+          "2019-08": 486,
+          "2019-09": 491,
+          "2019-10": 429,
+          "2019-11": 316,
+          "2019-12": 406,
+          "2020-01": 401,
+          "2020-02": 334,
+          "2020-03": 523,
+          "2020-04": 486,
+          "2020-05": 579,
+          "2020-06": 598,
+          "2020-07": 744,
+          "2020-08": 800,
+          "2020-09": 591,
+          "2020-10": 512,
+          "2020-11": 554,
+          "2020-12": 582,
+          "2021-01": 765,
+          "2021-02": 588,
+          "2021-03": 673,
+          "2021-04": 624,
+          "2021-05": 888,
+          "2021-06": 941,
+          "2021-07": 1022,
+          "2021-08": 882,
+          "2021-09": 843,
+          "2021-10": 861,
+          "2021-11": 698,
+          "2021-12": 786,
+          "2022-01": 805,
+          "2022-02": 663,
+          "2022-03": 777,
+          "2022-04": 1085,
+          "2022-05": 1244,
+          "2022-06": 1246,
+          "2022-07": 1469,
+          "2022-08": 1317,
+          "2022-09": 1329,
+          "2022-10": 1096,
+          "2022-11": 854,
+          "2022-12": 987,
+          "2023-01": 1072,
+          "2023-02": 1038,
+          "2023-03": 1270,
+          "2023-04": 1335,
+          "2023-05": 1734,
+          "2023-06": 1874,
+          "2023-07": 2174,
+          "2023-08": 1763,
+          "2023-09": 1824,
+          "2023-10": 1495,
+          "2023-11": 1232,
+          "2023-12": 1254,
+          "2024-01": 1348,
+          "2024-02": 1299,
+          "2024-03": 1447,
+          "2024-04": 1604,
+          "2024-05": 1906,
+          "2024-06": 2064,
+          "2024-07": 2224,
+          "2024-08": 2121,
+          "2024-09": 1852,
+          "2024-10": 1543,
+          "2024-11": 1206,
+          "2024-12": 1487
+        }
+      },
+      "no_metric_computed": "no AUC, accuracy or rate-vs-label performance number is computed anywhere in this build; score.py runs only after the gate passes and --accept re-verifies"
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 436180445,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-e1b9abe52cde2a8c062a",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-e1b9abe52cde2a8c062a/manifest.json",
+    "assets": [
+      {
+        "id": 716182884,
+        "size": 74,
+        "sha256": "a4804ca897f66af900ef4090f6a0b833dae529cea9cfca7146462b833c0d5455"
+      },
+      {
+        "id": 716182946,
+        "size": 1197,
+        "sha256": "1f59e74e4d6003f03371c4514ee9edda7e79e8ecfa3f995723b1520bac6e2fd7"
+      },
+      {
+        "id": 716182991,
+        "size": 22967353,
+        "sha256": "2dae0040cdc2c80fa4adc9cc3b48f26882a6a20f451a252ac3a72f10da8f460f"
+      },
+      {
+        "id": 716183073,
+        "size": 20210392,
+        "sha256": "e187f645445e135e092898a280e74a2ecba6e75cb25ed9c5470d6f96f779c478"
+      },
+      {
+        "id": 716183169,
+        "size": 45644743,
+        "sha256": "24b03a701c34d91834a7c5285d1c928ec33cda9282a2085405b06d541faa9c73"
+      },
+      {
+        "id": 716183333,
+        "size": 22603,
+        "sha256": "98250e9d2731f89da021aec360f5d5535fc374241a98db14f185397f9126849a"
+      },
+      {
+        "id": 716183399,
+        "size": 12610,
+        "sha256": "678a54d3f207e6b3c0b8e59f9194648c30eac7722dc7a4a34d0e56953c1e93b7"
+      },
+      {
+        "id": 716183465,
+        "size": 16191,
+        "sha256": "d2d367b63b6cd59235251f4131845862783a462258f90416d30e1b7ad2882fea"
+      },
+      {
+        "id": 716183522,
+        "size": 16191,
+        "sha256": "d2d367b63b6cd59235251f4131845862783a462258f90416d30e1b7ad2882fea"
+      },
+      {
+        "id": 716183604,
+        "size": 7102,
+        "sha256": "96c4ee19431e55e7b390031aeb6ee3b3d5695c2c28e04ffd82a536b93d6fadb8"
+      },
+      {
+        "id": 716183676,
+        "size": 12610,
+        "sha256": "678a54d3f207e6b3c0b8e59f9194648c30eac7722dc7a4a34d0e56953c1e93b7"
+      },
+      {
+        "id": 716183748,
+        "size": 235520,
+        "sha256": "90fd916354115b53910118e42df6c3aea91a41a10011b18bc5fc4d92b8612e25"
+      },
+      {
+        "id": 716183793,
+        "size": 20817,
+        "sha256": "6102100e3018525f5fc12f23a4cb26b9f4a3868a0db8dfd1134ace15834daef6"
+      },
+      {
+        "id": 716183848,
+        "size": 26224,
+        "sha256": "b0c0f321f17280b10bce75e18c6e3ea263124b4ea6fbecf52029096ebea5754d"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-06T06:40:03.244952+00:00",
+  "deleted_at": "2026-11-06T06:41:44.527400+00:00"
+}

@@ -38,11 +38,22 @@ Population (pre-registered in the candidate record 2026-11-05, BEFORE any score)
     feature is a function of hourly readings through day D only.
 
 Hard anchors measured on the pinned vintage (record measurements.window_counts_2026_11_05,
-preflight_build_design_2026_11_05) are asserted exactly: fetched panel total, per-window
-station-days, per-window valid-day positives, the 2025 hole, the 549-station count, the
-2024-11-18 Delhi severe-day fixture (bulletin-bound: 38 station-days, 36 complete, 36/36
-exceed) and the 2023-08-15 monsoon trough bound (>= 300 complete, <= 4 exceed). A drift
-fails the build loudly rather than shipping a dataset the record does not describe.
+preflight_build_design_2026_11_05): the vintage pin (exported_at + row count), the
+549-station count, the 2025 hole months (asserted empty), the 2024-11-18 Delhi severe-day
+fixture (bulletin-bound: 36 complete, 36/36 exceed) and the 2023-08-15
+monsoon trough bound (>= 300 complete, <= 4 exceed) are asserted exactly; a drift fails
+the build loudly. The Delhi fixture counts REGISTRY MEMBERSHIP (39 cpcb Delhi stations
+in the retained 2026-11-04 snapshot and in the live registry; the publisher's own
+bulletin denominator is 36/39), not panel rows on the day (38; the 2026-11-05 preflight
+figure this anchor was first transcribed from). The exact panel-total and per-window
+station-day/positive counts are
+NOT asserted: the 2026-11-05 probe's scratch aggregation lost rows across a 401 window
+(record measurements.attempt_002_refusal_2026_11_06), so those figures are carried as a
+NON-ASSERTING reference (PROBE_REFERENCE), the build RECORDS its own measured counts in
+summary.json and asserts internal consistency (the windows partition the panel exactly;
+an independent second pass with the label-rule operands reproduces the per-window
+positives). The record adopts the measured counts before any figure is reported, and the
+gate recomputes counts from the rows regardless.
 
 Cross-row exposure (declared, measured, not eliminated): row D's label operand is the
 D+1 mean, which ships as the pm25_mean feature of row D+1 and enters the trailing
@@ -112,8 +123,22 @@ FETCH_LAST = date(2025, 12, 31)
 HOLE_MONTHS = {(2025, m) for m in (1, 2, 3, 10, 11, 12)}
 TAIL_MONTHS = {(2025, m) for m in (4, 5, 6, 7, 8, 9)}
 
-# Anchors measured on the pinned vintage (candidate record, 2026-11-05).
+# Anchors measured on the pinned vintage (candidate record, 2026-11-05/06).
+# Attempt -003 policy (record measurements.attempt_002_refusal_2026_11_06
+# .repair_for_attempt_003): the vintage pin, the 549-station count, the 2025 hole
+# months, the Delhi fixture and the monsoon bound stay HARD; the probe's panel-total
+# and per-window counts become a non-asserting reference because the probe's scratch
+# aggregation lost rows across a 401 window. The build records its own measured
+# counts in summary.json and asserts internal consistency instead.
 ANCHORS = {
+    "delhi_2024_11_18": {"station_days": 39, "complete_n18": 36, "pos_n18": 36},
+    "monsoon_2023_08_15": {"complete_n18_min": 300, "pos_n18_max": 4},
+    "cpcb_pm25_stations": 549,
+}
+
+# 2026-11-05 probe reference (record measurements.window_counts_2026_11_05).
+# Deltas against these values are REPORTED in summary.json, never asserted.
+PROBE_REFERENCE = {
     "panel_rows_total": 716_750,
     "window_station_days": {
         "train_2019_2022": 339_557,
@@ -127,9 +152,6 @@ ANCHORS = {
         "holdout_2024": 19_254,
         "tail_2025_04_09": 829,
     },
-    "delhi_2024_11_18": {"station_days": 38, "complete_n18": 36, "pos_n18": 36},
-    "monsoon_2023_08_15": {"complete_n18_min": 300, "pos_n18_max": 4},
-    "cpcb_pm25_stations": 549,
 }
 
 REQUEST_SLEEP_S = 0.8
@@ -399,16 +421,55 @@ def check_panel_anchors(panel: dict, stations: list[dict]) -> dict:
             per_window_days[w] += 1
             if n >= MIN_HOURS and mean > THRESHOLD_UGM3:
                 per_window_pos[w] += 1
-    if total != ANCHORS["panel_rows_total"]:
-        fail(f"fetched panel rows {total} != {ANCHORS['panel_rows_total']}")
     if hole_rows != 0:
         fail(f"the 2025 hole months carry {hole_rows} rows; the export changed")
-    for name, expected in ANCHORS["window_station_days"].items():
-        if per_window_days[name] != expected:
-            fail(f"window {name} station-days {per_window_days[name]} != {expected}")
-    for name, expected in ANCHORS["window_positives_n18"].items():
-        if per_window_pos[name] != expected:
-            fail(f"window {name} valid-day positives {per_window_pos[name]} != {expected}")
+    # Internal consistency (attempt -003 policy, record
+    # measurements.attempt_002_refusal_2026_11_06.repair_for_attempt_003): the
+    # windows must partition the panel exactly, and an independent second pass over
+    # the panel with the same label-rule operands (n >= MIN_HOURS,
+    # mean > THRESHOLD_UGM3) must reproduce the counted per-window positives.
+    # The 2026-11-05 probe's totals are a non-asserting reference: its scratch
+    # aggregation lost rows across a 401 window, so deltas are reported only.
+    if sum(per_window_days.values()) != total:
+        fail(f"window station-days {per_window_days} sum to "
+             f"{sum(per_window_days.values())} != panel rows {total}")
+    recount = {k: 0 for k in per_window_days}
+    for series in panel.values():
+        for day, (n, mean, _low, _high) in series.items():
+            if n >= MIN_HOURS and mean > THRESHOLD_UGM3:
+                if day.year in TRAIN_YEARS:
+                    recount["train_2019_2022"] += 1
+                elif day.year in EVAL_YEARS:
+                    recount["eval_2023"] += 1
+                elif day.year in HOLDOUT_YEARS:
+                    recount["holdout_2024"] += 1
+                elif (day.year, day.month) in TAIL_MONTHS:
+                    recount["tail_2025_04_09"] += 1
+    if recount != per_window_pos:
+        fail(f"per-window positives {per_window_pos} not reproduced by the "
+             f"independent label-rule recount {recount}")
+    probe_deltas = {
+        "note": ("deltas vs the 2026-11-05 probe reference; reported, never "
+                 "asserted (the probe's scratch aggregation lost rows across a "
+                 "401 window - record attempt_002_refusal_2026_11_06)"),
+        "panel_rows_total": {"probe": PROBE_REFERENCE["panel_rows_total"],
+                             "measured": total,
+                             "delta": total - PROBE_REFERENCE["panel_rows_total"]},
+        "window_station_days": {
+            name: {"probe": PROBE_REFERENCE["window_station_days"][name],
+                   "measured": per_window_days[name],
+                   "delta": per_window_days[name]
+                            - PROBE_REFERENCE["window_station_days"][name]}
+            for name in per_window_days},
+        "window_positives_n18": {
+            name: {"probe": PROBE_REFERENCE["window_positives_n18"][name],
+                   "measured": per_window_pos[name],
+                   "delta": per_window_pos[name]
+                            - PROBE_REFERENCE["window_positives_n18"][name]}
+            for name in per_window_pos},
+    }
+    print(f"probe reference deltas (reported, not asserted): "
+          f"{json.dumps(probe_deltas)}", flush=True)
 
     delhi = [s for s in stations if (s.get("city_name") or "") == "Delhi"]
     fixture = {"station_days": 0, "complete_n18": 0, "pos_n18": 0}
@@ -443,6 +504,7 @@ def check_panel_anchors(panel: dict, stations: list[dict]) -> dict:
         "hole_2025_rows": hole_rows,
         "delhi_2024_11_18": fixture,
         "monsoon_2023_08_15": monsoon,
+        "probe_reference_deltas": probe_deltas,
     }
 
 
@@ -566,6 +628,14 @@ def quality_payload(counts: dict, excluded: dict, anchors: dict, synthetic: bool
         "eval": {"start": "2023-01-01", "end": "2024-01-01"},
         "holdout": {"start": "2024-01-01", "end": "2025-01-01"},
     }
+    tail_days = (anchors.get("window_station_days") or {}).get("tail_2025_04_09")
+    tail_pos = (anchors.get("window_positives_n18") or {}).get("tail_2025_04_09")
+    if tail_days is not None and tail_pos is not None:
+        tail_desc = (f"The 2025-04..09 partial tail ({tail_days:,} station-days, "
+                     f"{tail_pos:,} valid-day positives) is excluded and counted")
+    else:
+        tail_desc = ("The 2025-04..09 partial tail is excluded and counted "
+                     "(measured counts in summary.json)")
     quality = {
         "name": NAME,
         "target": TARGET,
@@ -642,7 +712,7 @@ def quality_payload(counts: dict, excluded: dict, anchors: dict, synthetic: bool
                            "pm25_mean_7d", "pm25_days_valid_7d", "pm25_mean_30d",
                            "pm25_days_valid_30d", "pm25_hist_mean_90d",
                            "days_since_gt90", "exceed_count_30d"],
-                "basis": "scored rows are complete (n_hours >= 18) station-days of the cpcb_caaqm PM2.5 stream with day D inside the declared window AND a labelable D+1 (a row present with n_hours >= 18). Day-D completeness is knowable at the instant; the D+1 observability rule is an outcome-observability exclusion that never reads the label value - unlabelable rows are excluded and counted per split. The 2025-04..09 partial tail (47,566 station-days, 829 valid-day positives) is excluded and counted; the 2025-01..03 and 2025-10..12 hole months are asserted empty. Both label values are retained in every window",
+                "basis": f"scored rows are complete (n_hours >= 18) station-days of the cpcb_caaqm PM2.5 stream with day D inside the declared window AND a labelable D+1 (a row present with n_hours >= 18). Day-D completeness is knowable at the instant; the D+1 observability rule is an outcome-observability exclusion that never reads the label value - unlabelable rows are excluded and counted per split. {tail_desc}; the 2025-01..03 and 2025-10..12 hole months are asserted empty. Both label values are retained in every window",
             },
             "observations": [],
         },
@@ -840,7 +910,7 @@ def main() -> int:
     rows_path = work / "panel_rows.txt"
 
     # ---- 1. vintage pin, station list, panel fetch (or synthetic panel) --------
-    anchors = None
+    anchors: dict | None = None
     if args.synthetic:
         print("SYNTHETIC dry run: no network, no anchor assertions", flush=True)
         stations = [{"station_id": f"SYN{1000 + i}",
@@ -891,6 +961,12 @@ def main() -> int:
     # label source must be structurally absent from the shipped files
     assert "next_day_pm25_mean" not in COLUMNS and "next_day_n_hours" not in COLUMNS
 
+    # measured tail count for the descriptive texts (adopted from this build's own
+    # fetch, never the 2026-11-05 probe reference; attempt -003 policy)
+    tail_days = ((anchors or {}).get("window_station_days") or {}).get("tail_2025_04_09")
+    tail_meta = (f"{tail_days:,} station-days" if tail_days is not None
+                 else "measured count in summary.json")
+
     meta = {
         "name": NAME,
         "target": TARGET,
@@ -905,7 +981,7 @@ def main() -> int:
             "2019-2022, eval 2023, holdout 2024; scored rows are complete "
             "(n_hours >= 18) cpcb_caaqm PM2.5 station-days with a labelable D+1 "
             "(row present, n_hours >= 18; unlabelable rows excluded and counted); "
-            "the 2025-04..09 partial tail (47,566 station-days) is excluded and "
+            f"the 2025-04..09 partial tail ({tail_meta}) is excluded and "
             "counted, the 2025-01..03 and 2025-10..12 hole months are asserted "
             "empty; label = D+1 24-hr mean > 90 ug/m3 (CPCB National AQI Poor-band "
             "lower breakpoint)"),
@@ -955,7 +1031,7 @@ def main() -> int:
         per_split_month[key] = table
 
     summary = {
-        "job": "cpcb-aqi-build-001",
+        "job": "cpcb-aqi-build-003",
         "name": NAME,
         "synthetic_mode": args.synthetic,
         "source_channel": receipts,
@@ -970,6 +1046,7 @@ def main() -> int:
             "hole_2025_rows": anchors.get("hole_2025_rows"),
             "delhi_2024_11_18_fixture": anchors.get("delhi_2024_11_18"),
             "monsoon_2023_08_15_fixture": anchors.get("monsoon_2023_08_15"),
+            "probe_reference_deltas": anchors.get("probe_reference_deltas"),
         },
         "splits": counts,
         "excluded": excluded,

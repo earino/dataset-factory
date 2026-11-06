@@ -1,0 +1,104 @@
+{
+  "job": {
+    "id": "cpcb-aqi-build-003",
+    "candidate": "cpcb-aqi-exceedance",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cpx32",
+    "location": "hel1",
+    "cpus": 4,
+    "memory_mb": 8192,
+    "timeout_minutes": 100,
+    "lifetime_minutes": 140,
+    "max_disk_mb": 30000,
+    "max_artifact_mb": 300,
+    "what": "REPAIR ATTEMPT for cpcb-aqi-build-002 (refused 524.2 s in: 'fetched panel rows 717429 != 716750'; the +679 was measured to be in the 2026-11-05 probe's RESUMED scratch aggregation, which lost rows across a 401 window while its resume MARK kept batches 'done' - record measurements.attempt_002_refusal_2026_11_06). Repair per repair_for_attempt_003: keep the HARD anchors (vintage pin exported_at 2026-09-30T11:25:11+00:00 + 196,521,834 rows, 549 cpcb PM2.5 stations, UNKNOWN_STATE sentinel for the 62 null-state stations, 2025 hole months asserted empty, Delhi 2024-11-18 fixture 38/36/36, monsoon 2023-08-15 trough bound >=300 complete / <=4 exceed) and DROP the exact panel-total/per-window count assertions against the probe; the build RECORDS its own measured counts in summary.json and asserts internal consistency (windows partition the panel exactly; an independent label-rule recount reproduces the per-window positives). Also carries the score.py state-season climatology O(n^2) fix already in source (table built once). Otherwise unchanged: full construction of the cpcb-aqi-exceedance station-day panel from the pinned XKDR export via anonymous demo-key /v1/measurements batching, eligibility n_hours>=18 on day D plus a labelable D+1, label = D+1 24-hr mean PM2.5 > 90 ug/m3, splits train 2019-2022 / eval 2023 / holdout 2024, the 2025-04..09 tail excluded and counted. Then gate 1.5.0 on the FULL artifact, exact-byte --accept, then score.py's pre-registered reference triad on eval rows. No performance metric in the build; holdout never read.",
+    "stopping_condition": "A failed hard anchor/fixture assertion, a failed internal-consistency check, a failed gate, a failed --accept or a truncated fetch stops the run with diagnostics uploaded; the extract is never scored. One rebuild per structural defect; no re-tuning of threshold, window, label or features after any score. A second refusal of the same count class is a new finding, not another retry.",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/cpcb-aqi-exceedance/source/build.py",
+        "bytes": 57457,
+        "sha256": "6f87d904bab9ad9e56ae68c1f1d6ed7a54cc9833053294220ee7f1b2304fc467"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/cpcb-aqi-exceedance/source/run.sh",
+        "bytes": 1885,
+        "sha256": "7f1e04e39b4e69c63bb971b56a375c1bbef3356ffd3e140799d07414177ca399"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/cpcb-aqi-exceedance/source/score.py",
+        "bytes": 19640,
+        "sha256": "1ffefa53a13037afb76a5af24492917c5cbdb775ff56f83dde178b69ca9d9ae0"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.32",
+  "rate_ceiling_eur": "0.08",
+  "reserved_hours": 4,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 235520,
+  "source_sha256": "467bab9c411b9656d20a94885a841f2db223d76d3d547c6c16a89c7cff766782",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-06T06:05:10.237943+00:00",
+  "expires": 1793953510,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0692400000000000",
+  "server_id": 174749145,
+  "known_hosts": "/opt/data/dataset-factory/.factory/cpcb-aqi-build-003/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "cpcb-aqi-build-003",
+    "status": "failed",
+    "uploaded": true,
+    "image_id": "sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc",
+    "image_digests": [
+      "python@sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc"
+    ],
+    "exit_code": 1,
+    "oom_killed": false,
+    "elapsed_seconds": 527.0,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 436167238,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-759478965d777818b61c",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-759478965d777818b61c/manifest.json",
+    "assets": [
+      {
+        "id": 716129182,
+        "size": 235520,
+        "sha256": "467bab9c411b9656d20a94885a841f2db223d76d3d547c6c16a89c7cff766782"
+      },
+      {
+        "id": 716129241,
+        "size": 1805,
+        "sha256": "cab07f731a2ed95e8fb36c5953c4443607d9e3cb62b673964d099fd496afab27"
+      },
+      {
+        "id": 716129309,
+        "size": 4549,
+        "sha256": "80fb0b5cb05ebf1c4ff0842e835a12e9b52f5d5575d8fe1363b2ba8fd3bc7fa8"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-06T06:18:18.571653+00:00",
+  "deleted_at": "2026-11-06T06:18:36.260146+00:00"
+}

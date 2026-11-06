@@ -1,0 +1,134 @@
+{
+  "job": {
+    "id": "cpcb-aqi-baseline-001",
+    "candidate": "cpcb-aqi-exceedance",
+    "image": "python:3.13-slim",
+    "server_type": "cpx32",
+    "location": "hel1",
+    "cpus": 4,
+    "memory_mb": 8192,
+    "timeout_minutes": 100,
+    "lifetime_minutes": 140,
+    "max_disk_mb": 30000,
+    "max_artifact_mb": 16,
+    "what": "Runner-contract baseline on the accepted cpcb-aqi-exceedance artifact, fetched from private staging rather than rebuilt: re-accept the five fetched files against the gate's own collected report BEFORE any score, materialize the runner workdir (public train+eval only; the private holdout is fetched for --accept over the full artifact but never copied into a workdir), run the benchmark's own train.py and validate.sh unmodified, then compute the PRE-REGISTERED deciding check: the full model's per-row eval scores (same code path as validate.py) vs every triad member (station_persistence, state_season_climatology, global_rate) on identical eval rows, station-clustered paired bootstrap, cluster = station_id. Headroom is demonstrated ONLY if the model beats EVERY member with a CI excluding zero in its favour (and, for the degenerate constant member, its own AUC CI lies entirely above 0.5); triad dominance -> recorded defect, drop or re-target. Contract only, no agent loop, no holdout score. FETCH BLOCK FILLED 2026-11-06 from cpcb-aqi-build-004's staging release 436180445 (artifact a749f0df2f9dd010..., gate 1.5.0 ok, exact-byte accept verified in .factory/cpcb-aqi-build-004/reports/).",
+    "stopping_condition": "re-accept failure refuses scoring before any number exists; a failed runner contract is a recorded blocker, never rescored ad hoc; the deciding verdict (either direction) is a recorded finding, not a retry trigger - no re-tuning of threshold, window, label or features after any score.",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 436180445,
+      "assets": [
+        {
+          "asset_id": 716182946,
+          "dest": "extract/meta.json",
+          "size": 1197,
+          "sha256": "1f59e74e4d6003f03371c4514ee9edda7e79e8ecfa3f995723b1520bac6e2fd7"
+        },
+        {
+          "asset_id": 716183169,
+          "dest": "extract/public/train.csv",
+          "size": 45644743,
+          "sha256": "24b03a701c34d91834a7c5285d1c928ec33cda9282a2085405b06d541faa9c73"
+        },
+        {
+          "asset_id": 716183073,
+          "dest": "extract/public/eval.csv",
+          "size": 20210392,
+          "sha256": "e187f645445e135e092898a280e74a2ecba6e75cb25ed9c5470d6f96f779c478"
+        },
+        {
+          "asset_id": 716182991,
+          "dest": "extract/private/holdout.csv",
+          "size": 22967353,
+          "sha256": "2dae0040cdc2c80fa4adc9cc3b48f26882a6a20f451a252ac3a72f10da8f460f"
+        },
+        {
+          "asset_id": 716183333,
+          "dest": "extract/quality.json",
+          "size": 22603,
+          "sha256": "98250e9d2731f89da021aec360f5d5535fc374241a98db14f185397f9126849a"
+        }
+      ]
+    },
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/cpcb-aqi-exceedance/baseline/run.sh",
+        "bytes": 3289,
+        "sha256": "271f46abc5cc14151284468494bd39c841128aef411a1e8043bfec8f0b1baa23"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/cpcb-aqi-exceedance/baseline/materialize.py",
+        "bytes": 2616,
+        "sha256": "98dc4027e49e1b8062de55344fc2fe812563e680cb897d901e34ba400092776b"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/cpcb-aqi-exceedance/baseline/report.py",
+        "bytes": 10814,
+        "sha256": "41ab1a7b913fd15b568674cb9aca3a252879bd80db0dbae0d91df91fa92c684d"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/cpcb-aqi-exceedance/source/score.py",
+        "bytes": 19640,
+        "sha256": "1ffefa53a13037afb76a5af24492917c5cbdb775ff56f83dde178b69ca9d9ae0"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/cpcb-aqi-exceedance/baseline/qualification.json",
+        "bytes": 16191,
+        "sha256": "d2d367b63b6cd59235251f4131845862783a462258f90416d30e1b7ad2882fea"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.32",
+  "rate_ceiling_eur": "0.08",
+  "reserved_hours": 4,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 215040,
+  "source_sha256": "fd50589b7a87d469c18c4c4b42b8d865aef86385db7622f40fe770186e4c1760",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "running",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-06T06:43:41.610409+00:00",
+  "expires": 1793955821,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0692400000000000",
+  "server_id": 174753994,
+  "known_hosts": "/opt/data/dataset-factory/.factory/cpcb-aqi-baseline-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168"
+}

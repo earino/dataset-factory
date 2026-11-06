@@ -1,5 +1,5 @@
 #!/bin/sh
-# Worker entrypoint for the cpcb-aqi-exceedance full build (cpcb-aqi-build-001).
+# Worker entrypoint for the cpcb-aqi-exceedance full build (cpcb-aqi-build-003).
 #
 # Order is fixed and each stage stops the next: construct -> qualify ->
 # accept exact bytes -> pre-registered reference triad. build.py only

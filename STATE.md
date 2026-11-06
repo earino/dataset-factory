@@ -1,4 +1,98 @@
-## 2026-11-06 (04:40Z) - discovery (Oceania tick): plansa-da-register-decision opened (investigating) - SA statewide DA register, licence class A measured on the publisher's own page, 299,858 applications, decision-type vocabulary + access channel + prior-art scan recorded; per-year counts, refusal base rate and the decision-date display are the named gaps to ready
+## 2026-11-06 (06:45Z) - advancement session: cpcb-aqi-exceedance CONSTRUCTED, QUALIFIED and ACCEPTED end-to-end (attempts -003 and -004: -003 refused at a NEW fixture-operand defect, diagnosed from retained evidence and repaired in-session; -004 green through the whole ladder), triad measured on eval 2023 - persistence 0.9689 dominates climatology 0.8617 (cluster CI [+0.096, +0.121]) - and the baseline deciding job cpcb-aqi-baseline-001 LAUNCHED and running as the handoff
+
+Scheduled advancement session. Release work first: no packaged candidate is
+actionable (cqc, za-cct-substation, ns-bwa all `awaiting_operator: true` - human
+waits, untouched). Job ledger at start: 205 records, zero non-terminal. Candidate
+chosen from the operator's actionable list per its recorded next_action: the
+cpcb-aqi-exceedance attempt -003 repair (the most advanced ordered handoff). No
+remediation hold is active.
+
+- REPAIR APPLIED (build.py, per measurements.attempt_002_refusal_2026_11_06
+  .repair_for_attempt_003): HARD anchors kept (vintage pin, 549 stations,
+  UNKNOWN_STATE sentinel, 2025 hole months empty, Delhi fixture, monsoon bound);
+  the exact panel-total/per-window assertions against the defective 2026-11-05
+  probe were DROPPED (its scratch aggregation lost rows across a 401 window) -
+  the probe values became a non-asserting PROBE_REFERENCE, the build records its
+  own measured counts in summary.json and asserts internal consistency (windows
+  partition the panel; an independent label-rule recount reproduces per-window
+  positives). Descriptive texts now derive the 2025 tail counts from the build's
+  own measurement. Mandatory synthetic dry run green before every launch (build
+  rc=0 -> gate 1.5.0 ok -> --accept ACCEPTED -> score.py rc=0; synthetic figures
+  only).
+- ATTEMPT -003 (server 174749145, EUR 0.32 reservation): fetch clean (168
+  requests, 0 truncated, 0 unparseable, 513.3 s) and the count repair behaved
+  exactly as designed (no count refusal, internal consistency passed, probe
+  deltas reported) - then REFUSED at the Delhi known-event fixture:
+  station_days 39 != 38, while complete_n18=36 and pos_n18=36 (the label claims)
+  held. DIAGNOSED from retained evidence, no new probe needed: the fixture's
+  station_days was transcribed from the 2026-11-05 preflight's PANEL-row count
+  (38), but the build counts REGISTRY membership - the retained 2026-11-04
+  snapshot and the live registry both carry 39 cpcb Delhi stations, and the
+  publisher's own bulletin denominator is 36/39. A distinct defect class (first
+  occurrence; the fixture never executed on real data before because -001/-002
+  refused earlier). Worker destroyed, provider read-back 404. Staging release
+  436167238 holds source.tar + container.log; the container.log preserves the
+  measured counts (717,429 panel rows; train 339,756 / eval 154,003 / holdout
+  176,104 / tail 47,566).
+- REPAIR for the fixture (one rebuild for this defect class): station_days
+  38 -> 39, registry semantics documented in the anchor comment; dry run green
+  again (synthetic artifact byte-identical f5c72b1c...).
+- ATTEMPT -004 (server 174751006, EUR 0.32 reservation): FULL LADDER GREEN on
+  the real artifact - build rc=0 (panel 717,429 rows over 546 reporting stations;
+  every hard anchor verified: Delhi 39/36/36, monsoon 389 complete / 1 exceed,
+  hole 0 rows, vintage pin matched, sentinel applied to 62 stations), gate 1.5.0
+  45/45 ok failed_checks=[], exact-byte --accept ACCEPTED artifact
+  a749f0df2f9dd0103d0ba56524e1cc3638242fbc4710b0cac99603bcdef0d959, then
+  score.py's pre-registered triad rc=0 (post-acceptance only; holdout never
+  read). Worker destroyed, provider read-back 404. Staging release 436180445
+  holds the full extract (train 45.6 MB / eval 20.2 MB / holdout 23.0 MB) + all
+  reports; six bounded reports fetched to .factory/cpcb-aqi-build-004/reports/
+  with every sha256 equal to the release manifest.
+- TRIAD MEASURED on eval 2023 (126,570 shipped rows, 19,819 positives, 351
+  distinct positive days, 509 station clusters): station_persistence AUC
+  0.9689 (Brier 0.2830; binary >90 agreement 0.9350), state_season_climatology
+  0.8617 (Brier 0.0968), global_rate degenerate (Brier 0.1351),
+  station_train_rate 0.7616 supplementary, majority accuracy 0.8434.
+  Clustered paired bootstrap: persistence minus climatology mean +0.107, CI
+  [+0.096, +0.121]; the vs-global comparisons are degenerate (constant score,
+  no ranking information) and are recorded as such. Per-season persistence AUC
+  0.936-0.954 everywhere; prevalence declines across splits 21.2% -> 15.7% ->
+  12.6% (out-of-distribution property, reported). Interpretation recorded next
+  to the numbers: the label is largely persistence-carried, so the FULL MODEL
+  must clear 0.9689 to demonstrate headroom - that comparison is the baseline
+  job's pre-registered deciding rule, not this session's to re-tune.
+- MEASURED COUNTS ADOPTED into record.split_strategy before any figure was
+  reported (superseding the defective probe totals). One labeling defect
+  recorded honestly: summary.json's job field says "-003" (the literal was not
+  re-bumped for -004; auxiliary diagnostics file only - not part of the runner
+  layout, gate never reads it; ledger/manifest/container.log all identify -004).
+- BASELINE LAUNCHED: prepare_baseline_from_002.py cpcb-aqi-build-004 filled the
+  fetch block from release 436180445 (gate report copied to
+  baseline/qualification.json and digest-verified; expected_artifact.json
+  written), then cpcb-aqi-baseline-001 assembled + planned + launched 06:43:41Z
+  (server 174753994, cpx32/hel1, EUR 0.32 reservation, expires 08:53Z). It
+  re-accepts the fetched bytes before any score, runs the harness runner
+  verbatim, then the pre-registered deciding check. THE RUNNING JOB IS THE
+  HANDOFF if this session closes first.
+- EUR: three reservations today (0.32 x 3) on top of the recorded 1.04 - about
+  2.0 of the 15 EUR construction allowance; release reserve untouched. Both
+  completed workers destroyed with provider read-back (174749145, 174751006
+  both 404).
+- Hygiene: check-candidate cpcb OK after every record update; check-candidate
+  --all rc=0; suite 723/723 OK (33.6 s); doctor rc=0.
+  candidates/fenz-incident-data/ left untracked for its owner.
+
+Next action (also in record.next_action): collect cpcb-aqi-baseline-001 and
+verify IN THE COLLECTED BYTES: re-accept ACCEPTED for a749f0df... before any
+score, the runner's eval AUC (train.py/validate.sh agreement), then report.py's
+pre-registered deciding check on the identical 126,570 eval rows (model vs
+EVERY triad member, station-clustered paired bootstrap). Record the verdict
+EITHER WAY - headroom -> package per dataset-release; triad dominance ->
+recorded defect, drop or re-target (wb-loan/unhcr precedent); inconclusive
+interval -> hold. Destroy with provider read-back. Holdout (2024) stays
+sealed; no re-tuning after any score.
+
+
 
 Scheduled discovery session, Oceania focus. Queue at start: 135 candidates,
 53 live; Oceania already 11 (AU 9, NZ 2). No construction, no qualification,
