@@ -1,3 +1,65 @@
+## 2026-11-06 (04:40Z) - discovery (Oceania tick): plansa-da-register-decision opened (investigating) - SA statewide DA register, licence class A measured on the publisher's own page, 299,858 applications, decision-type vocabulary + access channel + prior-art scan recorded; per-year counts, refusal base rate and the decision-date display are the named gaps to ready
+
+Scheduled discovery session, Oceania focus. Queue at start: 135 candidates,
+53 live; Oceania already 11 (AU 9, NZ 2). No construction, no qualification,
+no advancement launched; every probe was read-only catalogue/browser work.
+
+- LED SELECTION: water-level/gauge tasks (incl. a BoM river-gauge idea) were
+  deliberately NOT opened - the portfolio already has 7 water/level-exceedance
+  siblings (noaa-tide published; MY/CO/GB gauges investigating/parked; TW/MX/ZA
+  dam storage), and eccc-hydrometric-daily-flows was dropped as a mirror of
+  CAMELS-SPAT/HYSETS, so a BoM streamflow task would hit the same prior art.
+  The gap chosen instead: first-instance development-application DECISIONS -
+  an administrative task family where the portfolio has only appeal/licensing
+  comparators (pins-planning-appeal-outcome GB published, tc-gv investigating).
+- SOURCE (measured, all through the supported browser; plan.sa.gov.au 403s
+  plain curl): PlanSA Development Application Register,
+  plan.sa.gov.au/development_application_register, established under s.48(1)
+  of the PDI Act 2016. Totals from the register's own count text: 299,858 DAs
+  (all), 260,174 Decision Made, 27,083 Under Assessment, 10,538 Withdrawn,
+  1,725 Cancelled, 338 Lapsed; 17,733 lodged 01/01/2026-06/11/2026. Sample
+  detail (26037018) shows lodgement-time features (description, Assessment
+  Pathway, Elements, Council area, applicant, title) and the Assessment tab
+  shows per-consent decisions ("Development Approval - Planning, Building -
+  Granted"); the register's own JS status vocabulary includes Granted,
+  Approved, Refused, Rejected, Decision Under Appeal with publisher-written
+  descriptions. LICENCE: CC BY 3.0 Australia stated on the register page
+  footer itself and on the data.sa.gov.au/data.gov.au catalogue records -
+  class A. No per-application decision DATE observed yet, and date-window
+  searches settle in 30-90 s, so per-year counts and refusal base rate are
+  unmeasured - these are the exact gaps named in record.next_action.
+- PRIOR ART (recorded in notes.md s3): ConfidentPlanner (London
+  approval-likelihood tool, GLA datahub, AUC ~0.73 - tool, not benchmark),
+  Lin et al. 2025 (AU planning-application TEXT classification), aggregate
+  statutory-timeframe reporting only (Vic 66% within 60-day 2023-24, NSW
+  league tables). No ML-ready per-application DA decision/latency benchmark
+  with splits exists. Novelty verdict deliberately NOT recorded yet - the
+  label family is still open between statutory-timeframe latency and refusal.
+- AU COMPARATORS swept and parked in the record: Playford per-year CSVs
+  (cc-by, viable fallback), ACT/Moreton Bay ArcGIS Hub (licence "Other",
+  unverified), Victorian Building Permit Activity Data (cc-by but permits
+  issued, no decision outcome - carries no target), City of Adelaide
+  (cc-by, dead since 2021-03-19).
+- NZ COVERAGE (no candidate opened, honestly): data.govt.nz is Imperva-walled
+  to curl but opens in the browser; "resource consents" = 327 datasets,
+  dominated by regional-council GIS layers of activity permits, licence
+  facets mostly unlabelled. Different population from first-instance
+  development decisions; per-publisher licence verification would precede any
+  probe. fenz-incident-data and nz-ea-wholesale-price-exceedance untouched.
+- RECORDS: candidates/plansa-da-register-decision/ (record.json status
+  investigating, licence_class A; notes.md with every command/result incl.
+  failed probes and the CSV/payload recipe from public-register.min.js;
+  probe/ckan_da_catalogue.py + probe/plansa_browser_recipe.md retained).
+  check-candidate.py plansa-da-register-decision rc=0; --all rc=0.
+
+Next action (discovery-owned, no worker money): the three probes in
+record.next_action - (1) decision-date display on 2020-2022 Decision-Made
+applications via the Assessment tabs, (2) CSV export columns/row cap through
+the page's own handler, (3) per-year decided counts + refusal prevalence
+(worker aggregate if 1-2 come up empty), then (4) the PDI Act 2016
+statutory-timeframe rules + a known-event fixture, and only then the novelty
+verdict and the ready decision.
+
 ## 2026-11-06 (03:12Z) - follow-up (worker-status runner): cpcb-aqi-build-001/-002 verified handled - collection, report digests, both diagnoses, staging releases and provider deletion re-confirmed from live evidence; no gate, --accept or score ever existed on either attempt (nothing quotable beyond the refusal diagnostics); 02:45Z entry's release-ID typo fixed (436037000 -> 436041182); the -003 repair stays advancement's
 
 Watcher follow-up for the two failed cpcb-aqi-exceedance build jobs. The 02:45Z
