@@ -1,3 +1,57 @@
+## 2026-11-06 (19:25Z) - scheduled advancement: cpcb-aqi-exceedance RELEASE CLOSE-OUT COMPLETE - Hub verify + tag v2026.11 (tag == main == 2535150e), both DESTINATIONS blocks recorded, record -> packaged, pre-flip audit prompt generated, awaiting_operator TRUE; nothing public, holdout sealed
+
+Release work only (brief priority: release outranks construction); no worker launched
+(EUR 0), no construction, no scoring, no publication, no dataset tag or frozen byte touched.
+CI read for the previous two pushes first: 27c74154 push completed/success (run 42251022631),
+f3f20215 push completed/success (run 42256366567).
+
+- Step (a) hf-publish.py --verify --worker-job cpcb-aqi-hf-002: exit 0, all five Hub files
+  digest-verified at main commit 2535150e7f9301416d7b24d1627738b265789a35, repo private.
+  Note: this first run correctly did NOT write DESTINATIONS.json because the version tag
+  did not yet exist (record_destination is gated on release_revision_verified).
+- Step (b) hf-publish.py --tag: tag v2026.11 CREATED, tag_commit == main_commit ==
+  2535150e, release_revision_verified true; DESTINATIONS.json huggingface block written
+  (5/5 files, private true). The recorded --verify command was then re-run WITH
+  --worker-job so the block carries "loading_check: verified by collected worker job
+  cpcb-aqi-hf-002" (exit 0, recorded).
+- Step (c) github block: written programmatically by
+  candidates/cpcb-aqi-exceedance/record_github_block_2026_11_06.py, which re-reads the
+  API at run time and asserts before writing: repo private:true, release 436366305
+  non-draft at tag v2026.11, tag == main == cb3b251faa9e3cac37231746474585cc77f6f9c9,
+  exactly five flat assets whose sizes and sha256 digests equal MANIFEST.json
+  (meta.json 1f59e74e..., private-holdout.csv 2dae0040..., public-eval.csv e187f645...,
+  public-train.csv 24b03a70..., quality.json 98250e9d...), plus the planner-required
+  top-level artifact_version a749f0df2f9d... (equal to the manifest - the same omission
+  the cqc close-out corrected; record_destination does not write it). checks cite
+  cpcb-aqi-publish-001 (5/5, failures []), the live server-side read-back and
+  cpcb-aqi-consumer-002; anonymous_access false; note says NOT published.
+- Step (d) record -> packaged: status packaged, packaged_at 2026-11-06T19:20:00Z,
+  artifacts[0] structured release identity (repo, release 436366305, tag v2026.11,
+  target cb3b251f..., Hub main 2535150e..., staging 436180445, gate 1.5.0 +
+  exact-byte --accept a749f0df, row counts), awaiting_operator TRUE with scope and
+  since, next_action carries the full post-flip procedure. The independent pre-flip
+  audit prompt was generated programmatically from
+  skills/dataset-release/templates/pre-flip-audit-prompt.md (7682 chars, zero
+  unfilled placeholders; every digest/size/count/figure read from the frozen
+  package) at candidates/cpcb-aqi-exceedance/pre-flip-audit-prompt.md; the flip
+  waits for the auditor's verdict unless waived.
+- One defect found and fixed in this session's own script: the first github-block
+  attempt keyed flat asset names by bare basename (private-holdout.csv vs the
+  manifest's private/holdout.csv) and raised KeyError before any write; fixed to
+  logical.replace("/", "-"), then all assertions passed.
+- Checks: check-candidate.py --all rc=0 (130 records), check-package.py
+  release/cpcb-aqi-exceedance rc=0 (DESTINATIONS.json is mutable destination
+  evidence and deliberately not manifest-covered), check-suitability.py rc=0
+  (21 version-bound reviews), full suite 723/723 OK (32.9 s). Nothing public;
+  anonymous Hub read-back still 401; holdout sealed.
+
+Next action (a fresh session can carry it out): cpcb-aqi-exceedance is the operator's -
+relay candidates/cpcb-aqi-exceedance/pre-flip-audit-prompt.md to an independent auditor;
+the flip (both destinations) waits for that verdict unless waived; after the flip run the
+recorded post-flip procedure (anonymous verification, DESTINATIONS visibility fields with
+files_verified lists, editorial refresh with apply-navigation, check-package,
+check-suitability notice, site plan prepare/review then publish/verify).
+
 ## 2026-11-06 (16:51Z) - scheduled discovery session (UK focus): defra-avian-influenza-spillover READY (wild-bird-to-poultry spillover; measured splits, OGL A, UKGWA vintage evidence); ea-flood-defence-asset-condition opened + PARKED (current-state-only, no vintages); companies-house Gazette label path measured, park unchanged; checks green
 
 Discovery-only session (regional focus UK: ONS, NHS Digital, Defra, EA, Companies House,
