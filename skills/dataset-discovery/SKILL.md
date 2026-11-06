@@ -209,6 +209,7 @@ qualification and exact-byte acceptance first.
 | Uniform result from a threshold | Threshold's unit/reference frame unstated | Find the frame; add a known-event fixture before using it |
 | "Public data" assumed publishable | Licence silent on redistribution | Record the question, escalate as a decision, do not ship |
 | "The publisher states no terms" | A 403 to a plain HTTP client read as an absent page | Re-read it in a real browser before recording silence; then `references/licence-posture.md` |
+| Parked "no anonymous API access" while the SPA plainly shows its data | Only ONE API family was probed; 401s or a truncated shell on that family were read as "no channel" | Read the app's bundle chain in the browser: the main bundle (front-end constants, apikey headers, base URLs), its chunk map, and any iframed legacy pages/bundles name every endpoint family. A second family may be anonymous plain-HTTP while the first is not (tw-reservoir 2026-11-06: /Api/v2 401s hid /Disaster/api POSTs answering 200 with no session) |
 | Feature list looks right, dataset scores perfectly | A carried source column shipped the answer | Hand to `dataset-qualification`; it tests shipped columns, not lists |
 | Cost estimate wrong by an order of magnitude | Paging arithmetic guessed instead of measured | Wrap the fetch, count requests, record the machine class |
 | Candidate sits "interesting" for weeks | No verdict recorded | Force build/park/drop with the reason; parking is a valid outcome |
