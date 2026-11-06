@@ -1,3 +1,39 @@
+## 2026-11-06 (2026-11-06T16:17:40Z) - follow-up (worker-status runner): cpcb-aqi-hf-002 SUCCEEDED - HF bulk upload complete and verified (eval at the manifest digest, Hub read-back 5/5 manifest digests at commit 2535150e, load_dataset green); 53 recorded acceptance checks pass; worker 174835948 destroyed with provider 404 read-back (0 servers, 0 IPs); remaining: hf-publish --verify, --tag, DESTINATIONS github block, packaged + pre-flip audit prompt + awaiting_operator; nothing public, holdout sealed
+
+Watcher follow-up for cpcb-aqi-hf-002 (the single changed retry for the hf-001 eval-digest
+spec defect; that recovery is spent and it succeeded). The shared research mutex was this
+runner's for the whole invocation. Unrelated untracked work (candidates/fenz-incident-data/)
+inspected and left untouched, not committed.
+
+- COLLECTED (ledger collected_at 15:58:47Z, result.json present): succeeded, elapsed
+  104.0 s. Four assets skipped 'already at the manifest digest' (meta.json,
+  data/private-holdout.csv, data/public-train.csv, quality.json); public-eval.csv fetched
+  at the manifest digest (20210392 B e187f645445e135e092898a280e74a2ecba6e75cb25ed9c5470d6f96f779c478)
+  and uploaded with the Hub-reported digest verified; Hub-side read-back: all five files
+  at manifest digests, ok true, errors [], main commit
+  2535150e7f9301416d7b24d1627738b265789a35; load_dataset check green and equal to
+  hf/job.json verify_loading (train 288754/61075, eval 126570/19819, holdout 145124/18222,
+  23 columns, labels {0,1}, problems []). ALL 53 RECORDED ACCEPTANCE CHECKS PASS
+  (verify_hf002_outcome_2026_11_06.py: collected result vs hf/job.json vs the frozen
+  release MANIFEST.json).
+- CLEANUP (deletion confirmed by the provider): worker 174835948 destroyed 16:11:10Z;
+  GET /v1/servers/174835948 -> 404 not_found; project servers 0, primary_ips 0.
+  Preservation accounted before teardown: all five assets durable on the Hub at manifest
+  digests (Hub read-back in the job result) and on GitHub release 436366305 (verified
+  server-side 15:45Z); host_cleanup_complete true. Staging evidence fetched
+  digest-verified: release 436695608 manifest (9021 B sha 02cddeb34ea8714e08010518cf35b6a312875842e540b74c3041b73d950a6e66)
+  to .factory/cpcb-aqi-hf-002/reports/. No bulk CSV ever reached the coordinator.
+- NOT DONE THIS SESSION (wall-clock ceiling; precise handoff in record.next_action):
+  hf-publish.py --verify (writes the huggingface block of DESTINATIONS.json), --tag LAST,
+  the DESTINATIONS.json github block, packaged_at + pre-flip audit prompt + awaiting_operator
+  TRUE, the full local suite, and the exact-commit CI read for this push (unread at close;
+  the next session reads the run for this commit FIRST). The flip remains the operator's
+  single approval and waits for the independent auditor's verdict unless waived. Holdout
+  sealed; no figure newly quotable beyond the already-recorded qualified references.
+
+Next action (also in record.next_action): steps (a)-(e) above, starting with the CI read
+for this commit, then hf-publish.py --verify and --tag.
+
 ## 2026-11-06 (15:52Z) - follow-up (worker-status runner): cpcb-aqi-hf-001 FAILED at the eval fetch - the hf/job.json spec carried the consumer-001 one-character digest defect (position 36 'a' vs the manifest's 'e'); the RELEASE proven intact by live server-side read-back (all five release 436366305 digests equal MANIFEST.json), 4/5 Hub uploads already green; the one changed retry cpcb-aqi-hf-002 LAUNCHED and running (server 174835948, spec corrected programmatically from the manifest); worker 174825952 destroyed with provider 404 read-back; nothing public, holdout sealed, no figure quotable from the failed job
 
 Watcher follow-up for cpcb-aqi-hf-001 (the bulk Hub upload of private release 436366305
