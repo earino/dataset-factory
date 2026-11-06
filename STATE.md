@@ -81,6 +81,20 @@ next step. No remediation hold is active.
   owner. No release byte of any PUBLISHED package, no tag move, no
   destination visibility change anywhere; the holdout stays sealed; nothing
   public.
+- CI DEFECT AND FIX (recorded honestly): the staging commit 19a494b FAILED
+  CI - check-suitability refused cpcb-aqi-exceedance with "missing
+  suitability review" (the version-bound suitability/<dataset>.json is
+  required as soon as release/<id>/MANIFEST.json exists; the za-cct packaging
+  had written it in the same change and this session missed that step).
+  Fixed in 013cabb: suitability/cpcb-aqi-exceedance.json written (artifact
+  a749f0df, tag v2026.11, decision retain_restricted, cross_row_audit
+  status recovery_demonstrated recorded honestly - the offset-1 same-station
+  blind join reproduces the label BY CONSTRUCTION, a declared identity rather
+  than a measured mismatch bound, mitigation = the enforced isolated_rows
+  protocol + label-source exclusion) - check-suitability OK (21 reviews),
+  check-package OK, check-candidate OK, suite 723/723 OK, and CI for 013cabb
+  completed/success. Lesson recorded: a release/<id>/MANIFEST.json commit
+  without its suitability/ record cannot pass CI; write both in one change.
 
 Next action (a fresh session can carry it out; also in record.next_action):
 finish private staging - (1) the fresh-consumer worker job on the released
