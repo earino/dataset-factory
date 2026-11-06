@@ -84,9 +84,10 @@ run.sh + job.json + bundle.json + the mandatory local dry run + launch).
   15 EUR construction allowance, EUR 5 release reserve untouched.
 - HYGIENE: check-candidate --all rc=0; suite python3 -m unittest discover -s
   tests 723/723 OK (32.5 s); doctor rc=0; worker 174723039 provider read-back
-  GET /servers/174723039 -> 404; commits f19aaa3, d745725, 32ad5d6 pushed, each
-  with its CI run completed/success (42152105132, 42152250056, 42152766295).
-  candidates/fenz-incident-data/ left untracked for its owner.
+  GET /servers/174723039 -> 404; commits f19aaa3, d745725, 32ad5d6, 5360cb1
+  pushed, each with its CI run completed/success (42152105132, 42152250056,
+  42152766295, 42153931163). candidates/fenz-incident-data/ left untracked for
+  its owner.
 
 Next action (a fresh session can carry it out; also in record.next_action):
 ATTEMPT -003 with the count anchors restructured (repair recorded in
