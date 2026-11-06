@@ -1,3 +1,59 @@
+## 2026-11-06 (15:52Z) - follow-up (worker-status runner): cpcb-aqi-hf-001 FAILED at the eval fetch - the hf/job.json spec carried the consumer-001 one-character digest defect (position 36 'a' vs the manifest's 'e'); the RELEASE proven intact by live server-side read-back (all five release 436366305 digests equal MANIFEST.json), 4/5 Hub uploads already green; the one changed retry cpcb-aqi-hf-002 LAUNCHED and running (server 174835948, spec corrected programmatically from the manifest); worker 174825952 destroyed with provider 404 read-back; nothing public, holdout sealed, no figure quotable from the failed job
+
+Watcher follow-up for cpcb-aqi-hf-001 (the bulk Hub upload of private release 436366305
+to the private Hub repo earino/cpcb-aqi-exceedance). The shared research mutex was this
+runner's for the whole invocation. Unrelated untracked work
+(candidates/fenz-incident-data/) inspected and left untouched, not committed.
+
+- COLLECTED (ledger collected_at 15:38:30Z, result.json present): failed exit None,
+  elapsed 121.7 s. 4 of 5 uploads green with Hub-verified manifest digests (meta.json,
+  data/private-holdout.csv, data/public-train.csv, quality.json; 68,635,896 B); the
+  public-eval.csv FETCH was refused: 'Downloaded asset digest differs'. The
+  load_dataset check never ran. Bounded evidence: staging release 436618377 (source.tar
+  92,160 B sha 7ba877ce = the -001 bundle; manifest.json 5,237 B sha 67a50a9c fetched to
+  .factory/cpcb-aqi-hf-001/reports/ and sha256-verified); container.log empty (host-side
+  job). No bulk CSV ever reached the coordinator.
+- DIAGNOSIS (defect class: job-spec digest transcription error, the
+  cpcb-aqi-consumer-001 / nz-ea class, SECOND occurrence): programmatic diff of
+  hf/job.json against the frozen release/cpcb-aqi-exceedance/MANIFEST.json finds the
+  eval sha256 differing at exactly position 36 ('a' vs 'e'); the other four assets are
+  byte-equal. The 12:15Z session wrote hf/job.json from the same hand-compiled asset
+  list whose eval line consumer-001 refused; the 13:12Z correction fixed
+  consumer/source/job.json only. THE RELEASE IS INTACT: live server-side read-back
+  15:45Z shows all five assets of release 436366305 (tag v2026.11, non-draft, repo
+  private true) reporting API digests equal to MANIFEST.json (eval 20210392 B
+  e187f645445e135e092898a280e74a2ecba6e75cb25ed9c5470d6f96f779c478), and consumer-002
+  had already host-verified the same five digests at 13:38Z. So the worker almost
+  certainly refused a good download against a bad expected digest.
+- CLEANUP (deletion confirmed by the provider): worker 174825952 destroyed 15:48:36Z;
+  GET /v1/servers/174825952 -> 404 not_found; project servers 0, primary_ips 0.
+  Preservation accounted before teardown: the four green uploads are durable on the Hub
+  at manifest digests, the missing eval asset's durable source is release 436366305
+  (re-verified live), and host_cleanup_complete: true means the worker held no unique
+  bytes.
+- RECOVERY (the one changed retry this defect allows, consumer-002 precedent):
+  hf/job.json eval sha256 corrected BY JSON LOAD/COPY/DUMP from MANIFEST.json (git diff
+  = 2 lines: the digest + the id bump to cpcb-aqi-hf-002), plan rc=0 (reservation EUR
+  0.04, 0 cloud calls, bundle 00152c78), LAUNCHED 2026-11-06T15:49:00Z, server
+  174835948, status running. Idempotent by design: the four uploaded assets are
+  skipped at their manifest digests, eval is fetched + uploaded, then the documented
+  load_dataset check runs. This retry SPENT the one recovery for this defect chain: a
+  second failure goes to advancement as a recorded finding, never another silent
+  retry. The running job is the handoff.
+- Record: jobs[] -001 -> failed_and_deleted (collected/deleted timestamps, staging
+  release, failure summary, provider read-back), jobs[] + -002 running (parent_job
+  linkage), measurements.hf_001_eval_digest_spec_failure_2026_11_06 written with every
+  assert passing before the write, next_action rewritten for the -002 collection. The
+  Hub destination stays INCOMPLETE until the retry is green and hf-publish.py --verify
+  passes; no DESTINATIONS.json hub block, no tag, no flip.
+
+Next action (also in record.next_action): collect cpcb-aqi-hf-002 when it finishes,
+require the job report green (4 assets skipped at manifest digests + eval uploaded with
+Hub-verified digest + load_dataset check equal to verify_loading), destroy with
+provider 404 read-back, then hf-publish.py --verify (exit 0) and --tag LAST, then the
+DESTINATIONS.json github block, packaged + pre-flip audit prompt + awaiting_operator
+TRUE, checks, commit/CI. The flip remains the operator's single approval.
+
 ## 2026-11-06 (15:25Z) - advancement session (cpcb-aqi-exceedance release): HF destination opened - private Hub repo created with the 10 small files (private: true confirmed by the API answer), bulk job cpcb-aqi-hf-001 launched and RUNNING at close (server 174825952); nothing public, holdout sealed
 
 Advancement tick on the operator's actionable list: release work outranks
