@@ -1,0 +1,254 @@
+{
+  "job": {
+    "id": "cpcb-aqi-consumer-001",
+    "candidate": "cpcb-aqi-exceedance",
+    "release": true,
+    "image": "python:3.13-slim",
+    "server_type": "cpx32",
+    "location": "hel1",
+    "cpus": 4,
+    "memory_mb": 8192,
+    "timeout_minutes": 100,
+    "lifetime_minutes": 140,
+    "max_disk_mb": 30000,
+    "max_artifact_mb": 16,
+    "what": "Fresh-consumer verification of the cpcb-aqi-exceedance v2026.11 private release (artifact a749f0df2f9dd0103d0ba56524e1cc3638242fbc4710b0cac99603bcdef0d959): the worker host fetches the five released assets from earino/cpcb-aqi-exceedance release 436366305 with digest verification (the container holds no credential), then the container runs every published REPRODUCE.md step against the released bytes - package-vs-MANIFEST check, get_dataset.py verification, sha256sum -c, gate 1.5.0 re-run on the full artifact, exact-byte --accept against the shipped qualification.json, declared dependency imports, baseline reproduce (both AUC prints 0.9734, CONTRACT OK, holdout never copied into a workdir), score.py references recomputed equal to measurements.json - and additionally recomputes the pre-registered deciding check REPRODUCE.md says recomputation must reproduce (model-minus-persistence [0.0038, 0.0052], model-minus-climatology [0.1002, 0.1252]) from the released bytes through the shipped baseline/train.py and code/score.py, never reimplemented. The optional rebuild-from-export step is not run: code/build.py refuses any export other than the pinned one and REPRODUCE.md documents it as optional. Bytes never pass through the coordinator.",
+    "fetch": {
+      "repo": "earino/cpcb-aqi-exceedance",
+      "release": 436366305,
+      "assets": [
+        {
+          "asset_id": 716781985,
+          "dest": "meta.json",
+          "size": 1197,
+          "sha256": "1f59e74e4d6003f03371c4514ee9edda7e79e8ecfa3f995723b1520bac6e2fd7"
+        },
+        {
+          "asset_id": 716782078,
+          "dest": "private/holdout.csv",
+          "size": 22967353,
+          "sha256": "2dae0040cdc2c80fa4adc9cc3b48f26882a6a20f451a252ac3a72f10da8f460f"
+        },
+        {
+          "asset_id": 716782178,
+          "dest": "public/eval.csv",
+          "size": 20210392,
+          "sha256": "e187f645445e135e092898a280e74a2ecba6a75cb25ed9c5470d6f96f779c478"
+        },
+        {
+          "asset_id": 716782327,
+          "dest": "public/train.csv",
+          "size": 45644743,
+          "sha256": "24b03a701c34d91834a7c5285d1c928ec33cda9282a2085405b06d541faa9c73"
+        },
+        {
+          "asset_id": 716782494,
+          "dest": "quality.json",
+          "size": 22603,
+          "sha256": "98250e9d2731f89da021aec360f5d5535fc374241a98db14f185397f9126849a"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/cpcb-aqi-exceedance/consumer/source/run.sh",
+        "bytes": 5374,
+        "sha256": "86b9040a5981cc5ec157c14a68fc3559601cfa515e15a5fef8b49605cfd8b341"
+      },
+      {
+        "bundled_as": "verify_package.py",
+        "source": "candidates/cpcb-aqi-exceedance/consumer/source/verify_package.py",
+        "bytes": 2068,
+        "sha256": "82f77c2243d61035e4d99103f45e9cc43be8b7b65161409683e673c7c6dc8fbc"
+      },
+      {
+        "bundled_as": "check_references.py",
+        "source": "candidates/cpcb-aqi-exceedance/consumer/source/check_references.py",
+        "bytes": 3328,
+        "sha256": "47938091efacd87aec3fa6b20d1650574c86abebd4d8e9262442169ceb5df25e"
+      },
+      {
+        "bundled_as": "decide_check.py",
+        "source": "candidates/cpcb-aqi-exceedance/consumer/source/decide_check.py",
+        "bytes": 6315,
+        "sha256": "45b0cb10f71d49840e1738f6a5af3f1a0d2f8dd18cc1760b2b8c4484af950655"
+      },
+      {
+        "bundled_as": "repo/DATA_DICTIONARY.md",
+        "source": "release/cpcb-aqi-exceedance/DATA_DICTIONARY.md",
+        "bytes": 4062,
+        "sha256": "c5352cf48db8254de17549e4902a07ad0da8c821fbf6e6b39d4c4456d7e115c1"
+      },
+      {
+        "bundled_as": "repo/LICENSE-CC0-1.0.txt",
+        "source": "release/cpcb-aqi-exceedance/LICENSE-CC0-1.0.txt",
+        "bytes": 7048,
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+      },
+      {
+        "bundled_as": "repo/LICENSE-MIT.txt",
+        "source": "release/cpcb-aqi-exceedance/LICENSE-MIT.txt",
+        "bytes": 1086,
+        "sha256": "200f782f6b8bc23b926ea774cbacb4147826b3b2b59200917d8dc5ec68159535"
+      },
+      {
+        "bundled_as": "repo/LICENSE.md",
+        "source": "release/cpcb-aqi-exceedance/LICENSE.md",
+        "bytes": 3024,
+        "sha256": "b61bbe928b4a9fed5f6a2c078c08cebf159fe764bbf223ad4c2e6dcb61cce0a6"
+      },
+      {
+        "bundled_as": "repo/MANIFEST.json",
+        "source": "release/cpcb-aqi-exceedance/MANIFEST.json",
+        "bytes": 43074,
+        "sha256": "83c24832c72276503888575b2cf0f8b9d24dd02956e122d068a919458a9dfb94"
+      },
+      {
+        "bundled_as": "repo/README.md",
+        "source": "release/cpcb-aqi-exceedance/README.md",
+        "bytes": 8176,
+        "sha256": "612ee90dd9bf4e6465b076ed3ddd36de182654554e3d20ac5da886833c8c2dcb"
+      },
+      {
+        "bundled_as": "repo/RELEASE_NOTES.md",
+        "source": "release/cpcb-aqi-exceedance/RELEASE_NOTES.md",
+        "bytes": 4245,
+        "sha256": "b212cff285971c5e2115204bec6652563a269ad1da0e60658ba08179c1c2e373"
+      },
+      {
+        "bundled_as": "repo/REPRODUCE.md",
+        "source": "release/cpcb-aqi-exceedance/REPRODUCE.md",
+        "bytes": 3563,
+        "sha256": "20f7ccea92ee876ba236f9ed5d7292a9d54f4fd820b96a68b5e71f4b0cecb8b7"
+      },
+      {
+        "bundled_as": "repo/SHA256SUMS",
+        "source": "release/cpcb-aqi-exceedance/SHA256SUMS",
+        "bytes": 406,
+        "sha256": "16d04a2dbb349fc8518ee1862c3ae503ef15a2c11d3d29836efb0a9aa7a7f4f3"
+      },
+      {
+        "bundled_as": "repo/VERIFICATION.md",
+        "source": "release/cpcb-aqi-exceedance/VERIFICATION.md",
+        "bytes": 5778,
+        "sha256": "eb6169c4d91bf095566d02fbda88339020b6f4ee948190e0074520a8fbc26f0b"
+      },
+      {
+        "bundled_as": "repo/baseline/README.md",
+        "source": "release/cpcb-aqi-exceedance/baseline/README.md",
+        "bytes": 893,
+        "sha256": "0fc9d1a249cdeffe0b566237cd1953f17f3d85b9879605fa46202edcebfd5d5f"
+      },
+      {
+        "bundled_as": "repo/baseline/reproduce_baseline.sh",
+        "source": "release/cpcb-aqi-exceedance/baseline/reproduce_baseline.sh",
+        "bytes": 1539,
+        "sha256": "08b73261cb685d330e6e3a318ddf1ff347535563c9c63bbe603d8dff2d5475ac"
+      },
+      {
+        "bundled_as": "repo/baseline/train.py",
+        "source": "release/cpcb-aqi-exceedance/baseline/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "repo/baseline/validate.py",
+        "source": "release/cpcb-aqi-exceedance/baseline/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "repo/baseline/validate.sh",
+        "source": "release/cpcb-aqi-exceedance/baseline/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      {
+        "bundled_as": "repo/code/build.py",
+        "source": "release/cpcb-aqi-exceedance/code/build.py",
+        "bytes": 57727,
+        "sha256": "4c10003f0e41dd6d13832a826f0d55a69f7697d7f8e347cbe4b98fbe29f04153"
+      },
+      {
+        "bundled_as": "repo/code/materialize.py",
+        "source": "release/cpcb-aqi-exceedance/code/materialize.py",
+        "bytes": 2616,
+        "sha256": "98dc4027e49e1b8062de55344fc2fe812563e680cb897d901e34ba400092776b"
+      },
+      {
+        "bundled_as": "repo/code/qualify_dataset.py",
+        "source": "release/cpcb-aqi-exceedance/code/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      },
+      {
+        "bundled_as": "repo/code/run.sh",
+        "source": "release/cpcb-aqi-exceedance/code/run.sh",
+        "bytes": 1885,
+        "sha256": "7f1e04e39b4e69c63bb971b56a375c1bbef3356ffd3e140799d07414177ca399"
+      },
+      {
+        "bundled_as": "repo/code/score.py",
+        "source": "release/cpcb-aqi-exceedance/code/score.py",
+        "bytes": 19640,
+        "sha256": "1ffefa53a13037afb76a5af24492917c5cbdb775ff56f83dde178b69ca9d9ae0"
+      },
+      {
+        "bundled_as": "repo/get_dataset.py",
+        "source": "release/cpcb-aqi-exceedance/get_dataset.py",
+        "bytes": 6281,
+        "sha256": "082c3f20d88a5a2d450edc5bed697cdd65c5f3b22fb2625374200581bc0187c2"
+      },
+      {
+        "bundled_as": "repo/measurements.json",
+        "source": "release/cpcb-aqi-exceedance/measurements.json",
+        "bytes": 19305,
+        "sha256": "8cff4593204077b314ab9676b76d5845799cf2421aabec6d19f31a175160faa2"
+      },
+      {
+        "bundled_as": "repo/meta.json",
+        "source": "release/cpcb-aqi-exceedance/meta.json",
+        "bytes": 1197,
+        "sha256": "1f59e74e4d6003f03371c4514ee9edda7e79e8ecfa3f995723b1520bac6e2fd7"
+      },
+      {
+        "bundled_as": "repo/qualification.json",
+        "source": "release/cpcb-aqi-exceedance/qualification.json",
+        "bytes": 16191,
+        "sha256": "d2d367b63b6cd59235251f4131845862783a462258f90416d30e1b7ad2882fea"
+      },
+      {
+        "bundled_as": "repo/quality.json",
+        "source": "release/cpcb-aqi-exceedance/quality.json",
+        "bytes": 22603,
+        "sha256": "98250e9d2731f89da021aec360f5d5535fc374241a98db14f185397f9126849a"
+      }
+    ]
+  },
+  "reservation_eur": "0.32",
+  "rate_ceiling_eur": "0.08",
+  "reserved_hours": 4,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 430080,
+  "source_sha256": "b4caa611609ff148a508f03ab2668b7b7f0a5671c0c06bed8b963475d29c06b3",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "running",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-06T11:54:20.103980+00:00",
+  "expires": 1793974460,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0692400000000000",
+  "server_id": 174799070,
+  "known_hosts": "/opt/data/dataset-factory/.factory/cpcb-aqi-consumer-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168"
+}
