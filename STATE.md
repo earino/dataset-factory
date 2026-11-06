@@ -1,3 +1,57 @@
+## 2026-11-06 (23:54Z) - follow-up (worker-status runner): abwildfire-baseline-002 + abwildfire-publish-001 SUCCEEDED - both outcomes already recorded (07521ee / 0934d5f), re-verified from committed evidence; cleanup provider-reconfirmed (both servers 404; 0 servers; 0 primary IPs); both marked handled
+
+Watcher event: baseline job green (exit 0, 264.6 s, 12 assets, staging
+release 437168266) and the release-flagged publish/transfer job green
+(10.1 s, 2 assets, staging release 437181120). The advancement session
+had already collected both (23:24:22Z / 23:37:54Z) and recorded the
+outcomes - the 23:40Z entry below carries the substance. This
+follow-up verified from committed evidence and the live provider only;
+no new worker launched, nothing re-run, no re-scoring:
+
+- abwildfire-baseline-002 (ledger status deleted, server 174894664):
+  result.json status succeeded, exit 0; the five accepted c2c8ceb5
+  assets fetched digest-verified from staging 437132110 (meta aeb2ef92,
+  train 575649d5, eval d099e4cb, holdout 53583f4d, quality 331a4ceb).
+  Committed baseline/baseline_result.json shows every required check
+  green: gate 1.5.0 ok, failed_checks [], accepted BEFORE scoring;
+  [validate] CONTRACT OK with both implementations printing eval AUC
+  0.9554; runner files unmodified (bundled sha256 == expected); the
+  pre-registered deciding check verdict headroom_demonstrated
+  (persistence 0.9096 +0.0459 [+0.0154,+0.0871]; calendar/identity
+  0.7130 +0.2428 [+0.1911,+0.2998]; majority-constant model day-cluster
+  AUC CI [0.9382,0.9686] above 0.5), eval 2016-2020 only, holdout
+  sealed. Reports fetched to .factory/abwildfire-baseline-002/output/
+  (untracked) and committed in candidates/.../baseline/.
+- abwildfire-publish-001 (ledger status deleted, server 174897047,
+  host_cleanup_complete): result.json transfer staging 437132110 ->
+  earino/ab-wildfire-ia-escape release v2026.11 (437179999): 5/5
+  transferred under flat names, failures [], every sha256 equal to the
+  accepted digests and MANIFEST.json. DESTINATIONS.json github block:
+  verified 2026-11-06T23:38:39Z, files_verified the five logical
+  paths, artifact_version c2c8ceb5, anonymous_access false; the
+  fresh-consumer check is correctly absent (that job has not run - it
+  is appended when it does, never invented).
+- Cleanup re-confirmed from the provider this session
+  (api.hetzner.cloud, 23:52:48Z): GET /v1/servers/174894664 -> 404
+  "server not found"; GET /v1/servers/174897047 -> 404 "server not
+  found"; GET /v1/servers -> 200, 0 entries; GET /v1/primary_ips ->
+  200, 0 entries. Deletion confirmed by the provider, not merely
+  requested.
+- Both jobs marked handled (.factory/<id>/handled, local untracked
+  markers citing 07521ee/0934d5f). No recovery needed: the accepted
+  bytes are durably in release 437179999 (server-side digests recorded
+  and equal to MANIFEST) and the compact evidence is committed.
+  Unrelated untracked candidates/fenz-incident-data/ preserved
+  untouched. Nothing public; no tag, manifest or visibility change.
+
+Next action unchanged (advancement work; record.next_action): the
+fresh-consumer worker job on the released bytes of 437179999, then the
+Hub steps (--plan, --create --upload-small, hf_publish job, --verify,
+--tag LAST, HF DESTINATIONS block), then record -> packaged with
+packaged_at + awaiting_operator TRUE after the pre-flip adversarial
+audit prompt is generated. The flip remains the operator's single
+approval (both ab-wildfire-ia-escape and cpcb-aqi-exceedance).
+
 ## 2026-11-06 (23:40Z) - scheduled advancement: ab-wildfire-ia-escape PACKAGED and the GitHub private-staging destination COMPLETED AND VERIFIED (runner-contract baseline abwildfire-baseline-002: eval AUC 0.9554 beats every pre-registered triad member -> HEADROOM DEMONSTRATED, construction-time logistic-vs-persistence INCONCLUSIVE kept beside it); release/ assembled, MANIFEST + check-package + suitability + suite green; repo earino/ab-wildfire-ia-escape private with release v2026.11 (437179999), 5/5 assets digest-equal; consumer job + Hub + packaged remain; nothing public, holdout sealed
 
 Release work only (brief priority; the packaged cpcb-aqi-exceedance track still
