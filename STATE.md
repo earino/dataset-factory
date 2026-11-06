@@ -65,29 +65,44 @@ run.sh + job.json + bundle.json + the mandatory local dry run + launch).
   scheduler's approval gate refused the container-lifecycle command; neither
   control was bypassed. NO number from this session is quotable about the real
   task.
+- UPDATE (02:59Z) - ATTEMPT -002's ACTUAL OUTCOME differs from the prediction above:
+  it FAILED at 524.2 s at its own COUNT anchor, before any gate or score. The
+  fetch was clean (168 requests, 0 truncated, 0 unparseable, 54,138,890 B,
+  512.7 s), then: "BUILD REFUSED: fetched panel rows 717429 != 716750".
+  RECONCILED with two measurements: station membership is identical (549/549 vs
+  the retained 2026-11-04 file, no symmetric difference), and re-fetching
+  2019-01 and 2025-08 with the exact request shape reproduces the probe's
+  recorded per-month counts EXACTLY (4,282 and 9,462, delta 0). The export is
+  pinned unchanged. Conclusion: the +679 is in the 2026-11-05 probe's RESUMED
+  scratch aggregation (rows file deleted after the 401 window while the resume
+  MARK kept batches 'done'), so its 716,750 total and the per-window counts
+  derived from it are not exact export facts. The O(n^2) score defect never
+  executed. Worker 174723938 destroyed 03:00:09Z, provider read-back 0 servers /
+  0 primary IPs. Staging release 436037000 holds source.tar + container.log +
+  manifest. Still NO score.
 - EUR: four November reservations now (0.08 afdb + 0.32 x3 here) - 1.04 of the
   15 EUR construction allowance, EUR 5 release reserve untouched.
 - HYGIENE: check-candidate --all rc=0; suite python3 -m unittest discover -s
   tests 723/723 OK (32.5 s); doctor rc=0; worker 174723039 provider read-back
-  GET /servers/174723039 -> 404 (1 server / 1 primary IP in the project: the
-  running -002); commit f19aaa3 pushed, CI run 42152105132 push
-  completed/success for that exact commit. candidates/fenz-incident-data/ left
-  untracked for its owner (concurrent writer, not this session).
+  GET /servers/174723039 -> 404; commits f19aaa3, d745725, 32ad5d6 pushed, each
+  with its CI run completed/success (42152105132, 42152250056, 42152766295).
+  candidates/fenz-incident-data/ left untracked for its owner.
 
 Next action (a fresh session can carry it out; also in record.next_action):
-collect cpcb-aqi-build-002 after ~04:15Z; require the uploaded summary anchors,
-gate 1.5.0 ok=true failed_checks=[] and the ACCEPTED log for the artifact digest
-(a failed gate/missing acceptance log invalidates the artifact - diagnose first).
-Then fetch the release manifest + gate report (za-cct baseline/fill_from_collect.py
-is the three-record cross-check template), copy the report to
-baseline/qualification.json, fill baseline/job.json's fetch block with the five
-extract assets, assemble + plan + launch cpcb-aqi-baseline-001: its run.sh
-re-accepts BEFORE any score, then runs the fixed score.py triad, then the harness
-train.py/validate.sh verbatim, then the pre-registered deciding check (cluster =
-station_id). Apply the rule written before any score (model must beat EVERY triad
-member with a station-clustered 95% CI excluding zero AND its own AUC CI entirely
-above 0.5; triad dominance -> recorded defect, drop or re-target; no re-tuning).
-Destroy the worker with provider read-back. Holdout (2024) stays sealed.
+ATTEMPT -003 with the count anchors restructured (repair recorded in
+measurements.attempt_002_refusal_2026_11_06): keep the hard vintage pin
+(exported_at + 196,521,834 rows), the 549-station count, the Delhi 2024-11-18
+fixture (36/36 complete exceed), the monsoon trough bound and the 2025-hole
+assertion; drop the exact panel-total/per-window assertions against the probe,
+RECORD the measured counts in summary.json and assert internal consistency, and
+adopt the measured counts in split_strategy/positive_events before reporting any
+figure (the gate recomputes counts from the rows regardless). Re-run the
+synthetic dry run, bump to cpcb-aqi-build-003, assemble/plan/launch, then
+collect and require build rc=0 + gate 1.5.0 ok=true failed_checks=[] +
+exact-byte --accept + score.py's triad, and destroy with provider read-back. The
+baseline job then follows (prepare_baseline_from_002.py generalises: fetch,
+re-accept, triad, harness runner, pre-registered deciding check; cluster =
+station_id). Holdout (2024) stays sealed.
 ## 2026-11-06 (00:55Z) - discovery tick (East Asia): tw-reservoir-drought-storage REOPENED parked -> investigating - the 2026-10-22 "no anonymous history" blocker is contradicted by a measured anonymous plain-HTTP history channel (WRA /Disaster/api/ReservoirHistoryApi/GetComparision: all 21 major reservoirs per request, daily 07:00 records back to ~2008 full-field, found by reading the SPA bundle chain in the browser); NOT ready - split counts need the worker panel pass; standing captures run (both UNCHANGED); no construction, no score, EUR 0
 
 Discovery-only session, regional focus East Asia (operator tick: Japan e-Stat/JMA,
