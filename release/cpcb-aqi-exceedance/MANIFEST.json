@@ -1,0 +1,689 @@
+{
+  "dataset": "cpcb-aqi-exceedance",
+  "release_version": "2026.11",
+  "release_tag": "v2026.11",
+  "repository": "https://github.com/earino/cpcb-aqi-exceedance",
+  "visibility": "private (publication requires explicit authorisation)",
+  "artifact_version": "a749f0df2f9dd0103d0ba56524e1cc3638242fbc4710b0cac99603bcdef0d959",
+  "package_digest": null,
+  "artifact_job": "cpcb-aqi-build-004",
+  "staging_release": 436180445,
+  "staging_release_tag": "job-cpcb-aqi-build-004",
+  "staging_repo": "earino/dataset-factory-staging",
+  "construction_commit": "75652fb66653e5f6315f3fd94d1dc33a4dc8f930",
+  "gate_version": "1.5.0",
+  "gate_command": "python3 code/qualify_dataset.py ./task",
+  "measurements": {
+    "name": "cpcb-aqi-exceedance",
+    "built_from": "one pinned XKDR export of the CPCB CAAQM PM2.5 stream (data.xkdr.org)",
+    "export_pin": {
+      "exported_at": "2026-09-30T11:25:11+00:00",
+      "rows": "196,521,834",
+      "note": "asserted by the build through /v1/meta; a changed or re-exported source refuses the build"
+    },
+    "grain": "one row per complete (n_hours >= 18) cpcb_caaqm PM2.5 station-day D with a labelable D+1 (a row present with n_hours >= 18), at the 23:59 IST instant of day D",
+    "population": {
+      "eligibility": "scored rows are complete (n_hours >= 18) station-days of the cpcb_caaqm PM2.5 stream with day D inside the declared window AND a labelable D+1 (a row present with n_hours >= 18). Day-D completeness is knowable at the instant; the D+1 observability rule is an outcome-observability exclusion that never reads the label value - unlabelable rows are excluded and counted per split. The 2025-04..09 partial tail (47,566 station-days, 829 valid-day positives) is excluded and counted; the 2025-01..03 and 2025-10..12 hole months are asserted empty. Both label values are retained in every window",
+      "identity": "station_day = <station_id>|<date>, unique across the panel (asserted at construction)",
+      "censoring": "excluded and counted per split: thin day D (n_hours < 18) @@THIN@@; unlabelable D+1 @@UNLAB@@; outside the declared windows @@OUTSIDE@@; the 2025-04..09 partial tail @@TAIL@@ station-days (@@TAILPOS@@ valid-day positives) excluded and counted; the 2025-01..03 and 2025-10..12 hole months are asserted empty (0 rows)"
+    },
+    "panel": {
+      "station_days": 717429,
+      "stations_reporting": 546,
+      "stations_registered": 549,
+      "fetch": {
+        "requests": 168,
+        "bytes": 54138890,
+        "truncated": 0,
+        "unparseable": 0
+      }
+    },
+    "splits": {
+      "train": {
+        "window": "2019-2022",
+        "rows": 288754,
+        "positives": 61075,
+        "positive_rate": 0.211512,
+        "distinct_positive_days": 1248,
+        "stations": 389
+      },
+      "eval": {
+        "window": "2023",
+        "rows": 126570,
+        "positives": 19819,
+        "positive_rate": 0.156585,
+        "distinct_positive_days": 351,
+        "stations": 509
+      },
+      "holdout": {
+        "window": "2024",
+        "rows": 145124,
+        "positives": 18222,
+        "positive_rate": 0.125562,
+        "distinct_positive_days": 352,
+        "stations": 529,
+        "sealed": true
+      }
+    },
+    "label": {
+      "definition": "the station's D+1 calendar-day 24-hour mean PM2.5 exceeds 90 ug/m3 (strict >), the Poor-band lower breakpoint of CPCB's National AQI for 24-hour PM2.5; both the D and D+1 days must carry n_hours >= 18",
+      "threshold_source": "https://cpcb.gov.in/upload/Downloads/AQI_Bulletin_20241118.pdf (retained probe/out/aqi_bulletin_20241118.pdf); the 90 ug/m3 edge is the Poor-band lower breakpoint of CPCB's own National AQI (About AQI PDF, probe/out/about_aqi.pdf, corroborated by AQI-Calculator.xlsx). Measured panel confirmation: 36/36 complete Delhi cpcb station-days on 2024-11-18 carry a 24-hr mean > 90 ug/m3 (235.7-731.5)",
+      "known_event_fixture": {
+        "name": "CPCB Daily AQI Bulletin 2024-11-18: Delhi Severe, prominent pollutant PM2.5 (36/39 stations)",
+        "expected_verdict": "exceeds",
+        "source": "https://cpcb.gov.in/upload/Downloads/AQI_Bulletin_20241118.pdf (retained probe/out/aqi_bulletin_20241118.pdf); the 90 ug/m3 edge is the Poor-band lower breakpoint of CPCB's own National AQI (About AQI PDF, probe/out/about_aqi.pdf, corroborated by AQI-Calculator.xlsx). Measured panel confirmation: 36/36 complete Delhi cpcb station-days on 2024-11-18 carry a 24-hr mean > 90 ug/m3 (235.7-731.5)"
+      },
+      "negative_control_fixture": {
+        "name": "monsoon trough day 2023-08-15",
+        "expected": "at most 4 of at least 300 complete (n>=18) all-India cpcb station-days exceed 90 ug/m3",
+        "source": "measured 2026-11-05 (probe/out/preflight_build_design_2026_11_05.json): 389 complete, 1 exceed; a unit or reference-frame error would move this rate to its extreme and fail the in-build assertion"
+      },
+      "label_source_columns_excluded": [
+        "next_day_pm25_mean",
+        "next_day_n_hours"
+      ]
+    },
+    "runner_contract_probe": {
+      "job": "cpcb-aqi-baseline-001",
+      "server": 174753994,
+      "executor_seconds": 1043.7,
+      "staging_release": 436196921,
+      "accepted_before_scoring": true,
+      "contract_ok": true,
+      "eval_auc_from_train_py": 0.9734,
+      "eval_auc_from_validate_py": 0.9734,
+      "runner_files_unmodified": true,
+      "dependencies": {
+        "python": "3.13.18",
+        "pandas": "2.3.3",
+        "numpy": "2.5.4",
+        "xgboost": "3.4.1",
+        "scikit-learn": "1.9.1"
+      },
+      "agreement_note": "report.py's 1e-9 'agreement' flag prints false only because validate.py logs 4 decimals; the two AUCs agree to ~2e-6. Recorded as a reporting defect in the candidate record, not ignored."
+    },
+    "references": {
+      "measured_on": "the identical 126,570 eval rows (2023), post-acceptance, every rate table estimated from train (2019-2022) only; the holdout was never opened",
+      "deciding_rule": "headroom is demonstrated ONLY if the full model beats EVERY member of (station_persistence, state_season_climatology, global_rate) with a station-clustered paired bootstrap 95% CI excluding zero in the model's favour AND the model's own cluster-bootstrap AUC CI lies entirely above 0.5 (degenerate constant member); triad dominance -> recorded defect (drop or re-target); no re-tuning of threshold, window, label or features after any score",
+      "figures": {
+        "station_persistence": {
+          "definition": "the station's most recent observed daily value: the shipped pm25_mean of day D scored directly as the probability-like ranking for D+1 exceedance (full coverage by construction - every scored row carries a complete day D)",
+          "auc": 0.9689109528605426,
+          "brier": 0.2830447212174809,
+          "supplementary_binary_agreement": {
+            "rule": "predict exceedance iff pm25_mean > 90 ug/m3",
+            "accuracy": 0.9350161965710674,
+            "predicted_positive_rate": 0.15623
+          }
+        },
+        "state_season_climatology": {
+          "definition": "train-estimated exceedance rate per (state_name x season of the TARGET day D+1); the state's train rate then the global train rate are the fallbacks",
+          "unseen_cell_rows": 144,
+          "auc": 0.861668549124152,
+          "brier": 0.09678794864992082
+        },
+        "global_rate": {
+          "definition": "constant train exceedance rate; no ranking information, AUC degenerate by construction",
+          "rate": 0.211512,
+          "brier": 0.13508330404901164,
+          "auc": null
+        },
+        "station_train_rate": {
+          "definition": "supplementary identity prior: train-estimated exceedance rate per station_id, global rate as fallback (reported, never a deciding member)",
+          "auc": 0.7616362039606324,
+          "brier": 0.12382983558028718
+        },
+        "majority_class": {
+          "definition": "majority label fitted on train, measured against this split's labels",
+          "prediction": 0,
+          "accuracy": 0.843414711226989
+        }
+      },
+      "deciding_check": {
+        "rule": "headroom is demonstrated ONLY if the full model beats EVERY triad member with a station-clustered paired bootstrap 95% CI excluding zero in the model's favour; triad dominance -> recorded defect, drop or re-target; no re-tuning after any score",
+        "eval_rows": 126570,
+        "eval_distinct_positive_days": 351,
+        "model_eval_auc": 0.9734021284395283,
+        "model_eval_auc_recomputed_by_validate": 0.9734,
+        "agreement": false,
+        "members": {
+          "station_persistence": {
+            "member_auc": 0.9689109528605426,
+            "model_minus_member_ci": {
+              "resamples": 1000,
+              "clusters": 509,
+              "mean": 0.004487,
+              "ci95_low": 0.003777,
+              "ci95_high": 0.005159,
+              "note": "cluster-aware paired bootstrap on identical eval rows, clusters = station_id; an interval containing zero is inconclusive, not parity"
+            },
+            "beaten": true
+          },
+          "state_season_climatology": {
+            "member_auc": 0.861668549124152,
+            "model_minus_member_ci": {
+              "resamples": 1000,
+              "clusters": 509,
+              "mean": 0.111802,
+              "ci95_low": 0.10015,
+              "ci95_high": 0.125189,
+              "note": "cluster-aware paired bootstrap on identical eval rows, clusters = station_id; an interval containing zero is inconclusive, not parity"
+            },
+            "beaten": true
+          },
+          "global_rate": {
+            "member_auc": null,
+            "treatment": "constant member, no ranking information; beaten iff the model's cluster-bootstrap AUC CI lies entirely above 0.5",
+            "model_auc_ci": {
+              "resamples": 1000,
+              "clusters": 509,
+              "auc_ci95_low": 0.971304,
+              "auc_ci95_high": 0.975297,
+              "note": "one-sample cluster-aware bootstrap of AUC, clusters = station_id"
+            },
+            "beaten": true
+          }
+        },
+        "verdict": "headroom_demonstrated",
+        "scope": "eval split only (2023 station-days); prevalence and the seasonal structure are reported beside the number; the sealed holdout (2024) was not evaluated and no holdout figure exists or is implied"
+      },
+      "per_prediction_month": {
+        "2023-01": {
+          "rows": 9427,
+          "positives": 3742,
+          "positive_rate": 0.396945,
+          "station_persistence_auc": 0.9507998770287783,
+          "state_season_climatology_auc": 0.8215371684748043,
+          "global_rate_auc": null
+        },
+        "2023-02": {
+          "rows": 8987,
+          "positives": 2265,
+          "positive_rate": 0.252031,
+          "station_persistence_auc": 0.9395999298537372,
+          "state_season_climatology_auc": 0.7875317973403532,
+          "global_rate_auc": null
+        },
+        "2023-03": {
+          "rows": 10143,
+          "positives": 1207,
+          "positive_rate": 0.118998,
+          "station_persistence_auc": 0.9386852673786678,
+          "state_season_climatology_auc": 0.7234690729028445,
+          "global_rate_auc": null
+        },
+        "2023-04": {
+          "rows": 9765,
+          "positives": 816,
+          "positive_rate": 0.083564,
+          "station_persistence_auc": 0.9452291881664947,
+          "state_season_climatology_auc": 0.7558574021853685,
+          "global_rate_auc": null
+        },
+        "2023-05": {
+          "rows": 9826,
+          "positives": 593,
+          "positive_rate": 0.06035,
+          "station_persistence_auc": 0.9121765008532157,
+          "state_season_climatology_auc": 0.7999735715920367,
+          "global_rate_auc": null
+        },
+        "2023-06": {
+          "rows": 9734,
+          "positives": 196,
+          "positive_rate": 0.020136,
+          "station_persistence_auc": 0.9521128696813177,
+          "state_season_climatology_auc": 0.6902015996165713,
+          "global_rate_auc": null
+        },
+        "2023-07": {
+          "rows": 9885,
+          "positives": 68,
+          "positive_rate": 0.006879,
+          "station_persistence_auc": 0.9407720101384752,
+          "state_season_climatology_auc": 0.48439157164342767,
+          "global_rate_auc": null
+        },
+        "2023-08": {
+          "rows": 10929,
+          "positives": 62,
+          "positive_rate": 0.005673,
+          "station_persistence_auc": 0.9332849971948218,
+          "state_season_climatology_auc": 0.5660344873648245,
+          "global_rate_auc": null
+        },
+        "2023-09": {
+          "rows": 10649,
+          "positives": 104,
+          "positive_rate": 0.009766,
+          "station_persistence_auc": 0.967880329722435,
+          "state_season_climatology_auc": 0.6225786008680746,
+          "global_rate_auc": null
+        },
+        "2023-10": {
+          "rows": 11972,
+          "positives": 1633,
+          "positive_rate": 0.136402,
+          "station_persistence_auc": 0.9593852005500964,
+          "state_season_climatology_auc": 0.7701693662608544,
+          "global_rate_auc": null
+        },
+        "2023-11": {
+          "rows": 12344,
+          "positives": 4807,
+          "positive_rate": 0.38942,
+          "station_persistence_auc": 0.9447054885655425,
+          "state_season_climatology_auc": 0.8046358442101001,
+          "global_rate_auc": null
+        },
+        "2023-12": {
+          "rows": 12909,
+          "positives": 4326,
+          "positive_rate": 0.335115,
+          "station_persistence_auc": 0.9637212794011795,
+          "state_season_climatology_auc": 0.7484715752396617,
+          "global_rate_auc": null
+        }
+      },
+      "per_season": {
+        "DJF": {
+          "rows": 31323,
+          "positives": 10333,
+          "positive_rate": 0.329885,
+          "station_persistence_auc": 0.9541331244590856,
+          "state_season_climatology_auc": 0.7807408001496798
+        },
+        "JJAS": {
+          "rows": 41197,
+          "positives": 430,
+          "positive_rate": 0.010438,
+          "station_persistence_auc": 0.9521766636375408,
+          "state_season_climatology_auc": 0.6252230343626086
+        },
+        "MAM": {
+          "rows": 29734,
+          "positives": 2616,
+          "positive_rate": 0.08798,
+          "station_persistence_auc": 0.9359026726664957,
+          "state_season_climatology_auc": 0.7495383537864758
+        },
+        "ON": {
+          "rows": 24316,
+          "positives": 6440,
+          "positive_rate": 0.264846,
+          "station_persistence_auc": 0.9563328950715001,
+          "state_season_climatology_auc": 0.7698448785908167
+        }
+      },
+      "prevalence_shift": {
+        "train": 0.211512,
+        "eval": 0.156585,
+        "note": "train (2019-2022) is the higher-prevalence early era; the eval (2023) shift is an out-of-distribution property of the temporal split, reported rather than adjusted"
+      },
+      "notes": [
+        "global_rate carries no ranking information; its AUC is reported null, not zero",
+        "every rate table is estimated ONLY from train rows",
+        "the full model (harness runner baseline) is quoted beside these references in the baseline job; the deciding comparison runs there",
+        "the holdout is sealed: no reference in this file reads private/holdout.csv",
+        "positives are winter-clustered; the distinct-positive-days count is the independent evidence, not the row count"
+      ]
+    },
+    "comparison": {
+      "ladder": [
+        [
+          "Full model (stock runner baseline, harness train.py + validate.sh)",
+          "0.9734"
+        ],
+        [
+          "station_persistence (day-D pm25_mean as the score)",
+          "0.9689"
+        ],
+        [
+          "state_season_climatology (train rate per state x season of D+1)",
+          "0.8617"
+        ],
+        [
+          "station_train_rate (supplementary identity prior)",
+          "0.7616"
+        ],
+        [
+          "global_rate (constant train rate - degenerate, no ranking information)",
+          "null"
+        ]
+      ],
+      "majority_class_accuracy_eval": 0.843414711226989,
+      "persistence_binary_gt90_agreement": {
+        "rule": "predict exceedance iff pm25_mean > 90 ug/m3",
+        "accuracy": 0.9350161965710674,
+        "predicted_positive_rate": 0.15623
+      },
+      "model_minus_persistence_ci": {
+        "resamples": 1000,
+        "clusters": 509,
+        "mean": 0.004487,
+        "ci95_low": 0.003777,
+        "ci95_high": 0.005159,
+        "note": "cluster-aware paired bootstrap on identical eval rows, clusters = station_id; an interval containing zero is inconclusive, not parity"
+      },
+      "model_minus_climatology_ci": {
+        "resamples": 1000,
+        "clusters": 509,
+        "mean": 0.111802,
+        "ci95_low": 0.10015,
+        "ci95_high": 0.125189,
+        "note": "cluster-aware paired bootstrap on identical eval rows, clusters = station_id; an interval containing zero is inconclusive, not parity"
+      },
+      "model_auc_ci": {
+        "resamples": 1000,
+        "clusters": 509,
+        "auc_ci95_low": 0.971304,
+        "auc_ci95_high": 0.975297,
+        "note": "one-sample cluster-aware bootstrap of AUC, clusters = station_id"
+      },
+      "persistence_minus_climatology_ci": {
+        "resamples": 1000,
+        "clusters": 509,
+        "mean": 0.107316,
+        "ci95_low": 0.095881,
+        "ci95_high": 0.120774,
+        "note": "cluster-aware paired bootstrap on identical eval rows, clusters = station_id; an interval containing zero is inconclusive, not parity"
+      },
+      "verdict": "headroom_demonstrated",
+      "verdict_scope": "eval split only (2023 station-days); prevalence and the seasonal structure are reported beside the number; the sealed holdout (2024) was not evaluated and no holdout figure exists or is implied",
+      "interpretation": "the model beats every pre-registered member with the station-clustered paired bootstrap 95% CI excluding zero, so headroom IS demonstrated under the rule written before any score. The label is largely persistence-carried: the model's edge over persistence is real but small (+@@GAPFULL@@ AUC), and persistence itself dominates climatology by +0.1073 [@@CI_PC@@]. No figure may be quoted without the comparison."
+    },
+    "evaluation_contract": {
+      "use": "retrospective_research",
+      "access": "isolated_rows",
+      "training_label_timing": "unverified",
+      "scope_note": "each row is one station-day next-day exceedance prediction at 23:59 IST on day D; features are precomputed at construction and the runner predicts row-wise from the shipped columns. Labeled eval is development/validation; the holdout is the final test and stays outside evaluated agents' workspaces. Training-label timing is UNVERIFIED: XKDR publishes a single cleaned export (no historical vintages, no first-publication ledger), so no full-row availability ledger can be constructed - retrospective research only, never a certified historical forecasting setup",
+      "vintage": {
+        "kind": "current_snapshot",
+        "evidence": "the archive is one export stamped 2026-09-30T11:25:11+00:00 (/v1/meta, asserted by this build: exported_at and the 196,521,834-row count are pinned; a re-export refuses the build). Values are 'as reported' with 'no gap filling' and marked 'preliminary and not fully validated' (XKDR README); revision behaviour is unmeasured because a second export has never been observed. Every shipped feature is the current-vintage value of a measurement at or before day D; no as-of value is claimed"
+      },
+      "selection": {
+        "kind": "prediction_time",
+        "evidence": "membership is fixed by day-D completeness (n_hours >= 18, knowable at the instant) and the declared window; the only additional rule is D+1 outcome observability (a row with n_hours >= 18 must exist for D+1), which never reads the label value - unlabelable rows are excluded and counted per split. Positives are winter-clustered, so the day-level observability rule could in principle co-move with the label through weather (a monsoon D+1 is both thin and clean); the excluded counts per split and per month are recorded in summary.json so the exclusion's seasonality is measurable, not hidden"
+      }
+    },
+    "prevalence_shift": "positive rate declines across the temporal split (21.15% train 2019-2022 -> 15.66% eval 2023 -> 12.56% holdout 2024): an out-of-distribution as well as temporal test; recorded as a property, not repaired",
+    "seasonality": "positives are winter-clustered (eval 2023: DJF @@DJF@@ vs JJAS @@JJAS@@ prevalence); every interval in the deciding check is station-clustered (cluster = station_id, @@EVALCLUSTERS@@ eval clusters)"
+  },
+  "assets": {
+    "meta.json": {
+      "asset_name": "meta.json",
+      "bytes": 1197,
+      "sha256": "1f59e74e4d6003f03371c4514ee9edda7e79e8ecfa3f995723b1520bac6e2fd7"
+    },
+    "private/holdout.csv": {
+      "asset_name": "private-holdout.csv",
+      "bytes": 22967353,
+      "sha256": "2dae0040cdc2c80fa4adc9cc3b48f26882a6a20f451a252ac3a72f10da8f460f"
+    },
+    "public/eval.csv": {
+      "asset_name": "public-eval.csv",
+      "bytes": 20210392,
+      "sha256": "e187f645445e135e092898a280e74a2ecba6e75cb25ed9c5470d6f96f779c478"
+    },
+    "public/train.csv": {
+      "asset_name": "public-train.csv",
+      "bytes": 45644743,
+      "sha256": "24b03a701c34d91834a7c5285d1c928ec33cda9282a2085405b06d541faa9c73"
+    },
+    "quality.json": {
+      "asset_name": "quality.json",
+      "bytes": 22603,
+      "sha256": "98250e9d2731f89da021aec360f5d5535fc374241a98db14f185397f9126849a"
+    }
+  },
+  "package_files": {
+    "DATA_DICTIONARY.md": "c5352cf48db8254de17549e4902a07ad0da8c821fbf6e6b39d4c4456d7e115c1",
+    "LICENSE-CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+    "LICENSE-MIT.txt": "200f782f6b8bc23b926ea774cbacb4147826b3b2b59200917d8dc5ec68159535",
+    "LICENSE.md": "b61bbe928b4a9fed5f6a2c078c08cebf159fe764bbf223ad4c2e6dcb61cce0a6",
+    "README.md": "612ee90dd9bf4e6465b076ed3ddd36de182654554e3d20ac5da886833c8c2dcb",
+    "RELEASE_NOTES.md": "b212cff285971c5e2115204bec6652563a269ad1da0e60658ba08179c1c2e373",
+    "REPRODUCE.md": "20f7ccea92ee876ba236f9ed5d7292a9d54f4fd820b96a68b5e71f4b0cecb8b7",
+    "VERIFICATION.md": "eb6169c4d91bf095566d02fbda88339020b6f4ee948190e0074520a8fbc26f0b",
+    "baseline/README.md": "0fc9d1a249cdeffe0b566237cd1953f17f3d85b9879605fa46202edcebfd5d5f",
+    "baseline/reproduce_baseline.sh": "08b73261cb685d330e6e3a318ddf1ff347535563c9c63bbe603d8dff2d5475ac",
+    "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+    "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+    "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
+    "code/build.py": "4c10003f0e41dd6d13832a826f0d55a69f7697d7f8e347cbe4b98fbe29f04153",
+    "code/materialize.py": "98dc4027e49e1b8062de55344fc2fe812563e680cb897d901e34ba400092776b",
+    "code/qualify_dataset.py": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1",
+    "code/run.sh": "7f1e04e39b4e69c63bb971b56a375c1bbef3356ffd3e140799d07414177ca399",
+    "code/score.py": "1ffefa53a13037afb76a5af24492917c5cbdb775ff56f83dde178b69ca9d9ae0",
+    "get_dataset.py": "082c3f20d88a5a2d450edc5bed697cdd65c5f3b22fb2625374200581bc0187c2",
+    "measurements.json": "8cff4593204077b314ab9676b76d5845799cf2421aabec6d19f31a175160faa2",
+    "meta.json": "1f59e74e4d6003f03371c4514ee9edda7e79e8ecfa3f995723b1520bac6e2fd7",
+    "qualification.json": "d2d367b63b6cd59235251f4131845862783a462258f90416d30e1b7ad2882fea",
+    "quality.json": "98250e9d2731f89da021aec360f5d5535fc374241a98db14f185397f9126849a",
+    "SHA256SUMS": "16d04a2dbb349fc8518ee1862c3ae503ef15a2c11d3d29836efb0a9aa7a7f4f3"
+  },
+  "baseline_command": "sh baseline/reproduce_baseline.sh ./task",
+  "get_dataset_command": "python3 get_dataset.py --dest ./task",
+  "source": {
+    "name": "Central Pollution Control Board CAAQM PM2.5, republished by the XKDR Forum India Air Quality Database (data.xkdr.org)",
+    "landing_page": "https://github.com/xKDR/Air-Quality-Database",
+    "api": "https://data.xkdr.org/api/1/ (anonymous demo-key batching on /v1/measurements; the construction pins the export vintage through /v1/meta: exported_at 2026-09-30T11:25:11+00:00 with 196,521,834 rows, and refuses any other export)",
+    "accessed": "2026-11-06 (worker job cpcb-aqi-build-004 fetched 168 monthly requests, 0 truncated, 0 unparseable, 54,138,890 B; the panel totals are measured by that single-pass fetch and asserted internally; the 2026-11-05 probe totals they supersede were defective and are never asserted)",
+    "licence": "GODL-India (CPCB's own data.gov.in publication, Wayback-read 2026-11-04, AIKosh-corroborated live) for the CPCB CAAQM measurements, and CC BY 4.0 for the XKDR compilation; evidence recorded in candidates/cpcb-aqi-exceedance/record.json license_evidence and the decision in candidates/cpcb-aqi-exceedance/license.json. Requested credits carry through: 'India Air Quality Database, XKDR Forum' together with 'the Central Pollution Control Board (CAAQM network)' and 'the US Department of State via AirNow'. Derived research dataset - not a CPCB, Government of India, or XKDR Forum product.",
+    "licence_evidence": [
+      "CPCB website Copyright Policy, read live 2026-11-04 from https://cpcb.gov.in/copyright-policy/ (HTTP 200): 'Material on this site is subject to copyright protection unless otherwise indicated. The material may be downloaded to file or printer without requiring specific prior permission. Any other proposed use of the material is subject to the approval of competent authority of CPCB.' The site instrument is therefore restrictive-by-default with an explicit 'unless otherwise indicated' carve-out - the data.gov.in platform publication is the indicated licence for the dataset published there.",
+      "data.gov.in platform instrument, read via Wayback snapshot 20251231005230 of the resource page https://www.data.gov.in/resource/real-time-air-quality-index-various-locations (HTTP 200, 137 KB; snapshot carries contributor 'Ministry of Environment, Forest and Climate Change / Central Pollution Control Board' and resource id 3b01bcb8-0b14-4abf-b6f2-c1bfd384ba69, matching this candidate's resource): 'The content published on data.gov.in is owned by the respective Ministry/State/Department/Organization and licensed under the Government Open Data License - India' and 'GOVERNMENT OF INDIA All rights reserved except published datasets/resources and metadata.' Live portal unreachable from every project-controlled vantage on 2026-11-04 (measured), so the claim was read from the archived page.",
+      "GODL-India v1.0 terms, read via Wayback snapshot 20170328213105 of data.gov.in's own licence page (section 3): 'all users are provided a worldwide, royalty-free, non-exclusive license to use, adapt, publish (either in original, or in adapted and/or derivative forms), translate, display, add value, and create derivative works (including products and services), for all lawful commercial and non-commercial purposes'; conditions are attribution (named template), non-endorsement, no warranty, continuity; NO share-alike clause anywhere in the text. The same instrument is named by the current platform footer in the 2025-12-31 snapshot.",
+      "AIKosh registry (IndiaAI), read live 2026-11-04 from https://aikosh.indiaai.gov.in/home/datasets/details/real_time_air_quality_index_from_various_locations.html (HTTP 200): lists the dataset with 'License: GODL license', Source Organisation 'Ministry of Environment, Forest and Climate Change, Central Pollution Control Board', Visibility Open, Hosted/Redirected -> Open Government Data Platform. Independent corroboration of the platform's licence claim, readable without the blocked route.",
+      "XKDR Forum compilation licence, read 2026-11-04 from the Air-Quality-Database README (raw.githubusercontent.com/xKDR/Air-Quality-Database/main/README.md): 'The data compilation is released under Creative Commons Attribution 4.0: use it for anything, including commercial work, and credit India Air Quality Database, XKDR Forum together with the sources, the Central Pollution Control Board (CAAQM network) and the US Department of State via AirNow.' Values 'as reported', 'no gap filling', 'preliminary and not fully validated'.",
+      "OpenAQ archive licence (recorded 2026-10-20 from docs.openaq.org): CC BY 4.0 per dataset, attributionRequired=true, redistributionAllowed=true, commercialUseAllowed=true."
+    ]
+  },
+  "layout": {
+    "public/train.csv": "public/train.csv",
+    "public/eval.csv": "public/eval.csv",
+    "private/holdout.csv": "private/holdout.csv",
+    "meta.json": "meta.json",
+    "quality.json": "quality.json"
+  },
+  "files": {
+    "meta.json": {
+      "bytes": 1197,
+      "sha256": "1f59e74e4d6003f03371c4514ee9edda7e79e8ecfa3f995723b1520bac6e2fd7"
+    },
+    "public/train.csv": {
+      "bytes": 45644743,
+      "sha256": "24b03a701c34d91834a7c5285d1c928ec33cda9282a2085405b06d541faa9c73"
+    },
+    "public/eval.csv": {
+      "bytes": 20210392,
+      "sha256": "e187f645445e135e092898a280e74a2ecba6e75cb25ed9c5470d6f96f779c478"
+    },
+    "private/holdout.csv": {
+      "bytes": 22967353,
+      "sha256": "2dae0040cdc2c80fa4adc9cc3b48f26882a6a20f451a252ac3a72f10da8f460f"
+    },
+    "quality.json": {
+      "bytes": 22603,
+      "sha256": "98250e9d2731f89da021aec360f5d5535fc374241a98db14f185397f9126849a"
+    }
+  },
+  "splits": {
+    "train": {
+      "rows": 288754,
+      "positives": 61075,
+      "positive_rate": 0.211512
+    },
+    "eval": {
+      "rows": 126570,
+      "positives": 19819,
+      "positive_rate": 0.156585
+    },
+    "holdout": {
+      "rows": 145124,
+      "positives": 18222,
+      "positive_rate": 0.125562
+    }
+  },
+  "qualification": {
+    "gate_version": "1.5.0",
+    "ok": true,
+    "failed_checks": [],
+    "result": "PASSED",
+    "artifact_version": "a749f0df2f9dd0103d0ba56524e1cc3638242fbc4710b0cac99603bcdef0d959",
+    "report": "qualification.json"
+  },
+  "baseline": {
+    "job": "cpcb-aqi-baseline-001",
+    "purpose": "one baseline through the runner's existing training and validation contract on the accepted cpcb-aqi-exceedance artifact, plus the pre-registered model-vs-triad deciding check on identical eval rows",
+    "artifact": {
+      "name": "cpcb-aqi-exceedance",
+      "target": "exceeds",
+      "positive_label": 1,
+      "id_columns": [
+        "station_day"
+      ],
+      "rows": {
+        "train": 288754,
+        "eval": 126570,
+        "holdout": 145124
+      },
+      "positive_rate": {
+        "train": 0.211512,
+        "eval": 0.156585,
+        "holdout": 0.125562
+      },
+      "split_description": "temporal split on the prediction instant (day D, 23:59 IST): train 2019-2022, eval 2023, holdout 2024; scored rows are complete (n_hours >= 18) cpcb_caaqm PM2.5 station-days with a labelable D+1 (row present, n_hours >= 18; unlabelable rows excluded and counted); the 2025-04..09 partial tail (47,566 station-days) is excluded and counted, the 2025-01..03 and 2025-10..12 hole months are asserted empty; label = D+1 24-hr mean > 90 ug/m3 (CPCB National AQI Poor-band lower breakpoint)"
+    },
+    "qualification_report": {
+      "bundled": "qualification.json",
+      "sha256": "d2d367b63b6cd59235251f4131845862783a462258f90416d30e1b7ad2882fea",
+      "gate_version": "1.5.0",
+      "gate_ok": true,
+      "gate_failed_checks": [],
+      "accepted_before_scoring": true,
+      "accepted_artifact_version": "a749f0df2f9dd010",
+      "qualified_artifact_version": "a749f0df2f9dd0103d0ba56524e1cc3638242fbc4710b0cac99603bcdef0d959"
+    },
+    "contract": {
+      "contract_ok": true,
+      "eval_auc_from_train_py": 0.9734,
+      "eval_auc_from_validate_py": 0.9734
+    },
+    "deciding_check": {
+      "rule": "headroom is demonstrated ONLY if the full model beats EVERY triad member with a station-clustered paired bootstrap 95% CI excluding zero in the model's favour; triad dominance -> recorded defect, drop or re-target; no re-tuning after any score",
+      "eval_rows": 126570,
+      "eval_distinct_positive_days": 351,
+      "model_eval_auc": 0.9734021284395283,
+      "model_eval_auc_recomputed_by_validate": 0.9734,
+      "agreement": false,
+      "members": {
+        "station_persistence": {
+          "member_auc": 0.9689109528605426,
+          "model_minus_member_ci": {
+            "resamples": 1000,
+            "clusters": 509,
+            "mean": 0.004487,
+            "ci95_low": 0.003777,
+            "ci95_high": 0.005159,
+            "note": "cluster-aware paired bootstrap on identical eval rows, clusters = station_id; an interval containing zero is inconclusive, not parity"
+          },
+          "beaten": true
+        },
+        "state_season_climatology": {
+          "member_auc": 0.861668549124152,
+          "model_minus_member_ci": {
+            "resamples": 1000,
+            "clusters": 509,
+            "mean": 0.111802,
+            "ci95_low": 0.10015,
+            "ci95_high": 0.125189,
+            "note": "cluster-aware paired bootstrap on identical eval rows, clusters = station_id; an interval containing zero is inconclusive, not parity"
+          },
+          "beaten": true
+        },
+        "global_rate": {
+          "member_auc": null,
+          "treatment": "constant member, no ranking information; beaten iff the model's cluster-bootstrap AUC CI lies entirely above 0.5",
+          "model_auc_ci": {
+            "resamples": 1000,
+            "clusters": 509,
+            "auc_ci95_low": 0.971304,
+            "auc_ci95_high": 0.975297,
+            "note": "one-sample cluster-aware bootstrap of AUC, clusters = station_id"
+          },
+          "beaten": true
+        }
+      },
+      "verdict": "headroom_demonstrated",
+      "scope": "eval split only (2023 station-days); prevalence and the seasonal structure are reported beside the number; the sealed holdout (2024) was not evaluated and no holdout figure exists or is implied"
+    },
+    "runner_files": {
+      "bundled_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "expected_sha256": {
+        "train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
+        "validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
+        "validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      "unmodified": true
+    },
+    "dependencies": {
+      "python": "3.13.18",
+      "pandas": "2.3.3",
+      "numpy": "2.5.4",
+      "xgboost": "3.4.1",
+      "scikit-learn": "1.9.1"
+    },
+    "scope": "runner-contract baseline + deciding check only; no agent loop, no holdout evaluation. Holdout stays sealed until the design is frozen."
+  },
+  "scope": "One baseline through the runner's training and validation contract. No agent or harness comparison was run and none is implied.",
+  "published": false,
+  "publication_note": "Prepared for human review. Nothing here has been published.",
+  "licenses": {
+    "policy_version": "2026-09-19",
+    "decided": "2026-11-06",
+    "code": {
+      "spdx": "MIT",
+      "file": "LICENSE-MIT.txt",
+      "copyright": "Copyright (c) 2026 E. Ari\u00f1o de la Rubia (earino)",
+      "third_party": [
+        {
+          "file": "baseline/train.py, baseline/validate.py, baseline/validate.sh",
+          "terms": "MIT - the harness benchmark's own runner files, shipped verbatim and unmodified (bundled sha256 equal the benchmark clone's hashes, recorded as unmodified: true in the cpcb-aqi-baseline-001 result)",
+          "permission": "The benchmark checkout is read-only; permission to distribute verbatim copies of its runner files covers the distributed copies only"
+        }
+      ]
+    },
+    "data_compilation": {
+      "spdx": "CC0-1.0",
+      "file": "LICENSE-CC0-1.0.txt",
+      "scope": "Our contribution - the station-day eligibility frame (complete cpcb_caaqm PM2.5 station-days, n_hours >= 18, with a labelable D+1), the derived binary next-day exceedance label (calendar-day D+1 24-hr mean PM2.5 > 90 ug/m3, the CPCB National AQI Poor-band lower breakpoint), the at-instant trailing-history feature derivations and calendar fields, the sentinel handling for stations with no state_name, the excluded-and-counted thin/unlabelable/outside-window accounting, and the temporal partition (train 2019-2022 / eval 2023 / holdout 2024) - is dedicated to the public domain under CC0-1.0. The dedication covers only our contribution: the underlying CPCB CAAQM measurements and the XKDR compilation keep their own designations and remain subject to GODL-India and CC BY 4.0 respectively, whose attribution requirements carry through to every copy of the derived data. Nothing here relicenses the source or presents CC0 as the source's terms."
+    },
+    "source_data": {
+      "spdx": "LicenseRef-GODL-India-1.0 and CC-BY-4.0",
+      "status": "Two preserved upstream instruments, neither relicensed. CPCB CAAQM PM2.5 measurements: Government Open Data License - India (GODL-India v1.0) via the data.gov.in platform instrument, with its attribution template, non-endorsement, no-warranty and continuity conditions. The XKDR Forum Air-Quality-Database compilation carrying those measurements: Creative Commons Attribution 4.0, with the README's own requested credit. The redistributed fields are the publisher's own station identifiers, timestamps and hourly PM2.5 measurements (aggregated by us to daily statistics) plus our derived label, features and partition. The derived dataset is labelled as such throughout and is neither a CPCB product nor an XKDR Forum product.",
+      "evidence": [
+        "[CPCB website Copyright Policy, read live 2026-11-04 from https://cpcb.gov.in/copyright-policy/] 'Material on this site is subject to copyright protection unless otherwise indicated. The material may be downloaded to file or printer without requiring specific prior permission.' The site instrument is restrictive-by-default with an explicit 'unless otherwise indicated' carve-out; the data.gov.in platform publication is the indicated licence for the dataset published there.",
+        "[data.gov.in platform instrument, Wayback snapshot 20251231005230 of https://www.data.gov.in/resource/real-time-air-quality-index-various-locations, read 2026-11-04] 'The content published on data.gov.in is owned by the respective Ministry/State/Department/Organization and licensed under the Government Open Data License - India'; 'GOVERNMENT OF INDIA All rights reserved except published datasets/resources and metadata.' Snapshot carries contributor 'Ministry of Environment, Forest and Climate Change / Central Pollution Control Board', resource id 3b01bcb8-0b14-4abf-b6f2-c1bfd384ba69. Live portal unreachable from every project-controlled vantage on 2026-11-04 (measured), so the claim was read from the archived page.",
+        "[GODL-India v1.0 terms, Wayback snapshot 20170328213105 of data.gov.in's own licence page, section 3, read 2026-11-04] 'all users are provided a worldwide, royalty-free, non-exclusive license to use, adapt, publish (either in original, or in adapted and/or derivative forms), translate, display, add value, and create derivative works (including products and services), for all lawful commercial and non-commercial purposes'; conditions are attribution (named template), non-endorsement, no warranty, continuity; NO share-alike clause anywhere in the text.",
+        "[AIKosh registry (IndiaAI), read live 2026-11-04 from https://aikosh.indiaai.gov.in/home/datasets/details/real_time_air_quality_index_from_various_locations.html] lists the dataset with 'License: GODL license', Source Organisation 'Ministry of Environment, Forest and Climate Change, Central Pollution Control Board', Visibility Open - independent corroboration readable without the blocked route.",
+        "[XKDR Forum Air-Quality-Database README, read 2026-11-04 from raw.githubusercontent.com/xKDR/Air-Quality-Database/main/README.md] 'The data compilation is released under Creative Commons Attribution 4.0: use it for anything, including commercial work, and credit India Air Quality Database, XKDR Forum together with the sources, the Central Pollution Control Board (CAAQM network) and the US Department of State via AirNow.' Values 'as reported', 'no gap filling', 'preliminary and not fully validated' - the publisher's own data-quality caveat, carried into every package document."
+      ],
+      "attribution": "Source: Central Pollution Control Board (CAAQM network) via the India Air Quality Database, XKDR Forum (data.xkdr.org), licensed under the Government Open Data License - India (CPCB measurements) and CC BY 4.0 (XKDR compilation). Credit: India Air Quality Database, XKDR Forum; Central Pollution Control Board (CAAQM network); US Department of State via AirNow. Export accessed 2026-09-30 (pinned; construction verifies exported_at and row count).",
+      "citation": "Central Pollution Control Board. Real Time Air Quality Index from Various Locations (CAAQM network). Government Open Data License - India, via data.gov.in. Republished as India Air Quality Database by XKDR Forum (CC BY 4.0), data.xkdr.org. Derived dataset: India CPCB station-day next-day PM2.5 exceedance prediction task (not a CPCB or XKDR Forum product).",
+      "derived_labelling": "Labelled as a derived research dataset throughout; it is neither the Central Pollution Control Board's official product nor the XKDR Forum's, and neither has reviewed or endorsed it. The publishers' own designations, requested credits and data-quality caveats are preserved ('as reported', 'no gap filling', 'preliminary and not fully validated'), and changes from the source are indicated (row selection and eligibility, the derived binary next-day exceedance label, at-instant trailing-history features, the UNKNOWN_STATE sentinel, excluded-and-counted accounting, the temporal partition)."
+    },
+    "rules": [
+      "Code and documentation: MIT by default.",
+      "Our rights in a derived compilation: CC0-1.0 by default.",
+      "The source's own terms are preserved and never relicensed; the compilation dedication covers only our contribution.",
+      "Each dataset must use terms compatible with its sources. CC0 is NOT a blanket override of upstream terms: attribution, share-alike and non-commercial requirements from a source are carried through unchanged.",
+      "A source whose licence terms cannot be read is not published at all.",
+      "The chosen terms are declared per dataset in candidates/<id>/license.json and recorded in the release manifest, so the manifest cannot drift from the decision."
+    ]
+  }
+}

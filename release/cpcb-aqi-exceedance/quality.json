@@ -1,0 +1,479 @@
+{
+ "name": "cpcb-aqi-exceedance",
+ "target": "exceeds",
+ "positive_label": 1,
+ "id_columns": [
+  "station_day"
+ ],
+ "features": [
+  "station_id",
+  "state_name",
+  "date",
+  "day_of_week",
+  "month",
+  "doy_sin",
+  "doy_cos",
+  "pm25_mean",
+  "pm25_max",
+  "pm25_min",
+  "n_hours",
+  "pm25_mean_lag1",
+  "pm25_mean_lag2",
+  "pm25_mean_lag3",
+  "pm25_mean_7d",
+  "pm25_days_valid_7d",
+  "pm25_mean_30d",
+  "pm25_days_valid_30d",
+  "pm25_hist_mean_90d",
+  "days_since_gt90",
+  "exceed_count_30d"
+ ],
+ "high_cardinality_columns": [
+  "station_id",
+  "date"
+ ],
+ "carry_columns": [],
+ "splits": {
+  "train": "public/train.csv",
+  "eval": "public/eval.csv",
+  "holdout": "private/holdout.csv"
+ },
+ "time_column": "date",
+ "event_key_column": "date",
+ "expected_duplicate_ids": 0,
+ "id_columns_are_entity_keys": true,
+ "external_threshold": true,
+ "known_event": {
+  "name": "CPCB Daily AQI Bulletin 2024-11-18: Delhi Severe, prominent pollutant PM2.5 (36/39 stations)",
+  "expected_verdict": "exceeds",
+  "source": "https://cpcb.gov.in/upload/Downloads/AQI_Bulletin_20241118.pdf (retained probe/out/aqi_bulletin_20241118.pdf); the 90 ug/m3 edge is the Poor-band lower breakpoint of CPCB's own National AQI (About AQI PDF, probe/out/about_aqi.pdf, corroborated by AQI-Calculator.xlsx). Measured panel confirmation: 36/36 complete Delhi cpcb station-days on 2024-11-18 carry a 24-hr mean > 90 ug/m3 (235.7-731.5)"
+ },
+ "negative_control_fixture": {
+  "name": "monsoon trough day 2023-08-15",
+  "expected": "at most 4 of at least 300 complete (n>=18) all-India cpcb station-days exceed 90 ug/m3",
+  "source": "measured 2026-11-05 (probe/out/preflight_build_design_2026_11_05.json): 389 complete, 1 exceed; a unit or reference-frame error would move this rate to its extreme and fail the in-build assertion"
+ },
+ "features_documented_at": "prediction_time",
+ "label_source_columns": [
+  "next_day_pm25_mean",
+  "next_day_n_hours"
+ ],
+ "post_hoc_columns": [
+  "next_day_pm25_mean",
+  "next_day_n_hours"
+ ],
+ "task": {
+  "prediction_time": "23:59 IST on day D: every hourly reading through day D is knowable at that instant and no D+1 reading exists yet; features are the station's own trailing daily PM2.5 statistics through day D plus calendar terms and the station's coarse identity",
+  "target_definition": "the station's D+1 calendar-day 24-hour mean PM2.5 exceeds 90 ug/m3 (strict >), the Poor-band lower breakpoint of CPCB's National AQI for 24-hour PM2.5; both the D and D+1 days must carry n_hours >= 18",
+  "description": "for a CPCB CAAQMS station in India, predict whether the next calendar day's 24-hour mean PM2.5 is Poor-or-worse (> 90 ug/m3) from the station's own trailing daily history and the calendar"
+ },
+ "measurements": [
+  {
+   "column": "pm25_mean",
+   "unit": "micrograms/m3 (24-hour mean)",
+   "frame": "station-day 24-hr mean of hourly PM2.5 from the XKDR daily aggregate of the cpcb_caaqm stream; compared against the CPCB National AQI Poor-band lower edge 90 ug/m3"
+  },
+  {
+   "column": "pm25_max",
+   "unit": "micrograms/m3",
+   "frame": "station-day maximum of hourly PM2.5 (same daily aggregate)"
+  },
+  {
+   "column": "pm25_min",
+   "unit": "micrograms/m3",
+   "frame": "station-day minimum of hourly PM2.5 (same daily aggregate)"
+  },
+  {
+   "column": "n_hours",
+   "unit": "count of hourly readings",
+   "frame": "hourly readings the daily aggregate covers for the station-day; >= 18 required for a day to be usable"
+  },
+  {
+   "column": "pm25_mean_lag1",
+   "unit": "micrograms/m3",
+   "frame": "the station's mean on calendar day D-1 when that day exists with n>=18; -1.0 otherwise (lags 2 and 3 analogous)"
+  },
+  {
+   "column": "pm25_mean_7d",
+   "unit": "micrograms/m3",
+   "frame": "mean of the station's valid-day means over D-6..D; -1.0 when fewer than 4 valid days fall in the window; pm25_days_valid_7d carries the count"
+  },
+  {
+   "column": "pm25_mean_30d",
+   "unit": "micrograms/m3",
+   "frame": "mean over D-29..D, -1.0 under 10 valid days; pm25_days_valid_30d carries the count"
+  },
+  {
+   "column": "pm25_hist_mean_90d",
+   "unit": "micrograms/m3",
+   "frame": "trailing 90-day mean over D-89..D; -1.0 under 30 valid days"
+  },
+  {
+   "column": "days_since_gt90",
+   "unit": "days",
+   "frame": "days back to the most recent valid day with mean > 90 ug/m3 within D-89..D (0 = today); -1.0 when none"
+  },
+  {
+   "column": "exceed_count_30d",
+   "unit": "count of days",
+   "frame": "valid days with mean > 90 ug/m3 in D-29..D"
+  }
+ ],
+ "timing": {
+  "prediction_instant": {
+   "kind": "event_time",
+   "period": "D",
+   "days_after_period_end": 0,
+   "citation": "the instant is the end of day D in IST (the XKDR archive's collected_at is naive IST, UTC+05:30); the station's own hourly readings through day D are the administrative record. The archive republishes the publisher's measurements with no gap filling ('as reported', 'preliminary and not fully validated', XKDR README); intraday publication latency is unmeasured and day-D trailing completeness at the instant is an explicitly declared assumption"
+  },
+  "features": {
+   "period": "D",
+   "published_days_after_period_end": 0,
+   "source_kind": "administrative_record"
+  },
+  "row_selection": {
+   "latest_period_used": "2024-12",
+   "fields": [
+    "station_day",
+    "station_id",
+    "state_name",
+    "date",
+    "day_of_week",
+    "month",
+    "doy_sin",
+    "doy_cos",
+    "pm25_mean",
+    "pm25_max",
+    "pm25_min",
+    "n_hours",
+    "pm25_mean_lag1",
+    "pm25_mean_lag2",
+    "pm25_mean_lag3",
+    "pm25_mean_7d",
+    "pm25_days_valid_7d",
+    "pm25_mean_30d",
+    "pm25_days_valid_30d",
+    "pm25_hist_mean_90d",
+    "days_since_gt90",
+    "exceed_count_30d"
+   ],
+   "basis": "scored rows are complete (n_hours >= 18) station-days of the cpcb_caaqm PM2.5 stream with day D inside the declared window AND a labelable D+1 (a row present with n_hours >= 18). Day-D completeness is knowable at the instant; the D+1 observability rule is an outcome-observability exclusion that never reads the label value - unlabelable rows are excluded and counted per split. The 2025-04..09 partial tail (47,566 station-days, 829 valid-day positives) is excluded and counted; the 2025-01..03 and 2025-10..12 hole months are asserted empty. Both label values are retained in every window"
+  },
+  "observations": []
+ },
+ "evaluation_contract": {
+  "use": "retrospective_research",
+  "access": "isolated_rows",
+  "training_label_timing": "unverified",
+  "scope_note": "each row is one station-day next-day exceedance prediction at 23:59 IST on day D; features are precomputed at construction and the runner predicts row-wise from the shipped columns. Labeled eval is development/validation; the holdout is the final test and stays outside evaluated agents' workspaces. Training-label timing is UNVERIFIED: XKDR publishes a single cleaned export (no historical vintages, no first-publication ledger), so no full-row availability ledger can be constructed - retrospective research only, never a certified historical forecasting setup",
+  "vintage": {
+   "kind": "current_snapshot",
+   "evidence": "the archive is one export stamped 2026-09-30T11:25:11+00:00 (/v1/meta, asserted by this build: exported_at and the 196,521,834-row count are pinned; a re-export refuses the build). Values are 'as reported' with 'no gap filling' and marked 'preliminary and not fully validated' (XKDR README); revision behaviour is unmeasured because a second export has never been observed. Every shipped feature is the current-vintage value of a measurement at or before day D; no as-of value is claimed"
+  },
+  "selection": {
+   "kind": "prediction_time",
+   "evidence": "membership is fixed by day-D completeness (n_hours >= 18, knowable at the instant) and the declared window; the only additional rule is D+1 outcome observability (a row with n_hours >= 18 must exist for D+1), which never reads the label value - unlabelable rows are excluded and counted per split. Positives are winter-clustered, so the day-level observability rule could in principle co-move with the label through weather (a monsoon D+1 is both thin and clean); the excluded counts per split and per month are recorded in summary.json so the exclusion's seasonality is measurable, not hidden"
+  },
+  "limitations": [
+   "current_snapshot vintage: a single cleaned export, no historical vintages; values corrected after publication cannot be distinguished",
+   "the day-D trailing completeness assumption: CPCB intraday latency is unmeasured, so 23:59 IST features are declared under the assumption the day's hourly record is complete at the instant (the publisher's own 4 PM bulletin shows non-participating stations, so intraday availability is genuinely partial)",
+   "cross-row exposure: row D's label operand (the D+1 mean) ships as the pm25_mean feature of row D+1 and enters the trailing aggregates of rows D+2..D+91; the declared reverse-history probe measures the direct join exposure, access is isolated_rows, and the artifact is restricted retrospective research",
+   "outcome-observability selection: station-days whose D+1 is missing or thin are unlabelable and excluded (counted per split and per month); the exclusion is not label-reading but its seasonality is recorded",
+   "the export's 2025 hole (Jan-Mar, Oct-Dec absent) is why holdout is 2024, not 2025; the 2025-04..09 tail is excluded and counted",
+   "training_label_timing is unverified: no as-of ledger exists for when any daily aggregate first appeared in the archive",
+   "positives cluster by winter day and station; the independent positive evidence is the declared distinct-positive-days count, not the row count",
+   "labeled eval is development/validation, never an untouched final test; the holdout is the final test and remains sealed until the design is frozen"
+  ],
+  "cross_row_audit": {
+   "probes": [
+    {
+     "entity_columns": [
+      "station_id"
+     ],
+     "time_column": "date",
+     "offset_days": 1,
+     "left": "pm25_mean",
+     "operation": "gt",
+     "threshold": 90,
+     "name": "next_day_mean_recovery",
+     "note": "blind-join label recovery: a donor row of the same station one day later donates its pm25_mean, which is exactly this row's label operand (the D+1 24-hr mean); gt 90 reproduces the label by construction. Coverage measures how many rows a same-station next-day join can answer outright on the full artifact"
+    }
+   ],
+   "probes_note": "the panel's serial structure is real and is measured, not argued away: row D's label is a function of the D+1 mean, which is row D+1's own pm25_mean feature, and the same value is inside the trailing aggregates of rows D+2..D+91 (the bounded-aggregate exposure is declared here; only the direct offset-1 join is exactly expressible as a probe). Coverage is expected to be high, which is why access is isolated_rows and the artifact is restricted retrospective research",
+   "rationale": "rows are per-station next-day predictions whose trailing features are precomputed at construction; the runner predicts row-wise from shipped columns. The label source (the D+1 series) is absent from the shipped columns (asserted), but the same station's next row legitimately carries the outcome day as its own pm25_mean feature, so the cross-row join exposure is declared and measured rather than denied",
+   "auxiliary_files_review": "the extract ships exactly the runner layout - public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json - plus summary.json, which carries fetch receipts, vintage pins, exclusion counts, per-window anchors and per-split per-month tables; no row-level source data and no performance metric. The fetched daily-aggregate lines stay in the job's scratch directory outside /output and are never uploaded"
+  },
+  "feature_evidence": {
+   "station_day": {
+    "source": "derived: station_id + calendar date of day D",
+    "availability": "unique row identity assigned at construction; names one station-day prediction event",
+    "status": "verified"
+   },
+   "station_id": {
+    "source": "XKDR station registry (/v1/stations), cpcb_caaqm stream; the us_embassy DS* monitors are excluded so the population is single-instrumentation",
+    "availability": "the station's own identity, fixed for the whole panel",
+    "status": "verified"
+   },
+   "state_name": {
+    "source": "XKDR station registry (/v1/stations) state_name for the station; the 62 of 549 cpcb PM2.5 stations the export leaves null (measured 2026-11-06; city_name/latitude/longitude also null) ship the declared sentinel 'UNKNOWN_STATE' - never inferred from the station name",
+    "availability": "static station geography; knowable at any instant",
+    "status": "assumed",
+    "assumption": "current-registry station attribute; station metadata could in principle be revised in a future export; a missing state is a declared sentinel, not missing-row exclusion"
+   },
+   "date": {
+    "source": "the calendar day D of the prediction instant (IST)",
+    "availability": "the prediction instant's own date",
+    "status": "verified"
+   },
+   "day_of_week": {
+    "source": "derived arithmetically from date",
+    "availability": "calendar",
+    "status": "verified"
+   },
+   "month": {
+    "source": "derived arithmetically from date",
+    "availability": "calendar",
+    "status": "verified"
+   },
+   "doy_sin": {
+    "source": "derived: sin(2*pi*day_of_year/365.25) from date",
+    "availability": "calendar",
+    "status": "verified"
+   },
+   "doy_cos": {
+    "source": "derived: cos(2*pi*day_of_year/365.25) from date",
+    "availability": "calendar",
+    "status": "verified"
+   },
+   "pm25_mean": {
+    "source": "the station's 24-hr mean of hourly PM2.5 on day D (XKDR daily aggregate, cpcb_caaqm)",
+    "availability": "the most recent observed daily value at the 23:59 IST instant, under the declared day-D completeness assumption",
+    "status": "assumed",
+    "assumption": "current-vintage value of a measurement at or before day D; the archive publishes no historical vintages, so post-hoc corrections cannot be distinguished; the day-D trailing completeness at the instant is the declared assumption (intraday latency unmeasured)"
+   },
+   "pm25_max": {
+    "source": "the station's day-D maximum hourly PM2.5 (same daily aggregate)",
+    "availability": "computed by this build from the station's own daily aggregates through day D; every input reading predates the instant",
+    "status": "assumed",
+    "assumption": "current-vintage value of a measurement at or before day D; the archive publishes no historical vintages, so post-hoc corrections cannot be distinguished"
+   },
+   "pm25_min": {
+    "source": "the station's day-D minimum hourly PM2.5 (same daily aggregate)",
+    "availability": "computed by this build from the station's own daily aggregates through day D; every input reading predates the instant",
+    "status": "assumed",
+    "assumption": "current-vintage value of a measurement at or before day D; the archive publishes no historical vintages, so post-hoc corrections cannot be distinguished"
+   },
+   "n_hours": {
+    "source": "count of hourly readings the day-D daily aggregate covers",
+    "availability": "computed by this build from the station's own daily aggregates through day D; every input reading predates the instant",
+    "status": "verified"
+   },
+   "pm25_mean_lag1": {
+    "source": "the station's mean on calendar day D-1 when that day exists with n_hours >= 18; -1.0 otherwise",
+    "availability": "computed by this build from the station's own daily aggregates through day D; every input reading predates the instant",
+    "status": "assumed",
+    "assumption": "current-vintage value of a measurement at or before day D; the archive publishes no historical vintages, so post-hoc corrections cannot be distinguished"
+   },
+   "pm25_mean_lag2": {
+    "source": "the station's mean on calendar day D-2 under the same rule; -1.0 otherwise",
+    "availability": "computed by this build from the station's own daily aggregates through day D; every input reading predates the instant",
+    "status": "assumed",
+    "assumption": "current-vintage value of a measurement at or before day D; the archive publishes no historical vintages, so post-hoc corrections cannot be distinguished"
+   },
+   "pm25_mean_lag3": {
+    "source": "the station's mean on calendar day D-3 under the same rule; -1.0 otherwise",
+    "availability": "computed by this build from the station's own daily aggregates through day D; every input reading predates the instant",
+    "status": "assumed",
+    "assumption": "current-vintage value of a measurement at or before day D; the archive publishes no historical vintages, so post-hoc corrections cannot be distinguished"
+   },
+   "pm25_mean_7d": {
+    "source": "mean of the station's valid-day means over D-6..D; -1.0 under 4 valid days",
+    "availability": "computed by this build from the station's own daily aggregates through day D; every input reading predates the instant",
+    "status": "assumed",
+    "assumption": "current-vintage value of a measurement at or before day D; the archive publishes no historical vintages, so post-hoc corrections cannot be distinguished"
+   },
+   "pm25_days_valid_7d": {
+    "source": "count of valid days (n_hours >= 18) in D-6..D",
+    "availability": "computed by this build from the station's own daily aggregates through day D; every input reading predates the instant",
+    "status": "verified"
+   },
+   "pm25_mean_30d": {
+    "source": "mean over D-29..D; -1.0 under 10 valid days",
+    "availability": "computed by this build from the station's own daily aggregates through day D; every input reading predates the instant",
+    "status": "assumed",
+    "assumption": "current-vintage value of a measurement at or before day D; the archive publishes no historical vintages, so post-hoc corrections cannot be distinguished"
+   },
+   "pm25_days_valid_30d": {
+    "source": "count of valid days in D-29..D",
+    "availability": "computed by this build from the station's own daily aggregates through day D; every input reading predates the instant",
+    "status": "verified"
+   },
+   "pm25_hist_mean_90d": {
+    "source": "mean over D-89..D; -1.0 under 30 valid days",
+    "availability": "computed by this build from the station's own daily aggregates through day D; every input reading predates the instant",
+    "status": "assumed",
+    "assumption": "current-vintage value of a measurement at or before day D; the archive publishes no historical vintages, so post-hoc corrections cannot be distinguished"
+   },
+   "days_since_gt90": {
+    "source": "days back to the most recent valid day with mean > 90 ug/m3 within D-89..D; -1.0 when none",
+    "availability": "computed by this build from the station's own daily aggregates through day D; every input reading predates the instant",
+    "status": "assumed",
+    "assumption": "current-vintage value of a measurement at or before day D; the archive publishes no historical vintages, so post-hoc corrections cannot be distinguished"
+   },
+   "exceed_count_30d": {
+    "source": "count of valid days with mean > 90 ug/m3 in D-29..D",
+    "availability": "computed by this build from the station's own daily aggregates through day D; every input reading predates the instant",
+    "status": "assumed",
+    "assumption": "current-vintage value of a measurement at or before day D; the archive publishes no historical vintages, so post-hoc corrections cannot be distinguished"
+   }
+  }
+ },
+ "positive_events": {
+  "train": {
+   "positives": 61075,
+   "distinct_events": 1248
+  },
+  "eval": {
+   "positives": 19819,
+   "distinct_events": 351
+  },
+  "holdout": {
+   "positives": 18222,
+   "distinct_events": 352
+  }
+ },
+ "split_windows": {
+  "train": {
+   "start": "2019-01-01",
+   "end": "2023-01-01"
+  },
+  "eval": {
+   "start": "2023-01-01",
+   "end": "2024-01-01"
+  },
+  "holdout": {
+   "start": "2024-01-01",
+   "end": "2025-01-01"
+  }
+ },
+ "split_counts": {
+  "train": {
+   "rows": 288754,
+   "positives": 61075,
+   "positive_rate": 0.211512,
+   "distinct_positive_events": 1248,
+   "stations": 389
+  },
+  "eval": {
+   "rows": 126570,
+   "positives": 19819,
+   "positive_rate": 0.156585,
+   "distinct_positive_events": 351,
+   "stations": 509
+  },
+  "holdout": {
+   "rows": 145124,
+   "positives": 18222,
+   "positive_rate": 0.125562,
+   "distinct_positive_events": 352,
+   "stations": 529
+  }
+ },
+ "excluded_counts": {
+  "thin_day": {
+   "train": 33586,
+   "eval": 18065,
+   "holdout": 20101
+  },
+  "unlabelable_next_day": {
+   "train": 17416,
+   "eval": 9368,
+   "holdout": 10879
+  },
+  "outside_windows": 42638
+ },
+ "panel_anchors_verified": {
+  "panel_rows_total": 717429,
+  "window_station_days": {
+   "train_2019_2022": 339756,
+   "eval_2023": 154003,
+   "holdout_2024": 176104,
+   "tail_2025_04_09": 47566
+  },
+  "window_positives_n18": {
+   "train_2019_2022": 63748,
+   "eval_2023": 20773,
+   "holdout_2024": 19277,
+   "tail_2025_04_09": 829
+  },
+  "hole_2025_rows": 0,
+  "delhi_2024_11_18": {
+   "station_days": 39,
+   "complete_n18": 36,
+   "pos_n18": 36
+  },
+  "monsoon_2023_08_15": {
+   "complete_n18": 389,
+   "pos_n18": 1
+  },
+  "probe_reference_deltas": {
+   "note": "deltas vs the 2026-11-05 probe reference; reported, never asserted (the probe's scratch aggregation lost rows across a 401 window - record attempt_002_refusal_2026_11_06)",
+   "panel_rows_total": {
+    "probe": 716750,
+    "measured": 717429,
+    "delta": 679
+   },
+   "window_station_days": {
+    "train_2019_2022": {
+     "probe": 339557,
+     "measured": 339756,
+     "delta": 199
+    },
+    "eval_2023": {
+     "probe": 154003,
+     "measured": 154003,
+     "delta": 0
+    },
+    "holdout_2024": {
+     "probe": 175624,
+     "measured": 176104,
+     "delta": 480
+    },
+    "tail_2025_04_09": {
+     "probe": 47566,
+     "measured": 47566,
+     "delta": 0
+    }
+   },
+   "window_positives_n18": {
+    "train_2019_2022": {
+     "probe": 63735,
+     "measured": 63748,
+     "delta": 13
+    },
+    "eval_2023": {
+     "probe": 20773,
+     "measured": 20773,
+     "delta": 0
+    },
+    "holdout_2024": {
+     "probe": 19254,
+     "measured": 19277,
+     "delta": 23
+    },
+    "tail_2025_04_09": {
+     "probe": 829,
+     "measured": 829,
+     "delta": 0
+    }
+   }
+  }
+ },
+ "synthetic_mode": false,
+ "station_registry": {
+  "cpcb_pm25_stations": 549,
+  "stations_without_state_name": 62,
+  "missing_state_sentinel": "UNKNOWN_STATE",
+  "note": "measured 2026-11-06; the export leaves state_name null for these stations, so the coarse geography feature carries a declared sentinel instead of an invented state"
+ }
+}

@@ -1,0 +1,44 @@
+{
+ "name": "cpcb-aqi-exceedance",
+ "target": "exceeds",
+ "positive_label": 1,
+ "id_columns": [
+  "station_day"
+ ],
+ "columns": [
+  "station_day",
+  "station_id",
+  "state_name",
+  "date",
+  "day_of_week",
+  "month",
+  "doy_sin",
+  "doy_cos",
+  "pm25_mean",
+  "pm25_max",
+  "pm25_min",
+  "n_hours",
+  "pm25_mean_lag1",
+  "pm25_mean_lag2",
+  "pm25_mean_lag3",
+  "pm25_mean_7d",
+  "pm25_days_valid_7d",
+  "pm25_mean_30d",
+  "pm25_days_valid_30d",
+  "pm25_hist_mean_90d",
+  "days_since_gt90",
+  "exceed_count_30d",
+  "exceeds"
+ ],
+ "rows": {
+  "train": 288754,
+  "eval": 126570,
+  "holdout": 145124
+ },
+ "positive_rate": {
+  "train": 0.211512,
+  "eval": 0.156585,
+  "holdout": 0.125562
+ },
+ "split_description": "temporal split on the prediction instant (day D, 23:59 IST): train 2019-2022, eval 2023, holdout 2024; scored rows are complete (n_hours >= 18) cpcb_caaqm PM2.5 station-days with a labelable D+1 (row present, n_hours >= 18; unlabelable rows excluded and counted); the 2025-04..09 partial tail (47,566 station-days) is excluded and counted, the 2025-01..03 and 2025-10..12 hole months are asserted empty; label = D+1 24-hr mean > 90 ug/m3 (CPCB National AQI Poor-band lower breakpoint)"
+}
