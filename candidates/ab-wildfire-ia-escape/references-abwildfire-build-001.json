@@ -1,0 +1,117 @@
+{
+ "ok": true,
+ "stage": "references",
+ "candidate": "ab-wildfire-ia-escape",
+ "artifact_version": "c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b44d0e43da2",
+ "gate_version": "1.5.0",
+ "accepted_report": "/output/qualification-ab-wildfire-ia-escape.json",
+ "protocol": "pre-registered: metrics (rank AUC, Brier), references (majority constant, persistence analogue = assessment_hectares, calendar/identity prior from train, full-feature L2 logistic), eval window 2016-2020, day-cluster bootstrap 500 resamples - all fixed before any score was seen; holdout never opened",
+ "eval_rows": 5707,
+ "train_rows": 15864,
+ "train_positive_rate": 0.018722,
+ "eval_positive_rate": 0.018223,
+ "references": {
+  "majority_constant": {
+   "auc": 0.5,
+   "brier": 0.018223234624145785,
+   "accuracy_on_eval": 0.9817767653758542,
+   "note": "constant score: no ranking information; the AUC is the coin-flip null 0.5 by construction"
+  },
+  "persistence_assessment_hectares": {
+   "auc": 0.9095728249975974,
+   "brier": null,
+   "brier_note": "not reported: the persistence analogue is a raw size in hectares, not a probability; Brier is undefined for it"
+  },
+  "calendar_identity_only": {
+   "auc": 0.712964551957056,
+   "brier": 0.017944783101809417
+  },
+  "full_feature_logistic": {
+   "auc": 0.9206280289405401,
+   "brier": 0.015837186409891707
+  },
+  "full_minus_persistence": {
+   "observed_auc_difference": 0.0111,
+   "day_cluster_bootstrap": {
+    "resamples": 500,
+    "ci_low": -0.0292,
+    "ci_high": 0.0514,
+    "median": 0.0108
+   },
+   "note": "identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+  },
+  "full_minus_calendar": {
+   "observed_auc_difference": 0.2077,
+   "day_cluster_bootstrap": {
+    "resamples": 500,
+    "ci_low": 0.1551,
+    "ci_high": 0.2644,
+    "median": 0.2091
+   },
+   "note": "identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+  },
+  "persistence_minus_calendar": {
+   "observed_auc_difference": 0.1966,
+   "day_cluster_bootstrap": {
+    "resamples": 500,
+    "ci_low": 0.1371,
+    "ci_high": 0.2694,
+    "median": 0.1974
+   },
+   "note": "identical eval rows; an interval containing zero is an inconclusive difference, not parity"
+  }
+ },
+ "eval_per_year": {
+  "2016": {
+   "rows": 1436,
+   "positives": 15,
+   "positive_rate": 0.0104,
+   "auc": {
+    "persistence": 0.8617640159512081,
+    "calendar": 0.8076471968097584,
+    "full": 0.8816326530612245
+   }
+  },
+  "2017": {
+   "rows": 1244,
+   "positives": 28,
+   "positive_rate": 0.0225,
+   "auc": {
+    "persistence": 0.9408041588345865,
+    "calendar": 0.6218867481203008,
+    "full": 0.9343573778195489
+   }
+  },
+  "2018": {
+   "rows": 1299,
+   "positives": 28,
+   "positive_rate": 0.0216,
+   "auc": {
+    "persistence": 0.9281218388220749,
+    "calendar": 0.6464398111723053,
+    "full": 0.918315162414297
+   }
+  },
+  "2019": {
+   "rows": 1005,
+   "positives": 30,
+   "positive_rate": 0.0299,
+   "auc": {
+    "persistence": 0.8652991452991453,
+    "calendar": 0.7671111111111111,
+    "full": 0.9302905982905982
+   }
+  },
+  "2020": {
+   "rows": 723,
+   "positives": 3,
+   "positive_rate": 0.0041,
+   "auc": {
+    "persistence": 0.9895833333333334,
+    "calendar": 0.7173611111111111,
+    "full": 0.8657407407407407
+   }
+  }
+ },
+ "full_model_note": "a simple L2 logistic reference over all shipped features (rare levels pooled at 30 train rows, median imputation with missing indicators, standardized by train statistics), not a tuned model; benchmark agents build their own"
+}

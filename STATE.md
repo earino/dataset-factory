@@ -1,3 +1,72 @@
+## 2026-11-06 (22:50Z) - scheduled advancement: ab-wildfire-ia-escape CONSTRUCTED AND QUALIFIED (abwildfire-build-001: gate 1.5.0 all green on the full artifact on the worker, exact-byte --accept, reference triad measured; full-minus-persistence INCONCLUSIVE); record -> qualified; worker destroyed
+
+Construction session for the freshest READY candidate (the packaged
+cpcb-aqi-exceedance release still awaits the operator's flip - a human wait,
+left untouched; release work outranks construction only when actionable).
+One worker job, EUR reservation 0.04, destroyed after verified collection.
+
+Preflight (recorded before launch): rows are chosen by build.py's
+population rule (all 27,828 assessed FPA wildfires; eligibility
+assessment-based, no outcome-conditioned filter) and split by the
+assessment instant's calendar year; the artifact is written by
+build.py (construct only, no performance metric anywhere in it);
+qualification and exact-byte acceptance run in run.sh stages 2-3
+(skills/dataset-qualification/scripts/qualify_dataset.py copied
+verbatim by assemble-job); the first place any performance metric is
+computed is score.py, which run.sh invokes only after acceptance, on
+eval rows only, and it never opens private/holdout.csv. Source: pinned
+CSV staged at earino/dataset-factory-staging source-abwildfire-001
+(437116894, asset 718748383; stage_source_2026_11_06.py) because
+open.alberta.ca Cloudflare-challenges plain clients (curl 403 measured);
+executor fetch verified the sha256 and build.py asserted it again.
+
+- abwildfire-build-001 (cx23 hel1, server 174889543): exit 0, 102.1 s.
+  Build: train 15,864 / eval 5,707 / holdout 6,257 by assessment year
+  (356 winter carryover fires move with their assessment; label-side
+  counts identical to the record-year split: positives 297/104/257,
+  distinct positive dates 156/79/128, containment>72h 514/189/611).
+  Escape-only shipped label (>= 100 ha final area burned); containment
+  is a possible separate task instance (42% already-controlled stratum
+  decision), measured in build-summary-*.json but not shipped. Column
+  policy asserted on written headers (cause, dispatch, milestones,
+  fire_name, fire_origin, discovered_size, detection_agent, label sources
+  all absent). Ten named-fire fixtures + size-class + season-hectares
+  cross-checks passed. Timezone reading (America/Edmonton) confirmed
+  against the official 2016 Horse River review (detected 16:03h MDT =
+  the record's naive 16:03; UC/EX dates match).
+- Gate 1.5.0 on the FULL artifact on the worker: failed_checks [],
+  artifact_version c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b
+  44d0e43da2; exact-byte --accept re-verified on the worker. Local dry
+  run produced byte-identical files (same digest) - deterministic build.
+- Reference triad on eval 2016-2020 (5,707 rows, 104 positives),
+  post-acceptance, holdout unopened: majority constant 0.5 (accuracy
+  0.9818); persistence analogue (assessment_hectares) 0.9096;
+  calendar/identity prior 0.7130; full-feature L2 logistic 0.9206.
+  Day-cluster bootstrap paired diffs: full - persistence +0.0111
+  [-0.0292, +0.0514] INCONCLUSIVE (interval contains zero); full -
+  calendar +0.2077 [+0.1551, +0.2644]; persistence - calendar
+  +0.1966 [+0.1371, +0.2694]. Recorded finding, not a tuning target:
+  the one-feature assessment-size rule sets the eval bar at ~0.91 and
+  the simple full-feature reference does not demonstrably beat it;
+  whether a richer model does is the benchmark's question. Per-year
+  eval breakdown in references-*.json (2020 has 3 positives - thin).
+- Full extract preserved in staging draft release 437132110
+  (job-abwildfire-build-001); compact reports committed in the candidate
+  dir (qualification-, references-, build-summary-abwildfire-build-001.json
+  + record_update_2026_11_06.py). Record status -> qualified with the
+  qualification evidence block.
+- Worker lifecycle: launched 22:34:23Z, collected 22:41:30Z (all 14
+  assets digest-verified), destroyed 22:43:56Z (server + job-owned IP;
+  collect-then-delete normal path).
+
+Next action: package ab-wildfire-ia-escape with dataset-release from the
+staged extract (README/card with derived-not-official labelling, LICENSE.md
+with the OGL-Alberta attribution sentence verbatim, REPRODUCE with the
+browser-fetch procedure, the triad comparison beside every AUC, manifest,
+check-package, pre-flip audit prompt) - then the cpcb flip remains the
+operator's. The candidate is now the queue's front for packaging work.
+
+
 ## 2026-11-06 (20:35Z) - scheduled discovery session (Canada focus): ab-wildfire-ia-escape READY (Alberta initial-assessment escape + containment-duration task; OGL-AB A; measured splits, cross-checked vs publisher season stats; novelty differentiated vs WildfireIA/Mesogeos/Zong/Korkola); open.canada.ca newest-packages re-check done for parked statcan-wds (condition unmet); checks green
 
 Discovery-only session (regional focus Canada: Statistics Canada, ECCC, Health

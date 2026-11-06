@@ -298,3 +298,50 @@ exact-byte acceptance -> baseline triad before any number is quoted:
 9. LICENSE.md: MIT for our code; CC0 for our compilation rights; Alberta's
    terms preserved with the required attribution sentence; derived-work
    labeling per the non-endorsement clause.
+
+## Construction (abwildfire-build-001, 2026-11-06) - COMPLETE
+
+Full worker order construct -> qualify -> exact-byte accept -> pre-registered
+references, exit 0 in 102.1 s (cx23 hel1, server 174889543, destroyed after
+verified collection). Record status: qualified.
+
+- Source channel: the pinned CSV was staged in the private staging repo
+  (source-abwildfire-001, release 437116894, asset 718748383 - stage_source_
+  2026_11_06.py, digest re-verified on redownload) because open.alberta.ca
+  Cloudflare-challenges plain clients; the executor fetched it with sha256
+  verification and build.py asserted the digest again.
+- Population: all 27,828 assessed FPA wildfires; winter rows kept (587
+  Nov-Feb); eligibility assessment-based, no outcome-conditioned rule.
+- Splits follow the ASSESSMENT instant's calendar year (the time column):
+  train 15,864 / eval 5,707 / holdout 6,257. 356 winter carryover fires
+  move with their assessment year; every label-side count (positives
+  297/104/257, distinct positive dates 156/79/128, containment>72h
+  514/189/611, already-controlled 11,688) is identical under either rule.
+- Shipped label: escape only (final area burned >= 100 ha). The containment
+  formulation needs its own stratum decision and would be a separate task
+  instance; its per-window measurements are in build-summary-abwildfire-
+  build-001.json.
+- Column policy enforced in code and asserted on the written headers: cause
+  family, dispatch block (2.41% mixed ordering), suppression/milestone
+  fields, fire_name (post-hoc, outcome-revealing), fire_origin (no publisher
+  definition transcribed), discovered_size and detection_agent excluded.
+- Timezone confirmed: the official 2016 Horse River review states
+  detection at 16:03h MDT 2016-05-01 - the record's naive local 16:03 -
+  and its under-control (2016-07-04) / extinguished (2017-08-02) dates
+  match the record's milestones.
+- Gate 1.5.0 on the FULL artifact, on the worker: ALL CHECKS GREEN
+  (failed_checks []), artifact_version c2c8ceb56c7ff52aaf748473e1251725c4e
+  86912edb9b17387e6b44d0e43da2; exact-byte --accept re-verified on the
+  worker. The local dry run produced byte-identical files (same digest).
+- Reference triad on eval 2016-2020 (5,707 rows, 104 positives), computed
+  post-acceptance, holdout never opened: majority constant AUC 0.5
+  (accuracy 0.9818); persistence analogue (assessment_hectares) 0.9096;
+  calendar/identity prior 0.7130; full-feature L2 logistic 0.9206.
+  Paired day-cluster bootstrap (500 resamples): full - persistence
+  +0.0111 [-0.0292, +0.0514] INCONCLUSIVE (interval contains zero);
+  full - calendar +0.2077 [+0.1551, +0.2644]; persistence - calendar
+  +0.1966 [+0.1371, +0.2694]. Any quoted AUC must carry this comparison;
+  no label, threshold, window or feature may be changed to widen the gap.
+- Full extract (runner layout) preserved in staging draft release 437132110
+  (job-abwildfire-build-001); compact reports committed beside this file
+  (qualification-, references-, build-summary-abwildfire-build-001.json).

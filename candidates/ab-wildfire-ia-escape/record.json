@@ -1,6 +1,6 @@
 {
   "id": "ab-wildfire-ia-escape",
-  "status": "ready",
+  "status": "qualified",
   "created_at": "2026-11-06T20:55:00+00:00",
   "domain": "wildfire operations - initial-attack escape and containment-duration prediction from the regulator's assessment record (per-incident classification, Alberta Forest Protection Area 2006-2025)",
   "prediction_question": "At Alberta Wildfire's recorded initial assessment of a newly discovered wildfire (assessment_datetime, 'originally assessed'), predict whether the wildfire will escape initial attack - final area burned at least 100 ha (variants at 4/40/200 ha) - and/or remain uncontained more than 72 hours (time from assessment to first under control), using only the crew-observed assessment record (size at assessment, rate of spread, fire behaviour type, position on slope, in-situ weather over the fire, FBP fuel type), pre-instant timing fields (estimated ignition, reported, detection channel), and calendar/geography. A useful prediction supports the actual initial-attack resourcing decision - airtanker/crew prioritization and same-day escalation - which the agency itself states happens at this instant.",
@@ -37,8 +37,8 @@
   ],
   "licence_class": "A",
   "licence_note": "Open Government Licence - Alberta v2.2 permits redistribution, adaptation and commercial use; the binding condition is attribution ('Contains information licensed under the Open Government Licence - Alberta.' plus a licence link) - recorded and carried into LICENSE.md verbatim at packaging, per the tick's standing warning about OGL attribution terms. Non-endorsement clause: the dataset card and README must label the work as derived and never as Alberta Wildfire's official product.",
-  "construction_script": null,
-  "split_strategy": "Temporal, disjoint by year: train 2006-2015 (15,944 fires), eval 2016-2020 (5,627), holdout 2021-2025 (6,257). Measured positives, primary escape label >= 100 ha: train 297 (1.86%), eval 104 (1.85%), holdout 257 (4.11%); containment > 72 h: 514 (3.2%), 189 (3.4%), 611 (9.8%). Both classes present in every window at every measured threshold (4/10/40/100/200/1000 ha). Positives cluster on extreme-weather days: distinct assessment dates of >=100 ha positives are 156/79/128 per window - report clustered counts and score with day-cluster awareness. The holdout escape rate is higher because 2021-2025 contains the 2023 record season - real, documented non-stationarity (see known-event fixtures in notes.md), not a construction defect.",
+  "construction_script": "candidates/ab-wildfire-ia-escape/source/build.py, executed by worker job abwildfire-build-001 (entrypoint source/run.sh: construct -> qualify -> exact-byte accept -> pre-registered references; build.py computes no performance metric, score.py runs post-acceptance on eval rows only and never opens private/holdout.csv)",
+  "split_strategy": "Temporal, disjoint by the ASSESSMENT instant's calendar year (the time column; America/Edmonton local operational time): train 2006-2015 (15,864 fires), eval 2016-2020 (5,707), holdout 2021-2025 (6,257). 356 winter carryover fires assessed in the year after their record year move with their assessment; label-side counts are identical under the record-year rule (positives 297/104/257 = 1.87%/1.82%/4.11%; distinct positive assessment dates 156/79/128; containment>72h 514/189/611). Winter (Nov-Feb) rows kept and counted (587 total). The holdout escape rate is higher because 2021-2025 contains the 2023 record season - documented non-stationarity, recorded in quality.json limitations.",
   "measurements": {
     "probe_scripts": "candidates/ab-wildfire-ia-escape/probe_escape_base_rates.py and probe_publisher_crosscheck.py, results in probe_escape_base_rates_result.json and probe_publisher_crosscheck_result.json; pinned inputs recorded in notes.md (CSV sha256 8b6ed447..., dictionary sha256 bfff81c0...)",
     "rows_and_uniqueness": "27,828 wildfires 2006-2025; (YEAR, FIRE_NUMBER) unique (0 duplicates); 0 unparseable timestamps; 0 current_size=0 rows; 0 size-class/current-size inconsistencies (A>=0-0.1, B>0.1-4, C>4-40, D>40-200, E>200 ha).",
@@ -51,13 +51,135 @@
     "provenance_mix": "detection channel drifts (lookouts 34% of 2006 -> 21% of 2025; unplanned 42% -> 59%); population definition (all FPA wildfires) is stable; full per-year mixes in probe result JSON.",
     "vintage_limitation": "single current compilation (portal updated 2026-02-17, covers through 2025); per-fire historical vintages are not published and not recoverable; the dictionary documents in-place revision of area burned (spring aerial-photography interpretation), cause (under-investigation -> final) and location (assessment GPS -> confirmed ignition area); the 2019 aggregate revision measured above is direct evidence. The task is therefore a current-compilation retrospective with explicit evaluation_contract assumptions - it does not claim operational point-in-time reproducibility of historical values.",
     "extraction_cost_measured": "one 10.4 MB CSV + one 193 KB dictionary PDF through the cleared browser context (~12 s transfer, ~25 s chunked export) on the coordinator container (4 vCPU); full-population probes run in ~3 s locally; construction is a single 10.4 MB parse on a worker. No bulk transfer beyond the source file.",
-    "access_caveat": "open.alberta.ca blocks plain HTTP clients (Cloudflare managed challenge, measured); construction must ship the sha256-pinned CSV in the job bundle or use the recorded browser procedure, and assert the digest in-build."
+    "access_caveat": "open.alberta.ca blocks plain HTTP clients (Cloudflare managed challenge, measured); construction must ship the sha256-pinned CSV in the job bundle or use the recorded browser procedure, and assert the digest in-build.",
+    "construction_abwildfire_build_001": {
+      "date": "2026-11-06",
+      "job": "abwildfire-build-001 (cx23 hel1, server 174889543, 102.1 s, exit 0; destroyed after verified collection at 2026-11-06T22:43:56Z, reservation 0.04 EUR)",
+      "source": "staged pinned CSV earino/dataset-factory-staging release source-abwildfire-001 (437116894, asset 718748383), fetched by the executor with sha256 verification and asserted again in-build: 8b6ed447ab0f958dbe845a53dc15362b8ef5c0810ad9420d2143f9f5ee010a72",
+      "artifact_version": "c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b44d0e43da2",
+      "split_sha256": {
+        "train": "575649d52c304d2fa0751411e0e4dc291309b42fbd0b280cbeae9e4b747cc2ae",
+        "eval": "d099e4cb9da999e3e301b0e4da1cc98cd56fc11371feba7711447571c83a7759",
+        "holdout": "53583f4d2dff386bfebe864f49dba348d9717ee7bf96d28574082f80668edc12"
+      },
+      "fixtures": "10 named fires asserted at publisher-documented final sizes (incl. Horse River 2016 485,123.6 ha; already-controlled negative LWF002 2023), size-class consistency 0, publisher season-hectares deltas 2020-2024 <= 1.1% and 2019 -10.4% (documented revision)",
+      "timezone_confirmation": "official 2016 Horse River review: detected 16:03h MDT 2016-05-01 = the record's naive local 16:03; under-control 2016-07-04 and extinguished 2017-08-02 match"
+    },
+    "reference_triad_eval_2016_2020": {
+      "protocol": "pre-registered (source/score.py): rank AUC on identical eval rows (5,707 rows, 104 positives); day-cluster bootstrap (cluster = assessment_date) 500 resamples for paired differences; holdout never opened; simple L2 logistic reference is not a tuned model",
+      "majority_constant": {
+        "auc": 0.5,
+        "accuracy_on_eval": 0.9818
+      },
+      "persistence_assessment_hectares": {
+        "auc": 0.9096
+      },
+      "calendar_identity_only": {
+        "auc": 0.713
+      },
+      "full_feature_logistic": {
+        "auc": 0.9206
+      },
+      "full_minus_persistence": {
+        "observed": 0.0111,
+        "ci": [
+          -0.0292,
+          0.0514
+        ],
+        "finding": "INCONCLUSIVE - the interval contains zero; the full-feature logistic reference does NOT demonstrably beat the one-feature persistence rule (observed size at assessment) under day-cluster resampling"
+      },
+      "full_minus_calendar": {
+        "observed": 0.2077,
+        "ci": [
+          0.1551,
+          0.2644
+        ]
+      },
+      "persistence_minus_calendar": {
+        "observed": 0.1966,
+        "ci": [
+          0.1371,
+          0.2694
+        ]
+      },
+      "reading": "any quoted AUC must carry this comparison: the bar on eval is ~0.91 from assessment size alone; the added features' measured contribution over that rule is +0.011 with an interval containing zero. Not a tuning target: no label, threshold, window or feature may change to widen it. A richer model may still beat it - that question is the benchmark's, and the calendar-only prior is clearly beaten.",
+      "eval_per_year": {
+        "2016": {
+          "rows": 1436,
+          "positives": 15,
+          "positive_rate": 0.0104,
+          "auc": {
+            "persistence": 0.8617640159512081,
+            "calendar": 0.8076471968097584,
+            "full": 0.8816326530612245
+          }
+        },
+        "2017": {
+          "rows": 1244,
+          "positives": 28,
+          "positive_rate": 0.0225,
+          "auc": {
+            "persistence": 0.9408041588345865,
+            "calendar": 0.6218867481203008,
+            "full": 0.9343573778195489
+          }
+        },
+        "2018": {
+          "rows": 1299,
+          "positives": 28,
+          "positive_rate": 0.0216,
+          "auc": {
+            "persistence": 0.9281218388220749,
+            "calendar": 0.6464398111723053,
+            "full": 0.918315162414297
+          }
+        },
+        "2019": {
+          "rows": 1005,
+          "positives": 30,
+          "positive_rate": 0.0299,
+          "auc": {
+            "persistence": 0.8652991452991453,
+            "calendar": 0.7671111111111111,
+            "full": 0.9302905982905982
+          }
+        },
+        "2020": {
+          "rows": 723,
+          "positives": 3,
+          "positive_rate": 0.0041,
+          "auc": {
+            "persistence": 0.9895833333333334,
+            "calendar": 0.7173611111111111,
+            "full": 0.8657407407407407
+          }
+        }
+      }
+    }
   },
-  "jobs": [],
+  "jobs": [
+    {
+      "id": "abwildfire-build-001",
+      "candidate": "ab-wildfire-ia-escape",
+      "status": "succeeded",
+      "exit_code": 0,
+      "elapsed_seconds": 102.1,
+      "server_id": 174889543,
+      "server_type": "cx23",
+      "location": "hel1",
+      "image": "python:3.13-slim (sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc)",
+      "staging_release": "437132110 (private earino/dataset-factory-staging, tag job-abwildfire-build-001)",
+      "source_staging": "437116894 (source-abwildfire-001, asset 718748383, pinned CSV sha256 8b6ed447... verified on fetch and in-build)",
+      "reservation_eur": "0.04",
+      "collected_at": "2026-11-06T22:41:30Z",
+      "deleted_at": "2026-11-06T22:43:56Z",
+      "what": "full construction + gate 1.5.0 + exact-byte accept + pre-registered reference triad; see job record .factory/jobs/abwildfire-build-001 and jobs/ ledger"
+    }
+  ],
   "artifacts": [],
   "rejection_reason": null,
   "review": "All five discovery contracts reconciled against recorded evidence (probes and full transcripts in candidates/ab-wildfire-ia-escape/). (1) Redistribution: class A - OGL-Alberta v2.2 permits redistribution and derivatives; the attribution sentence and non-endorsement wording are recorded verbatim and carried into LICENSE.md; the personal-information exemption was checked against the shipped columns (position codes, not names). (2) Prediction timing: the instant is the publisher's own initial-assessment timestamp and every intended feature is documented 'at the time of initial assessment' by the publisher's dictionary - the strongest timing documentation of any source this bench has opened; post-instant families (cause, dispatch, suppression milestones) are excluded with measured ordering evidence; declared limitations: no timezone marker in timestamps (read as America/Edmonton, assumption to confirm) and a single current compilation (no historical per-fire vintages) - the task is labelled current-compilation retrospective, and evaluation_contract must state these assumptions plus the bounded revision-flip exposure (89 fires within +-20% of 100 ha). (3) Target: labels derive from the record's own post-instant fields (current_size, first_uc_date), excludable from shipped features; eligibility is assessment-based with 100% coverage - no outcome-conditioned selection; no censoring (terminal status on every row, 99.9% extinguished). (4) Split capacity: three disjoint year windows carry both classes for both labels (escape 1.86%/1.85%/4.11%; containment 3.2%/3.4%/9.8%), with same-day clustered counts recorded (independence scale = the extreme fire-weather day); the holdout's higher rate is the documented 2023 record season. (5) Not a mirror: the IA-escape family is precedented (WildfireIA US benchmark, Mesogeos, Zong et al. Alberta powerline subset, Korkola et al. Ontario, UAlberta IA-difficulty study) - none ships an all-cause, assessment-instant task on the regulator's own in-situ assessment observations with containment-milestone labels; WildfireIA's own abstract records that such 'response records' are non-public in the US, which is precisely the gap this source closes for a public jurisdiction. Novelty verdict 'differentiated' recorded by script. Residual uncertainties for construction: confirm the timezone reading against a publicly documented fire timeline; decide the already-controlled stratum's treatment for the containment label; winter/season scope decision.",
-  "next_action": "Hand to construction (worker, advancement session): (1) acquire the CSV via bundle-shipped pinned copy or the recorded browser procedure and assert sha256 8b6ed447... in-build; (2) population = all assessed FPA wildfires 2006-2025 (decide winter-row scope once and declare); (3) primary label escape (final >= 100 ha), secondary containment (> 72 h to first under control, with an explicit decision on the 42% already-controlled-at-assessment stratum); (4) features = the assessment block + pre-instant timing/detection + calendar/geography; exclude cause-family, dispatch block, suppression/milestone fields and label sources - enforce this column policy in code, not convention; (5) confirm the America/Edmonton timezone reading against a publicly documented fire timeline (e.g. Horse River 2016) and declare it in quality.json.evaluation_contract; (6) splits train 2006-2015 / eval 2016-2020 / holdout 2021-2025; document the 2023-season base-rate shift in the card; (7) assert known-event fixtures in-build (Richardson 2011, Horse River 2016, Chuckegg Creek 2019, Basset/Long Lake/Pembina 2023 at the publisher's own final sizes; LWF002 2023 as an already-controlled negative); (8) gate 1.5 evaluation_contract with the current-compilation retrospective scope, the vintage limitations and the bounded revision-flip exposure; run the reverse-history join probes on the exact artifact; (9) full-worker qualification -> exact-byte acceptance -> baseline triad before any AUC/base-rate/headroom figure is quoted; (10) LICENSE.md: MIT for our code, CC0 for our compilation rights, Alberta's attribution sentence verbatim, derived-not-official labeling per the non-endorsement clause.",
+  "next_action": "Package with dataset-release: build release/ab-wildfire-ia-escape from the staged extract (staging release 437132110) - README and dataset card (derived-not-official labelling per the OGL-Alberta non-endorsement clause), LICENSE.md with the required attribution sentence verbatim, MIT for our code, CC0 for our compilation rights, data dictionary (the verbatim transcript), REPRODUCE with the browser fetch procedure, the reference-triad comparison beside every AUC, release-manifest, check-package, then the pre-flip audit prompt before any flip. The full-minus-persistence difference is INCONCLUSIVE (+0.0111, CI [-0.029, +0.051]) and must appear next to any quoted number. Secondary containment formulation (42% already-controlled-at-assessment stratum decision) is a possible separate task instance, deliberately not shipped here.",
   "jurisdiction": {
     "country": "CA",
     "region": "North America",
@@ -197,5 +319,14 @@
     "ours": "All-cause Alberta Forest Protection Area per-wildfire task at the publisher-documented initial-assessment instant (27,828 fires, 2006-2025) whose features are the regulator's own crew-observed assessment record (assessment size, rate of spread, fire behaviour, position on slope, in-situ weather over the fire, FBP fuel type, detection channel), with a final-area escape label and a time-to-under-control containment label, temporal splits and a publisher-cross-checked revision record; no public source ships in-situ initial-attack assessment observations at per-incident grain for any jurisdiction, and no Alberta all-cause assessment-instant escape task exists in ML-ready form",
     "verdict": "differentiated",
     "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "qualification": {
+    "gate_version": "1.5.0",
+    "artifact_version": "c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b44d0e43da2",
+    "result": "ALL CHECKS GREEN on the FULL artifact on the worker (failed_checks []); exact-byte --accept re-verified on the worker: 'ACCEPTED: /output/extract matches the qualified artifact c2c8ceb56c7ff52a'",
+    "report": "candidates/ab-wildfire-ia-escape/qualification-abwildfire-build-001.json (sha256 16697cd8aef51394f84b125964104adea5bf9dd8536f4fde291f817469cb07bb)",
+    "references_report": "candidates/ab-wildfire-ia-escape/references-abwildfire-build-001.json (sha256 ab720e3b07aa0df3c6d3e701875317af20e24ede4fe6c099950a26299301b45d)",
+    "full_extract": "earino/dataset-factory-staging private draft release 437132110 (job-abwildfire-build-001): public/train.csv 2,351,953 B (575649d52c304d2f...), public/eval.csv 838,515 B (d099e4cb9da999e3...), private/holdout.csv 930,923 B (53583f4d2dff386b...), meta.json, quality.json, summary.json",
+    "scope": "retrospective_research, isolated_rows access, training_label_timing unverified (single current compilation); gate 1.5 evaluation_contract declared in quality.json with the vintage, timezone, cluster and public-event-identifiability limitations"
   }
 }

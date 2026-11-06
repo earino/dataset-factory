@@ -1,0 +1,537 @@
+{
+  "job": {
+    "id": "abwildfire-build-001",
+    "candidate": "ab-wildfire-ia-escape",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 40,
+    "lifetime_minutes": 60,
+    "max_disk_mb": 8000,
+    "max_artifact_mb": 300,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 437116894,
+      "assets": [
+        {
+          "asset_id": 718748383,
+          "dest": "fp-historical-wildfire-data-2006-2025.csv",
+          "size": 10400030,
+          "sha256": "8b6ed447ab0f958dbe845a53dc15362b8ef5c0810ad9420d2143f9f5ee010a72"
+        }
+      ]
+    },
+    "what": "Full construction of the ab-wildfire-ia-escape extract (first attempt) from the pinned Alberta Historical wildfire CSV 2006-2025 (staged at source-abwildfire-001, asset 718748383, sha256 verified on arrival by the executor and asserted again in-build; open.alberta.ca Cloudflare-challenges plain HTTP clients, so the worker cannot fetch the publisher directly - measured on the coordinator 2026-11-06). Population: ALL assessed Forest Protection Area wildfires 2006-2025 (27,828 rows; winter rows kept and counted - eligibility is assessment-based, no outcome-conditioned rule). Primary and only shipped label: escape = final area burned (current_size) >= 100 ha. Features: the publisher-documented assessment block (assessment_hectares, fire_spread_rate, fire_type, fire_position_on_slope, in-situ weather over the fire, fuel_type) + pre-instant timing/detection (elapsed hours from reported/discovered/estimated start to assessment, detection_agent_type) + calendar/geography (day_of_week, month, doy_sin/cos, forest_area prefix, latitude, longitude). Column policy enforced in code: cause family, dispatch block, suppression/milestone fields, fire_name, fire_origin, discovered_size, detection_agent and both label sources are excluded and asserted absent from every written header. Timezone reading confirmed against the official 2016 Horse River review (detected 16:03h MDT May 1 = the CSV's naive local timestamp; under-control and extinguished dates match). Named-fire fixtures asserted in-build (Richardson 2011, Utikuma 2011, Zama 2012, Horse River 2016, Chuckegg Creek 2019, McMillan 2019, Basset/Long Lake/Pembina 2023, already-controlled negative LWF002 2023) plus the size-class consistency and publisher season-hectares cross-checks. Splits follow the ASSESSMENT instant's calendar year (the time column; 356 winter carryover fires assessed in the year after their record year move with their assessment): train 2006-2015 / eval 2016-2020 / holdout 2021-2025, rows 15,864/5,707/6,257, with asserted per-window counts (297/104/257 positives, 156/79/128 distinct positive dates, 514/189/611 containment>72h) identical under either split rule; the 2023-season holdout base-rate shift is recorded. Then gate 1.5.0 on the FULL artifact, exact-byte --accept, then score.py's pre-registered reference triad on eval rows only. No performance metric is computed in the build; the holdout is never read by score.py.",
+    "stopping_condition": "A failed source digest, a failed named-fixture or cross-check assertion, a failed internal-consistency check, a failed gate, a failed --accept or a truncated fetch stops the run with diagnostics uploaded; the extract is never scored and the holdout is never read outside the gate. One rebuild per structural defect; no re-tuning of threshold, window, label or features after any score. A gate refusal names the column or declaration responsible and becomes a finding to diagnose, not a retry loop.",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/ab-wildfire-ia-escape/source/build.py",
+        "bytes": 53195,
+        "sha256": "9200a30fa4cd6f7f97d3f9edc1fdf9ca0a84bf6d86f995e9a87d223d9d060418"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ab-wildfire-ia-escape/source/run.sh",
+        "bytes": 1905,
+        "sha256": "98a53051bad6545a1b822747c760d914fe8cdeaa8eaf5cc881fb3868819367f4"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/ab-wildfire-ia-escape/source/score.py",
+        "bytes": 16613,
+        "sha256": "202402288a37d16c5163556ab94305ab79896ae2f82ebc224ec5c6a4e3f9687e"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "9e8450164f4b5047c72c68c6d493af1944344e46972231c6bca11a892cf6517d",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-06T22:34:23.187622+00:00",
+  "expires": 1794008063,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 174889543,
+  "known_hosts": "/opt/data/dataset-factory/.factory/abwildfire-build-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "abwildfire-build-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 437116894,
+      "fetched": [
+        {
+          "dest": "fp-historical-wildfire-data-2006-2025.csv",
+          "bytes": 10400030,
+          "sha256": "8b6ed447ab0f958dbe845a53dc15362b8ef5c0810ad9420d2143f9f5ee010a72"
+        }
+      ],
+      "failures": [],
+      "bytes": 10400030
+    },
+    "image_id": "sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc",
+    "image_digests": [
+      "python@sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 102.1,
+    "summary": {
+      "ok": true,
+      "stage": "build",
+      "candidate": "ab-wildfire-ia-escape",
+      "source": {
+        "path": "/data/fp-historical-wildfire-data-2006-2025.csv",
+        "sha256": "8b6ed447ab0f958dbe845a53dc15362b8ef5c0810ad9420d2143f9f5ee010a72",
+        "bytes": 10400030,
+        "fetch_receipt": null,
+        "provenance": "pinned publisher fetch measured on the coordinator 2026-11-06 through the cleared browser context (open.alberta.ca Cloudflare-challenges plain HTTP clients, curl 403 measured); staged at earino/dataset-factory-staging release source-abwildfire-001 (437116894, asset 718748383) and re-verified by this build"
+      },
+      "population": {
+        "total_rows": 27828,
+        "split_rule": "assessment instant's calendar year (America/Edmonton local operational time)",
+        "per_year_record_counts": {
+          "2006": 1954,
+          "2007": 1348,
+          "2008": 1712,
+          "2009": 1710,
+          "2010": 1840,
+          "2011": 1218,
+          "2012": 1568,
+          "2013": 1226,
+          "2014": 1470,
+          "2015": 1898,
+          "2016": 1376,
+          "2017": 1244,
+          "2018": 1279,
+          "2019": 1005,
+          "2020": 723,
+          "2021": 1342,
+          "2022": 1276,
+          "2023": 1132,
+          "2024": 1230,
+          "2025": 1277
+        },
+        "rows_per_window": {
+          "train": 15864,
+          "eval": 5707,
+          "holdout": 6257
+        },
+        "record_year_split_rows": {
+          "train": 15944,
+          "eval": 5627,
+          "holdout": 6257
+        },
+        "carryover_rows_by_window": {
+          "train": 236,
+          "eval": 120
+        },
+        "winter_nov_feb_rows": {
+          "train": 288,
+          "eval": 93,
+          "holdout": 206,
+          "total": 587
+        }
+      },
+      "label": {
+        "threshold_ha": 100.0,
+        "positives_per_window": {
+          "train": 297,
+          "eval": 104,
+          "holdout": 257
+        },
+        "positive_rate_per_window": {
+          "train": 0.018722,
+          "eval": 0.018223,
+          "holdout": 0.041074
+        },
+        "distinct_positive_dates_per_window": {
+          "train": 156,
+          "eval": 79,
+          "holdout": 128
+        },
+        "band_80_120_ha": 89,
+        "final_below_assessment_size": 2220,
+        "assessed_at_or_above_100ha": 88
+      },
+      "secondary_containment_not_shipped": {
+        "note": "measured diagnostics of the secondary formulation only; the shipped target is escape. The 42.0% already-controlled-at-assessment stratum needs its own design decision and would be a separate task instance",
+        "gt_72h_per_window": {
+          "train": 514,
+          "eval": 189,
+          "holdout": 611
+        },
+        "already_controlled_at_assessment": {
+          "train": 7153,
+          "eval": 2415,
+          "holdout": 2120,
+          "total": 11688
+        }
+      },
+      "fixtures_asserted": [
+        {
+          "year": "2011",
+          "fire_number": "MWF007",
+          "current_size": "577646.8",
+          "escape": 1
+        },
+        {
+          "year": "2011",
+          "fire_number": "SWF057",
+          "current_size": "87659.4",
+          "escape": 1
+        },
+        {
+          "year": "2012",
+          "fire_number": "HWF106",
+          "current_size": "134603",
+          "escape": 1
+        },
+        {
+          "year": "2016",
+          "fire_number": "MWF009",
+          "current_size": "485123.6",
+          "escape": 1
+        },
+        {
+          "year": "2019",
+          "fire_number": "HWF042",
+          "current_size": "334772.6",
+          "escape": 1
+        },
+        {
+          "year": "2019",
+          "fire_number": "SWF049",
+          "current_size": "222837.2",
+          "escape": 1
+        },
+        {
+          "year": "2023",
+          "fire_number": "HWF058",
+          "current_size": "234061",
+          "escape": 1
+        },
+        {
+          "year": "2023",
+          "fire_number": "HWF036",
+          "current_size": "203022",
+          "escape": 1
+        },
+        {
+          "year": "2023",
+          "fire_number": "EWF031",
+          "current_size": "201913",
+          "escape": 1
+        },
+        {
+          "year": "2023",
+          "fire_number": "LWF002",
+          "current_size": "0.01",
+          "escape": 0
+        }
+      ],
+      "cross_checks": {
+        "size_class_inconsistencies": 0,
+        "season_hectares_deltas": {
+          "2019": {
+            "csv_ha": 791838.4,
+            "published_ha": 883411,
+            "delta_frac": -0.1037
+          },
+          "2020": {
+            "csv_ha": 3274.4,
+            "published_ha": 3269,
+            "delta_frac": 0.0017
+          },
+          "2021": {
+            "csv_ha": 54088.6,
+            "published_ha": 54047,
+            "delta_frac": 0.0008
+          },
+          "2022": {
+            "csv_ha": 131271.8,
+            "published_ha": 130858,
+            "delta_frac": 0.0032
+          },
+          "2023": {
+            "csv_ha": 2217295.3,
+            "published_ha": 2211900,
+            "delta_frac": 0.0024
+          },
+          "2024": {
+            "csv_ha": 714873.6,
+            "published_ha": 708528,
+            "delta_frac": 0.009
+          }
+        },
+        "timezone_confirmation": "official 2016 Horse River review: detected 16:03h MDT 2016-05-01; record REPORTED_DATE 2016-05-01 16:03 naive local",
+        "pre_instant_ordering_violations": {},
+        "pre_instant_present": {
+          "REPORTED_DATE": 27828,
+          "DISCOVERED_DATE": 21977,
+          "FIRE_START_DATE": 27109
+        },
+        "dispatch_after_assessment": 670,
+        "unparsed_timestamps": {
+          "DISCOVERED_DATE": 0,
+          "FIRE_START_DATE": 0,
+          "FIRST_UC_DATE": 0
+        }
+      },
+      "normalization": {
+        "cells_whitespace_trimmed": 352,
+        "timestamps_seconds_truncated": 0
+      },
+      "feature_coverage_by_window": {
+        "train": {
+          "n": 15864,
+          "assessment_ts": 1.0,
+          "assessment_date": 1.0,
+          "day_of_week": 1.0,
+          "month": 1.0,
+          "doy_sin": 1.0,
+          "doy_cos": 1.0,
+          "forest_area": 1.0,
+          "latitude": 1.0,
+          "longitude": 1.0,
+          "assessment_hectares": 1.0,
+          "fire_spread_rate": 0.8886,
+          "fire_type": 0.8916,
+          "fire_position_on_slope": 0.8875,
+          "weather_conditions_over_fire": 0.8874,
+          "temperature": 0.8873,
+          "relative_humidity": 0.8872,
+          "wind_speed": 0.8873,
+          "wind_direction": 0.8873,
+          "fuel_type": 0.6885,
+          "detection_agent_type": 1.0,
+          "hours_report_to_assessment": 1.0,
+          "hours_discovery_to_assessment": 0.8907,
+          "hours_start_to_assessment": 0.974
+        },
+        "eval": {
+          "n": 5707,
+          "assessment_ts": 1.0,
+          "assessment_date": 1.0,
+          "day_of_week": 1.0,
+          "month": 1.0,
+          "doy_sin": 1.0,
+          "doy_cos": 1.0,
+          "forest_area": 1.0,
+          "latitude": 1.0,
+          "longitude": 1.0,
+          "assessment_hectares": 1.0,
+          "fire_spread_rate": 0.8684,
+          "fire_type": 0.881,
+          "fire_position_on_slope": 0.8653,
+          "weather_conditions_over_fire": 0.8647,
+          "temperature": 0.8647,
+          "relative_humidity": 0.8646,
+          "wind_speed": 0.8646,
+          "wind_direction": 0.8646,
+          "fuel_type": 0.7083,
+          "detection_agent_type": 1.0,
+          "hours_report_to_assessment": 1.0,
+          "hours_discovery_to_assessment": 0.7188,
+          "hours_start_to_assessment": 0.9723
+        },
+        "holdout": {
+          "n": 6257,
+          "assessment_ts": 1.0,
+          "assessment_date": 1.0,
+          "day_of_week": 1.0,
+          "month": 1.0,
+          "doy_sin": 1.0,
+          "doy_cos": 1.0,
+          "forest_area": 1.0,
+          "latitude": 1.0,
+          "longitude": 1.0,
+          "assessment_hectares": 1.0,
+          "fire_spread_rate": 0.9458,
+          "fire_type": 0.9597,
+          "fire_position_on_slope": 0.9415,
+          "weather_conditions_over_fire": 0.9415,
+          "temperature": 0.9413,
+          "relative_humidity": 0.9404,
+          "wind_speed": 0.9402,
+          "wind_direction": 0.9402,
+          "fuel_type": 0.8156,
+          "detection_agent_type": 1.0,
+          "hours_report_to_assessment": 1.0,
+          "hours_discovery_to_assessment": 0.5985,
+          "hours_start_to_assessment": 0.9762
+        }
+      },
+      "column_policy": {
+        "shipped": [
+          "fire_id",
+          "assessment_ts",
+          "assessment_date",
+          "day_of_week",
+          "month",
+          "doy_sin",
+          "doy_cos",
+          "forest_area",
+          "latitude",
+          "longitude",
+          "assessment_hectares",
+          "fire_spread_rate",
+          "fire_type",
+          "fire_position_on_slope",
+          "weather_conditions_over_fire",
+          "temperature",
+          "relative_humidity",
+          "wind_speed",
+          "wind_direction",
+          "fuel_type",
+          "detection_agent_type",
+          "hours_report_to_assessment",
+          "hours_discovery_to_assessment",
+          "hours_start_to_assessment",
+          "escape"
+        ],
+        "label_source_columns_excluded": [
+          "current_size",
+          "size_class",
+          "first_uc_date"
+        ],
+        "post_hoc_columns_excluded": [
+          "current_size",
+          "size_class",
+          "first_uc_date",
+          "first_uc_size",
+          "first_bh_date",
+          "first_bh_size",
+          "first_to_date",
+          "first_to_size",
+          "first_ex_date",
+          "first_ex_size_perimeter",
+          "general_cause",
+          "true_cause",
+          "industry_identifier",
+          "responsible_group",
+          "activity_class",
+          "dispatched_resource",
+          "dispatch_date",
+          "start_for_fire_date",
+          "initial_action_by",
+          "ia_arrival_at_fire_date",
+          "ia_access",
+          "fire_fighting_start_date",
+          "fire_fighting_start_size",
+          "bucketing_on_fire",
+          "distance_from_water_source",
+          "first_bucket_drop_date",
+          "fire_name",
+          "fire_origin",
+          "discovered_size",
+          "detection_agent"
+        ]
+      }
+    },
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 437132110,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-a0518650fafe11703883",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-a0518650fafe11703883/manifest.json",
+    "assets": [
+      {
+        "id": 718800785,
+        "size": 74,
+        "sha256": "1d2b00e69a51a3e10efcb5170eb94db16206eacdeb8b5d8415a48ab4343d0960"
+      },
+      {
+        "id": 718800868,
+        "size": 1217,
+        "sha256": "aeb2ef927fc0d8565a86a6901afe5ee29359787bb39693342d18ce6850a9bcfb"
+      },
+      {
+        "id": 718800905,
+        "size": 930923,
+        "sha256": "53583f4d2dff386bfebe864f49dba348d9717ee7bf96d28574082f80668edc12"
+      },
+      {
+        "id": 718800983,
+        "size": 838515,
+        "sha256": "d099e4cb9da999e3e301b0e4da1cc98cd56fc11371feba7711447571c83a7759"
+      },
+      {
+        "id": 718801033,
+        "size": 2351953,
+        "sha256": "575649d52c304d2fa0751411e0e4dc291309b42fbd0b280cbeae9e4b747cc2ae"
+      },
+      {
+        "id": 718801140,
+        "size": 21089,
+        "sha256": "331a4ceb0944d33b80b0a6519c0148603b19b4fff1ae5136571ae3126cff3ec1"
+      },
+      {
+        "id": 718801202,
+        "size": 8040,
+        "sha256": "690e466e377046577406f5932922fb7445edce35ca1ef0bd4d4b5c9ead25a456"
+      },
+      {
+        "id": 718801252,
+        "size": 17051,
+        "sha256": "16697cd8aef51394f84b125964104adea5bf9dd8536f4fde291f817469cb07bb"
+      },
+      {
+        "id": 718801327,
+        "size": 17051,
+        "sha256": "16697cd8aef51394f84b125964104adea5bf9dd8536f4fde291f817469cb07bb"
+      },
+      {
+        "id": 718801392,
+        "size": 3550,
+        "sha256": "ab720e3b07aa0df3c6d3e701875317af20e24ede4fe6c099950a26299301b45d"
+      },
+      {
+        "id": 718801466,
+        "size": 8040,
+        "sha256": "690e466e377046577406f5932922fb7445edce35ca1ef0bd4d4b5c9ead25a456"
+      },
+      {
+        "id": 718801547,
+        "size": 225280,
+        "sha256": "9e8450164f4b5047c72c68c6d493af1944344e46972231c6bca11a892cf6517d"
+      },
+      {
+        "id": 718801633,
+        "size": 17950,
+        "sha256": "502d6b9fe90cf99c5d9cfbf4b18cfd280575063d491a02b174a23e26265e6667"
+      },
+      {
+        "id": 718801696,
+        "size": 20877,
+        "sha256": "e88e71bd68fd458b215edc57dc441a8c26ac2ea6f781567a2d93b6f57c280254"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-06T22:41:30.224749+00:00",
+  "deleted_at": "2026-11-06T22:43:56.017796+00:00"
+}

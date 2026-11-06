@@ -1,0 +1,31 @@
+{
+  "id": "abwildfire-build-001",
+  "candidate": "ab-wildfire-ia-escape",
+  "image": "python:3.13-slim",
+  "command": [
+    "sh",
+    "/workspace/run.sh"
+  ],
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 3072,
+  "timeout_minutes": 40,
+  "lifetime_minutes": 60,
+  "max_disk_mb": 8000,
+  "max_artifact_mb": 300,
+  "fetch": {
+    "repo": "earino/dataset-factory-staging",
+    "release": 437116894,
+    "assets": [
+      {
+        "asset_id": 718748383,
+        "dest": "fp-historical-wildfire-data-2006-2025.csv",
+        "size": 10400030,
+        "sha256": "8b6ed447ab0f958dbe845a53dc15362b8ef5c0810ad9420d2143f9f5ee010a72"
+      }
+    ]
+  },
+  "what": "Full construction of the ab-wildfire-ia-escape extract (first attempt) from the pinned Alberta Historical wildfire CSV 2006-2025 (staged at source-abwildfire-001, asset 718748383, sha256 verified on arrival by the executor and asserted again in-build; open.alberta.ca Cloudflare-challenges plain HTTP clients, so the worker cannot fetch the publisher directly - measured on the coordinator 2026-11-06). Population: ALL assessed Forest Protection Area wildfires 2006-2025 (27,828 rows; winter rows kept and counted - eligibility is assessment-based, no outcome-conditioned rule). Primary and only shipped label: escape = final area burned (current_size) >= 100 ha. Features: the publisher-documented assessment block (assessment_hectares, fire_spread_rate, fire_type, fire_position_on_slope, in-situ weather over the fire, fuel_type) + pre-instant timing/detection (elapsed hours from reported/discovered/estimated start to assessment, detection_agent_type) + calendar/geography (day_of_week, month, doy_sin/cos, forest_area prefix, latitude, longitude). Column policy enforced in code: cause family, dispatch block, suppression/milestone fields, fire_name, fire_origin, discovered_size, detection_agent and both label sources are excluded and asserted absent from every written header. Timezone reading confirmed against the official 2016 Horse River review (detected 16:03h MDT May 1 = the CSV's naive local timestamp; under-control and extinguished dates match). Named-fire fixtures asserted in-build (Richardson 2011, Utikuma 2011, Zama 2012, Horse River 2016, Chuckegg Creek 2019, McMillan 2019, Basset/Long Lake/Pembina 2023, already-controlled negative LWF002 2023) plus the size-class consistency and publisher season-hectares cross-checks. Splits follow the ASSESSMENT instant's calendar year (the time column; 356 winter carryover fires assessed in the year after their record year move with their assessment): train 2006-2015 / eval 2016-2020 / holdout 2021-2025, rows 15,864/5,707/6,257, with asserted per-window counts (297/104/257 positives, 156/79/128 distinct positive dates, 514/189/611 containment>72h) identical under either split rule; the 2023-season holdout base-rate shift is recorded. Then gate 1.5.0 on the FULL artifact, exact-byte --accept, then score.py's pre-registered reference triad on eval rows only. No performance metric is computed in the build; the holdout is never read by score.py.",
+  "stopping_condition": "A failed source digest, a failed named-fixture or cross-check assertion, a failed internal-consistency check, a failed gate, a failed --accept or a truncated fetch stops the run with diagnostics uploaded; the extract is never scored and the holdout is never read outside the gate. One rebuild per structural defect; no re-tuning of threshold, window, label or features after any score. A gate refusal names the column or declaration responsible and becomes a finding to diagnose, not a retry loop."
+}
