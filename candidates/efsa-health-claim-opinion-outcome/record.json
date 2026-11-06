@@ -1,9 +1,14 @@
 {
   "id": "efsa-health-claim-opinion-outcome",
-  "status": "investigating",
+  "status": "dropped",
   "created_at": "2026-11-03T14:55:44.466602+00:00",
   "domain": "EU food-safety scientific assessment / EFSA health-claim opinion outcome prediction (claim-level regulatory-outcome task, EU agency + Commission publisher pair)",
-  "jurisdiction": {"country": "EU", "region": "Europe", "publisher": "European Food Safety Authority (EFSA) for the claims corpus and opinions; Directorate-General for Health and Food Safety (DG SANTE, European Commission) for the EU Register of Nutrition and Health Claims", "recorded_at": "2026-11-03"},
+  "jurisdiction": {
+    "country": "EU",
+    "region": "Europe",
+    "publisher": "European Food Safety Authority (EFSA) for the claims corpus and opinions; Directorate-General for Health and Food Safety (DG SANTE, European Commission) for the EU Register of Nutrition and Health Claims",
+    "recorded_at": "2026-11-03"
+  },
   "prediction_question": "For a health claim submitted to EFSA under Regulation (EC) No 1924/2006 - either a general-function claim (Art. 13.1) from the Member State list, or an application (Art. 13.5 / Art. 14) received via a national competent authority - will EFSA's NDA Panel conclude that a cause-and-effect relationship is established (favourable opinion), rather than not established (unfavourable)?",
   "prediction_time": "For Art. 13.5/14 applications: the instant EFSA receives/validates the application (published per the Transparency Regulation regime on OpenEFSA); the Panel 'shall' adopt its opinion within 5 months excluding stop-the-clock periods (EFSA guidance). For the Art. 13.1 batch: the compilation of the Member State claim list (4,637 main entries, published as the EFSA claims database, 2010) precedes the Panel's wave evaluations (2009-2011). Features are the submitted claim content only: claim wording, food/constituent, claimed effect, target group, conditions of use, article route, applicant identity (13.5/14). NOT YET WORKED AS A DATED EXAMPLE - one OpenEFSA-record worked example (application receipt instant vs opinion adoption date, with the feature window in between) is a named open item below.",
   "target_definition": "Binary: favourable vs unfavourable Panel conclusion on the claim. Label source: the published EFSA Journal opinion's conclusion ('a cause and effect relationship has [not] been established'), cross-checkable against the Commission's EU Register of Nutrition and Health Claims (authorised vs non-authorised status + reasons). Label source columns are excludable from shipped features; the register/opinion fields that carry the outcome are not features.",
@@ -36,18 +41,131 @@
   "license_evidence": [
     "EFSA legal notice (https://www.efsa.europa.eu/en/legalnotice, fetched directly 2026-11-03, HTTP 200): 'Copyright © for the entire content of this website unless otherwise stated: European Food Safety Authority – EFSA. Re-use is authorised, provided that EFSA is acknowledged as the source of the material.' No database-replication prohibition of the ECHA kind; per-document caveats ('unless otherwise stated', individual copyright notices) must be verified for the EFSA Journal PDFs before construction.",
     "Commission legal notice (https://commission.europa.eu/legal-notice_en, fetched 2026-11-03, HTTP 200): 'Unless otherwise indicated (e.g. in individual copyright notices), content owned by the EU on this website is licensed under the Creative Commons Attribution 4.0 International (CC BY 4.0) licence.' The EU Register of Nutrition and Health Claims is DG SANTE content (data.europa.eu dataset id u3yjqnr7wx2gjkbqmajsya, publisher corporate-body/SANTE).",
-    "Tentative classification: class B for the EFSA side (attribution + per-document verification still open on the Wiley-hosted journal PDFs), class A for the Commission register side. Not final: per-document notices unread, blocked by the Wiley 403."
+    "Tentative classification: class B for the EFSA side (attribution + per-document verification still open on the Wiley-hosted journal PDFs), class A for the Commission register side. Not final: per-document notices unread, blocked by the Wiley 403.",
+    "2026-11-06: the register and OpenEFSA channels were measured anonymously end-to-end; the FIP register is DG SANTE Commission content (CC BY 4.0 site notice quoted above), OpenEFSA is EFSA content under its attribution notice. Wiley-hosted opinions render in-browser; the per-document copyright line inside each opinion remains unextracted (the only open licence item, moot after the drop verdict)."
   ],
   "construction_script": null,
   "split_strategy": "Candidate (counts not yet measured from the source - the named gap): temporal split at opinion-adoption level, train = Art 13.1 batch opinions (2009-2011) + early Art 13.5/14 applications (2008-2015), eval = 2016-2020, holdout = 2021-2025. Positives cluster by opinion: one NDA Panel opinion can decide dozens of Art 13.1 claims at once, so claim rows within one opinion are NOT independent and the clustered (opinion-level) count must be recorded with the claim-level count. Published publisher statistics (cross-check evidence, not a measured panel): 2,758 general-function claims assessed by 28 July 2011 with 'about one in five' favourable (EFSA press news 110728); Art 13.5/14 applications finalised by Nov 2013: 91 (13 positive / 78 negative) and 100 (33 positive / 67 negative) (EFSA NDA presentation, document 131120-p03.pdf) - roughly 20-33% favourable depending on route.",
   "measurements": {
     "access_measured": "2026-11-03, all anonymous plain HTTP from the coordinator: (1) ndaclaims13.zip -> 200, 8,341,996 bytes; (2) EFSA /en/legalnotice -> 200, terms quoted in license_evidence; (3) commission.europa.eu/legal-notice_en -> 200 (follows 301 from ec.europa.eu/info), CC BY 4.0 quoted; (4) efsa.onlinelibrary.wiley.com pdfdirect URL -> 403 to curl; (5) FIP backend /policy-items and /food_categories -> JSON 200, /health_claims/* -> 404 from plain client; (6) api.efsa.europa.eu -> JSON 404 on guessed paths, openapi.efsa.europa.eu -> connection failed; (7) data.europa.eu dataset record -> 200, license null, 0 distributions (catalogue metadata stale; publisher terms read from the publisher's own pages instead).",
     "novelty_sweeps": "2026-11-03, three web searches: 'machine learning predicting EFSA health claim outcome opinion favourable'; '\"health claims\" EFSA NDA panel prediction model outcome \"favourable\" OR \"unfavourable\" study machine learning'; 'text mining predict outcome EFSA NDA opinions health claims favourable study model'. All returned EFSA's own guidance/press/statistics documents and unrelated ML-in-risk-assessment material; NO published scored study or ML-ready benchmark predicting EFSA claim-opinion outcomes was found. Prior to any ready verdict, scripts/check-novelty.py must be run with the formal verdict and the queries recorded.",
-    "not_yet_measured": "Per-year claim/opinion counts and favourable rates per split window; clustered opinion counts; extraction cost of the opinions corpus; the dated worked example; the per-document journal copyright line. These are the named next probes, not estimates."
+    "not_yet_measured": "Per-year claim/opinion counts and favourable rates per split window; clustered opinion counts; extraction cost of the opinions corpus; the dated worked example; the per-document journal copyright line. These are the named next probes, not estimates.",
+    "fip_register_panel_2026_11_06": "MEASURED 2026-11-06 (probe_fip_register.py): one anonymous GET https://ec.europa.eu/food/food-feed-portal/backend/api/policy-items?foodDomain=nut&authorisationType=nut_auth -> 200, 19,885,668 bytes, 2,337 published policy items (the whole EU register of decided claims; the authorisationType param is ignored - any value returns the same set). Counts: 13.1 1,841 non-auth / 228 auth / 1 revoked; 13.5 148/14; 14(1)(a) 31/15; 14(1)(b) 47/12. Per-claim fields 100% present: hcClaimType, hcClaimStatus, claim wording, EFSA question number + opinion URL; hcHealthRelationship 2,072; hcReasonsForNonAuth 2,065; hcCondOfUse 270; applicant fields only on proprietary 13.5/14 items. Status enum (keyed-reference-data?key=hc_claim_status): DRAFT/IN_PROGRESS/ON_HOLD/AUTHORISED/NON_AUTHORISED/WITHDRAWN/AUTHORISED_PDPE/REVOKED; the published register carries only AUTHORISED/NON_AUTHORISED/REVOKED. Decision year: 13.1 items carry the opinion citation 'YYYY;V(I):NNNN'; 13.5/14 items carry Q-YYYY application numbers.",
+    "openefsa_hc_application_year_counts_2026_11_06": "MEASURED 2026-11-06 (probe_openefsa.py): OpenEFSA real API is open.efsa.europa.eu/api/question/searchAdvanced (anonymous with the SPA header x-security=123*floor(epoch_s)+369, from main.js module 57591; api.efsa.europa.eu was the wrong host). Health-claims applications (authorisationType=Health Claims, type=Application) by dossier-received year: 2008 4,430 (pub 2,718, withdr 470, intake 1,242) - the Art 13.1 list; 2010 481 (161/14/306); 2009 36; 2011 26; 2012 143; 2013 33; 2014 27; 2015 14; 2016 7; 2017 14; 2018 11; 2019 10; 2020 10; 2021 2; 2022 3; 2023 1; 2024 6; 2025 6; 2026 4; sum 5,269 (Published 3,177, Withdrawn 539, Intake 1,548, Ongoing 5; Post-Transparency-Regulation 2021+ total 21-22). Per-question: applicantNames, substanceNames/CAS, subject, mandateNumber, phaseName, and timeLineItems with event dates.",
+    "worked_example_dated_2026_11_06": "Dated worked example, all timestamps from the publisher's own records (OpenEFSA timeline + Wiley article page + register item; UTC): BENEO GmbH, isomaltulose / normal energy-yielding metabolism, Art 13(5) via Competent Authority of Germany, question EFSA-Q-2021-00073. Dossier received 2021-02-04; dossier valid 2021-05-21 (prediction instant: features = submitted claim content only); clock stop 2021-06-14; opinion adopted 2021-09-15; published 2021-10-20; register item POL-HC-11221 status HCCS_NON_AUTHORISED, reason HC_RR_166, register lastModificationDate 2024-08-26. The feature window (claim wording, food/constituent, claimed effect, applicant, route) closes at receipt; the outcome window (adoption/publication) follows it with a 4.5-month assessment inside the 5-month statutory limit.",
+    "label_source_access_2026_11_06": "MEASURED 2026-11-06: the Wiley-hosted EFSA Journal renders fully in the supported browser (previously 403 to plain HTTP): https://efsa.onlinelibrary.wiley.com/doi/10.2903/j.efsa.2021.6849 loads and its abstract carries the label sentence ('The Panel concludes that a cause and effect relationship has been established...') - favourable, while the register lists the claim Non-authorised, proving register status cannot stand in for the Panel conclusion. Site footer copyright line observed: 'Copyright (c) 1999-2026 John Wiley & Sons, Inc or related companies. All rights reserved, including rights for text and data mining and training of artificial intelligence technologies or similar technologies.' (Wiley site-wide line; article-level copyright statement not extracted - moot for the dropped verdict).",
+    "extraction_cost_2026_11_06": "Register: 1 request, 19,885,668 bytes, ~6s coordinator-side (single bulk JSON; per-claim details endpoint /policy-items/POL-HC-11221 = 8,280 B/claim if needed). OpenEFSA: ~1 request per (filter, year) at ~120 KB each (limit=1 + facets), or the full question set by paging 20-100/call; timeline 1 request/question. Opinion conclusions: 1 page/opinion through a browser channel (Wiley)."
   },
   "jobs": [],
   "artifacts": [],
-  "rejection_reason": null,
-  "review": "Strongest surviving lead of this EU/EEA session. Real user decision (food businesses invest in dossier preparation; ~20-33% favourable base rates are low enough that a naive always-negative baseline has real but bounded headroom); documented prediction instant and 5-month statutory assessment window; text-first features that suit agent/harness benchmarks; licence evidence read directly from both publishers (EFSA attribution licence; Commission CC BY 4.0). The two open risks are access-shaped, not contract-shaped: (1) whether the EFSA Journal opinion corpus is bulk-extractable (Wiley 403 to plain clients - test the supported browser before concluding, and note that a browser-only extraction is a real constraint on worker construction); (2) whether per-claim structured outcomes can be had without PDF parsing, via the FIP register API (health_claims endpoints 404 from plain clients) or the downloaded Access database.",
-  "next_action": "Next probe (bounded, one session): (1) capture the real /health_claims/get_list_of_claims request the FIP SPA issues (browser network capture or the app's lazy chunks), and if reachable, measure per-claim status counts by year -> split-window counts directly; (2) else parse ndaclaims13.mdb on a worker (mdbtools) for the Art 13.1 batch panel + enumerate Art 13.5/14 opinions via the EFSA Journal; (3) test the supported browser against the Wiley 403 for one opinion PDF and record its copyright line + its Received/mandate dates as the dated worked example; (4) run scripts/check-novelty.py with the recorded queries before any ready verdict. Construction order stays: construction -> full-worker qualification -> exact-byte acceptance -> reference/model scoring."
+  "rejection_reason": "DROPPED on split capacity (2026-11-06, all counts measured, commands in notes.md): the task population cannot fill disjoint train/eval/holdout windows with enough independent positives. (1) The Commission register (FIP backend, one anonymous 19,885,668-byte JSON call, 2,337 published claims) splits into an Art 13.1 batch decided in opinion waves 2009-2012 (2,069 claims: 2009 95/312, 2010 89/663, 2011 40/826, 2012 2/39, 2015 2/0 auth/non-auth; all submitted as ONE 2008-2010 cohort - OpenEFSA shows 4,430 health-claim questions received in 2008 and 481 in 2010) and a thin Art 13.5/14 stream: 267 register-decided claims across 2008-2022, of which 41 authorised; after 2015 the register shows 36 decided 13.5/14 claims with 2 positives total (2016-2022), and OpenEFSA measures the whole post-2020 application stream at 22 received (2021-2026) of which 14 published - the stream is ending, not flowing. (2) Chronological integrity forbids the 13.1 cohort as holdout: its prediction instant (list compilation, 2008-2010) precedes the train window's outcomes. Every defensible temporal holdout therefore carries <=36 rows and <=3 independent positives - a scored holdout CI would be noise. (3) Withdrawal censoring compounds it: recent 13.5/14 years show withdrawals rivalling decisions (2018: 7 withdrawn vs 4 published; 2019: 7 vs 3). (4) Label cost rose too: measured divergence - claim POL-HC-11221 (isomaltulose/BENEO, Q-2021-00073) has a FAVOURABLE Panel conclusion ('a cause and effect relationship has been established', adopted 2021-09-15, published 2021-10-20) yet register status Non-authorised (reason HC_RR_166: no conditions of use possible), so labels must be extracted per opinion (Wiley pages render in the supported browser; plain HTTP is 403) and cannot be taken from register status. REOPENS IF: a new EU regulatory route revives application volume (hundreds of decided claims per year reaching a fresh window), or the task is redesigned to a population with an ongoing multi-year flow - e.g. the sibling novel-foods application stream (separate lead, unopened). Licence (EFSA attribution notice + Commission CC BY 4.0), access (register bulk JSON + OpenEFSA x-security API + in-browser Wiley) and novelty (no_precedent, checked 2026-11-03 and 2026-11-06) are all RESOLVED as recorded evidence - the blocker is the population, not permission or access.",
+  "review": "Access, licence, timing and novelty all resolved 2026-11-06 with recorded evidence; the decisive blocker is split capacity: the Art 13.1 batch is one 2008-2010 cohort decided in 2009-2012 waves, and the 13.5/14 application stream is small and ending (22 received applications 2021-2026, 14 decided; 2 favourable outcomes in the register for all of 2016-2022), so no temporal holdout window carries enough independent positives to be scored. Labels additionally require per-opinion extraction (favourable opinion vs non-authorised register divergence measured on POL-HC-11221).",
+  "next_action": "Dropped 2026-11-06 on split capacity (see rejection_reason; all probes reproducible via candidates/efsa-health-claim-opinion-outcome/probe_fip_register.py and probe_openefsa.py). Reopening event: a new regulatory route reviving decided-claim volume into fresh years, or a redesigned task on a population with ongoing flow - the novel-foods application stream (Reg (EU) 2015/2283, applications list legally public per Art 10; FIP novel-food screen carries only the 33-item Union list; the application-status join OpenEFSA-question -> Union-list authorisation is the unmeasured next probe) is the natural sibling and remains an UNOPENED lead, not this candidate.",
+  "novelty_check": {
+    "checked_at": "2026-11-06T12:49:21+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "machine learning predicting EFSA health claim outcome opinion favourable",
+      "health claims EFSA NDA panel prediction model outcome favourable unfavourable study",
+      "EFSA health claim outcome prediction machine learning dataset benchmark NDA panel"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "machine learning predicting EFSA health claim outcome opinion favourable",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "health claims EFSA NDA panel prediction model outcome favourable unfavourable study",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "EFSA health claim outcome prediction machine learning dataset benchmark NDA panel",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "machine learning predicting EFSA health claim outcome opinion favourable",
+          "hits": 716426,
+          "top": [
+            "Occurrence data on bromide provided to EFSA",
+            "Occurrence data on PCNs provided to EFSA",
+            "Predicting Tuberculosis Treatment Outcome Using Machine Learning Techniques",
+            "Report relative to the proposal of the EC on nutrition claims regarding monounsaturated fatty acids (MUFA) in foods and considerations on the same proposal contributed by EFSA",
+            "A machine learning approach for early prediction of mental health crises"
+          ]
+        },
+        {
+          "query": "health claims EFSA NDA panel prediction model outcome favourable unfavourable study",
+          "hits": 1629972,
+          "top": [
+            "STUDY OF BIOLOGICALLY ACTIVE COMPOUNDS IN THE MEDICINAL PLANT KONJAC",
+            "Report concerning the proposal on nutrition claims of omega-3 fatty acids in foods, drafted by the european commission and the considerations of the proposal provided by EFSA",
+            "Information sheet 1.13 Crop rotation, association and density, weed/volunteer control",
+            "THE USE OF FAT-SOLUBLE CO2-EXTRACTS FROM SPICES WITH HIGH CONTENT OF BIOLOGICALLY ACTIVE SUBSTANCES IN THE FABRICATION OF DRESSINGS",
+            "Food composition database for nutrient intake: selected vitamins and minerals in selected European countries"
+          ]
+        },
+        {
+          "query": "EFSA health claim outcome prediction machine learning dataset benchmark NDA panel",
+          "hits": 1022643,
+          "top": [
+            "STUDY OF BIOLOGICALLY ACTIVE COMPOUNDS IN THE MEDICINAL PLANT KONJAC",
+            "Report concerning the proposal on nutrition claims of omega-3 fatty acids in foods, drafted by the european commission and the considerations of the proposal provided by EFSA",
+            "Food composition database for nutrient intake: selected vitamins and minerals in selected European countries",
+            "PyEHR: A Predictive Modeling Toolkit for Electronic Health Records",
+            "Occurrence data on bromide provided to EFSA"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "machine learning predicting EFSA health claim outcome opinion favourable",
+          "hits": 5,
+          "top": [
+            "FADL:Federated-Autonomous Deep Learning for Distributed Electronic Health Record",
+            "Migration through Machine Learning Lens -- Predicting Sexual and Reproductive Health Vulnerability of Young Migrants",
+            "Machine Learning for Health (ML4H) Workshop at NeurIPS 2018",
+            "Machine Learning on Electronic Health Records: Models and Features Usages to predict Medication Non-Adherence",
+            "DOME: Recommendations for supervised machine learning validation in biology"
+          ]
+        },
+        {
+          "query": "health claims EFSA NDA panel prediction model outcome favourable unfavourable study",
+          "hits": 5,
+          "top": [
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "The Digital Transformation in Health: How AI Can Improve the Performance of Health Systems",
+            "Anemia, weight, and height among children under five in Peru from 2007 to 2022: A Panel Data analysis",
+            "Large-Scale Study of Temporal Shift in Health Insurance Claims",
+            "A strategy to identify event specific hospitalizations in large health claims database"
+          ]
+        },
+        {
+          "query": "EFSA health claim outcome prediction machine learning dataset benchmark NDA panel",
+          "hits": 5,
+          "top": [
+            "FADL:Federated-Autonomous Deep Learning for Distributed Electronic Health Record",
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "Migration through Machine Learning Lens -- Predicting Sexual and Reproductive Health Vulnerability of Young Migrants",
+            "Machine Learning for Health (ML4H) Workshop at NeurIPS 2018",
+            "Machine Learning on Electronic Health Records: Models and Features Usages to predict Medication Non-Adherence"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'machine learning predicting EFSA health claim outcome opinion favourable': 0 hit(s) - nothing notable\n- huggingface_datasets / 'health claims EFSA NDA panel prediction model outcome favourable unfavourable study': 0 hit(s) - nothing notable\n- huggingface_datasets / 'EFSA health claim outcome prediction machine learning dataset benchmark NDA panel': 0 hit(s) - nothing notable\n- zenodo_records / 'machine learning predicting EFSA health claim outcome opinion favourable': 716426 hit(s) - Occurrence data on bromide provided to EFSA, Occurrence data on PCNs provided to EFSA, Predicting Tuberculosis Treatment Outcome Using Machine Learning Techniques, Report relative to the proposal of the EC on nutrition claims regarding monounsaturated fatty acids (MUFA) in foods and considerations on the same proposal contributed by EFSA, A machine learning approach for early prediction of mental health crises\n- zenodo_records / 'health claims EFSA NDA panel prediction model outcome favourable unfavourable study': 1629972 hit(s) - STUDY OF BIOLOGICALLY ACTIVE COMPOUNDS IN THE MEDICINAL PLANT KONJAC, Report concerning the proposal on nutrition claims of omega-3 fatty acids in foods, drafted by the european commission and the considerations of the proposal provided by EFSA, Information sheet 1.13 Crop rotation, association and density, weed/volunteer control, THE USE OF FAT-SOLUBLE CO2-EXTRACTS FROM SPICES WITH HIGH CONTENT OF BIOLOGICALLY ACTIVE SUBSTANCES IN THE FABRICATION OF DRESSINGS, Food composition database for nutrient intake: selected vitamins and minerals in selected European countries\n- zenodo_records / 'EFSA health claim outcome prediction machine learning dataset benchmark NDA panel': 1022643 hit(s) - STUDY OF BIOLOGICALLY ACTIVE COMPOUNDS IN THE MEDICINAL PLANT KONJAC, Report concerning the proposal on nutrition claims of omega-3 fatty acids in foods, drafted by the european commission and the considerations of the proposal provided by EFSA, Food composition database for nutrient intake: selected vitamins and minerals in selected European countries, PyEHR: A Predictive Modeling Toolkit for Electronic Health Records, Occurrence data on bromide provided to EFSA\n- arxiv_preprints / 'machine learning predicting EFSA health claim outcome opinion favourable': 5 hit(s) - FADL:Federated-Autonomous Deep Learning for Distributed Electronic Health Record, Migration through Machine Learning Lens -- Predicting Sexual and Reproductive Health Vulnerability of Young Migrants, Machine Learning for Health (ML4H) Workshop at NeurIPS 2018, Machine Learning on Electronic Health Records: Models and Features Usages to predict Medication Non-Adherence, DOME: Recommendations for supervised machine learning validation in biology\n- arxiv_preprints / 'health claims EFSA NDA panel prediction model outcome favourable unfavourable study': 5 hit(s) - Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, The Digital Transformation in Health: How AI Can Improve the Performance of Health Systems, Anemia, weight, and height among children under five in Peru from 2007 to 2022: A Panel Data analysis, Large-Scale Study of Temporal Shift in Health Insurance Claims, A strategy to identify event specific hospitalizations in large health claims database\n- arxiv_preprints / 'EFSA health claim outcome prediction machine learning dataset benchmark NDA panel': 5 hit(s) - FADL:Federated-Autonomous Deep Learning for Distributed Electronic Health Record, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, Migration through Machine Learning Lens -- Predicting Sexual and Reproductive Health Vulnerability of Young Migrants, Machine Learning for Health (ML4H) Workshop at NeurIPS 2018, Machine Learning on Electronic Health Records: Models and Features Usages to predict Medication Non-Adherence",
+    "prior_art": [
+      "None found: searches 2026-11-03 (three queries recorded in notes.md) and 2026-11-06 returned only EFSA guidance/press/plenary-minutes pages and unrelated ML-in-risk-assessment material"
+    ],
+    "theirs": "the publisher provides the raw claims corpus (EU register, OpenEFSA question timelines, EFSA Journal opinions) and its own summary statistics (press notes, wave counts); prior art found only guidance, press releases and panel minutes - no scored study or ML-ready benchmark predicting EFSA claim-opinion outcomes (searched 2026-11-03, re-confirmed 2026-11-06)",
+    "ours": "the task contract only: per-claim favourable/unfavourable EFSA NDA Panel opinion prediction with a documented application-receipt prediction instant, temporal splits, and label extraction from the published opinion conclusions over the 2008-2026 register+OpenEFSA corpus",
+    "verdict": "no_precedent",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "verdict": "reject"
 }

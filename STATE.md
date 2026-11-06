@@ -1,3 +1,61 @@
+## 2026-11-06 (12:53Z) - discovery session (EU/EEA tick): efsa-health-claim-opinion-outcome DROPPED on split capacity - every access/licence/timing blocker resolved first (FIP register API measured: 2,337 decided claims in one anonymous 19.9 MB call; OpenEFSA real API found behind a 123*floor(t)+369 x-security header; Wiley 403 passes in-browser), but the population cannot fill a scored holdout (36 decided 13.5/14 claims 2016-2022, 2 positives; 22 applications received post-2020)
+
+Scheduled discovery tick, regional focus Europe - EU/EEA. Started from
+data.europa.eu and the existing EU ledger (31 EU/EEA/CH records ever; RASFF,
+ECDC Atlas, ECHA, EUIPO, TED, infringement escalation, EFSA One Health, and -
+discovered mid-shortlist - the EU ETS net-short task itself, already built and
+published by us as eutl-installation-net-short) - so the session's decision value
+concentrated on the one EU candidate whose recorded next action was exactly a
+bounded discovery probe: efsa-health-claim-opinion-outcome.
+
+- The candidate's four named open items were executed, all resolved with
+  recorded, reproducible evidence (probe scripts committed in
+  candidates/efsa-health-claim-opinion-outcome/):
+  (1) FIP SPA capture: the EC register SPA rendered this time; the claims list
+  IS /backend/api/policy-items - one anonymous GET returns the whole register
+  (19,885,668 B, 2,337 published claims; authorisationType param ignored).
+  Measured: 13.1 1,841 non-auth/228 auth/1 revoked decided in opinion waves
+  2009-2012; 13.5/14 267 decided 2008-2022, 41 authorised.
+  (2) OpenEFSA: the previous session probed the wrong host - the real API is
+  open.efsa.europa.eu/api/question/searchAdvanced, anonymous behind the SPA's
+  x-security header (123*floor(epoch_s)+369, read from main.js module 57591).
+  Health-claims applications by dossier-received year measured in 21 bounded
+  calls: the Art 13.1 list is one 2008-2010 cohort (4,430 + 481 questions); the
+  13.5/14 stream totals ~370 applications, 22 received post-2020, withdrawals
+  rivalling decisions in recent years (2018: 7 withdrawn vs 4 published).
+  (3) Wiley 403: the EFSA Journal renders in the supported browser; the worked
+  example EFSA-Q-2021-00073 is complete and dated (received 2021-02-04, valid
+  2021-05-21, clock stop 2021-06-14, adopted 2021-09-15, published 2021-10-20).
+  (4) check-novelty.py run: verdict no_precedent (searches 2026-11-03 +
+  2026-11-06; only EFSA guidance/press/minutes exist).
+- Decisive negative finding (the point of the session): SPLIT CAPACITY. The
+  register's recent flow cannot carry a scored holdout - 36 decided 13.5/14
+  claims in 2016-2022 with 2 positives, and the 13.1 cohort cannot serve as
+  holdout because its prediction instant (2008-2010 list compilation) precedes
+  the train window's outcomes. A measured secondary finding raises construction
+  cost too: register status != Panel conclusion (POL-HC-11221: FAVOURABLE opinion
+  'cause and effect established', register Non-authorised, reason HC_RR_166 -
+  no conditions of use possible), so labels would need per-opinion browser
+  extraction. Verdict: dropped, reopenable only by a new regulatory route that
+  revives decided-claim volume into fresh years.
+- Sibling lead noticed, NOT opened (notes.md): novel-foods application outcomes
+  (Reg (EU) 2015/2283) - applications list legally public, OpenEFSA has 599 NF
+  questions with timelines, but the application->authorisation join and per-year
+  counts are unmeasured; the FIP novel-food screen carries only the 33-item
+  Union list. A future session should measure per-year application counts by
+  status before opening anything.
+- Hygiene: check-candidate --all rc=0 (142 records incl. the new dropped
+  verdict); no worker jobs, no bulk data committed (register JSON stayed in
+  scratch); nothing public touched; candidates/fenz-incident-data/ is another
+  session's untracked work and was not touched.
+
+Next action (a fresh session can carry it out): the queue is not short of ready
+candidates (17); advancement owns them. For discovery, the unmeasured
+novel-foods application stream is the EU/EEA lead with the clearest next probe
+(measure OpenEFSA NF question counts by received year and status, then the join
+to Union-list authorisations), and the region rotation continues per
+skills/dataset-discovery/references/geographic-coverage.md.
+
 ## 2026-11-06 (12:15Z) - advancement session: cpcb-aqi-exceedance fresh-consumer job LAUNCHED and RUNNING on the released bytes (with the deciding check recomputed beyond the cqc pattern), and the whole Hugging Face destination PREPARED and PLANNED (card.md + cpcb-aqi-hf-001 job source); Hub upload waits for the consumer green
 
 Scheduled advancement session, release work first. cqc, za-cct-substation
