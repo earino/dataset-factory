@@ -137,3 +137,20 @@ project-grain source with dated lifecycle events - opened as a NEW candidate,
 candidates/iaac-registry-assessment-termination (investigating).
 
 
+
+## Re-check 2026-11-06 (Canada-focus discovery tick): newest open.canada.ca packages
+
+The record's reopen condition ("a future Canada tick should re-check only the
+open.canada.ca feed's newest packages") was executed: CKAN package_search,
+sort=metadata_modified desc, first 100 packages, read 2026-11-06. The feed's
+newest pages are dominated by federation re-stamps of standing products:
+Treasury Board proactive-disclosure tables, Public Accounts of Canada
+financial statements, StatCan Labour Force Survey aggregate cubes and Bank of
+Canada/FX series, CRTC/ESDC/OAG recurring reports, plus a few ECCC monitoring
+compilations (Great Lakes AOC, oil sands ecosystem sites) and one research
+earthquake catalogue (temporary Tower Lake array). No event/case-grain
+StatCan, ECCC or Health Canada release appeared. The unpark condition remains
+unmet; no re-probe of the WDS change feed was done (per the recorded rule).
+Same-tick outcome: the Canada tick's viable new lead came from a provincial
+source federated on the same portal - candidates/ab-wildfire-ia-escape
+(Government of Alberta wildfire incident records, ready).

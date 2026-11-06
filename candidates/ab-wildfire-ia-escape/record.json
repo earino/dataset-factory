@@ -1,0 +1,201 @@
+{
+  "id": "ab-wildfire-ia-escape",
+  "status": "ready",
+  "created_at": "2026-11-06T20:55:00+00:00",
+  "domain": "wildfire operations - initial-attack escape and containment-duration prediction from the regulator's assessment record (per-incident classification, Alberta Forest Protection Area 2006-2025)",
+  "prediction_question": "At Alberta Wildfire's recorded initial assessment of a newly discovered wildfire (assessment_datetime, 'originally assessed'), predict whether the wildfire will escape initial attack - final area burned at least 100 ha (variants at 4/40/200 ha) - and/or remain uncontained more than 72 hours (time from assessment to first under control), using only the crew-observed assessment record (size at assessment, rate of spread, fire behaviour type, position on slope, in-situ weather over the fire, FBP fuel type), pre-instant timing fields (estimated ignition, reported, detection channel), and calendar/geography. A useful prediction supports the actual initial-attack resourcing decision - airtanker/crew prioritization and same-day escalation - which the agency itself states happens at this instant.",
+  "prediction_time": "The initial assessment instant, assessment_datetime, documented by the publisher as 'the date and time the wildfire was originally assessed by Alberta Wildfire employees'. Every feature field's meaning is documented at that instant: assessment_hectares, fire_spread_rate, fire_type, fire_position_on_slope, the five in-situ weather fields and fuel_type all carry the publisher's wording 'at the time of initial assessment'; reported_date/discovered_date/fire_start_date/detection fields are documented pre-instant and measured never to fall after the instant (27,828/27,828 for reported_date). Post-instant families are excluded by design and measurement: cause classification (dictionary: 'under investigation' temporary cause, final cause updated later), dispatch block (2.41% of dispatch timestamps fall after the assessment - mixed ordering, so excluded), all suppression/milestone fields (initial_action_by, ia_*, fire_fighting_start_*, bucketing, first_bh/uc/to/ex) and the label sources (current_size, size_class). Timestamps carry no timezone; they are read as local Alberta operational time (America/Edmonton) - a declared assumption to be confirmed at construction and stated in quality.json.evaluation_contract.",
+  "target_definition": "Primary label, binary: escape = final area burned (current_size, the publisher's 'final area burned of the wildfire') at or above the threshold (primary 100 ha; variants 4/40/200 ha measured). Secondary label, binary: containment = first under control (first_uc_date, 'sufficient suppression action to ensure no further spread') later than 72 hours after assessment_datetime; 42.0% of fires were already under control at the assessment instant (assessment == first_uc, a degenerate label-0 stratum the construction decision must handle and declare). Both labels derive entirely from the record's own post-instant fields; both source columns are excludable from what ships. Population: all wildfires in Alberta's Forest Protection Area, 2006-2025, one row per wildfire ((YEAR, FIRE_NUMBER) unique, measured); eligibility is assessment-based, not outcome-based (100% of discovered wildfires are assessed).",
+  "sources": [
+    {
+      "name": "Historical wildfire data 2006-2025 (per-fire incident records)",
+      "url": "https://open.alberta.ca/dataset/a221e7a0-4f46-4be7-9c5a-e29de9a3447e/resource/80480824-0c50-456c-9723-f9d4fc136141/download/fp-historical-wildfire-data-2006-2025.csv",
+      "api": "Anonymous HTTPS; Cloudflare managed challenge blocks plain HTTP clients (curl 403 cf-mitigated, measured 2026-11-06 with bare and full Chrome UAs) - fetched through the supported browser; 10,400,030 bytes; sha256 8b6ed447ab0f958dbe845a53dc15362b8ef5c0810ad9420d2143f9f5ee010a72",
+      "access": "open; federated on open.canada.ca (CKAN package a221e7a0-4f46-4be7-9c5a-e29de9a3447e, whose resource URLs resolve back to open.alberta.ca)",
+      "license": "Open Government Licence - Alberta v2.2"
+    },
+    {
+      "name": "Historical wildfire data dictionary 2006-2025 (field definitions)",
+      "url": "https://open.alberta.ca/dataset/a221e7a0-4f46-4be7-9c5a-e29de9a3447e/resource/1b635b8b-a937-4be4-857e-8aeef77365d2/download/fp-historical-wildfire-data-dictionary-2006-2025.pdf",
+      "api": "Anonymous HTTPS via the same browser channel; 192,870 bytes; sha256 bfff81c0d0e4b5cb0684180a53ddab4da54ddb5dd63f0c0f9497fa67f2334cdf; scanned PDF, rendered and transcribed verbatim into candidates/ab-wildfire-ia-escape/references/data-dictionary-transcript.md",
+      "access": "open",
+      "license": "Open Government Licence - Alberta v2.2"
+    },
+    {
+      "name": "Alberta wildfire season statistics (publisher cross-check product)",
+      "url": "https://open.alberta.ca/publications/alberta-wildfire-season-statistics",
+      "api": "Season PDFs (e.g. fp-alberta-wildfire-seasonal-statistics-2024.pdf) with per-season fire counts and hectares burned; quoted figures 2019-2024 recorded in probe_publisher_crosscheck.py",
+      "access": "open",
+      "license": "Open Government Licence - Alberta v2.2"
+    }
+  ],
+  "license_evidence": [
+    "Dataset page licence statement (read 2026-11-06 via the open.canada.ca CKAN record and the open.alberta.ca dataset page): 'Licence: Open Government Licence - Alberta'.",
+    "Licence text read 2026-11-06 from https://open.alberta.ca/licence (Open Government Licence - Alberta, version 2.2): 'The Information Provider grants you a worldwide, royalty-free, perpetual, non-exclusive licence to use the Information, including for commercial purposes, subject to the terms below.' / 'You are free to: Copy, modify, publish, translate, adapt, distribute or otherwise use the Information in any medium, mode or format for any lawful purpose.' / 'You must, where you do any of the above: Acknowledge the source of the Information by including any attribution statement specified by the Information Provider(s) and, where possible, provide a link to this licence.' / default attribution: 'Contains information licensed under the Open Government Licence - Alberta.' / 'This licence does not grant you any right to use the Information in a way that suggests any official status or that the Information Provider endorses you or your use of the Information.' / exemptions include 'Personal Information'. The attribution sentence is carried verbatim into LICENSE.md at packaging; the non-endorsement clause is satisfied by derived-work labeling.",
+    "Personal-information exemption verified not engaged by the shipped columns (measured 2026-11-06): assessment_resource carries 5 position categories (IA Forces 23,170 / Other 2,741 / Wildfire Assessor 1,091 / AAO 825 / blank 1), dispatched_resource and initial_action_by carry resource-type codes - no person names in any shipped column (the dictionary's prose describes the operational form; the published CSV carries positions).",
+    "No third-party rights engaged: the record is the Government of Alberta's own operational wildfire compilation (publisher: Forestry and Parks / Alberta Wildfire)."
+  ],
+  "licence_class": "A",
+  "licence_note": "Open Government Licence - Alberta v2.2 permits redistribution, adaptation and commercial use; the binding condition is attribution ('Contains information licensed under the Open Government Licence - Alberta.' plus a licence link) - recorded and carried into LICENSE.md verbatim at packaging, per the tick's standing warning about OGL attribution terms. Non-endorsement clause: the dataset card and README must label the work as derived and never as Alberta Wildfire's official product.",
+  "construction_script": null,
+  "split_strategy": "Temporal, disjoint by year: train 2006-2015 (15,944 fires), eval 2016-2020 (5,627), holdout 2021-2025 (6,257). Measured positives, primary escape label >= 100 ha: train 297 (1.86%), eval 104 (1.85%), holdout 257 (4.11%); containment > 72 h: 514 (3.2%), 189 (3.4%), 611 (9.8%). Both classes present in every window at every measured threshold (4/10/40/100/200/1000 ha). Positives cluster on extreme-weather days: distinct assessment dates of >=100 ha positives are 156/79/128 per window - report clustered counts and score with day-cluster awareness. The holdout escape rate is higher because 2021-2025 contains the 2023 record season - real, documented non-stationarity (see known-event fixtures in notes.md), not a construction defect.",
+  "measurements": {
+    "probe_scripts": "candidates/ab-wildfire-ia-escape/probe_escape_base_rates.py and probe_publisher_crosscheck.py, results in probe_escape_base_rates_result.json and probe_publisher_crosscheck_result.json; pinned inputs recorded in notes.md (CSV sha256 8b6ed447..., dictionary sha256 bfff81c0...)",
+    "rows_and_uniqueness": "27,828 wildfires 2006-2025; (YEAR, FIRE_NUMBER) unique (0 duplicates); 0 unparseable timestamps; 0 current_size=0 rows; 0 size-class/current-size inconsistencies (A>=0-0.1, B>0.1-4, C>4-40, D>40-200, E>200 ha).",
+    "instant_ordering": "assessment_datetime never precedes reported_date (27,828/27,828), discovered_date (21,977/21,977) or fire_start_date (27,109/27,109); dispatch_date falls after assessment for 670/27,813 (2.41%) and start_for_fire_date for 990/27,818 (3.56%) - dispatch block excluded from features on this mixed ordering evidence.",
+    "feature_coverage_by_window": "assessment_datetime/assessment_hectares 100% in all windows; weather block (temperature, relative_humidity, wind_speed, wind_direction, weather_conditions_over_fire) 88.8%/86.4%/94.0%; fire_spread_rate 88.9%/86.7%/94.6%; fuel_type 68.8%/71.1%/81.6%; fire_type 89.2%/88.0%/96.0%; reported_date 100%; discovered_date 88.8%/72.4%/59.9% (dictionary: blank where unplanned detection); fire_start_date ~97.4% throughout.",
+    "escape_base_rates": ">=100 ha: 297/104/257 (1.86%/1.85%/4.11%); >=200 ha: 235/76/217; >=4 ha: 1,167/433/705; full threshold table in probe_escape_base_rates_result.json with distinct-date clustered counts.",
+    "containment_duration": "assessment -> first under control: median 0.4 h, p90 24.4 h, >72 h for 4.72% overall (514/189/611 per window); 11,688/27,828 (42.0%) already under control at the assessment instant.",
+    "publisher_cross_check": "current CSV hectares vs published season totals: 2020 3,274 vs 3,269; 2021 54,089 vs 54,047; 2022 131,272 vs 130,858; 2023 2,217,295 vs 2,211,900; 2024 714,874 vs 708,528 (<=1.0%); 2019 791,838 vs 883,411 (-10.4%), consistent with the dictionary's documented spring aerial-photography revision; fire counts differ from season PDFs because the CSV is year-round (e.g. 31 winter wildfires Nov-Dec 2025).",
+    "revision_sensitivity": "fires within +-20% of the 100 ha threshold: 89 (0.32% of rows); 40 ha: 146; 10 ha: 260; 4 ha: 383 - bounds the post-hoc area-revision label-flip exposure.",
+    "provenance_mix": "detection channel drifts (lookouts 34% of 2006 -> 21% of 2025; unplanned 42% -> 59%); population definition (all FPA wildfires) is stable; full per-year mixes in probe result JSON.",
+    "vintage_limitation": "single current compilation (portal updated 2026-02-17, covers through 2025); per-fire historical vintages are not published and not recoverable; the dictionary documents in-place revision of area burned (spring aerial-photography interpretation), cause (under-investigation -> final) and location (assessment GPS -> confirmed ignition area); the 2019 aggregate revision measured above is direct evidence. The task is therefore a current-compilation retrospective with explicit evaluation_contract assumptions - it does not claim operational point-in-time reproducibility of historical values.",
+    "extraction_cost_measured": "one 10.4 MB CSV + one 193 KB dictionary PDF through the cleared browser context (~12 s transfer, ~25 s chunked export) on the coordinator container (4 vCPU); full-population probes run in ~3 s locally; construction is a single 10.4 MB parse on a worker. No bulk transfer beyond the source file.",
+    "access_caveat": "open.alberta.ca blocks plain HTTP clients (Cloudflare managed challenge, measured); construction must ship the sha256-pinned CSV in the job bundle or use the recorded browser procedure, and assert the digest in-build."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "All five discovery contracts reconciled against recorded evidence (probes and full transcripts in candidates/ab-wildfire-ia-escape/). (1) Redistribution: class A - OGL-Alberta v2.2 permits redistribution and derivatives; the attribution sentence and non-endorsement wording are recorded verbatim and carried into LICENSE.md; the personal-information exemption was checked against the shipped columns (position codes, not names). (2) Prediction timing: the instant is the publisher's own initial-assessment timestamp and every intended feature is documented 'at the time of initial assessment' by the publisher's dictionary - the strongest timing documentation of any source this bench has opened; post-instant families (cause, dispatch, suppression milestones) are excluded with measured ordering evidence; declared limitations: no timezone marker in timestamps (read as America/Edmonton, assumption to confirm) and a single current compilation (no historical per-fire vintages) - the task is labelled current-compilation retrospective, and evaluation_contract must state these assumptions plus the bounded revision-flip exposure (89 fires within +-20% of 100 ha). (3) Target: labels derive from the record's own post-instant fields (current_size, first_uc_date), excludable from shipped features; eligibility is assessment-based with 100% coverage - no outcome-conditioned selection; no censoring (terminal status on every row, 99.9% extinguished). (4) Split capacity: three disjoint year windows carry both classes for both labels (escape 1.86%/1.85%/4.11%; containment 3.2%/3.4%/9.8%), with same-day clustered counts recorded (independence scale = the extreme fire-weather day); the holdout's higher rate is the documented 2023 record season. (5) Not a mirror: the IA-escape family is precedented (WildfireIA US benchmark, Mesogeos, Zong et al. Alberta powerline subset, Korkola et al. Ontario, UAlberta IA-difficulty study) - none ships an all-cause, assessment-instant task on the regulator's own in-situ assessment observations with containment-milestone labels; WildfireIA's own abstract records that such 'response records' are non-public in the US, which is precisely the gap this source closes for a public jurisdiction. Novelty verdict 'differentiated' recorded by script. Residual uncertainties for construction: confirm the timezone reading against a publicly documented fire timeline; decide the already-controlled stratum's treatment for the containment label; winter/season scope decision.",
+  "next_action": "Hand to construction (worker, advancement session): (1) acquire the CSV via bundle-shipped pinned copy or the recorded browser procedure and assert sha256 8b6ed447... in-build; (2) population = all assessed FPA wildfires 2006-2025 (decide winter-row scope once and declare); (3) primary label escape (final >= 100 ha), secondary containment (> 72 h to first under control, with an explicit decision on the 42% already-controlled-at-assessment stratum); (4) features = the assessment block + pre-instant timing/detection + calendar/geography; exclude cause-family, dispatch block, suppression/milestone fields and label sources - enforce this column policy in code, not convention; (5) confirm the America/Edmonton timezone reading against a publicly documented fire timeline (e.g. Horse River 2016) and declare it in quality.json.evaluation_contract; (6) splits train 2006-2015 / eval 2016-2020 / holdout 2021-2025; document the 2023-season base-rate shift in the card; (7) assert known-event fixtures in-build (Richardson 2011, Horse River 2016, Chuckegg Creek 2019, Basset/Long Lake/Pembina 2023 at the publisher's own final sizes; LWF002 2023 as an already-controlled negative); (8) gate 1.5 evaluation_contract with the current-compilation retrospective scope, the vintage limitations and the bounded revision-flip exposure; run the reverse-history join probes on the exact artifact; (9) full-worker qualification -> exact-byte acceptance -> baseline triad before any AUC/base-rate/headroom figure is quoted; (10) LICENSE.md: MIT for our code, CC0 for our compilation rights, Alberta's attribution sentence verbatim, derived-not-official labeling per the non-endorsement clause.",
+  "jurisdiction": {
+    "country": "CA",
+    "region": "North America",
+    "publisher": "Government of Alberta - Ministry of Forestry and Parks / Alberta Wildfire (open.alberta.ca Open Government Program; federated on the federal open.canada.ca portal, package a221e7a0-4f46-4be7-9c5a-e29de9a3447e)",
+    "recorded_at": "2026-11-06"
+  },
+  "novelty_check": {
+    "checked_at": "2026-11-06T20:20:08+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "Alberta wildfire escape prediction dataset",
+      "wildfire initial attack failure prediction benchmark",
+      "Alberta per-fire initial assessment machine learning dataset",
+      "wildfire time to containment prediction dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "Alberta wildfire escape prediction dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "wildfire initial attack failure prediction benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "Alberta per-fire initial assessment machine learning dataset",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "wildfire time to containment prediction dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "Alberta wildfire escape prediction dataset",
+          "hits": 403989,
+          "top": [
+            "High Praire Weather and Ignition Dataset",
+            "Fort McMurray Wildfire First 8 Days Dataset",
+            "A method for creating a burn severity atlas: an example from Alberta, Canada",
+            "PyroStack",
+            "Data supporting: A South Atlantic atmospheric river dipole as a key precursor of Amazon wildfires"
+          ]
+        },
+        {
+          "query": "wildfire initial attack failure prediction benchmark",
+          "hits": 295570,
+          "top": [
+            "Brazilian Cerrado Next Day Wildfire Spread",
+            "EO4WildFires: An Earth Observation multi-sensor, time-series machine-learning-ready benchmark dataset for wildfire impact prediction",
+            "Using Machine Learning and Aggregated Remote Sensing Data for Wildfire Occurrence Prediction and Feature Selection: A Case Study in California",
+            "Data from: Tamm Review: a meta-analysis of thinning, prescribed fire, and wildfire effects on subsequent wildfire severity in conifer dominated forests of the Western US",
+            "Data from: Disturbance detection in Landsat time series is influenced by tree mortality agent and severity, not by prior disturbance"
+          ]
+        },
+        {
+          "query": "Alberta per-fire initial assessment machine learning dataset",
+          "hits": 892211,
+          "top": [
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "RGB and RGNIR Plastic Waste Database",
+            "DisMo: Disentangled Motion Representations for Open-World Motion Transfer",
+            "mushrooms"
+          ]
+        },
+        {
+          "query": "wildfire time to containment prediction dataset",
+          "hits": 3307248,
+          "top": [
+            "Results of wildfire spread simulations in the Campo de Calatayud region, Aragon, Spain",
+            "CA Wildfire Scenarios",
+            "PyroStack",
+            "EO4WildFires: An Earth Observation multi-sensor, time-series machine-learning-ready benchmark dataset for wildfire impact prediction",
+            "Causal Xwildfire: Causality-instilled fire spread modelling for extreme events"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "Alberta wildfire escape prediction dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The Extreme-ultraviolet Stellar Characterization for Atmospheric Physics and Evolution (ESCAPE) Mission: Motivation and ",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "Robust Wildfire Forecasting under Partial Observability: From Reconstruction to Prediction",
+            "Deep Learning with Pretrained 'Internal World' Layers: A Gemma 3-Based Modular Architecture for Wildfire Prediction"
+          ]
+        },
+        {
+          "query": "wildfire initial attack failure prediction benchmark",
+          "hits": 5,
+          "top": [
+            "A Nationwide Benchmark for Wildfire Initial Attack Failure Prediction with Public Environmental Data",
+            "CREW-WILDFIRE: Benchmarking Agentic Multi-Agent Collaborations at Scale",
+            "Robust Wildfire Forecasting under Partial Observability: From Reconstruction to Prediction",
+            "Deep Learning with Pretrained 'Internal World' Layers: A Gemma 3-Based Modular Architecture for Wildfire Prediction",
+            "Wildfires Quasi-Implicit Alternative-Direction Simulations using Isogeometric Finite Element Method"
+          ]
+        },
+        {
+          "query": "Alberta per-fire initial assessment machine learning dataset",
+          "hits": 5,
+          "top": [
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "A Benchmark Study of Machine Learning Models for Online Fake News Detection",
+            "Active learning for data streams: a survey"
+          ]
+        },
+        {
+          "query": "wildfire time to containment prediction dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "Space-time distributions",
+            "Robust Wildfire Forecasting under Partial Observability: From Reconstruction to Prediction",
+            "Wildfires Quasi-Implicit Alternative-Direction Simulations using Isogeometric Finite Element Method"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'Alberta wildfire escape prediction dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'wildfire initial attack failure prediction benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'Alberta per-fire initial assessment machine learning dataset': 0 hit(s) - nothing notable\n- huggingface_datasets / 'wildfire time to containment prediction dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'Alberta wildfire escape prediction dataset': 403989 hit(s) - High Praire Weather and Ignition Dataset, Fort McMurray Wildfire First 8 Days Dataset, A method for creating a burn severity atlas: an example from Alberta, Canada, PyroStack, Data supporting: A South Atlantic atmospheric river dipole as a key precursor of Amazon wildfires\n- zenodo_records / 'wildfire initial attack failure prediction benchmark': 295570 hit(s) - Brazilian Cerrado Next Day Wildfire Spread, EO4WildFires: An Earth Observation multi-sensor, time-series machine-learning-ready benchmark dataset for wildfire impact prediction, Using Machine Learning and Aggregated Remote Sensing Data for Wildfire Occurrence Prediction and Feature Selection: A Case Study in California, Data from: Tamm Review: a meta-analysis of thinning, prescribed fire, and wildfire effects on subsequent wildfire severity in conifer dominated forests of the Western US, Data from: Disturbance detection in Landsat time series is influenced by tree mortality agent and severity, not by prior disturbance\n- zenodo_records / 'Alberta per-fire initial assessment machine learning dataset': 892211 hit(s) - plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, RGB and RGNIR Plastic Waste Database, DisMo: Disentangled Motion Representations for Open-World Motion Transfer, mushrooms\n- zenodo_records / 'wildfire time to containment prediction dataset': 3307248 hit(s) - Results of wildfire spread simulations in the Campo de Calatayud region, Aragon, Spain, CA Wildfire Scenarios, PyroStack, EO4WildFires: An Earth Observation multi-sensor, time-series machine-learning-ready benchmark dataset for wildfire impact prediction, Causal Xwildfire: Causality-instilled fire spread modelling for extreme events\n- arxiv_preprints / 'Alberta wildfire escape prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The Extreme-ultraviolet Stellar Characterization for Atmospheric Physics and Evolution (ESCAPE) Mission: Motivation and , The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, Robust Wildfire Forecasting under Partial Observability: From Reconstruction to Prediction, Deep Learning with Pretrained 'Internal World' Layers: A Gemma 3-Based Modular Architecture for Wildfire Prediction\n- arxiv_preprints / 'wildfire initial attack failure prediction benchmark': 5 hit(s) - A Nationwide Benchmark for Wildfire Initial Attack Failure Prediction with Public Environmental Data, CREW-WILDFIRE: Benchmarking Agentic Multi-Agent Collaborations at Scale, Robust Wildfire Forecasting under Partial Observability: From Reconstruction to Prediction, Deep Learning with Pretrained 'Internal World' Layers: A Gemma 3-Based Modular Architecture for Wildfire Prediction, Wildfires Quasi-Implicit Alternative-Direction Simulations using Isogeometric Finite Element Method\n- arxiv_preprints / 'Alberta per-fire initial assessment machine learning dataset': 5 hit(s) - DOME: Recommendations for supervised machine learning validation in biology, Changing Data Sources in the Age of Machine Learning for Official Statistics, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, A Benchmark Study of Machine Learning Models for Online Fake News Detection, Active learning for data streams: a survey\n- arxiv_preprints / 'wildfire time to containment prediction dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, Space-time distributions, Robust Wildfire Forecasting under Partial Observability: From Reconstruction to Prediction, Wildfires Quasi-Implicit Alternative-Direction Simulations using Isogeometric Finite Element Method",
+    "prior_art": [
+      "WildfireIA, arXiv:2606.15529 (2026); Mesogeos, NeurIPS 2023 Datasets & Benchmarks; Zong, Xianli & Flannigan, Earth's Future 2026 + Zenodo doi 10.5281/zenodo.21845674; Korkola et al., Int J Wildland Fire 33(12) WF24104 (2024); Lee et al. UAlberta initial-attack-difficulty study (2023); ABNextFire, BEEILAB Alberta spread dataset 2001-2019"
+    ],
+    "theirs": "WildfireIA (arXiv 2606.15529, 2026) is a US national IA-failure benchmark but from discovery-time public geodata (FIRMS/VIIRS, gridMET, LANDFIRE, OSM, WorldPop) for naturally-caused FPA-FOD fires, excludes containment timestamps, and its own abstract records that operational response records are non-public; Mesogeos (NeurIPS 2023) ships Mediterranean ignition-point burned-area estimation from environmental covariates; Zong, Xianli & Flannigan (Earth's Future 2026, Zenodo 21845674) ship only the powerline-caused Alberta subset (294 kB CSV) with weather/topography covariates and an ignition-day 2 ha escape rule - not the assessment instant and not all causes; Korkola et al. (IJWF 2024) model Ontario IA success on non-public Ontario fire reports; the UAlberta initial-attack-difficulty study (2023) uses 15 years of Alberta data in a simulation and publishes no task; ABNextFire ships Alberta Landsat spread grids, not escape records",
+    "ours": "All-cause Alberta Forest Protection Area per-wildfire task at the publisher-documented initial-assessment instant (27,828 fires, 2006-2025) whose features are the regulator's own crew-observed assessment record (assessment size, rate of spread, fire behaviour, position on slope, in-situ weather over the fire, FBP fuel type, detection channel), with a final-area escape label and a time-to-under-control containment label, temporal splits and a publisher-cross-checked revision record; no public source ships in-situ initial-attack assessment observations at per-incident grain for any jurisdiction, and no Alberta all-cause assessment-instant escape task exists in ML-ready form",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}

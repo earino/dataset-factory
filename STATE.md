@@ -1,3 +1,76 @@
+## 2026-11-06 (20:35Z) - scheduled discovery session (Canada focus): ab-wildfire-ia-escape READY (Alberta initial-assessment escape + containment-duration task; OGL-AB A; measured splits, cross-checked vs publisher season stats; novelty differentiated vs WildfireIA/Mesogeos/Zong/Korkola); open.canada.ca newest-packages re-check done for parked statcan-wds (condition unmet); checks green
+
+Discovery-only session (regional focus Canada: Statistics Canada, ECCC, Health
+Canada, open.canada.ca). No construction, qualification, packaging or
+publication; the packaged cpcb-aqi-exceedance track was not touched and still
+awaits the operator's flip. No worker launched (EUR 0).
+
+- ab-wildfire-ia-escape (NEW, ready): at Alberta Wildfire's recorded initial
+  assessment (assessment_datetime, dictionary: "originally assessed"),
+  predict per wildfire in the Forest Protection Area whether it escapes
+  initial attack (final area burned >= 100 ha; 4/40/200 ha variants measured)
+  and/or stays uncontained > 72 h (assessment -> first under control), from the
+  regulator's own crew-observed record: assessment size, rate of spread, fire
+  behaviour, slope position, in-situ weather over the fire, FBP fuel type,
+  detection channel, elapsed times. Source: Government of Alberta Forestry and
+  Parks "Historical wildfire data 2006-2025" (27,828 rows, all causes; CSV
+  sha256 8b6ed447..., fetched through the real browser because open.alberta.ca
+  Cloudflare-challenges plain clients - curl 403 measured; browser fetch
+  procedure + pinned digests recorded; construction must ship the pinned copy
+  or re-fetch that way). All 50 field definitions transcribed verbatim from the
+  scanned dictionary PDF into references/data-dictionary-transcript.md - every
+  shipped feature is documented "at the time of initial assessment" by the
+  publisher; cause family, dispatch block and all suppression/milestone fields
+  excluded with measured ordering evidence (dispatch after assessment 2.41%).
+  Measured: escape >=100 ha per window train 2006-2015 297/15,944 (1.86%) /
+  eval 2016-2020 104/5,627 (1.85%) / holdout 2021-2025 257/6,257 (4.11%, the
+  2023 record season - documented non-stationarity); containment >72 h
+  514/189/611; clustered positives 156/79/128 distinct same-day dates;
+  assessment/weather coverage 86-100% per window; (YEAR, FIRE_NUMBER) unique;
+  no unparsed timestamps. Cross-checked against the publisher's own season
+  statistics: hectares within 1% for 2020-2024; 2019 -10.4% = the
+  dictionary-documented spring aerial-photography revision - recorded as the
+  vintage limitation (single current compilation; per-fire historical vintages
+  unrecoverable; task framed current-compilation retrospective; label-flip
+  exposure bounded: 89 fires within +-20% of the 100 ha threshold). Licence
+  OGL-Alberta v2.2, class A, attribution sentence + non-endorsement quoted and
+  carried; personal-information exemption checked (positions/codes ship, not
+  names). Novelty differentiated (check-novelty.py): the IA-escape family is
+  precedented - WildfireIA (arXiv 2606.15529, US national, discovery-time
+  geodata, lightning-only, containment excluded, "response records
+  non-public"), Mesogeos (Mediterranean burned-area), Zong et al. 2026
+  (Alberta POWERLINE subset, ignition-day 2 ha rule, Zenodo), Korkola et al.
+  2024 (Ontario, non-public records), UAlberta IA-difficulty simulation - none
+  ships an all-cause assessment-instant task on in-situ crew observations with
+  containment-milestone labels. Probes kept: probe_escape_base_rates.py,
+  probe_publisher_crosscheck.py + result JSONs. Dated example worked in
+  notes.md (HWF036 Long Lake Complex 2023: assessed 4 ha, 25C/15%RH/W 30 km/h,
+  O1a, 16:26 local -> 203,022 ha, under control 2024-01-30; negative LWF002).
+  Residual for construction: confirm America/Edmonton timezone reading, decide
+  the 42% already-controlled-at-assessment stratum for the containment label,
+  winter-row scope.
+- Named federal agencies swept, not re-probed: StatCan aggregate-grain park
+  unchanged (the record's reopen condition WAS executed - open.canada.ca
+  newest packages re-checked 2026-11-06, 100 rows: re-stamped aggregates,
+  proactive disclosures, no event-grain release; note appended to that
+  record); ECCC hydrometric stays dropped (CAMELS-SPAT/HYSETS mirror) and
+  NAPS/AQHI would near-mirror our own published cpcb-aqi-exceedance; Health
+  Canada's five recorded verdicts stand, no new HC lead opened this tick. The
+  tick's viable lead is provincial, federated on open.canada.ca.
+- Region coverage: CA 16 -> 17 candidates (141 total, live 56, non-US 50/56 =
+  89%, ready 19). Untracked concurrent work candidates/fenz-incident-data/
+  inspected and left untouched, not committed.
+- Checks run at close: check-candidate.py ab-wildfire-ia-escape rc=0;
+  --all rc=0 (131 records); discovery-coverage green; python3 -m unittest
+  discover -s tests: 723 tests OK.
+
+Next action: a construction session may take ab-wildfire-ia-escape through the
+recorded handoff (bundle-shipped pinned CSV, column-policy enforcement in code,
+gate 1.5 evaluation_contract with the declared vintage/timezone assumptions,
+full-worker qualification -> exact-byte acceptance -> baselines before any
+quoted number); the packaged cpcb-aqi-exceedance track still outranks new
+construction per AGENTS.md and awaits the operator's flip.
+
 ## 2026-11-06 (19:25Z) - scheduled advancement: cpcb-aqi-exceedance RELEASE CLOSE-OUT COMPLETE - Hub verify + tag v2026.11 (tag == main == 2535150e), both DESTINATIONS blocks recorded, record -> packaged, pre-flip audit prompt generated, awaiting_operator TRUE; nothing public, holdout sealed
 
 Release work only (brief priority: release outranks construction); no worker launched
