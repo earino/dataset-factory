@@ -1,3 +1,87 @@
+## 2026-11-06 (02:45Z) - advancement session: cpcb-aqi-exceedance construction written, dry-run green (gate 1.5.0 + --accept + score.py end-to-end) and LAUNCHED twice - attempt -001 refused in 10 s at a real source gap (62 of 549 stations carry no state_name; sentinel repair), attempt -002 is running with its construction/qualification stages sound but a known O(n^2) defect in its BUNDLED scoring stage (found post-launch, fixed in source, cannot be stopped through any supported control) - no score exists; the running job is the handoff
+
+Scheduled advancement session. Release work first: no packaged candidate is
+actionable (cqc, za-cct-substation, ns-bwa all carry `awaiting_operator: true` -
+human waits, untouched). No remediation hold is active. Job ledger at session
+start: 202 job records, zero non-terminal. Candidate chosen from the operator's
+actionable list: cpcb-aqi-exceedance, whose record carried the most advanced
+ordered handoff (design pre-registered, build.py drafted, remaining = score.py +
+run.sh + job.json + bundle.json + the mandatory local dry run + launch).
+
+- PREFLIGHT (no worker money): reviewed the drafted build.py against the gate's
+  own code (window semantics: `end` exclusive; timing block shape; leakage
+  declarations) and found TWO construction defects BEFORE the dry run:
+  (1) `window.append((day, mean))` ran only for rows that were emitted, so a
+  VALID day whose D+1 was missing/thin vanished from D+2..D+91 trailing means,
+  contradicting the declared frame ("mean of the station's valid-day means") and
+  over-triggering the -1.0 sentinels; (2) `excluded['thin_day']` was initialised
+  and never incremented (the earlier smoke's "thin_day 0" was the tell), and
+  summary's per_split_per_month.excluded_unlabelable was hard-wired to 0 by a dead
+  'TOTAL' branch. All three fixed; the synthetic row/positive counts are unchanged
+  (6,597/650, 1,643/180, 1,670/181) and thin_day now reports 2181/556/548.
+- WRITTEN and RECORDED: source/score.py (pre-registered triad = station
+  persistence [day-D pm25_mean as the score, binary >90 agreement supplementary],
+  state x season-of-D+1 climatology, constant global rate; station_train_rate
+  supplementary; station-clustered [station_id] paired bootstrap 1000 resamples,
+  seed 20261105; per-month and per-season tables; holdout never read),
+  source/run.sh (fixed order construct -> gate -> accept -> triad),
+  source/job.json + source/bundle.json, baseline/{run.sh,materialize.py,report.py,
+  job.json,bundle.json} (the follow-up job: re-accept the fetched bytes, triad,
+  harness runner verbatim, pre-registered deciding check). Record carries
+  measurements.construction_preflight_2026_11_06.
+- DRY RUN GREEN (mandatory before any launch): synthetic build rc=0 -> REAL gate
+  1.5.0 ok=true failed_checks=[] -> exact-byte --accept ACCEPTED (synthetic
+  artifact 858ef865..., then e2107ba0... after the station-sentinel change) ->
+  score.py ran end-to-end (first real execution of the machinery: persistence AUC
+  0.9522, state-season 0.8425, station prior 0.7241, majority accuracy 0.8904 -
+  synthetic bytes only, says nothing about the real task's headroom).
+- ATTEMPT -001 (server 174723039, cpx32/hel1, 0.32 EUR reserved) FAILED after
+  10.1 s: "BUILD REFUSED: station site_5405 carries no state_name". MEASURED
+  cause with one anonymous /v1/stations request (retained
+  probe/out/cpcb_missing_state_2026_11_06.json): 62 of the 549 cpcb PM2.5
+  stations have state_name null (city_name/latitude/longitude null too), all
+  newer stations across 15 states - the discovery probe had counted 549 stations
+  but never checked attribute coverage. REPAIR (recorded, not silent): those
+  stations ship the DECLARED sentinel 'UNKNOWN_STATE' (quality.json
+  station_registry + state_name feature_evidence), never station dropping (which
+  would invalidate the measured 549-station anchors) and never state inference
+  from station names. Population/rows/labels/splits unchanged. Worker destroyed
+  02:33:50Z (ledger deleted_at; provider read-back recorded below).
+- ATTEMPT -002 (server 174723938, cpx32/hel1, launched 02:34:36Z, expires 04:54Z)
+  IS RUNNING and its construction stages are sound: live container log at 02:42Z
+  shows the vintage pin matched (exported_at 2026-09-30T11:25:11+00:00, 549
+  stations), the sentinel applied to 62 stations, and the fetch through 2023-12
+  at 376 s (24 requests/year, ~6.3 s/request).
+- POST-LAUNCH DEFECT in -002's BUNDLE (found by review while it ran, fixed in
+  source, NOT fixable in the launched bundle): score.py's
+  state_season_climatology `unseen_cell_rows` rebuilt the whole train rate table
+  inside a per-eval-row generator - ~5.2e10 operations, a hang, not a score. The
+  fix builds the table once (verified: score.py 2.9 s end-to-end on the synthetic
+  extract). CONSEQUENCE, recorded honestly: -002 will pass the build, the gate
+  and --accept, then hang at the reference stage until the 100-minute container
+  timeout (~04:14Z); the uploaded extract, gate report and acceptance log are
+  valid evidence (written before that stage) and NO score will exist. The run
+  could not be stopped: `worker destroy` refuses a running job by design and the
+  scheduler's approval gate refused the container-lifecycle command; neither
+  control was bypassed. NO number from this session is quotable about the real
+  task.
+- EUR: four November reservations now (0.08 afdb + 0.32 x3 here) - 1.04 of the
+  15 EUR construction allowance, EUR 5 release reserve untouched.
+
+Next action (a fresh session can carry it out; also in record.next_action):
+collect cpcb-aqi-build-002 after ~04:15Z; require the uploaded summary anchors,
+gate 1.5.0 ok=true failed_checks=[] and the ACCEPTED log for the artifact digest
+(a failed gate/missing acceptance log invalidates the artifact - diagnose first).
+Then fetch the release manifest + gate report (za-cct baseline/fill_from_collect.py
+is the three-record cross-check template), copy the report to
+baseline/qualification.json, fill baseline/job.json's fetch block with the five
+extract assets, assemble + plan + launch cpcb-aqi-baseline-001: its run.sh
+re-accepts BEFORE any score, then runs the fixed score.py triad, then the harness
+train.py/validate.sh verbatim, then the pre-registered deciding check (cluster =
+station_id). Apply the rule written before any score (model must beat EVERY triad
+member with a station-clustered 95% CI excluding zero AND its own AUC CI entirely
+above 0.5; triad dominance -> recorded defect, drop or re-target; no re-tuning).
+Destroy the worker with provider read-back. Holdout (2024) stays sealed.
 ## 2026-11-06 (00:55Z) - discovery tick (East Asia): tw-reservoir-drought-storage REOPENED parked -> investigating - the 2026-10-22 "no anonymous history" blocker is contradicted by a measured anonymous plain-HTTP history channel (WRA /Disaster/api/ReservoirHistoryApi/GetComparision: all 21 major reservoirs per request, daily 07:00 records back to ~2008 full-field, found by reading the SPA bundle chain in the browser); NOT ready - split counts need the worker panel pass; standing captures run (both UNCHANGED); no construction, no score, EUR 0
 
 Discovery-only session, regional focus East Asia (operator tick: Japan e-Stat/JMA,

@@ -1,0 +1,68 @@
+{
+  "job": {
+    "id": "cpcb-aqi-build-002",
+    "candidate": "cpcb-aqi-exceedance",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cpx32",
+    "location": "hel1",
+    "cpus": 4,
+    "memory_mb": 8192,
+    "timeout_minutes": 100,
+    "lifetime_minutes": 140,
+    "max_disk_mb": 30000,
+    "max_artifact_mb": 300,
+    "what": "REPAIR ATTEMPT for cpcb-aqi-build-001 (refused 10 s in: 'station site_5405 carries no state_name'; measured 2026-11-06: 62 of 549 cpcb PM2.5 stations have state_name null, city_name/latitude/longitude null too). Repair: those stations ship the DECLARED sentinel 'UNKNOWN_STATE' (recorded in quality.json station_registry) instead of dropping 11% of the population (which would invalidate the measured anchors) or inferring a state from the station name. Otherwise unchanged: full construction of the cpcb-aqi-exceedance station-day panel from the pinned XKDR export 2026-09-30 (anonymous demo-key /v1/measurements batching), eligibility n_hours>=18 on day D plus a labelable D+1, label = D+1 24-hr mean PM2.5 > 90 ug/m3, splits train 2019-2022 / eval 2023 / holdout 2024 with the measured counts asserted exactly, the 2025-04..09 tail excluded and counted. Then gate 1.5.0 on the FULL artifact, exact-byte --accept, then score.py's pre-registered reference triad on eval rows. No performance metric in the build; holdout never read.",
+    "stopping_condition": "A failed anchor/fixture assertion, a failed gate, a failed --accept or a truncated fetch stops the run with diagnostics uploaded; the extract is never scored. One rebuild per structural defect; no re-tuning of threshold, window, label or features after any score.",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/cpcb-aqi-exceedance/source/build.py",
+        "bytes": 53111,
+        "sha256": "6b4cc596d81d9022b3a994570ba5d9f1f41cb818f253aa38ec26555495f9320e"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/cpcb-aqi-exceedance/source/run.sh",
+        "bytes": 1885,
+        "sha256": "36faaef433a4aa862e7d4f368683fcd39e99c5438e9b7b9a893f235581833f72"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/cpcb-aqi-exceedance/source/score.py",
+        "bytes": 19339,
+        "sha256": "7eb29ee71013f23a5452a4532b072729a84da42494f7bbc8d6bd2c7c1d9026dd"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.32",
+  "rate_ceiling_eur": "0.08",
+  "reserved_hours": 4,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "5353cdcd27d757ef048c32744cc41a30aee3bebb5fdc58749dcd8268fe78e25b",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "running",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-06T02:34:36.204204+00:00",
+  "expires": 1793940876,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0692400000000000",
+  "server_id": 174723938,
+  "known_hosts": "/opt/data/dataset-factory/.factory/cpcb-aqi-build-002/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168"
+}

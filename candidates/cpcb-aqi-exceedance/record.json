@@ -38,7 +38,7 @@
   "XKDR Forum compilation licence, read 2026-11-04 from the Air-Quality-Database README (raw.githubusercontent.com/xKDR/Air-Quality-Database/main/README.md): 'The data compilation is released under Creative Commons Attribution 4.0: use it for anything, including commercial work, and credit India Air Quality Database, XKDR Forum together with the sources, the Central Pollution Control Board (CAAQM network) and the US Department of State via AirNow.' Values 'as reported', 'no gap filling', 'preliminary and not fully validated'.",
   "OpenAQ archive licence (recorded 2026-10-20 from docs.openaq.org): CC BY 4.0 per dataset, attributionRequired=true, redistributionAllowed=true, commercialUseAllowed=true."
  ],
- "construction_script": null,
+ "construction_script": "candidates/cpcb-aqi-exceedance/source/build.py",
  "split_strategy": "Temporal by day on the cpcb_caaqm stream only (5 us_embassy DS* stations excluded; one instrumentation stream). MEASURED 2026-11-05 over the full 2019-2025 panel (166 requests, 716,750 station-days, threshold 90 ug/m3, n>=18h primary) and RE-CUT once before any score because the 2025 holdout is a winter-free partial tail (2025-01..03 and 2025-10..12 have no cpcb pm25 rows in the export; measured): train 2019-2022 339557 station-days / 63735 positives (0.1877) / 390 reporting stations / 85 state-x-season positive cells / 1267 distinct positive days; eval 2023 154003 / 20773 (0.1349) / 511 / 90 / 357; holdout 2024 175624 / 19254 (0.1096) / 529 / 92 / 358. Excluded and counted: the 2025-04..09 partial tail (47566 station-days / 829 positives / 329 stations). Positives are winter-clustered (monthly positive share Dec-Feb up to ~0.39, monsoon ~0.00-0.03) - construction evaluates with cluster-aware intervals (cluster = station and/or state x season). Both classes present in every window; eval/holdout clear the qualification gate's minimums with large margin.",
  "measurements": {
   "xkdr_meta_2026_10_20": "GET https://airquality.xkdr.org/v1/meta with the published demo key: HTTP 200; measurements 196,521,834 rows over 207 months (2009-01..2026-03), 558 stations, 15 parameters; schema station_id, station_name, state_name, city_name, parameter_name, unit, collected_at (naive IST), value, source (cpcb_caaqm|us_embassy), year, month; demo tier capped at 10,000 rows/query, 30 s query timeout.",
@@ -141,13 +141,132 @@
    },
    "recut_reason": "The 2026-11-04 proposed holdout (2025) is not viable as a scored window: the export's cpcb pm25 stream has NO data for 2025-01..2025-03 or 2025-10..2025-12 (monthly all-station queries return 2-5 stray rows, the 5 us_embassy monitors; measured), a partial 2025-04..2025-08 (~320 stations), and a single day 2025-09-01 - a winter-free, 1.74%-prevalence tail. Re-cut ONCE before any score, with both cuts preserved in this entry and in probe/out/xkdr_daily_counts_2019_2025_2026_11_05.json: train 2019-2022 / eval 2023 / holdout 2024 (all full years, both classes, mild prevalence drift 18.8% -> 13.5% -> 11.0%); the 2025-04..09 partial tail (47,566 station-days / 829 positives / 329 stations) is EXCLUDED from scored windows and counted here. The 2026-11-04 'stream effectively ends 2025-12' reading was wrong in both directions: the stream effectively ends 2025-09-01 AND Jan-Mar 2025 is missing too.",
    "note": "one fetch defect fixed mid-session (hardcoded Feb-29 produced end=2019-02-29 -> HTTP 400 'end must be YYYY-MM-DD'; replaced with calendar.monthrange); the first 'transient 400' diagnosis was wrong - it was this bug."
+  },
+  "construction_preflight_2026_11_06": {
+   "recorded_at": "2026-11-06T00:00:00+00:00",
+   "purpose": "pre-launch review + the MANDATORY local dry run (synthetic build -> the REAL gate 1.5.0 -> exact-byte --accept -> score.py) before any worker cycle. No real-data artifact, score, gate or acceptance exists yet; nothing measured here is quotable about the real task",
+   "review_fixes_before_dry_run": [
+    "trailing-window membership (construction semantics): window.append((day, mean)) moved above the split/labelability exclusions, so every VALID day feeds later rows' 7d/30d/90d means, days_since_gt90 and exceed_count_30d. Before the fix a valid day whose D+1 was missing or thin vanished from D+2..D+91 aggregates, contradicting the declared feature frame ('mean of the station's valid-day means') and over-triggering the -1.0 sentinels",
+    "excluded['thin_day'] was initialised but never incremented (the earlier smoke's thin_day 0 while thin days existed); now counted per split from the panel",
+    "summary.json per_split_per_month.excluded_unlabelable was hard-wired to 0 by a dead 'TOTAL' branch; now carries the measured per-month unlabelable count"
+   ],
+   "dry_run": {
+    "build": "python3 candidates/cpcb-aqi-exceedance/source/build.py --synthetic --out <scratch>/extract --work-dir <scratch>/work -> rc=0",
+    "synthetic_counts": {
+     "train": "6597 rows / 650 pos",
+     "eval": "1643 / 180",
+     "holdout": "1670 / 181"
+    },
+    "synthetic_exclusions": {
+     "thin_day": {
+      "train": 2181,
+      "eval": 556,
+      "holdout": 548
+     },
+     "unlabelable_next_day": {
+      "train": 2192,
+      "eval": 545,
+      "holdout": 545
+     }
+    },
+    "gate": "gate 1.5.0 ok=true failed_checks=[] on the synthetic extract",
+    "accept": "ACCEPTED, synthetic artifact 858ef86535986d7c",
+    "score_py_first_real_execution": {
+     "station_persistence": {
+      "auc": 0.9521986785144679
+     },
+     "state_season_climatology": {
+      "auc": 0.8424925951241741
+     },
+     "global_rate": {
+      "auc": null,
+      "rate": 0.09853
+     },
+     "station_train_rate": {
+      "auc": 0.72413230044809
+     },
+     "majority_class_accuracy": 0.8904443091905052,
+     "note": "synthetic bytes only - exercises the machinery; says nothing about the real task's headroom, and the persistence number is inflated by the generator's deliberate autocorrelation"
+    },
+    "files_added": [
+     "source/score.py",
+     "source/run.sh",
+     "source/job.json",
+     "source/bundle.json"
+    ]
+   },
+   "pre_registered_deciding_rule": {
+    "written_before_any_score": true,
+    "members": [
+     "station_persistence",
+     "state_season_climatology",
+     "global_rate"
+    ],
+    "rule": "headroom ONLY if the full model beats EVERY member with a station-clustered (station_id) paired bootstrap 95% CI excluding zero in the model's favour AND the model's own cluster-bootstrap AUC CI lies entirely above 0.5 (the degenerate constant member); triad dominance -> recorded defect, drop or re-target; no re-tuning of threshold, window, label or features after any score"
+   }
+  },
+  "construction_refusal_2026_11_06": {
+   "recorded_at": "2026-11-06T02:35:00+00:00",
+   "job": "cpcb-aqi-build-001",
+   "server_id": 174723039,
+   "outcome": "FAILED exit 1 after 10.1 s (no OOM), 0 rows fetched beyond /v1/meta and /v1/stations: the build's fail-loud station-registry assertion refused the pinned export",
+   "diagnostic": "BUILD REFUSED: station site_5405 carries no state_name",
+   "measured_cause": {
+    "method": "one anonymous GET /v1/stations with the publisher's front-page demo key, 2026-11-06; script + JSON retained at probe/out/cpcb_missing_state_2026_11_06.json",
+    "cpcb_pm25_stations": 549,
+    "stations_without_state_name": 62,
+    "also_null": [
+     "city_name",
+     "latitude",
+     "longitude"
+    ],
+    "shape": "newer stations (first_seen 2017-2024) across Karnataka, Tamil Nadu, Kerala, Maharashtra, Manipur, Meghalaya, Tripura, Bihar, Jharkhand, Odisha, Madhya Pradesh, Gujarat, Uttar Pradesh, Andhra Pradesh",
+    "significance": "the discovery probe counted 549 stations but did not check attribute coverage; 11.3% of the population carries no state identity in the export"
+   },
+   "decision": "declared sentinel convention: those stations ship state_name='UNKNOWN_STATE' (recorded in quality.json station_registry and in the state_name feature_evidence), NOT station dropping (which would invalidate the measured 549-station anchors: 716,750 rows and every per-window count) and NOT state inference from station names (invented data). Population, rows, labels, splits and thresholds are unchanged; only the missing-categorical convention is added",
+   "staging_release": 436031882,
+   "worker_cleanup": "destroyed 2026-11-06T02:33:50Z (ledger deleted_at; provider read-back pending recording)"
+  },
+  "attempt_002_scoring_defect_2026_11_06": {
+   "recorded_at": "2026-11-06T02:45:00+00:00",
+   "job": "cpcb-aqi-build-002",
+   "defect": "score.py's state_season_climatology 'unseen_cell_rows' rebuilt the whole train rate table INSIDE a per-eval-row generator expression: 154,003 eval rows x ~340,000 train rows = ~5.2e10 dictionary operations. Not a wrong number - a hang that would consume the container's 100-minute timeout",
+   "found_by": "post-launch review of the bundled score.py while the job was running (the launch-time review had checked the build and the gate contract, not the reference table construction)",
+   "fix": "the (state_name, target-season) train table is built ONCE in main() and the coverage counter reads it; verified on the synthetic extract (score.py runs in 2.9 s end-to-end)",
+   "consequence_for_002": "its bundle is immutable, so the run will pass the build, the gate and --accept, then hang at the reference stage until the 100-minute container timeout (~04:14Z); the uploaded extract, gate report and acceptance log are still valid evidence because they are written before the reference stage, and no score exists",
+   "cannot_stop": "worker destroy refuses a running job by design and the scheduler's approval gate refused the container-lifecycle command, so the run was left to its own timeout rather than bypassing either control",
+   "cost": "one further 0.32 EUR reservation (four reservations in November: 0.08 + 0.32 x3)"
   }
  },
- "jobs": [],
+ "jobs": [
+  {
+   "id": "cpcb-aqi-build-002",
+   "server_id": 174723938,
+   "server_type": "cpx32",
+   "location": "hel1",
+   "status": "running_at_session_end",
+   "launched_at": "2026-11-06T02:34:36.204204+00:00",
+   "reservation_eur": "0.32",
+   "source_sha256": "5353cdcd27d757ef048c32744cc41a30aee3bebb5fdc58749dcd8268fe78e25b",
+   "attempt": 2,
+   "repair_of": "cpcb-aqi-build-001",
+   "expected_outcome": "build + gate 1.5.0 + exact-byte --accept succeed and are uploaded; the reference stage hangs on the known O(n^2) defect and the container is killed at the 100-minute timeout (~04:14Z), so the job ends FAILED with valid construction/qualification evidence and NO score",
+   "carries_defect": "score.py unseen_cell_rows O(n^2) (fixed in source/score.py after launch)"
+  },
+  {
+   "id": "cpcb-aqi-build-001",
+   "server_id": 174723039,
+   "status": "failed_and_deleted",
+   "launched_at": "2026-11-06T02:27:40.590444+00:00",
+   "exit_code": 1,
+   "elapsed_seconds": 10.1,
+   "reason": "station registry assertion: 62 of 549 stations carry no state_name"
+  }
+ ],
  "artifacts": [],
  "rejection_reason": null,
  "review": "Five contracts reconciled 2026-11-05 against recorded evidence. (1) REDISTRIBUTION - supported, class A: CPCB's own publication is licensed GODL-India by the data.gov.in platform instrument (Wayback-read 2026-11-04, AIKosh-corroborated live; attribution template + non-endorsement to carry into LICENSE.md; no share-alike); the XKDR compilation is CC BY 4.0 (README, credit 'India Air Quality Database, XKDR Forum' + CPCB + US DoS); OpenAQ is CC BY 4.0 (docs + archived v2 meta 'CC BY 4.0d'). (2) PREDICTION TIMING - supported for a clearly-labelled retrospective-research scope with two declared, unverified assumptions: instant = 23:59 IST on day D; features = the station's own trailing PM2.5 history through day D (naive IST, calendar-day convention); label = calendar-day D+1 24-hr mean, entirely after the instant. Assumption (a) current-vintage: the archive is one export (2026-09-30), values 'as reported', 'no gap filling', 'preliminary and not fully validated' (XKDR README) - no operational as-of claim; revision behaviour unmeasured (a second export has never been observed). Assumption (b) day-D trailing hours are treated as complete at the instant: CPCB intraday latency is not measured (the publisher's own 4 PM bulletin averages the past 24 h and shows non-participating stations, e.g. Delhi 36/39 on 2024-11-18). (3) TARGET - supported: mechanical label (D+1 calendar-day mean > 90 ug/m3) from a published band edge of the publisher's own AQI instrument (Poor band lower edge 91; quote in measurements.threshold_fixture_2026_11_05); label-source series excluded from every shipped column; known-event fixture bound to the publisher's Daily AQI Bulletin (2024-11-18 Delhi Severe 494) AND confirmed in the measured panel (36/36 complete Delhi station-days TRUE); the bulletin is also the publisher-summary cross-check (category-level). (4) SPLIT CAPACITY - supported, measured on the full 2019-2025 panel and re-cut once with measured evidence before any score (see split_strategy): train 2019-2022 63735 positives, eval 2023 20773 positives over 357 distinct positive days, holdout 2024 19254 positives over 358 days; both classes in all three windows; winter clustering recorded and cluster-aware evaluation required at construction. (5) NOT A MIRROR - supported: novelty_check verdict differentiated (2026-10-20): research papers fit CPCB forecasters with private splits (arXiv 2404.08702 22-station; Discover AI 2026), Kaggle raw-data mirrors (CC BY-SA), and open archives (OpenAQ/XKDR/Vayuayan) - none ships this task with fixed splits and a scored contract. RESIDUAL LIMITATIONS carried to construction: (i) the cross-row exposure - a scored day-D row's label operand (day D+1 mean) appears inside the trailing features of days D+2..D+91 - requires the za-cct-style bounded-exposure design (restricted trailing aggregates, isolated_rows declared, gate-1.5 reverse-history probes measuring eval/holdout coverage and mismatch); (ii) label-availability exclusions (station-days with <18 h on D+1) must be counted and declared, never silently dropped; (iii) the export's 2025 hole (Jan-Mar, Oct-Dec absent; the 2025-04..09 tail excluded) and the OpenAQ 2023-2024 gap (zero files, measured) mean XKDR is the only channel that carries all three re-cut windows; the full-key bulk path stays behind the operator's email/key decision while the anonymous measurements-API batching path remains viable and measured.",
- "next_action": "READY - construction handoff, in order: (1) channel: default = anonymous demo-key measurements-API batching on the worker (measured 2026-11-05: daily aggregates = 2 batches x 84 months; hourly raw pulls are larger but worker-feasible; use a non-Python-urllib UA and retry 400/401/5xx with backoff - the origin served a 401 window 2026-11-05 20:33-20:44Z). Operator option: a full free XKDR key (signup needs an EMAIL identity - MISSING ACCESS recorded 2026-11-05) enables one-parquet-per-month bulk fetch (/v1/files, 409,568,028 B total; demo tier reads only the 2024 files - measured 403 on 2019). (2) Build on a worker from the pinned XKDR export 2026-09-30 (re-verify any re-fetched artifact against the recorded anchors): station-day panel 2019-2024, cpcb_caaqm only (549 PM2.5 stations), eligibility n>=18h on day D, label = D+1 calendar-day 24-hr mean > 90 ug/m3 with n>=18h on D+1 (unlabelable excluded AND counted), splits train 2019-2022 / eval 2023 / holdout 2024 with the measured counts in split_strategy, the 2025-04..09 partial tail excluded and counted, features = trailing daily/hourly PM2.5 statistics + calendar only, label-source columns absent from every CSV, in-build fixtures: 2024-11-18 Delhi TRUE (bulletin-bound, measured 36/36 complete station-days) and one monsoon negative day; cross-row bounded-exposure design with gate-1.5 reverse-history probes and isolated_rows declared. (3) Standing order: full-artifact gate 1.5 on the worker -> exact-byte --accept -> reference triad on identical eval rows (station persistence, state-x-season climatology prior, majority) with station-clustered paired bootstrap and a pre-registered deciding rule written BEFORE any score -> reporting. Holdout never opened in development. No score, gate or acceptance exists yet - nothing is quotable.",
+ "next_action": "RECOVERY AFTER ATTEMPT -002 (expected to fail at the reference stage ~04:14Z with the build/gate/accept evidence uploaded to its staging release): (1) collect cpcb-aqi-build-002; require the uploaded summary.json (panel anchors), the gate 1.5.0 report ok=true failed_checks=[] and the acceptance log ACCEPTED for the artifact digest; a failed gate or a missing acceptance log invalidates the artifact - diagnose before any relaunch. (2) Fetch the release's manifest.json and the gate report asset (small; the za-cct baseline/fill_from_collect.py is the cross-checking template: collected result, release manifest, live asset list must agree on every digest). (3) Copy the gate report to baseline/qualification.json and fill baseline/job.json's fetch block with the five extract assets (meta.json, quality.json, public/train.csv, public/eval.csv, private/holdout.csv; sizes + sha256 from the manifest). (4) assemble + plan + launch cpcb-aqi-baseline-001 (cpx32/hel1, timeout 100, lifetime 140): its run.sh re-accepts the fetched bytes BEFORE any score, then runs the fixed score.py reference triad, then the harness train.py/validate.sh verbatim, then the pre-registered deciding check (cluster = station_id). One worker cycle produces both the reference table and the full-model verdict. (5) Apply the pre-registered rule: headroom ONLY if the model beats EVERY triad member with a station-clustered 95% CI excluding zero in its favour AND its own AUC CI lies entirely above 0.5; triad dominance -> recorded defect, drop or re-target; no re-tuning after any score. Destroy the worker with provider read-back. The holdout (2024) stays sealed.",
  "jurisdiction": {
   "country": "IN",
   "region": "South & South-East Asia",
@@ -174,5 +293,5 @@
  },
  "licence_class": "A",
  "licence_note": "REOPENED 2026-11-04: the publisher's own reuse licence is now read and recorded. CPCB's dataset 'Real time Air Quality Index from various locations' is contributed by CPCB (MoEFCC) on the Government of India OGD Platform, whose instrument licenses published datasets/resources under GODL-India (attribution-only, worldwide, royalty-free, commercial and derivative use permitted, no share-alike clause). CPCB's own site copyright policy is restrictive 'unless otherwise indicated'; the platform publication is the indicated licence. Any release carries GODL-India attribution to CPCB plus the access-channel attribution (XKDR Forum CC BY 4.0 compilation and/or OpenAQ CC BY 4.0), sources' designations preserved. The us_embassy (DS*) stream is excluded from the task population so the dataset is single-stream cpcb_caaqm.",
- "updated_at": "2026-11-05T21:45:00+00:00"
+ "updated_at": "2026-11-06T02:45:00+00:00"
 }

@@ -1,0 +1,19 @@
+{
+  "id": "cpcb-aqi-build-002",
+  "candidate": "cpcb-aqi-exceedance",
+  "image": "python:3.13-slim",
+  "command": [
+    "sh",
+    "/workspace/run.sh"
+  ],
+  "server_type": "cpx32",
+  "location": "hel1",
+  "cpus": 4,
+  "memory_mb": 8192,
+  "timeout_minutes": 100,
+  "lifetime_minutes": 140,
+  "max_disk_mb": 30000,
+  "max_artifact_mb": 300,
+  "what": "REPAIR ATTEMPT for cpcb-aqi-build-001 (refused 10 s in: 'station site_5405 carries no state_name'; measured 2026-11-06: 62 of 549 cpcb PM2.5 stations have state_name null, city_name/latitude/longitude null too). Repair: those stations ship the DECLARED sentinel 'UNKNOWN_STATE' (recorded in quality.json station_registry) instead of dropping 11% of the population (which would invalidate the measured anchors) or inferring a state from the station name. Otherwise unchanged: full construction of the cpcb-aqi-exceedance station-day panel from the pinned XKDR export 2026-09-30 (anonymous demo-key /v1/measurements batching), eligibility n_hours>=18 on day D plus a labelable D+1, label = D+1 24-hr mean PM2.5 > 90 ug/m3, splits train 2019-2022 / eval 2023 / holdout 2024 with the measured counts asserted exactly, the 2025-04..09 tail excluded and counted. Then gate 1.5.0 on the FULL artifact, exact-byte --accept, then score.py's pre-registered reference triad on eval rows. No performance metric in the build; holdout never read.",
+  "stopping_condition": "A failed anchor/fixture assertion, a failed gate, a failed --accept or a truncated fetch stops the run with diagnostics uploaded; the extract is never scored. One rebuild per structural defect; no re-tuning of threshold, window, label or features after any score."
+}

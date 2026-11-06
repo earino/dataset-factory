@@ -197,7 +197,7 @@ def current_frontpage_key() -> str | None:
         return None
 
 
-def fetch_meta_and_stations(key: str) -> tuple[dict, list[dict], str]:
+def fetch_meta_and_stations(key: str) -> tuple[dict, list[dict], str, int]:
     """Vintage-pin /v1/meta and the 549-station list; one auth retry with a
     re-read front-page key (the measured rotation failure mode)."""
     active_key = key
@@ -229,10 +229,21 @@ def fetch_meta_and_stations(key: str) -> tuple[dict, list[dict], str]:
     if len(cpcb) != ANCHORS["cpcb_pm25_stations"]:
         fail(f"cpcb pm25 station count {len(cpcb)} != "
              f"{ANCHORS['cpcb_pm25_stations']}")
+    # Measured 2026-11-06 (job cpcb-aqi-build-001 refused on it): the export leaves
+    # state_name null for 62 of the 549 cpcb PM2.5 stations (city_name/latitude/
+    # longitude null too), all newer stations. Identity is station_id; state_name is a
+    # coarse feature, so a station without one ships a DECLARED sentinel rather than
+    # dropping 11% of the population (which would invalidate the measured anchors) or
+    # inferring a state from the station name (which would be invented data).
+    missing_state = 0
     for s in cpcb:
         if not (s.get("state_name") or "").strip():
-            fail(f"station {s.get('station_id')} carries no state_name")
-    return meta, cpcb, active_key
+            missing_state += 1
+            s["state_name"] = "UNKNOWN_STATE"
+    print(f"station registry: {missing_state} of {len(cpcb)} cpcb PM2.5 stations "
+          f"carry no state_name and ship the declared sentinel 'UNKNOWN_STATE'",
+          flush=True)
+    return meta, cpcb, active_key, missing_state
 
 
 def fetch_panel(stations: list[dict], key: str, rows_path: Path) -> dict:
@@ -450,6 +461,11 @@ def build_rows(panel: dict, state_of: dict) -> tuple[dict, dict]:
     for sid, series in panel.items():
         state = state_of[sid]
         valid = sorted((d, v) for d, v in series.items() if v[0] >= MIN_HOURS)
+        for day, entry in series.items():
+            if entry[0] < MIN_HOURS:
+                split = window_of(day)
+                if split is not None:
+                    excluded["thin_day"][split] += 1
         window: list[tuple[date, float]] = []          # trailing valid days, <= 90
         for day, (n, mean, low, high) in valid:
             # retire entries older than 89 days from the window head
@@ -482,6 +498,13 @@ def build_rows(panel: dict, state_of: dict) -> tuple[dict, dict]:
                 return -1.0
 
             next_day = series.get(day + timedelta(days=1))
+            # Every VALID day feeds later rows' trailing windows, whether or not this day
+            # itself became a scored row. The declared frame is "the mean of the station's
+            # valid-day means over the window", not "of its scored rows": a valid day whose
+            # D+1 is missing or thin is excluded as a row but was still observed, so it must
+            # stay in D+2..D+91 aggregates. (Pre-dry-run review defect: appending only scored
+            # days silently thinned the trailing means and over-triggered the -1.0 sentinels.)
+            window.append((day, mean))
             split = window_of(day)
             if split is None:
                 excluded["outside_windows"] += 1
@@ -516,7 +539,6 @@ def build_rows(panel: dict, state_of: dict) -> tuple[dict, dict]:
                 1 if next_day[1] > THRESHOLD_UGM3 else 0,
             )
             split_rows[split].append(row)
-            window.append((day, mean))
     for rows in split_rows.values():
         rows.sort(key=lambda r: (r[3], r[1]))      # by date, then station
     return split_rows, excluded
@@ -697,10 +719,15 @@ def fe_evidence() -> dict:
             "status": "verified",
         },
         "state_name": {
-            "source": "XKDR station registry (/v1/stations) state_name for the station",
+            "source": ("XKDR station registry (/v1/stations) state_name for the station; "
+                       "the 62 of 549 cpcb PM2.5 stations the export leaves null (measured "
+                       "2026-11-06; city_name/latitude/longitude also null) ship the declared "
+                       "sentinel 'UNKNOWN_STATE' - never inferred from the station name"),
             "availability": "static station geography; knowable at any instant",
             "status": "assumed",
-            "assumption": "current-registry station attribute; station metadata could in principle be revised in a future export",
+            "assumption": ("current-registry station attribute; station metadata could in "
+                           "principle be revised in a future export; a missing state is a "
+                           "declared sentinel, not missing-row exclusion"),
         },
         "date": {
             "source": "the calendar day D of the prediction instant (IST)",
@@ -821,8 +848,9 @@ def main() -> int:
                      "city_name": "Synthetic"} for i in range(8)]
         state_of = {s["station_id"]: s["state_name"] for s in stations}
         receipts = synthetic_panel(rows_path)
+        missing_state = 0
     else:
-        meta, stations, active_key = fetch_meta_and_stations(DEMO_KEY_PINNED)
+        meta, stations, active_key, missing_state = fetch_meta_and_stations(DEMO_KEY_PINNED)
         state_of = {s["station_id"]: s["state_name"] for s in stations}
         print(f"vintage pinned: exported_at={meta.get('exported_at')} "
               f"stations={len(stations)} key={receipts_key_label(active_key)}", flush=True)
@@ -886,25 +914,19 @@ def main() -> int:
 
     quality = quality_payload(counts, excluded, anchors, args.synthetic)
     quality["evaluation_contract"]["feature_evidence"] = fe_evidence()
+    quality["station_registry"] = {
+        "cpcb_pm25_stations": ANCHORS["cpcb_pm25_stations"],
+        "stations_without_state_name": missing_state,
+        "missing_state_sentinel": "UNKNOWN_STATE",
+        "note": ("measured 2026-11-06; the export leaves state_name null for these "
+                 "stations, so the coarse geography feature carries a declared sentinel "
+                 "instead of an invented state"),
+    }
     (out / "quality.json").write_text(json.dumps(quality, indent=1) + "\n")
 
     # ---- 5. bounded diagnostics (no performance metric) --------------------------
-    per_split_month = {}
-    for key, rows in split_rows.items():
-        table: dict[str, dict] = {}
-        for row in rows:
-            month = row[3][:7]
-            bucket = table.setdefault(month, {"rows": 0, "positives": 0,
-                                              "excluded_unlabelable": 0})
-            bucket["rows"] += 1
-            bucket["positives"] += row[-1]
-        per_split_month[key] = table
-    for key in ("train", "eval", "holdout"):
-        for month, bucket in per_split_month[key].items():
-            bucket["excluded_unlabelable"] = excluded["unlabelable_next_day"].get(
-                {"train": "train", "eval": "eval", "holdout": "holdout"}[key], 0) \
-                if month == "TOTAL" else 0
-    # per-month unlabelable counts (seasonality of the exclusion, from the panel)
+    # per-month exclusion counts (seasonality of the exclusions, from the panel) - computed
+    # BEFORE the per-split table so each month carries its own measured count
     unlabelable_month: dict[str, int] = {}
     thin_month: dict[str, int] = {}
     for sid, series in panel.items():
@@ -919,6 +941,19 @@ def main() -> int:
                 unlabelable_month[day.isoformat()[:7]] = \
                     unlabelable_month.get(day.isoformat()[:7], 0) + 1
 
+    per_split_month = {}
+    for key, rows in split_rows.items():
+        table: dict[str, dict] = {}
+        for row in rows:
+            month = row[3][:7]
+            bucket = table.setdefault(month, {"rows": 0, "positives": 0,
+                                              "excluded_unlabelable": 0})
+            bucket["rows"] += 1
+            bucket["positives"] += row[-1]
+        for month, bucket in table.items():
+            bucket["excluded_unlabelable"] = unlabelable_month.get(month, 0)
+        per_split_month[key] = table
+
     summary = {
         "job": "cpcb-aqi-build-001",
         "name": NAME,
@@ -928,6 +963,8 @@ def main() -> int:
             "rows_total": sum(len(s) for s in panel.values()),
             "duplicate_station_days": dup["duplicate_station_days"],
             "stations": len(panel),
+            "stations_without_state_name": missing_state,
+            "missing_state_sentinel": "UNKNOWN_STATE",
             "window_station_days": anchors.get("window_station_days"),
             "window_positives_n18": anchors.get("window_positives_n18"),
             "hole_2025_rows": anchors.get("hole_2025_rows"),

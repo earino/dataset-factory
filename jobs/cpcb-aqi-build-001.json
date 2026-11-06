@@ -1,0 +1,104 @@
+{
+  "job": {
+    "id": "cpcb-aqi-build-001",
+    "candidate": "cpcb-aqi-exceedance",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cpx32",
+    "location": "hel1",
+    "cpus": 4,
+    "memory_mb": 8192,
+    "timeout_minutes": 100,
+    "lifetime_minutes": 140,
+    "max_disk_mb": 30000,
+    "max_artifact_mb": 300,
+    "what": "Full construction of the cpcb-aqi-exceedance station-day panel from the pinned XKDR export 2026-09-30 (anonymous demo-key /v1/measurements batching, 84 months x 2 station batches): eligibility n_hours>=18 on day D plus a labelable D+1, label = D+1 24-hr mean PM2.5 > 90 ug/m3 (CPCB National AQI Poor-band lower edge), splits train 2019-2022 / eval 2023 / holdout 2024 with the measured counts asserted exactly, the 2025-04..09 partial tail excluded and counted. Then the unchanged qualification gate 1.5.0 on the FULL artifact, exact-byte --accept, and only then score.py's pre-registered reference triad on eval rows (station persistence, state x season climatology, constant global rate; station-clustered paired bootstrap). No performance metric is computed in the build; the holdout is never read.",
+    "stopping_condition": "A failed anchor/fixture assertion, a failed gate, a failed --accept or a truncated fetch stops the run with diagnostics uploaded; the extract is never scored. One rebuild per structural defect; no re-tuning of threshold, window, label or features after any score.",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/cpcb-aqi-exceedance/source/build.py",
+        "bytes": 51380,
+        "sha256": "cab1322ea46bb85de35a7332ea799d60a74e8878b2d3435de71d52bc461d4738"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/cpcb-aqi-exceedance/source/run.sh",
+        "bytes": 1885,
+        "sha256": "36faaef433a4aa862e7d4f368683fcd39e99c5438e9b7b9a893f235581833f72"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/cpcb-aqi-exceedance/source/score.py",
+        "bytes": 19339,
+        "sha256": "7eb29ee71013f23a5452a4532b072729a84da42494f7bbc8d6bd2c7c1d9026dd"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.32",
+  "rate_ceiling_eur": "0.08",
+  "reserved_hours": 4,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "d1043e44504775f2fec33157f6f68423104325566d9ba6e897832953d8eca1f3",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-06T02:27:40.590444+00:00",
+  "expires": 1793940460,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0692400000000000",
+  "server_id": 174723039,
+  "known_hosts": "/opt/data/dataset-factory/.factory/cpcb-aqi-build-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "cpcb-aqi-build-001",
+    "status": "failed",
+    "uploaded": true,
+    "image_id": "sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc",
+    "image_digests": [
+      "python@sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc"
+    ],
+    "exit_code": 1,
+    "oom_killed": false,
+    "elapsed_seconds": 10.1,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 436031882,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-ea74afee2bd653ddd577",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-ea74afee2bd653ddd577/manifest.json",
+    "assets": [
+      {
+        "id": 715620980,
+        "size": 225280,
+        "sha256": "d1043e44504775f2fec33157f6f68423104325566d9ba6e897832953d8eca1f3"
+      },
+      {
+        "id": 715621055,
+        "size": 143,
+        "sha256": "4d490847be6180b5778f4dd18117da9f7641106eaac0715e36dccb584da1cb83"
+      },
+      {
+        "id": 715621159,
+        "size": 3671,
+        "sha256": "6bcbce9f67cee966a823ebbbba3d8a21f0b446a8bf29e202c4200862678e8781"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-06T02:33:04.821366+00:00",
+  "deleted_at": "2026-11-06T02:33:50.146952+00:00"
+}
