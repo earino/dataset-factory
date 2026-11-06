@@ -1,4 +1,88 @@
-## 2026-11-06 (07:11Z) - follow-up (worker-status runner): cpcb-aqi-build-003/-004 + cpcb-aqi-baseline-001 closed - baseline verdict HEADROOM DEMONSTRATED on the accepted artifact a749f0df (model 0.9734 beats every pre-registered triad member, station-clustered CIs excluding zero), all three workers provider-confirmed deleted, next action is packaging (advancement's)
+## 2026-11-06 (08:28Z) - discovery tick (International organisations): wto-dispute-panel-escalation OPENED and READY (WTO dispute-settlement escalation at the filing instant: CC BY 4.0 dataset-level licence measured on the WTO's own new Data Portal, split capacity measured from the publisher's own aggregate artifacts with the stage-file cross-check exact at 631, novelty differentiated; one vintage finding recorded - the dates-of-key-stages file ends at DS543/2018 while the case pages carry the 2019-2025 tail); ungm-un-procurement-awards OPENED and DROPPED (class D licence, "Materials" defined to include notices of award); no construction, no score, EUR 0
+
+Discovery-only session, regional focus International organisations (operator tick: World
+Bank, OECD, UN agencies (UNHCR, UNICEF, UNODC), WHO, IMF, ITU). No construction,
+qualification, packaging, publication or advancement; no worker launched (EUR 0); all
+probes anonymous, coordinator-side, read-only; no release byte, tag, manifest or
+destination touched.
+
+- QUEUE REVIEW FIRST: every tick-named publisher already carries a recorded verdict,
+  almost all re-checked within the last ten days, so none was re-probed: WB three
+  instrument-family drops (last 2026-11-03) + wb-loan; OECD NCP ready (advancement
+  owns construction), SDMX/recalls dropped; UNHCR corridor family measured-dropped
+  with the next1_g25 fallback behind an operator decision, refugee-data-finder parked
+  on the operator's redesign decision; UNICEF SDMX parked (operator-owned thin-annual
+  option); UNODC dropped D; WHO closed to new leads (the flunet operator risk
+  acceptance is candidate-specific; WHO's data-compilation terms restrict); IMF
+  dropped (aggregate family + lending register closed as WB-sibling); ITU dropped
+  (aggregate + paid filings, re-checked 2026-10-28); IAEA PRIS reopen triggers not
+  fired (second release announced early 2027; record says no further probing
+  warranted). The session therefore spent its budget on the region's two
+  un-probed case-grain leads. No padding with US sources.
+- wto-dispute-panel-escalation (CH, NEW, READY - the tick's product). Task: at the
+  circulation instant of a DS-numbered Request for Consultations (1995-present, 641
+  through 2025), predict whether the DSB establishes a panel for that DS within the
+  eligibility window. LICENCE class A on two of the publisher's own instruments:
+  data.wto.org (new CKAN portal, BETA) carries license_id "Attribution 4.0
+  International" (CC BY 4.0) on BOTH dispute packages (disputedb + ds_db, author
+  Legal Affairs Division; measured via the API 2026-11-06), and the site copyright
+  page grants "Unrestricted official WTO documents and legal texts are free for
+  public use"; shipped rows are structured facts from unrestricted official
+  documents, no WTO prose. MEASURED, from the publisher's own artifacts (both
+  retained in probe/out/ with sha256; reproduction script probe_wto_stage_files.py):
+  stage-file consultations 1995-2024 sum = 631 EXACTLY the stats page's own 631
+  (cross-check), 641 through 2025, 326 panels established; windows train 1995-2008
+  383/169 (44.1%), eval 2009-2014 100/67 (67.0%), holdout 2015-2018 55/37 (67.3%),
+  both classes everywhere, distinct positive complainant-respondent pairs 89/48/28;
+  lag consultations->establishment median 155 d, 97.1% within 24 months -> the
+  measured eligibility/censoring cutoff; case pages 21/21 HTTP 200 across
+  DS1-DS631 (mean 33 KB, 0.06 s/page; full enumeration ~641 requests ~21 MB).
+  VINTAGE FINDING: dates_of_key_stages_e.xlsx (Last-Modified 2025-11-03) ends at
+  DS543/2018 - the 2019-2025 tail exists only on the case pages; construction takes
+  the tail from there and reconciles against the stage file. NOVELTY differentiated
+  (check-novelty recorded): prior art is econometric escalation models (Bernauer
+  506-dyad selection models; KU Leuven SBI model; an MA thesis) and the Horn &
+  Mavroidis legal-coding dataset (507 disputes to 2016, research-only terms, WB/EUI
+  mirrors) - no ML-ready split/scored task exists. KNOWN RISK carried into the
+  construction handoff: identity-prior family defect (afdb/wb-loan) - the
+  pre-registered triad must include trailing pair/pair-year escalation rates and era
+  priors with pair-clustered bootstrap; reference dominance -> drop. Five contracts
+  reconciled in record.review. check-candidate OK.
+- ungm-un-procurement-awards (DK, NEW, DROPPED - the region's only other substantive
+  un-probed case-grain register, closed at triage). UNGM's own Terms & Conditions
+  (fetched 2026-11-06, 114,147 B) define "Materials" to include tender notices,
+  notices of cancellation AND notices of award; clauses 5.2/5.3 grant personal-use
+  downloads only and prohibit any commercial/public use and any dissemination "in
+  any form" without prior written permission; clause 7.2 conditions reproduction on
+  the respective UN organization's written consent. The administering org's own
+  instrument (UNOPS Terms of Use) repeats the standard UN personal/non-commercial/
+  no-derivatives notice, closing the sibling-channel escape for data.unops.org (JS
+  shell, no licence). Class D, closed not parked. Reopen conditions recorded: a
+  single UN org attaching an explicit open licence to its own award channel (7.2
+  delegates copyright to the orgs), or an operator risk acceptance - plus, either
+  way, a post-award outcome family (the WB-procurement pipeline-continuation defect
+  also applies). check-candidate OK.
+- UNESCO WHC danger-listing considered and NOT opened: no probe spent; the addition
+  rate (~1-2 listings/year over 47 years) cannot fill eval/holdout windows at the
+  gate's 30-positive minimum, and no structured machine-readable channel was
+  surfaced in a bounded search. Honest non-probe note, not a measured rejection.
+- Hygiene: check-candidate wto/ungm OK; check-candidate --all rc=0 (138 records,
+  live 55, live non-US 49/55 = 89%; International organisations region now 18
+  records, ready 18); discovery-coverage rc=0; suite 723/723 OK (33.1 s).
+  candidates/fenz-incident-data/ left untracked for its owner (concurrent writer,
+  not this session). No credentials in any probe or record.
+
+Next action (advancement owns it; recorded in record.next_action): construct
+wto-dispute-panel-escalation per the ordered handoff - enumerate DS1..~641 via the
+case pages (tail from pages, not the stale dates file), reconcile against the
+stage-file 631/326 cross-check, pin digests + vintage, build splits per
+split_strategy with the 24-month eligibility cutoff, pre-register the triad
+(trailing pair rate, complainant rate, era priors; pair-clustered bootstrap) BEFORE
+any score, then the standing ladder (full-artifact gate 1.5 -> exact-byte --accept ->
+triad -> full-model baseline -> pre-registered deciding rule; reference dominance ->
+record and DROP). Holdout never opened in dev.
+
+
 
 Watcher event for three jobs; the shared research mutex is this runner's.
 Unrelated untracked discovery work (candidates/fenz-incident-data/) inspected

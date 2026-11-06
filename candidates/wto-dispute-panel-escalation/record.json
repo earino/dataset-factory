@@ -1,0 +1,167 @@
+{
+  "id": "wto-dispute-panel-escalation",
+  "status": "ready",
+  "verdict": "advance to construction",
+  "created_at": "2026-11-06T08:40:00+00:00",
+  "domain": "International trade law / WTO dispute settlement: litigation escalation of formal trade disputes",
+  "prediction_question": "At the instant a WTO member's Request for Consultations is circulated with a DS number - the moment a formal dispute enters the WTO dispute settlement system - will that dispute escalate to first-instance litigation (the Dispute Settlement Body establishes a panel for that DS number within the eligibility window), or will it end without one (settled in consultations, withdrawn, or lapsed)? The prospective user is a trade ministry or mission to the WTO in Geneva weighing litigation cost and coalition formation at filing time, and the research question the bench cares about: do the agreements cited, the measure/subject, and the pair's dispute history carry signal beyond complainant-respondent identity? The identity-prior risk is real (the afdb/wb-loan family defect) and is exactly what the pre-registered triad tests.",
+  "prediction_time": "The circulation date of the Request for Consultations for the DS number (all WTO dates are Geneva-local circulation dates, published the same day to all members). Features available at that instant: complainant(s), respondent(s), the WTO agreements and provisions cited (the request itself cites them and is circulated at the instant), the measure/subject short title, the calendar, and trailing strictly-prior dispute history for the complainant-respondent pair. Every later stage (request for panel establishment, DSB establishment, panel composition, report, adoption) is outcome-side and excluded from features.",
+  "target_definition": "Binary: the DSB establishes a panel for this DS number within the eligibility window (consultations request at least 24 months before the artifact cutoff - measured: 97.1% of establishments occur within 24 months of consultations, median 155 days, n=273). Label source columns (all post-instant stage dates) are excluded from every shipped CSV. No external threshold is involved (the event is the publisher's own procedural milestone), so the known-event requirement is met by named disputes with their published outcomes: DS600 Malaysia v EU palm oil (consultations 15 Jan 2021, panel established 28 May 2021) and DS620/DS631 (2023/2024 filings, no establishment yet - the censoring behaviour working as expected). Right-censoring: consultations inside the 24-month eligibility tail are excluded and counted, never labelled negative. Settlements are mostly NOT formally notified (the dates file carries one MAS date; the stage file counts 156 'mutually agreed solutions, lapse of authority' events across the whole era), so the negative class means 'no panel established by cutoff', a documented meaning, not 'settled'.",
+  "sources": [
+    {
+      "name": "WTO Data Portal (data.wto.org, CKAN) - Dispute Settlement Database package 'disputedb' and Dispute Settlement Documents package 'ds_db' (author: Legal Affairs Division; the per-DS gateway pages, the 'dispute settlement activity - some figures' page and the numbers_of_disputes_by_stage xlsx are listed resources)",
+      "url": "https://data.wto.org/dataset/disputedb ; https://data.wto.org/dataset/ds_db ; API: https://data.wto.org/api/3/action/package_show?id=disputedb (and id=ds_db)",
+      "api": "Anonymous, documented CKAN JSON API measured 2026-11-06. Both packages carry license_id 'Attribution 4.0 International' (CC BY 4.0). Resources are HTML search apps (dsdb/*.aspx) and the gateway/statistics pages; the per-DS case pages at www.wto.org/english/tratop_e/dispu_e/cases_e/ds<N>_e.htm carry the at-instant features (complainant, respondent(s), agreements cited, measure) and the full dated lifecycle.",
+      "license": "license_id/license_title 'Attribution 4.0 International' (CC BY 4.0) on the package records, fetched 2026-11-06 via the CKAN API (JSON retained)."
+    },
+    {
+      "name": "WTO dispute settlement gateway + per-DS case pages (www.wto.org), incl. the two publisher aggregate files: numbers_of_disputes_by_stage_e.xlsx (per-year stage counts 1995-current) and dates_of_key_stages_e.xlsx (per-DS dates of key stages)",
+      "url": "https://www.wto.org/english/tratop_e/dispu_e/dispu_e.htm ; .../cases_e/ds<N>_e.htm ; .../numbers_of_disputes_by_stage_e.xlsx ; .../dates_of_key_stages_e.xlsx ; stats page .../dispustats_e.htm",
+      "api": "Anonymous plain HTTP; 21-page sample across DS1-DS631 all HTTP 200 (mean 33,296 B, 0.06 s/page from the coordinator, 2026-11-06). Full population ~641 DS numbers ~ 641 requests ~ 21 MB. MEASURED VINTAGE FINDING: dates_of_key_stages_e.xlsx (Last-Modified 2025-11-03) covers only DS1-DS543 (newest consultations 04.04.2018); the 2019-2025 tail (stage file: 68 consultations, 42 establishments) exists only on the case pages. The stage file is current through 2025 and cross-checks exactly against the stats page (631 consultations 1995-2024).",
+      "license": "WTO Copyright and permissions page: 'Unrestricted official WTO documents and legal texts are free for public use.' DS documents and the DS register facts derive from unrestricted official documents."
+    }
+  ],
+  "license_evidence": [
+    {
+      "quote": "license_id: 'Attribution 4.0 International', license_title: 'Attribution 4.0 International' (CC BY 4.0), author: 'Legal Affairs Division', author_email: 'dsdb@wto.org' - measured 2026-11-06 from https://data.wto.org/api/3/action/package_show?id=disputedb (200, JSON). The ds_db package (Dispute Settlement Documents, the family that lists the gateway pages and the stage-count xlsx) carries the identical license_id.",
+      "url": "https://data.wto.org/api/3/action/package_show?id=disputedb",
+      "note": "Dataset-level instrument, the same method used for UK OGL / Canada ca-ogl-lgo / HDX cc-by-igo on this bench. CKAN's isopen:false flag is a registry artifact (the string 'Attribution 4.0 International' is not CKAN's canonical 'cc-by' id), not a restriction; recorded as a caveat."
+    },
+    {
+      "quote": "'This site and its contents are the copyright of the World Trade Organization. The WTO encourages the broadest possible dissemination of its information, particularly for educational purposes. Unrestricted official WTO documents and legal texts are free for public use. Other material such as official publications can be reproduced for non-commercial purposes provided attribution is given to the WTO and the WTO is informed. Commercial use of materials from the website requires written permission from the WTO.'",
+      "url": "https://www.wto.org/english/info_e/copyrights_permissions_e.htm (fetched 2026-11-06, 10,183 B)",
+      "note": "Site-wide instrument. The shipped artifact derives structured facts (dates, parties, stage events, agreements cited) from unrestricted official WTO documents (WT/DS/* series, free for public use) and the CC-BY-4.0-licensed DS database; no WTO report text or Secretariat summary prose is redistributed. Attribution + no-logo conditions carried to LICENSE.md."
+    }
+  ],
+  "construction_script": null,
+  "split_strategy": "Population: every DS-numbered request for consultations 1995-present (the publisher's own counting convention per the stats page technical note; joint multi-member requests may share a document across DS numbers - one row per DS number). MEASURED windows from the publisher's own dates file (543 rows / 542 distinct DS / 5 Textiles Monitoring Body rows excluded and counted): train consultations 1995-2008 = 383 rows / 169 positives (44.1%); eval 2009-2014 = 100 / 67 (67.0%); holdout 2015-2018 = 55 / 37 (67.3%). Both classes present in every window; distinct positive complainant-respondent pairs 89 / 48 / 28. CONSTRUCTION OPTION, measured on the stage file only (2019-2025: 20/11, 5/7, 9/10, 8/1, 6/5, 10/4, 10/4 consultations/establishments): extend the holdout to 2019-2021 by extracting the modern tail from case pages (the dates file ends at DS543); the era shift in the base rate (44% -> 67% after 2009) is a real property of the system to declare, not to tune away. Eligibility cutoff: consultations >= 24 months before the artifact cutoff (97.1% of establishments within 24 months, median 155 days, p90 387 days, n=273). Label = DSB panel establishment for the DS within the eligibility window.",
+  "measurements": {
+    "aggregate_files_2026_11_06": "numbers_of_disputes_by_stage_e.xlsx 50,297 B sha256 1f2f1a42f3635c56d200457120f42c77...; dates_of_key_stages_e.xlsx 117,180 B sha256 9cb85ce6bba5dc4c56df58116c4f3030... (both fetched anonymously 2026-11-06; dates file HTTP Last-Modified 2025-11-03). Retained in probe/out/; reproduction script probe/probe_wto_stage_files.py.",
+    "cross_check_2026_11_06": "Stage-file consultations 1995-2024 sum = 631, EXACTLY the stats page's own '631 requests for consultations' (as of 31 Dec 2024); through 2025 = 641. Panels established by DSB 1995-2025 = 326. Publisher's own summary product agrees with the artifact.",
+    "vintage_finding_2026_11_06": "dates_of_key_stages_e.xlsx ends at DS543 (newest consultations 04.04.2018) despite a 2025-11-03 Last-Modified; the 2019-2025 tail (~88 disputes) is only on the per-DS case pages (verified DS561/585/598/611/620/631 all HTTP 200 with current content). Construction must take the modern tail from case pages and reconcile against the stage-file counts.",
+    "case_page_sample_2026_11_06": "probe/probe_wto_case_pages.py, output probe/out/case_pages_2026_11_06.json: 21/21 pages HTTP 200 across DS1-DS631 (1995-2025), mean 33,296 B, mean 0.06 s/page from the coordinator. Consultations dates extract on 20/21; complainant/agreement extraction 16/21 and 12/21 are regex lower bounds (phrase variants like 'Complaint by the United States'), not source absence: DS600's full page names complainant, respondents, agreements with articles and every stage date. DS620/DS631 (2023/2024 filings) show no establishment - censoring behaves as expected.",
+    "lag_distribution_2026_11_06": "Consultations->panel-establishment lags n=273: median 155 days, p10 96, p75 248, p90 387; 89.0% within 12 months, 94.5% within 18, 97.1% within 24. Data quirks measured: 1 negative lag, 2 absurd (malformed) dates, 5 TMB rows, 58 rows whose title does not yield a respondent by regex (respondents are explicit on case pages).",
+    "extraction_cost_2026_11_06": "Measured per-page on the 21-page sample (0.06 s, 33 KB/page, anonymous plain HTTP): full population ~641 DS pages = ~641 requests, ~21 MB, well under a minute of network time on a worker; plus the two aggregate files (167 KB total). No bulk download channel exists for the per-DS features (the Data Portal resources are search apps), so the build enumerates ds<N>_e.htm pages; the numbers are extrapolated from the measured sample, stated as such.",
+    "licence_note_2026_11_06": "Class A on two instruments: the dataset-level CC BY 4.0 license_id on both data.wto.org dispute packages, and the site copyright page's 'free for public use' grant for unrestricted official documents. Residual caveats recorded: (a) the Data Portal is marked BETA and the package records were created 2026-10-12 - a young instrument, but it is the publisher's own and dataset-specific; (b) the site-wide page restricts 'other material' (official publications) to non-commercial use with attribution - the shipped artifact redistributes no WTO prose, only structured facts from unrestricted official documents and the CC-BY database; (c) no-logo clause carries to LICENSE.md."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": "All five discovery contracts reconciled against recorded evidence (2026-11-06, discovery-only session; no construction, no score). (1) Redistribution SUPPORTED - class A: CC BY 4.0 dataset-level licence on both data.wto.org dispute packages (CKAN license_id measured via the API) plus the 'unrestricted official WTO documents and legal texts are free for public use' grant; caveats (BETA portal, non-commercial clause for publications, no-logo) recorded in measurements.licence_note_2026_11_06. (2) Prediction timing SUPPORTED - the instant is the circulation date of the DS-numbered request for consultations; every feature is documented by the publisher on the case page and in the request itself (agreements cited at filing); all later stage dates are outcome-side and excludable. Vintage: current-snapshot archive with a MEASURED coverage hole (the dates file ends DS543/2018; case pages carry 2019-2025) - the task is declared retrospective research with a current-vintage assumption (cpcb/afdb precedent); no operational as-of claim is made. (3) Target SUPPORTED - DSB panel establishment is the publisher's own procedural milestone, fully recorded per DS; censoring handled by a measured 24-month eligibility cutoff (97.1% resolution); 'no panel' is documented to mean not-established-by-cutoff, not settled (settlement notification is mostly absent - measured). (4) Split capacity SUPPORTED, measured from the publisher's own artifact: train 383/169, eval 100/67, holdout 55/37, both classes in every window, distinct positive pairs 89/48/28 (>20 minimum), plus a measured modern-tail extension option. (5) Not-a-mirror SUPPORTED - no ML-ready, split, scored task exists: prior art is econometric/game-theoretic escalation studies (Bernauer et al. 506-dyad selection models; KU Leuven SBI panel-phase model; Maggi & Staiger) and the Horn & Mavroidis legal-coding research dataset (507 disputes to 2016, 1,272 variables, 'only to be used for research purposes, and not for commercial purposes', World Bank/EUI mirrors) - a stale, research-terms coding dataset, not a benchmark; novelty verdict recorded via scripts/check-novelty.py. KNOWN RISK carried into construction: the label may be identity-dominated (complainant-respondent pair + era), the afdb/wb-loan family defect; the pre-registered triad must therefore include trailing pair/pair-year escalation rates and era priors as references to beat, with pair-clustered bootstrap intervals, and the deciding rule follows the standing order (headroom only if the model beats EVERY reference with a CI excluding zero; reference dominance -> drop).",
+  "next_action": "Hand to construction (worker; discovery is complete and nothing was constructed or scored this session). (1) Enumerate the population: DS1..DS~641 via cases_e/ds<N>_e.htm (handle unused numbers as gaps, verify total against the stage-file 631/1995-2024 + current-year cross-checks, pin file digests and a vintage timestamp; the dates xlsx is a convenience anchor for DS1-543 ONLY - its tail is stale). (2) Extract per-DS at-instant features (complainant(s), respondent(s), agreements + provision families cited, measure/subject, consultations date) and lifecycle dates from the case pages; exclude all post-instant columns from shipped CSVs; count and exclude the TMB rows; repair-rule the 3 known malformed dates. (3) Build splits per split_strategy (one re-cut allowed before any score if a window bound fails the gate, reason recorded); label = panel establishment within the eligibility window; count the censored tail. (4) Pre-register the triad BEFORE any score: trailing complainant-respondent-pair escalation rate, trailing complainant rate, era/calendar prior, global rate; pair-clustered paired bootstrap; the afdb identity-prior precedent is the failure mode the triad exists to catch. (5) Then the standing ladder: full-artifact gate 1.5 with evaluation_contract (retrospective_research, isolated_rows, current-vintage assumption declared, prediction_time selection), exact-byte --accept, triad, full-model baseline job, pre-registered deciding rule (headroom only if EVERY reference is beaten with a CI excluding zero; reference dominance -> record the defect and DROP; inconclusive -> hold). Holdout never opened in dev.",
+  "jurisdiction": {
+    "country": "CH",
+    "region": "International organisations",
+    "publisher": "World Trade Organization (WTO), headquartered in Geneva, Switzerland (Centre William Rappard); the dispute data is authored by the Geneva-based Legal Affairs Division per the data.wto.org package records",
+    "convention": "The publisher's HQ country is recorded because 'international' is not a country; the WTO is headquartered in Geneva (publisher's own pages: member delegates 'meet regularly in Geneva'; the Data Portal names the Legal Affairs Division as author). This candidate is in this session's assigned region (international organisations) and its jurisdiction is non-US.",
+    "recorded_at": "2026-11-06"
+  },
+  "licence_class": "A",
+  "licence_note": "Class A on the publisher's own instruments: dataset-level CC BY 4.0 ('Attribution 4.0 International') on both data.wto.org dispute packages (measured via the CKAN API 2026-11-06), plus the site copyright page's grant that unrestricted official WTO documents and legal texts are free for public use. Shipped rows are structured facts derived from unrestricted official documents (WT/DS/*) and the CC-BY database; no WTO report text or Secretariat summary prose is redistributed; attribution and the no-logo clause carry to LICENSE.md. Caveats (BETA portal, publications' NC clause) recorded in measurements.licence_note_2026_11_06.",
+  "novelty_check": {
+    "checked_at": "2026-11-06T08:26:25+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "WTO dispute settlement prediction task",
+      "WTO dispute escalation machine learning benchmark",
+      "WTO dispute settlement dataset"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "WTO dispute settlement prediction task",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "WTO dispute escalation machine learning benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "WTO dispute settlement dataset",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "WTO dispute settlement prediction task",
+          "hits": 167896,
+          "top": [
+            "WTO Dispute Settlement Framework: An Outline of Procedural Features",
+            "THE CRISIS OF THE WTO DISPUTE SETTLEMENT SYSTEM: JUDICIALIZATION, LEGITIMACY AND INSTITUTIONAL REFORM",
+            "The burden and order of proof in WTO claims: evolving issues",
+            "Replication material for paper \"Sattler, Spilker, Bernauer (2014): Does WTO Dispute Settlement Enforce or Inform? British Journal of Political Science. DOI: 10.1017/S0007123413000136\"",
+            "US TRADE POLICY UNDER TRUMP AND THE EROSION OF MULTILATERAL TRADE RULES"
+          ]
+        },
+        {
+          "query": "WTO dispute escalation machine learning benchmark",
+          "hits": 381318,
+          "top": [
+            "WTO Dispute Settlement Framework: An Outline of Procedural Features",
+            "plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data",
+            "RGB and RGNIR Plastic Waste Database",
+            "plastic-waste-database/GDP_FDI_Dataset: GDP_FDI",
+            "IQTISODIY INTEGRATSIYA JARAYONLARIDA IMPORT BOJXONA BOJI STAVKALARINI OPTIMALLASHTIRISH YO\u02bbLLARI"
+          ]
+        },
+        {
+          "query": "WTO dispute settlement dataset",
+          "hits": 329951,
+          "top": [
+            "WTO Dispute Settlement Framework: An Outline of Procedural Features",
+            "THE CRISIS OF THE WTO DISPUTE SETTLEMENT SYSTEM: JUDICIALIZATION, LEGITIMACY AND INSTITUTIONAL REFORM",
+            "The burden and order of proof in WTO claims: evolving issues",
+            "Replication material for paper \"Sattler, Spilker, Bernauer (2014): Does WTO Dispute Settlement Enforce or Inform? British Journal of Political Science. DOI: 10.1017/S0007123413000136\"",
+            "US TRADE POLICY UNDER TRUMP AND THE EROSION OF MULTILATERAL TRADE RULES"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "WTO dispute settlement prediction task",
+          "hits": 5,
+          "top": [
+            "Learning Dispute Structure for Settlement Prediction in Financial ADR: A Multi-Task and Cross-Institutional Approach",
+            "Shielded dumbbell L5 settlement",
+            "Findings of the 2016 WMT Shared Task on Cross-lingual Pronoun Prediction",
+            "Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer",
+            "NTUA-SLP at SemEval-2018 Task 2: Predicting Emojis using RNNs with Context-aware Attention"
+          ]
+        },
+        {
+          "query": "WTO dispute escalation machine learning benchmark",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "A Benchmark Study of Machine Learning Models for Online Fake News Detection",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Active learning for data streams: a survey"
+          ]
+        },
+        {
+          "query": "WTO dispute settlement dataset",
+          "hits": 5,
+          "top": [
+            "The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset",
+            "The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset",
+            "Learning Dispute Structure for Settlement Prediction in Financial ADR: A Multi-Task and Cross-Institutional Approach",
+            "The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset",
+            "Shielded dumbbell L5 settlement"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'WTO dispute settlement prediction task': 0 hit(s) - nothing notable\n- huggingface_datasets / 'WTO dispute escalation machine learning benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'WTO dispute settlement dataset': 0 hit(s) - nothing notable\n- zenodo_records / 'WTO dispute settlement prediction task': 167896 hit(s) - WTO Dispute Settlement Framework: An Outline of Procedural Features, THE CRISIS OF THE WTO DISPUTE SETTLEMENT SYSTEM: JUDICIALIZATION, LEGITIMACY AND INSTITUTIONAL REFORM, The burden and order of proof in WTO claims: evolving issues, Replication material for paper \"Sattler, Spilker, Bernauer (2014): Does WTO Dispute Settlement Enforce or Inform? British Journal of Political Science. DOI: 10.1017/S0007123413000136\", US TRADE POLICY UNDER TRUMP AND THE EROSION OF MULTILATERAL TRADE RULES\n- zenodo_records / 'WTO dispute escalation machine learning benchmark': 381318 hit(s) - WTO Dispute Settlement Framework: An Outline of Procedural Features, plastic-waste-database/Rainfall-and-Kalumpang-Malaysia: Rainfall and Terrain Data, RGB and RGNIR Plastic Waste Database, plastic-waste-database/GDP_FDI_Dataset: GDP_FDI, IQTISODIY INTEGRATSIYA JARAYONLARIDA IMPORT BOJXONA BOJI STAVKALARINI OPTIMALLASHTIRISH YO\u02bbLLARI\n- zenodo_records / 'WTO dispute settlement dataset': 329951 hit(s) - WTO Dispute Settlement Framework: An Outline of Procedural Features, THE CRISIS OF THE WTO DISPUTE SETTLEMENT SYSTEM: JUDICIALIZATION, LEGITIMACY AND INSTITUTIONAL REFORM, The burden and order of proof in WTO claims: evolving issues, Replication material for paper \"Sattler, Spilker, Bernauer (2014): Does WTO Dispute Settlement Enforce or Inform? British Journal of Political Science. DOI: 10.1017/S0007123413000136\", US TRADE POLICY UNDER TRUMP AND THE EROSION OF MULTILATERAL TRADE RULES\n- arxiv_preprints / 'WTO dispute settlement prediction task': 5 hit(s) - Learning Dispute Structure for Settlement Prediction in Financial ADR: A Multi-Task and Cross-Institutional Approach, Shielded dumbbell L5 settlement, Findings of the 2016 WMT Shared Task on Cross-lingual Pronoun Prediction, Radiomics-enhanced Deep Multi-task Learning for Outcome Prediction in Head and Neck Cancer, NTUA-SLP at SemEval-2018 Task 2: Predicting Emojis using RNNs with Context-aware Attention\n- arxiv_preprints / 'WTO dispute escalation machine learning benchmark': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, A Benchmark Study of Machine Learning Models for Online Fake News Detection, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Active learning for data streams: a survey\n- arxiv_preprints / 'WTO dispute settlement dataset': 5 hit(s) - The RSNA Abdominal Traumatic Injury CT (RATIC) Dataset, The RSNA Intracranial Aneurysm (RSNA-ICA) Dataset, Learning Dispute Structure for Settlement Prediction in Financial ADR: A Multi-Task and Cross-Institutional Approach, The RSNA Lumbar Degenerative Imaging Spine Classification (LumbarDISC) Dataset, Shielded dumbbell L5 settlement",
+    "prior_art": [
+      "Horn & Mavroidis, The WTO Dispute Settlement Data Set 1995-2015 v4.0 (2016, World Bank-funded; EUI 2020 update); Bernauer et al., Dispute-Escalation in the WTO (ETH ISN WP 2006, 506 dyads); Maggi & Staiger (2015); Dresvyannikova (UTwente MA 2016, 159 cases)"
+    ],
+    "theirs": "The WTO publishes the case register itself (DS Database, per-DS gateway pages, stage-count xlsx, One-Page Case Summaries) and its Data Portal now labels both dispute datasets CC BY 4.0 - the raw data is theirs and stays theirs; the academic layer is econometric/game-theoretic escalation modeling (Bernauer et al. selection models on 506 dyads 1995-2003; Maggi & Staiger 388 disputes; KU Leuven statistical-backwards-induction panel-phase model; an MA thesis predicting panel requests on 159 cases) and case-level legal-coding research datasets: Horn & Mavroidis WTO DS Data Set v4.0 (507 disputes 1995-2016, 1,272 variables, research-only/no-commercial terms; EUI hosts a 2020 update; World Bank Data Catalog mirrors the 2006-era 351-dispute version) - none is an ML-ready prediction task with splits and a scored contract, and the coding datasets carry terms that forbid redistribution for our use",
+    "ours": "Full-population at-filing escalation task on all DS-numbered WTO consultations requests 1995-present (641 through 2025): at the circulation instant of the request for consultations, predict whether the DSB establishes a panel for that DS, with temporal splits, a 24-month eligibility cutoff measured from the publisher's own artifact, pre-registered identity-prior references (trailing complainant-respondent-pair escalation rate, era priors) and a pair-clustered scored contract, built from the WTO's own CC BY 4.0 channels (data.wto.org dispute packages + per-DS gateway pages + stage-count aggregates), current through 2025",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  }
+}
