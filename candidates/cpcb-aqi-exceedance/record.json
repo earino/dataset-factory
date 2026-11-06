@@ -633,6 +633,50 @@
     "candidates/cpcb-aqi-exceedance/baseline/baseline_result.json is the collected cpcb-aqi-baseline-001 result (sha256 29eb43eb653b2e08... equal to the staging manifest entry), placed where both release-manifest.py and the package read it",
     "the package's measurements.json, README, RELEASE_NOTES, VERIFICATION, REPRODUCE, DATA_DICTIONARY and LICENSE documents were generated from the record, the gate report, the baseline result and the references report; no figure retyped"
    ]
+  },
+  "private_staging_github_2026_11_06": {
+   "recorded_at": "2026-11-06T10:37:46+00:00",
+   "step": "GitHub destination of the private staging (dataset-release); the Hub destination, the fresh-consumer job, DESTINATIONS.json and the packaged/awaiting_operator recording have NOT run yet",
+   "repo_created": "earino/cpcb-aqi-exceedance, private=true (gh api -X POST /user/repos); 25 package files committed as the initial commit cb3b251faa9e3cac37231746474585cc77f6f9c9 from release/cpcb-aqi-exceedance/; release v2026.11 (436366305) created non-draft at main with no assets",
+   "transfer_job": {
+    "id": "cpcb-aqi-publish-001",
+    "server": 174785899,
+    "reservation_eur": "0.04",
+    "staging_release_source": 436180445,
+    "target_release": 436366305,
+    "result": "succeeded, uploaded, 5/5 transferred, failures []",
+    "job_reports_release": 436368409,
+    "cleanup": "worker destroyed 2026-11-06T10:36:21Z; provider read-back GET /v1/servers/174785899 -> 404 not_found",
+    "assets": {
+     "meta.json": {
+      "asset_id": 716781985,
+      "bytes": 1197,
+      "sha256": "1f59e74e4d6003f03371c4514ee9edda7e79e8ecfa3f995723b1520bac6e2fd7"
+     },
+     "private-holdout.csv": {
+      "asset_id": 716782078,
+      "bytes": 22967353,
+      "sha256": "2dae0040cdc2c80fa4adc9cc3b48f26882a6a20f451a252ac3a72f10da8f460f"
+     },
+     "public-eval.csv": {
+      "asset_id": 716782178,
+      "bytes": 20210392,
+      "sha256": "e187f645445e135e092898a280e74a2ecba6e75cb25ed9c5470d6f96f779c478"
+     },
+     "public-train.csv": {
+      "asset_id": 716782327,
+      "bytes": 45644743,
+      "sha256": "24b03a701c34d91834a7c5285d1c928ec33cda9282a2085405b06d541faa9c73"
+     },
+     "quality.json": {
+      "asset_id": 716782494,
+      "bytes": 22603,
+      "sha256": "98250e9d2731f89da021aec360f5d5535fc374241a98db14f185397f9126849a"
+     }
+    }
+   },
+   "server_side_verification": "live authenticated read-back: repo private=true, default branch main, release 436366305 non-draft tag v2026.11, exactly the five flat assets, every GitHub-reported sha256 digest equal to the package MANIFEST.json (meta.json 1f59e74e, private-holdout.csv 2dae0040, public-eval.csv e187f645, public-train.csv 24b03a70, quality.json 98250e9d); anonymous API read-back correctly 404s (private)",
+   "bytes_through_coordinator": "none (88.8 MB moved worker-side; only compact metadata was fetched: the 1,197 B meta.json during packaging)"
   }
  },
  "jobs": [
@@ -730,7 +774,7 @@
  "artifacts": [],
  "rejection_reason": null,
  "review": "Five contracts reconciled 2026-11-05 against recorded evidence. (1) REDISTRIBUTION - supported, class A: CPCB's own publication is licensed GODL-India by the data.gov.in platform instrument (Wayback-read 2026-11-04, AIKosh-corroborated live; attribution template + non-endorsement to carry into LICENSE.md; no share-alike); the XKDR compilation is CC BY 4.0 (README, credit 'India Air Quality Database, XKDR Forum' + CPCB + US DoS); OpenAQ is CC BY 4.0 (docs + archived v2 meta 'CC BY 4.0d'). (2) PREDICTION TIMING - supported for a clearly-labelled retrospective-research scope with two declared, unverified assumptions: instant = 23:59 IST on day D; features = the station's own trailing PM2.5 history through day D (naive IST, calendar-day convention); label = calendar-day D+1 24-hr mean, entirely after the instant. Assumption (a) current-vintage: the archive is one export (2026-09-30), values 'as reported', 'no gap filling', 'preliminary and not fully validated' (XKDR README) - no operational as-of claim; revision behaviour unmeasured (a second export has never been observed). Assumption (b) day-D trailing hours are treated as complete at the instant: CPCB intraday latency is not measured (the publisher's own 4 PM bulletin averages the past 24 h and shows non-participating stations, e.g. Delhi 36/39 on 2024-11-18). (3) TARGET - supported: mechanical label (D+1 calendar-day mean > 90 ug/m3) from a published band edge of the publisher's own AQI instrument (Poor band lower edge 91; quote in measurements.threshold_fixture_2026_11_05); label-source series excluded from every shipped column; known-event fixture bound to the publisher's Daily AQI Bulletin (2024-11-18 Delhi Severe 494) AND confirmed in the measured panel (36/36 complete Delhi station-days TRUE); the bulletin is also the publisher-summary cross-check (category-level). (4) SPLIT CAPACITY - supported, measured on the full 2019-2025 panel and re-cut once with measured evidence before any score (see split_strategy): train 2019-2022 63735 positives, eval 2023 20773 positives over 357 distinct positive days, holdout 2024 19254 positives over 358 days; both classes in all three windows; winter clustering recorded and cluster-aware evaluation required at construction. (5) NOT A MIRROR - supported: novelty_check verdict differentiated (2026-10-20): research papers fit CPCB forecasters with private splits (arXiv 2404.08702 22-station; Discover AI 2026), Kaggle raw-data mirrors (CC BY-SA), and open archives (OpenAQ/XKDR/Vayuayan) - none ships this task with fixed splits and a scored contract. RESIDUAL LIMITATIONS carried to construction: (i) the cross-row exposure - a scored day-D row's label operand (day D+1 mean) appears inside the trailing features of days D+2..D+91 - requires the za-cct-style bounded-exposure design (restricted trailing aggregates, isolated_rows declared, gate-1.5 reverse-history probes measuring eval/holdout coverage and mismatch); (ii) label-availability exclusions (station-days with <18 h on D+1) must be counted and declared, never silently dropped; (iii) the export's 2025 hole (Jan-Mar, Oct-Dec absent; the 2025-04..09 tail excluded) and the OpenAQ 2023-2024 gap (zero files, measured) mean XKDR is the only channel that carries all three re-cut windows; the full-key bulk path stays behind the operator's email/key decision while the anonymous measurements-API batching path remains viable and measured.",
- "next_action": "PACKAGED (not yet staged): release/cpcb-aqi-exceedance assembled and check-package green; MANIFEST artifact_version a749f0df2f9dd010..., 5 assets, 88.8 MB, from staging 436180445, construction commit 75652fb6. Private staging per the cqc/za-cct worker-job pattern, in order: (1) create the PRIVATE repo earino/cpcb-aqi-exceedance (publish token), commit the package files as its initial commit, create release v2026.11 at that commit (non-draft, tag == main); (2) jobs/cpcb-aqi-publish-001 (release:true transfer job, cqc publish/job.json pattern): copy the five accepted assets from staging release 436180445 into the new release under the flat names, sha256 verified on arrival and server-side, asset ids resolved via publish-dataset.py --stream-test; (3) the fresh-consumer worker job (cqc consumer/source pattern) on the released bytes: gate re-run, exact-byte --accept, baseline reproduce (both AUC prints 0.9734, CONTRACT OK), references recomputed equal; (4) hf-publish.py --create --upload-small + the hf_publish worker job + --verify + --tag; (5) release/cpcb-aqi-exceedance/DESTINATIONS.json both blocks (github: verified release, tag, files_verified list; hub: revision, loading check), record -> packaged with packaged_at + awaiting_operator TRUE only after the pre-flip audit prompt exists (generate from skills/dataset-release/templates/pre-flip-audit-prompt.md with digests filled programmatically from the frozen manifest). The holdout stays sealed; no re-tuning after any score. After the staging steps: check-candidate --all, check-package, check-suitability, suite.",
+ "next_action": "PRIVATE STAGING IN PROGRESS - GitHub destination DONE and verified (repo earino/cpcb-aqi-exceedance private, 25-file initial commit cb3b251, release 436366305 non-draft tag v2026.11, 5/5 assets server-side digest-equal to MANIFEST.json; cpcb-aqi-publish-001 succeeded, worker 174785899 destroyed with 404 read-back, job reports at staging release 436368409). Remaining, in order: (1) the fresh-consumer worker job on the released bytes (cqc consumer/source pattern, fetch block from release 436366305 asset ids): package-vs-MANIFEST check, get_dataset.py re-verification, sha256sum -c, gate 1.5.0 re-run, exact-byte --accept against qualification.json (a749f0df), declared imports, baseline reproduce (both AUC prints 0.9734, CONTRACT OK, quoted beside station_persistence 0.9689 / climatology 0.8617), score.py references recomputed equal to measurements.json; a rebuild-from-export step is NOT required (the build refuses any changed export; REPRODUCE.md documents it as optional); (2) hf-publish.py --plan then --create --upload-small (private Hub repo, docs, card), the hf_publish worker job, --verify, --tag LAST; (3) release/cpcb-aqi-exceedance/DESTINATIONS.json both blocks (github: verified release 436366305, tag v2026.11, artifact_version a749f0df..., files_verified as the list of every logical manifest path; hub: revision, hf_loading, its files_verified list); (4) record -> packaged with packaged_at + artifacts[0] structured release identity (check-candidate requires it of packaged records), awaiting_operator TRUE only after the pre-flip adversarial audit prompt is generated (from skills/dataset-release/templates/pre-flip-audit-prompt.md, digests filled programmatically from the frozen manifest); then check-candidate --all, check-package, check-suitability, suite. The flip stays the operator's single approval and waits for the independent auditor's verdict unless waived. Holdout sealed; no re-tuning after any score.",
  "jurisdiction": {
   "country": "IN",
   "region": "South & South-East Asia",
@@ -757,7 +801,7 @@
  },
  "licence_class": "A",
  "licence_note": "REOPENED 2026-11-04: the publisher's own reuse licence is now read and recorded. CPCB's dataset 'Real time Air Quality Index from various locations' is contributed by CPCB (MoEFCC) on the Government of India OGD Platform, whose instrument licenses published datasets/resources under GODL-India (attribution-only, worldwide, royalty-free, commercial and derivative use permitted, no share-alike clause). CPCB's own site copyright policy is restrictive 'unless otherwise indicated'; the platform publication is the indicated licence. Any release carries GODL-India attribution to CPCB plus the access-channel attribution (XKDR Forum CC BY 4.0 compilation and/or OpenAQ CC BY 4.0), sources' designations preserved. The us_embassy (DS*) stream is excluded from the task population so the dataset is single-stream cpcb_caaqm.",
- "updated_at": "2026-11-06T10:25:33+00:00",
+ "updated_at": "2026-11-06T10:37:46+00:00",
  "construction_output": {
   "splits": {
    "train": {
