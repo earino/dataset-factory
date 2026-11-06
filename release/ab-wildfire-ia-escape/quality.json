@@ -1,0 +1,410 @@
+{
+ "name": "ab-wildfire-ia-escape",
+ "target": "escape",
+ "positive_label": 1,
+ "id_columns": [
+  "fire_id"
+ ],
+ "features": [
+  "assessment_ts",
+  "assessment_date",
+  "day_of_week",
+  "month",
+  "doy_sin",
+  "doy_cos",
+  "forest_area",
+  "latitude",
+  "longitude",
+  "assessment_hectares",
+  "fire_spread_rate",
+  "fire_type",
+  "fire_position_on_slope",
+  "weather_conditions_over_fire",
+  "temperature",
+  "relative_humidity",
+  "wind_speed",
+  "wind_direction",
+  "fuel_type",
+  "detection_agent_type",
+  "hours_report_to_assessment",
+  "hours_discovery_to_assessment",
+  "hours_start_to_assessment"
+ ],
+ "high_cardinality_columns": [
+  "assessment_ts",
+  "assessment_date",
+  "latitude",
+  "longitude",
+  "hours_report_to_assessment",
+  "hours_discovery_to_assessment",
+  "hours_start_to_assessment"
+ ],
+ "carry_columns": [],
+ "splits": {
+  "train": "public/train.csv",
+  "eval": "public/eval.csv",
+  "holdout": "private/holdout.csv"
+ },
+ "time_column": "assessment_ts",
+ "event_key_column": "assessment_date",
+ "expected_duplicate_ids": 0,
+ "id_columns_are_entity_keys": true,
+ "external_threshold": true,
+ "known_event": {
+  "name": "2016 Horse River Fire (MWF009): final area burned 485,123.6 ha in the publisher's record",
+  "expected_verdict": "exceeds",
+  "source": "asserted in-build against the pinned CSV ((2016, MWF009) current_size 485,123.6 -> escape 1) and corroborated by the Government of Alberta's official review (open.alberta.ca, 'A Review of the 2016 Horse River Wildfire', March 2017, dataset 7cc619bd-56ce-488e-b007-cada28430589), which documents detection at 16:03h MDT on 2016-05-01 - the record's naive local timestamp - under control 2016-07-04 and extinguished 2017-08-02, matching the record's milestone dates; nine further named fires asserted at their publisher-documented final sizes"
+ },
+ "negative_control_fixture": {
+  "name": "already-controlled small-fire stratum (LWF002 2023: final 0.01 ha, first under control at the assessment instant)",
+  "expected": "escape 0 with duration 0 h; 11,688/27,828 fires (42.0%) are already under control at the assessment instant - asserted in-build and reported per split",
+  "source": "the pinned publisher CSV, asserted in-build; the stratum is a measured property of the secondary containment formulation (not shipped) and of the easy-negative tail of the escape label"
+ },
+ "features_documented_at": "prediction_time",
+ "label_source_columns": [
+  "current_size",
+  "size_class",
+  "first_uc_date"
+ ],
+ "post_hoc_columns": [
+  "current_size",
+  "size_class",
+  "first_uc_date",
+  "first_uc_size",
+  "first_bh_date",
+  "first_bh_size",
+  "first_to_date",
+  "first_to_size",
+  "first_ex_date",
+  "first_ex_size_perimeter",
+  "general_cause",
+  "true_cause",
+  "industry_identifier",
+  "responsible_group",
+  "activity_class",
+  "dispatched_resource",
+  "dispatch_date",
+  "start_for_fire_date",
+  "initial_action_by",
+  "ia_arrival_at_fire_date",
+  "ia_access",
+  "fire_fighting_start_date",
+  "fire_fighting_start_size",
+  "bucketing_on_fire",
+  "distance_from_water_source",
+  "first_bucket_drop_date",
+  "fire_name",
+  "fire_origin",
+  "discovered_size",
+  "detection_agent"
+ ],
+ "task": {
+  "prediction_time": "the wildfire's own assessment_datetime - 'the date and time the wildfire was originally assessed by Alberta Wildfire employees' (publisher dictionary p11); every shipped feature is the crew-observed assessment record ('at the time of initial assessment'), a pre-instant timestamp (reported/discovered/estimated start), the detection channel, or calendar/geography; timestamps are naive local Alberta operational time (America/Edmonton), confirmed against the official 2016 Horse River review",
+  "target_definition": "escape: final area burned (current_size, the publisher's 'final area burned of the wildfire') at or above 100 ha, on the current compilation's recorded value (>= 100.0, exact on the recorded decimal); threshold-flip exposure from post-hoc area revision is bounded by the measured 89 fires within +-20% of the threshold",
+  "description": "at the recorded initial assessment of a newly discovered wildfire in Alberta's Forest Protection Area, predict from the regulator's own crew-observed assessment record whether the fire will escape initial attack (final area burned >= 100 ha)"
+ },
+ "measurements": [
+  {
+   "column": "assessment_hectares",
+   "unit": "hectares",
+   "frame": "size of the wildfire at the time of assessment, recorded to the nearest hectare or hundredth of a hectare (dictionary p12)"
+  },
+  {
+   "column": "fire_spread_rate",
+   "unit": "metres per minute",
+   "frame": "rate of spread at the time of initial assessment (dictionary p12)"
+  },
+  {
+   "column": "temperature",
+   "unit": "degrees Celsius",
+   "frame": "temperature at the wildfire site at the time of initial assessment"
+  },
+  {
+   "column": "relative_humidity",
+   "unit": "percent",
+   "frame": "relative humidity at the wildfire site at the time of initial assessment"
+  },
+  {
+   "column": "wind_speed",
+   "unit": "kilometres per hour",
+   "frame": "wind speed at the wildfire site at the time of initial assessment"
+  },
+  {
+   "column": "latitude",
+   "unit": "decimal degrees",
+   "frame": "location of the ignition area recorded as GPS; originally captured during the assessment, may be further investigated as the wildfire progresses - the shipped value is the current confirmed ignition-area location (dictionary p6; flagged in evaluation_contract)"
+  },
+  {
+   "column": "longitude",
+   "unit": "decimal degrees",
+   "frame": "as latitude, longitude component"
+  },
+  {
+   "column": "hours_report_to_assessment",
+   "unit": "hours",
+   "frame": "elapsed time from REPORTED_DATE (the time the wildfire was first reported to Alberta Wildfire) to the assessment instant; 100% coverage"
+  },
+  {
+   "column": "hours_discovery_to_assessment",
+   "unit": "hours",
+   "frame": "elapsed time from DISCOVERED_DATE to the assessment instant; blank where the discovery timestamp is absent (the dictionary documents unplanned-detection blanks)"
+  },
+  {
+   "column": "hours_start_to_assessment",
+   "unit": "hours",
+   "frame": "elapsed time from FIRE_START_DATE (the estimated or witnessed fire start) to the assessment instant; blank where absent"
+  },
+  {
+   "column": "escape",
+   "unit": "binary label",
+   "frame": "1 when final area burned >= 100 ha on the current compilation's recorded value; 0 otherwise"
+  }
+ ],
+ "timing": {
+  "prediction_instant": {
+   "kind": "event_time",
+   "period": "instant",
+   "days_after_period_end": 0,
+   "citation": "assessment_datetime is 'the date and time the wildfire was originally assessed by Alberta Wildfire employees' (dictionary p11); the assessment block (FP41 quick or full assessment) is the administrative record written at the event. Measured ordering on the pinned CSV: reported_date at or before assessment for 27,828/27,828, discovered_date 21,977/21,977, fire_start_date 27,109/27,109; dispatch_date falls after assessment for 670/27,813 (2.41%), so the dispatch block is excluded. Timestamps carry no timezone and are read as local Alberta operational time (America/Edmonton), confirmed against the official 2016 Horse River review (detection 16:03h MDT 2016-05-01 = the record's naive 16:03; under-control 2016-07-04 and extinguished 2017-08-02 match the record)"
+  },
+  "features": {
+   "period": "instant",
+   "published_days_after_period_end": 0,
+   "source_kind": "administrative_record"
+  },
+  "row_selection": {
+   "latest_period_used": "2025",
+   "fields": [
+    "YEAR",
+    "FIRE_NUMBER",
+    "ASSESSMENT_DATETIME"
+   ],
+   "basis": "every discovered wildfire in the Forest Protection Area is assessed (measured: 27,828/27,828 rows carry an assessment instant), so eligibility is assessment-based with no outcome-conditioned rule and no censoring; all rows of the 2006-2025 compilation are retained, including 587 November-February assessments and 356 winter carryover fires assessed in the year after their record year; splits follow the assessment instant's calendar year"
+  },
+  "observations": []
+ },
+ "evaluation_contract": {
+  "use": "retrospective_research",
+  "access": "isolated_rows",
+  "training_label_timing": "unverified",
+  "scope_note": "each row is one wildfire escape prediction at its own assessment instant; features are the publisher's own assessment record and the runner predicts row-wise from the shipped columns. Labeled eval is development/validation; private holdout is the final test and stays outside evaluated agents' workspaces. Training-label timing is UNVERIFIED: the publisher ships a single current compilation (no historical per-fire vintages, no first-publication ledger), so no full-row availability ledger can be constructed - retrospective research only, never a certified historical forecasting setup",
+  "vintage": {
+   "kind": "current_snapshot",
+   "evidence": "the archive is one living compilation (portal updated 2026-02-17, covering through 2025); the dictionary documents in-place revision of area burned (spring aerial-photography interpretation removes waterbodies and unburnt islands), cause (under-investigation -> final) and location (assessment GPS -> confirmed ignition area). Aggregate evidence measured: the 2019 published season total was 883,411 ha while the current archive carries 791,838 ha (-10.4%). Label-flip exposure is bounded: 89 fires lie within +-20% of the 100 ha threshold (measured). Every shipped feature is the current-vintage value of a field documented at/before the assessment instant; no as-of value is claimed"
+  },
+  "selection": {
+   "kind": "prediction_time",
+   "evidence": "membership is fixed at the assessment instant: a row exists because the wildfire was discovered and assessed, never because of an outcome; no completeness or volume gate is applied (unlike panel releases), there is no censoring rule (every row carries a terminal status), and both label values are retained in every window. The population definition (all FPA wildfires) is stable; the detection channel mix drifts (lookouts 34% of 2006 -> 21% of 2025; unplanned 42% -> 59%) and ships as the detection_agent_type feature"
+  },
+  "limitations": [
+   "current_snapshot vintage: a single living compilation; per-fire historical values (assessment size, weather, location, area burned) cannot be reproduced as they stood at past instants",
+   "latitude/longitude are the current confirmed ignition-area coordinates, revised from the originally captured assessment GPS (dictionary p6); the original assessment-era coordinates are not recoverable",
+   "fire_start_date is an estimate when the exact start is unknown (dictionary p10); hours_start_to_assessment inherits that estimation",
+   "timestamps carry no timezone; they are read as local Alberta operational time (America/Edmonton), an assumption confirmed against the official 2016 Horse River review but not guaranteed for every row",
+   "the holdout 2021-2025 escape rate (4.11%) exceeds train (1.86%) and eval (1.85%) because 2021-2025 contains the 2023 record season - real, documented non-stationarity, not a construction defect",
+   "positives cluster on extreme fire-weather days (156/79/128 distinct positive assessment dates per window): row-level scores overstate independent evidence; the day is the independence scale",
+   "holdout fires are real, publicly documented events; an agent with uncontrolled internet access could look up outcomes by fire identity. The benchmark protocol keeps the holdout outside the evaluated agent's workspace, and this exposure is inherent to any retrospective public-record task, not specific to this artifact",
+   "labeled eval is development/validation, never an untouched final test; the holdout is the final test and remains sealed until the design is frozen",
+   "training_label_timing is unverified: no as-of ledger exists for when any per-fire record first appeared in the compilation"
+  ],
+  "cross_row_audit": {
+   "probes": [
+    {
+     "entity_columns": [
+      "forest_area"
+     ],
+     "time_column": "assessment_date",
+     "offset_days": 1,
+     "left": "assessment_hectares",
+     "operation": "gt",
+     "threshold": 100,
+     "name": "next_day_neighbour_size",
+     "note": "the nearest joinable structure: a same-forest-area fire assessed the next day donates its assessment size. It is a shared-weather covariate, not an outcome operand, so agreement with this row's escape label is expected to be weak; declared to measure the neighbour-day join a row-joining solver could reach, not to argue the cluster away"
+    }
+   ],
+   "probes_note": "each wildfire appears exactly once ((YEAR, FIRE_NUMBER) unique, asserted), so no serial per-entity join exists and no shipped column of any row is derived from another row's outcome: the label source (final area burned) and the milestone fields ship in no column (asserted on the written headers). The remaining structure is the same-day weather cluster, which the declared probe measures at its nearest joinable edge",
+   "rationale": "rows are per-wildfire event predictions; the runner predicts row-wise from shipped columns, which are the crew-observed assessment record of that fire alone. Same-day neighbours share fire weather - a shared cause of both feature and label, not a donated outcome",
+   "auxiliary_files_review": "the extract ships exactly the runner layout - public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json - plus summary.json, which carries the fetch receipt, structural assertions, per-window coverage, per-year counts and the measured secondary-containment diagnostics; no row-level source data beyond the three split files and no performance metric"
+  },
+  "feature_evidence": {
+   "fire_id": {
+    "source": "derived: YEAR + FIRE_NUMBER, the publisher's own wildfire identity",
+    "availability": "assigned when the fire is recorded by the dispatching forest area; known before/at the assessment instant",
+    "status": "verified"
+   },
+   "assessment_ts": {
+    "source": "ASSESSMENT_DATETIME, 'the date and time the wildfire was originally assessed' (dictionary p11)",
+    "availability": "the prediction instant itself, in naive local Alberta operational time",
+    "status": "verified"
+   },
+   "assessment_date": {
+    "source": "the calendar date of the assessment instant",
+    "availability": "calendar part of the prediction instant",
+    "status": "verified"
+   },
+   "day_of_week": {
+    "source": "derived arithmetically from the assessment instant",
+    "availability": "calendar",
+    "status": "verified"
+   },
+   "month": {
+    "source": "derived arithmetically from the assessment instant",
+    "availability": "calendar",
+    "status": "verified"
+   },
+   "doy_sin": {
+    "source": "derived: sin(2*pi*day_of_year/365.25) of the assessment instant",
+    "availability": "calendar",
+    "status": "verified"
+   },
+   "doy_cos": {
+    "source": "derived: cos(2*pi*day_of_year/365.25) of the assessment instant",
+    "availability": "calendar",
+    "status": "verified"
+   },
+   "forest_area": {
+    "source": "the first three letters of FIRE_NUMBER, the managing forest area's code (10 areas measured over the full compilation)",
+    "availability": "assigned when the fire is recorded, before/at the assessment instant",
+    "status": "verified"
+   },
+   "latitude": {
+    "source": "LATITUDE, the ignition-area GPS location (dictionary p6)",
+    "availability": "a pre-instant fact of the fire's location, but the shipped value is the current confirmed ignition-area coordinate, revised from the originally captured assessment GPS",
+    "status": "assumed",
+    "assumption": "current-vintage revision of a pre-instant fact; the assessment-era coordinates are not recoverable"
+   },
+   "longitude": {
+    "source": "LONGITUDE, as latitude",
+    "availability": "as latitude",
+    "status": "assumed",
+    "assumption": "current-vintage revision of a pre-instant fact"
+   },
+   "assessment_hectares": {
+    "source": "ASSESSMENT_HECTARES, 'the size of the wildfire at the time of assessment' (dictionary p12); 100% coverage measured",
+    "availability": "observed by the assessing crew at the instant",
+    "status": "verified"
+   },
+   "fire_spread_rate": {
+    "source": "FIRE_SPREAD_RATE, 'the rate of spread of the wildfire at the time of initial assessment' in m/min (dictionary p12)",
+    "availability": "observed by the assessing crew at the instant",
+    "status": "verified"
+   },
+   "fire_type": {
+    "source": "FIRE_TYPE, 'the predominant fire behaviour that was observed when the fire was originally assessed' (dictionary p12)",
+    "availability": "observed at the instant; blank where not recorded",
+    "status": "verified"
+   },
+   "fire_position_on_slope": {
+    "source": "FIRE_POSITION_ON_SLOPE, 'the position of the wildfire relative to the slope it is travelling on at the time of initial assessment' (dictionary p12)",
+    "availability": "observed at the instant; blank where not recorded",
+    "status": "verified"
+   },
+   "weather_conditions_over_fire": {
+    "source": "WEATHER_CONDITIONS_OVER_FIRE, 'description of the weather conditions over the wildfire at the time of initial assessment' (dictionary p12)",
+    "availability": "observed at the instant; blank where not recorded",
+    "status": "verified"
+   },
+   "temperature": {
+    "source": "TEMPERATURE, 'the temperature at the wildfire site at the time of initial assessment', degrees Celsius (dictionary p12)",
+    "availability": "observed at the instant; blank where not recorded",
+    "status": "verified"
+   },
+   "relative_humidity": {
+    "source": "RELATIVE_HUMIDITY, 'the relative humidity at the wildfire site at the time of initial assessment' (dictionary p12)",
+    "availability": "observed at the instant; blank where not recorded",
+    "status": "verified"
+   },
+   "wind_speed": {
+    "source": "WIND_SPEED, 'the wind speed at the wildfire site at the time of initial assessment', km/h (dictionary p12)",
+    "availability": "observed at the instant; blank where not recorded",
+    "status": "verified"
+   },
+   "wind_direction": {
+    "source": "WIND_DIRECTION, 'the wind direction at the wildfire site at the time of initial assessment' (dictionary p12)",
+    "availability": "observed at the instant; blank where not recorded",
+    "status": "verified"
+   },
+   "fuel_type": {
+    "source": "FUEL_TYPE, 'the predominant fuel type (vegetation cover) in which the wildfire is burning, at the time of initial assessment', Canadian FBP codes (dictionary p12)",
+    "availability": "observed at the instant; blank where not recorded",
+    "status": "verified"
+   },
+   "detection_agent_type": {
+    "source": "DETECTION_AGENT_TYPE, 'the general type of detection agent responsible for discovering the wildfire' (dictionary p10); 5 categories, no blanks measured",
+    "availability": "fixed at discovery, before the instant",
+    "status": "verified"
+   },
+   "hours_report_to_assessment": {
+    "source": "derived: REPORTED_DATE ('the time and date the wildfire was first reported to Alberta Wildfire', dictionary p11) to the assessment instant",
+    "availability": "difference of two pre-instant timestamps; 100% coverage",
+    "status": "verified"
+   },
+   "hours_discovery_to_assessment": {
+    "source": "derived: DISCOVERED_DATE ('the time the detection agent first discovered the wildfire', dictionary p10) to the assessment instant",
+    "availability": "pre-instant; blank where the discovery timestamp is absent (the dictionary documents unplanned-detection blanks)",
+    "status": "verified"
+   },
+   "hours_start_to_assessment": {
+    "source": "derived: FIRE_START_DATE (estimated or witnessed fire start, dictionary p10) to the assessment instant",
+    "availability": "pre-instant estimate; blank where absent",
+    "status": "assumed",
+    "assumption": "the start time is an estimate when unknown, and the current compilation may have refined it after the instant"
+   }
+  }
+ },
+ "positive_events": {
+  "train": {
+   "positives": 297,
+   "distinct_events": 156
+  },
+  "eval": {
+   "positives": 104,
+   "distinct_events": 79
+  },
+  "holdout": {
+   "positives": 257,
+   "distinct_events": 128
+  }
+ },
+ "split_windows": {
+  "train": {
+   "start": "2006-01-01",
+   "end": "2016-01-01"
+  },
+  "eval": {
+   "start": "2016-01-01",
+   "end": "2021-01-01"
+  },
+  "holdout": {
+   "start": "2021-01-01",
+   "end": "2026-01-01"
+  }
+ },
+ "split_counts": {
+  "train": {
+   "rows": 15864,
+   "positives": 297,
+   "positive_rate": 0.018722,
+   "distinct_positive_dates": 156,
+   "carryover_from_record_year": 236
+  },
+  "eval": {
+   "rows": 5707,
+   "positives": 104,
+   "positive_rate": 0.018223,
+   "distinct_positive_dates": 79,
+   "carryover_from_record_year": 120
+  },
+  "holdout": {
+   "rows": 6257,
+   "positives": 257,
+   "positive_rate": 0.041074,
+   "distinct_positive_dates": 128,
+   "carryover_from_record_year": 0
+  }
+ },
+ "excluded_counts": {
+  "rows_dropped": 0,
+  "note": "all 27,828 assessed wildfires are retained; the excluded source columns are listed in post_hoc_columns and label_source_columns"
+ }
+}

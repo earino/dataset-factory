@@ -1,0 +1,51 @@
+{
+  "id": "abwildfire-baseline-002",
+  "candidate": "ab-wildfire-ia-escape",
+  "image": "python:3.13-slim",
+  "server_type": "cx23",
+  "location": "hel1",
+  "cpus": 2,
+  "memory_mb": 4096,
+  "timeout_minutes": 40,
+  "lifetime_minutes": 60,
+  "max_disk_mb": 8000,
+  "max_artifact_mb": 8,
+  "what": "Runner-contract baseline on the accepted ab-wildfire-ia-escape artifact, fetched from private staging rather than rebuilt: re-accept the five fetched files against the gate's own collected report BEFORE any score, materialize the runner workdir (public train+eval only; the private holdout is fetched for --accept over the full artifact but never copied into a workdir), run the benchmark's own train.py and validate.sh unmodified, then compute the PRE-REGISTERED deciding check: the runner model's per-row eval scores (same code path as validate.py) vs every triad member (persistence analogue = assessment_hectares, calendar/identity prior from train, plus the degenerate majority constant) on identical eval rows, day-clustered paired bootstrap, cluster = assessment_date. The construction-time full-feature logistic reference is recorded as a supplementary model-vs-model comparison, not a deciding member. Headroom is demonstrated ONLY if the model beats EVERY member with a CI excluding zero in its favour (and, for the degenerate constant member, its own day-cluster-bootstrap AUC CI lies entirely above 0.5); triad dominance -> recorded defect, drop or re-target. Contract only, no agent loop, no holdout score. FETCH BLOCK from abwildfire-build-001's staging release 437132110 (artifact c2c8ceb56c7ff52a..., gate 1.5.0 ok with failed_checks [], exact-byte accept verified on the worker; asset ids and digests from the collected job ledger jobs/abwildfire-build-001.json).",
+  "stopping_condition": "re-accept failure refuses scoring before any number exists; a failed runner contract is a recorded blocker, never rescored ad hoc; the deciding verdict (either direction) is a recorded finding, not a retry trigger - no re-tuning of threshold, window, label or features after any score.",
+  "fetch": {
+    "repo": "earino/dataset-factory-staging",
+    "release": 437132110,
+    "assets": [
+      {
+        "asset_id": 718800868,
+        "dest": "extract/meta.json",
+        "size": 1217,
+        "sha256": "aeb2ef927fc0d8565a86a6901afe5ee29359787bb39693342d18ce6850a9bcfb"
+      },
+      {
+        "asset_id": 718801033,
+        "dest": "extract/public/train.csv",
+        "size": 2351953,
+        "sha256": "575649d52c304d2fa0751411e0e4dc291309b42fbd0b280cbeae9e4b747cc2ae"
+      },
+      {
+        "asset_id": 718800983,
+        "dest": "extract/public/eval.csv",
+        "size": 838515,
+        "sha256": "d099e4cb9da999e3e301b0e4da1cc98cd56fc11371feba7711447571c83a7759"
+      },
+      {
+        "asset_id": 718800905,
+        "dest": "extract/private/holdout.csv",
+        "size": 930923,
+        "sha256": "53583f4d2dff386bfebe864f49dba348d9717ee7bf96d28574082f80668edc12"
+      },
+      {
+        "asset_id": 718801140,
+        "dest": "extract/quality.json",
+        "size": 21089,
+        "sha256": "331a4ceb0944d33b80b0a6519c0148603b19b4fff1ae5136571ae3126cff3ec1"
+      }
+    ]
+  }
+}

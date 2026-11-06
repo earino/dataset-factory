@@ -1,0 +1,649 @@
+{
+ "ok": true,
+ "dataset": "/output/extract",
+ "gate_version": "1.5.0",
+ "artifact": {
+  "train": {
+   "file": "public/train.csv",
+   "sha256": "575649d52c304d2fa0751411e0e4dc291309b42fbd0b280cbeae9e4b747cc2ae",
+   "bytes": 2351953
+  },
+  "eval": {
+   "file": "public/eval.csv",
+   "sha256": "d099e4cb9da999e3e301b0e4da1cc98cd56fc11371feba7711447571c83a7759",
+   "bytes": 838515
+  },
+  "holdout": {
+   "file": "private/holdout.csv",
+   "sha256": "53583f4d2dff386bfebe864f49dba348d9717ee7bf96d28574082f80668edc12",
+   "bytes": 930923
+  },
+  "meta.json": {
+   "file": "meta.json",
+   "sha256": "aeb2ef927fc0d8565a86a6901afe5ee29359787bb39693342d18ce6850a9bcfb",
+   "bytes": 1217
+  },
+  "quality.json": {
+   "file": "quality.json",
+   "sha256": "331a4ceb0944d33b80b0a6519c0148603b19b4fff1ae5136571ae3126cff3ec1",
+   "bytes": 21089
+  },
+  "artifact_version": {
+   "digest": "c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b44d0e43da2",
+   "components": [
+    "eval",
+    "holdout",
+    "meta.json",
+    "quality.json",
+    "train"
+   ]
+  }
+ },
+ "results": [
+  {
+   "check": "descriptor",
+   "ok": true,
+   "detail": "quality.json loaded for 'ab-wildfire-ia-escape'",
+   "evidence": {}
+  },
+  {
+   "check": "contract.declared",
+   "ok": true,
+   "detail": "evaluation_contract required: intended use, access, vintage and evidence",
+   "evidence": {}
+  },
+  {
+   "check": "contract.scope",
+   "ok": true,
+   "detail": "use='retrospective_research'; access='isolated_rows'; eval is development, holdout is final",
+   "evidence": {}
+  },
+  {
+   "check": "contract.every_input_has_availability_evidence",
+   "ok": true,
+   "detail": "Every solver-visible non-target column needs availability evidence; missing: []",
+   "evidence": {}
+  },
+  {
+   "check": "contract.vintage_and_selection",
+   "ok": true,
+   "detail": "Vintage, selection and limitations must be explicit; declarations are not measurements",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_review",
+   "ok": true,
+   "detail": "Document applicable cross-row probes and every solver-visible auxiliary file",
+   "evidence": {}
+  },
+  {
+   "check": "contract.cross_row_probe_0",
+   "ok": true,
+   "detail": "Outcome-bearing later-row exposure requires restricted evaluation access; mismatches are reported",
+   "evidence": {
+    "train": {
+     "rows": 15864,
+     "covered": 1017,
+     "mismatches": 6,
+     "ambiguous_or_conflicting": 8795
+    },
+    "eval": {
+     "rows": 5707,
+     "covered": 437,
+     "mismatches": 14,
+     "ambiguous_or_conflicting": 2791
+    },
+    "holdout": {
+     "rows": 6257,
+     "covered": 553,
+     "mismatches": 10,
+     "ambiguous_or_conflicting": 2620
+    }
+   }
+  },
+  {
+   "check": "contract.label_availability",
+   "ok": true,
+   "detail": "No full-row availability ledger: training-label timing UNVERIFIED; retrospective use only",
+   "evidence": {}
+  },
+  {
+   "check": "leakage.declared_columns",
+   "ok": true,
+   "detail": "every shipped column is declared",
+   "evidence": {
+    "undeclared": []
+   }
+  },
+  {
+   "check": "leakage.answer_source_absent",
+   "ok": true,
+   "detail": "no answer source or post-hoc column is shipped",
+   "evidence": {
+    "shipped_forbidden": []
+   }
+  },
+  {
+   "check": "leakage.every_column_could_be_scored",
+   "ok": true,
+   "detail": "every column was scored for leakage",
+   "evidence": {
+    "unscorable": []
+   }
+  },
+  {
+   "check": "leakage.no_single_column_determines_the_target",
+   "ok": true,
+   "detail": "no shipped column separates the classes on its own",
+   "evidence": {
+    "offenders": [],
+    "high_cardinality": [
+     "assessment_ts@eval",
+     "assessment_ts@holdout",
+     "assessment_ts@train",
+     "fire_id@eval",
+     "fire_id@holdout",
+     "fire_id@train",
+     "hours_start_to_assessment@eval",
+     "hours_start_to_assessment@holdout",
+     "hours_start_to_assessment@train"
+    ],
+    "missing_splits": []
+   }
+  },
+  {
+   "check": "leakage.high_cardinality_declared",
+   "ok": true,
+   "detail": "high-cardinality columns are declared as identifiers or free fields",
+   "evidence": {
+    "undeclared": [],
+    "declared": [
+     "assessment_date",
+     "assessment_ts",
+     "fire_id",
+     "hours_discovery_to_assessment",
+     "hours_report_to_assessment",
+     "hours_start_to_assessment",
+     "latitude",
+     "longitude"
+    ]
+   }
+  },
+  {
+   "check": "timing.prediction_time_declared",
+   "ok": true,
+   "detail": "prediction instant is declared",
+   "evidence": {}
+  },
+  {
+   "check": "timing.no_post_hoc_feature",
+   "ok": true,
+   "detail": "no feature is documented as post-hoc",
+   "evidence": {
+    "overlap": []
+   }
+  },
+  {
+   "check": "timing.label_source_is_not_a_feature",
+   "ok": true,
+   "detail": "the label source is not a feature",
+   "evidence": {
+    "source_features": []
+   }
+  },
+  {
+   "check": "timing.every_feature_documented",
+   "ok": true,
+   "detail": "features documented as available 'prediction_time'",
+   "evidence": {
+    "features_documented_at": "prediction_time"
+   }
+  },
+  {
+   "check": "timing.instant_declared",
+   "ok": true,
+   "detail": "prediction instant kind='event_time' citation=True",
+   "evidence": {
+    "prediction_instant": {
+     "kind": "event_time",
+     "period": "instant",
+     "days_after_period_end": 0,
+     "citation": "assessment_datetime is 'the date and time the wildfire was originally assessed by Alberta Wildfire employees' (dictionary p11); the assessment block (FP41 quick or full assessment) is the administrative record written at the event. Measured ordering on the pinned CSV: reported_date at or before assessment for 27,828/27,828, discovered_date 21,977/21,977, fire_start_date 27,109/27,109; dispatch_date falls after assessment for 670/27,813 (2.41%), so the dispatch block is excluded. Timestamps carry no timezone and are read as local Alberta operational time (America/Edmonton), confirmed against the official 2016 Horse River review (detection 16:03h MDT 2016-05-01 = the record's naive 16:03; under-control 2016-07-04 and extinguished 2017-08-02 match the record)"
+    }
+   }
+  },
+  {
+   "check": "timing.publication_lag_measured",
+   "ok": true,
+   "detail": "0 of 0 observed period_end -> published dates are usable",
+   "evidence": {
+    "observations": [],
+    "measured_lag_days": null,
+    "source_kind": "administrative_record"
+   }
+  },
+  {
+   "check": "timing.features_available_at_instant",
+   "ok": true,
+   "detail": "features publish 0d after the period, instant is 0d after it",
+   "evidence": {
+    "features_lag_days": 0,
+    "instant_lag_days": 0,
+    "measured_lag_days": null
+   }
+  },
+  {
+   "check": "timing.instant_accounts_for_publication_lag",
+   "ok": true,
+   "detail": "instant kind is 'event_time' while features publish 0d after the period",
+   "evidence": {
+    "kind": "event_time",
+    "features_lag_days": 0
+   }
+  },
+  {
+   "check": "timing.selection_uses_only_available_data",
+   "ok": true,
+   "detail": "row selection declares its latest period as '2025'",
+   "evidence": {
+    "latest_period_used": "2025",
+    "fields": [
+     "YEAR",
+     "FIRE_NUMBER",
+     "ASSESSMENT_DATETIME"
+    ]
+   }
+  },
+  {
+   "check": "units.measured_columns_declare_unit_and_frame",
+   "ok": true,
+   "detail": "11 measured column(s) declare unit and frame",
+   "evidence": {
+    "measurements": [
+     {
+      "column": "assessment_hectares",
+      "unit": "hectares",
+      "frame": "size of the wildfire at the time of assessment, recorded to the nearest hectare or hundredth of a hectare (dictionary p12)"
+     },
+     {
+      "column": "fire_spread_rate",
+      "unit": "metres per minute",
+      "frame": "rate of spread at the time of initial assessment (dictionary p12)"
+     },
+     {
+      "column": "temperature",
+      "unit": "degrees Celsius",
+      "frame": "temperature at the wildfire site at the time of initial assessment"
+     },
+     {
+      "column": "relative_humidity",
+      "unit": "percent",
+      "frame": "relative humidity at the wildfire site at the time of initial assessment"
+     },
+     {
+      "column": "wind_speed",
+      "unit": "kilometres per hour",
+      "frame": "wind speed at the wildfire site at the time of initial assessment"
+     },
+     {
+      "column": "latitude",
+      "unit": "decimal degrees",
+      "frame": "location of the ignition area recorded as GPS; originally captured during the assessment, may be further investigated as the wildfire progresses - the shipped value is the current confirmed ignition-area location (dictionary p6; flagged in evaluation_contract)"
+     },
+     {
+      "column": "longitude",
+      "unit": "decimal degrees",
+      "frame": "as latitude, longitude component"
+     },
+     {
+      "column": "hours_report_to_assessment",
+      "unit": "hours",
+      "frame": "elapsed time from REPORTED_DATE (the time the wildfire was first reported to Alberta Wildfire) to the assessment instant; 100% coverage"
+     },
+     {
+      "column": "hours_discovery_to_assessment",
+      "unit": "hours",
+      "frame": "elapsed time from DISCOVERED_DATE to the assessment instant; blank where the discovery timestamp is absent (the dictionary documents unplanned-detection blanks)"
+     },
+     {
+      "column": "hours_start_to_assessment",
+      "unit": "hours",
+      "frame": "elapsed time from FIRE_START_DATE (the estimated or witnessed fire start) to the assessment instant; blank where absent"
+     },
+     {
+      "column": "escape",
+      "unit": "binary label",
+      "frame": "1 when final area burned >= 100 ha on the current compilation's recorded value; 0 otherwise"
+     }
+    ]
+   }
+  },
+  {
+   "check": "units.known_event_fixture_recorded",
+   "ok": true,
+   "detail": "known-event fixture recorded: \"2016 Horse River Fire (MWF009): final area burned 485,123.6 ha in the publisher's record\"",
+   "evidence": {
+    "known_event": {
+     "name": "2016 Horse River Fire (MWF009): final area burned 485,123.6 ha in the publisher's record",
+     "expected_verdict": "exceeds",
+     "source": "asserted in-build against the pinned CSV ((2016, MWF009) current_size 485,123.6 -> escape 1) and corroborated by the Government of Alberta's official review (open.alberta.ca, 'A Review of the 2016 Horse River Wildfire', March 2017, dataset 7cc619bd-56ce-488e-b007-cada28430589), which documents detection at 16:03h MDT on 2016-05-01 - the record's naive local timestamp - under control 2016-07-04 and extinguished 2017-08-02, matching the record's milestone dates; nine further named fires asserted at their publisher-documented final sizes"
+    }
+   }
+  },
+  {
+   "check": "splits.time_column_declared",
+   "ok": true,
+   "detail": "split overlap is checked against 'assessment_ts'",
+   "evidence": {}
+  },
+  {
+   "check": "splits.machine_readable_windows",
+   "ok": true,
+   "detail": "train/eval/holdout windows are declared with start/end",
+   "evidence": {
+    "split_windows": {
+     "train": {
+      "start": "2006-01-01",
+      "end": "2016-01-01"
+     },
+     "eval": {
+      "start": "2016-01-01",
+      "end": "2021-01-01"
+     },
+     "holdout": {
+      "start": "2021-01-01",
+      "end": "2026-01-01"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.files_present",
+   "ok": true,
+   "detail": "all three split files exist",
+   "evidence": {
+    "missing": []
+   }
+  },
+  {
+   "check": "splits.non_empty",
+   "ok": true,
+   "detail": "every split has rows",
+   "evidence": {
+    "train": {
+     "rows": 15864,
+     "positives": 297,
+     "negatives": 15567,
+     "positive_rate": 0.018722
+    },
+    "eval": {
+     "rows": 5707,
+     "positives": 104,
+     "negatives": 5603,
+     "positive_rate": 0.018223
+    },
+    "holdout": {
+     "rows": 6257,
+     "positives": 257,
+     "negatives": 6000,
+     "positive_rate": 0.041074
+    }
+   }
+  },
+  {
+   "check": "splits.eval_and_holdout_have_both_classes",
+   "ok": true,
+   "detail": "eval and holdout each contain positives and negatives",
+   "evidence": {
+    "train": {
+     "rows": 15864,
+     "positives": 297,
+     "negatives": 15567,
+     "positive_rate": 0.018722
+    },
+    "eval": {
+     "rows": 5707,
+     "positives": 104,
+     "negatives": 5603,
+     "positive_rate": 0.018223
+    },
+    "holdout": {
+     "rows": 6257,
+     "positives": 257,
+     "negatives": 6000,
+     "positive_rate": 0.041074
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_declared",
+   "ok": true,
+   "detail": "eval and holdout declare positives and distinct events",
+   "evidence": {
+    "declared": {
+     "train": {
+      "positives": 297,
+      "distinct_events": 156
+     },
+     "eval": {
+      "positives": 104,
+      "distinct_events": 79
+     },
+     "holdout": {
+      "positives": 257,
+      "distinct_events": 128
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.positive_events_match_rows",
+   "ok": true,
+   "detail": "declared positive counts match the rows",
+   "evidence": {
+    "mismatched": []
+   }
+  },
+  {
+   "check": "splits.event_key_column_declared",
+   "ok": true,
+   "detail": "clustered events are counted by 'assessment_date' (date part)",
+   "evidence": {}
+  },
+  {
+   "check": "splits.distinct_events_match_rows",
+   "ok": true,
+   "detail": "declared clustered event counts match the rows",
+   "evidence": {
+    "recomputed": {
+     "train": 156,
+     "eval": 79,
+     "holdout": 128
+    },
+    "declared": {
+     "train": {
+      "positives": 297,
+      "distinct_events": 156
+     },
+     "eval": {
+      "positives": 104,
+      "distinct_events": 79
+     },
+     "holdout": {
+      "positives": 257,
+      "distinct_events": 128
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.enough_clustered_positives",
+   "ok": true,
+   "detail": "eval and holdout carry enough independent positive events to score",
+   "evidence": {
+    "thin": [],
+    "recomputed_events": {
+     "train": 156,
+     "eval": 79,
+     "holdout": 128
+    },
+    "minimums": {
+     "positives": 30,
+     "distinct_events": 20
+    }
+   }
+  },
+  {
+   "check": "splits.rates_not_uniform",
+   "ok": true,
+   "detail": "positive rates are between 0 and 1",
+   "evidence": {
+    "rates": [
+     0.018722,
+     0.018223,
+     0.041074
+    ]
+   }
+  },
+  {
+   "check": "splits.actual_ranges_computed",
+   "ok": true,
+   "detail": "row timestamps found for every split",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2006-04-02 16:00",
+      "max": "2015-12-31 10:45"
+     },
+     "eval": {
+      "min": "2016-01-02 11:45",
+      "max": "2020-12-19 14:17"
+     },
+     "holdout": {
+      "min": "2021-01-10 13:07",
+      "max": "2025-12-16 13:55"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.actual_ranges_disjoint",
+   "ok": true,
+   "detail": "the rows of the three splits occupy disjoint periods",
+   "evidence": {
+    "ranges": {
+     "train": {
+      "min": "2006-04-02 16:00",
+      "max": "2015-12-31 10:45"
+     },
+     "eval": {
+      "min": "2016-01-02 11:45",
+      "max": "2020-12-19 14:17"
+     },
+     "holdout": {
+      "min": "2021-01-10 13:07",
+      "max": "2025-12-16 13:55"
+     }
+    },
+    "overlaps": []
+   }
+  },
+  {
+   "check": "splits.rows_within_declared_windows",
+   "ok": true,
+   "detail": "every row falls inside its split's declared window",
+   "evidence": {
+    "windows": {
+     "train": {
+      "start": "2006-01-01",
+      "end": "2016-01-01"
+     },
+     "eval": {
+      "start": "2016-01-01",
+      "end": "2021-01-01"
+     },
+     "holdout": {
+      "start": "2021-01-01",
+      "end": "2026-01-01"
+     }
+    },
+    "ranges": {
+     "train": {
+      "min": "2006-04-02 16:00",
+      "max": "2015-12-31 10:45"
+     },
+     "eval": {
+      "min": "2016-01-02 11:45",
+      "max": "2020-12-19 14:17"
+     },
+     "holdout": {
+      "min": "2021-01-10 13:07",
+      "max": "2025-12-16 13:55"
+     }
+    }
+   }
+  },
+  {
+   "check": "splits.no_cross_split_entities",
+   "ok": true,
+   "detail": "no fire_id appears in more than one split",
+   "evidence": {
+    "shared_sample": [],
+    "shared_count": 0
+   }
+  },
+  {
+   "check": "splits.duplicate_entities_within_splits",
+   "ok": true,
+   "detail": "0 repeated-identifier rows within splits, at most the declared 0",
+   "evidence": {
+    "duplicate_rows": {},
+    "declared": 0
+   }
+  },
+  {
+   "check": "runner.layout",
+   "ok": true,
+   "detail": "holdout is private and train/eval are public",
+   "evidence": {}
+  },
+  {
+   "check": "runner.meta_json_keys",
+   "ok": true,
+   "detail": "meta.json carries the keys the runner reads",
+   "evidence": {
+    "keys": [
+     "columns",
+     "id_columns",
+     "name",
+     "positive_label",
+     "positive_rate",
+     "rows",
+     "split_description",
+     "target"
+    ]
+   }
+  },
+  {
+   "check": "runner.meta_matches_files",
+   "ok": true,
+   "detail": "meta.json agrees with the split files",
+   "evidence": {
+    "problems": []
+   }
+  },
+  {
+   "check": "runner.meta_counts_match_files",
+   "ok": true,
+   "detail": "meta rows and rates match the files",
+   "evidence": {}
+  },
+  {
+   "check": "runner.id_columns_are_not_features",
+   "ok": true,
+   "detail": "declared identifiers are not also listed as features",
+   "evidence": {}
+  }
+ ],
+ "failed_checks": []
+}

@@ -1,0 +1,248 @@
+{
+  "job": {
+    "id": "abwildfire-baseline-002",
+    "candidate": "ab-wildfire-ia-escape",
+    "image": "python:3.13-slim",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 4096,
+    "timeout_minutes": 40,
+    "lifetime_minutes": 60,
+    "max_disk_mb": 8000,
+    "max_artifact_mb": 8,
+    "what": "Runner-contract baseline on the accepted ab-wildfire-ia-escape artifact, fetched from private staging rather than rebuilt: re-accept the five fetched files against the gate's own collected report BEFORE any score, materialize the runner workdir (public train+eval only; the private holdout is fetched for --accept over the full artifact but never copied into a workdir), run the benchmark's own train.py and validate.sh unmodified, then compute the PRE-REGISTERED deciding check: the runner model's per-row eval scores (same code path as validate.py) vs every triad member (persistence analogue = assessment_hectares, calendar/identity prior from train, plus the degenerate majority constant) on identical eval rows, day-clustered paired bootstrap, cluster = assessment_date. The construction-time full-feature logistic reference is recorded as a supplementary model-vs-model comparison, not a deciding member. Headroom is demonstrated ONLY if the model beats EVERY member with a CI excluding zero in its favour (and, for the degenerate constant member, its own day-cluster-bootstrap AUC CI lies entirely above 0.5); triad dominance -> recorded defect, drop or re-target. Contract only, no agent loop, no holdout score. FETCH BLOCK from abwildfire-build-001's staging release 437132110 (artifact c2c8ceb56c7ff52a..., gate 1.5.0 ok with failed_checks [], exact-byte accept verified on the worker; asset ids and digests from the collected job ledger jobs/abwildfire-build-001.json).",
+    "stopping_condition": "re-accept failure refuses scoring before any number exists; a failed runner contract is a recorded blocker, never rescored ad hoc; the deciding verdict (either direction) is a recorded finding, not a retry trigger - no re-tuning of threshold, window, label or features after any score.",
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 437132110,
+      "assets": [
+        {
+          "asset_id": 718800868,
+          "dest": "extract/meta.json",
+          "size": 1217,
+          "sha256": "aeb2ef927fc0d8565a86a6901afe5ee29359787bb39693342d18ce6850a9bcfb"
+        },
+        {
+          "asset_id": 718801033,
+          "dest": "extract/public/train.csv",
+          "size": 2351953,
+          "sha256": "575649d52c304d2fa0751411e0e4dc291309b42fbd0b280cbeae9e4b747cc2ae"
+        },
+        {
+          "asset_id": 718800983,
+          "dest": "extract/public/eval.csv",
+          "size": 838515,
+          "sha256": "d099e4cb9da999e3e301b0e4da1cc98cd56fc11371feba7711447571c83a7759"
+        },
+        {
+          "asset_id": 718800905,
+          "dest": "extract/private/holdout.csv",
+          "size": 930923,
+          "sha256": "53583f4d2dff386bfebe864f49dba348d9717ee7bf96d28574082f80668edc12"
+        },
+        {
+          "asset_id": 718801140,
+          "dest": "extract/quality.json",
+          "size": 21089,
+          "sha256": "331a4ceb0944d33b80b0a6519c0148603b19b4fff1ae5136571ae3126cff3ec1"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ab-wildfire-ia-escape/baseline/run.sh",
+        "bytes": 3295,
+        "sha256": "58e4e1543e1d46604521739d5f89906c7078cfc02ea73f0a1ae28e849dd2b86b"
+      },
+      {
+        "bundled_as": "materialize.py",
+        "source": "candidates/ab-wildfire-ia-escape/baseline/materialize.py",
+        "bytes": 2593,
+        "sha256": "2a210c6bf41a7c8605a0239011640a2d19af0815c3d64ed67621f752b7e17a14"
+      },
+      {
+        "bundled_as": "report.py",
+        "source": "candidates/ab-wildfire-ia-escape/baseline/report.py",
+        "bytes": 13850,
+        "sha256": "2f6eebfe5a4c22ce673e1249f5dedb2563457c9e657c1b3a8b71627e4f290484"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/ab-wildfire-ia-escape/source/score.py",
+        "bytes": 16613,
+        "sha256": "202402288a37d16c5163556ab94305ab79896ae2f82ebc224ec5c6a4e3f9687e"
+      },
+      {
+        "bundled_as": "qualification.json",
+        "source": "candidates/ab-wildfire-ia-escape/baseline/qualification.json",
+        "bytes": 17051,
+        "sha256": "16697cd8aef51394f84b125964104adea5bf9dd8536f4fde291f817469cb07bb"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      },
+      {
+        "bundled_as": "train.py",
+        "source": "/opt/data/harness_benchmark/task_template/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "validate.py",
+        "source": "/opt/data/harness_benchmark/task_template/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "validate.sh",
+        "source": "/opt/data/harness_benchmark/task_template/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "3ae32c40556e15844fe1e77bd6c27d83b49750b8590761928edd7bc8d949038c",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-06T23:16:11.362404+00:00",
+  "expires": 1794010571,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 174894664,
+  "known_hosts": "/opt/data/dataset-factory/.factory/abwildfire-baseline-002/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "abwildfire-baseline-002",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": 437132110,
+      "fetched": [
+        {
+          "dest": "extract/meta.json",
+          "bytes": 1217,
+          "sha256": "aeb2ef927fc0d8565a86a6901afe5ee29359787bb39693342d18ce6850a9bcfb"
+        },
+        {
+          "dest": "extract/public/train.csv",
+          "bytes": 2351953,
+          "sha256": "575649d52c304d2fa0751411e0e4dc291309b42fbd0b280cbeae9e4b747cc2ae"
+        },
+        {
+          "dest": "extract/public/eval.csv",
+          "bytes": 838515,
+          "sha256": "d099e4cb9da999e3e301b0e4da1cc98cd56fc11371feba7711447571c83a7759"
+        },
+        {
+          "dest": "extract/private/holdout.csv",
+          "bytes": 930923,
+          "sha256": "53583f4d2dff386bfebe864f49dba348d9717ee7bf96d28574082f80668edc12"
+        },
+        {
+          "dest": "extract/quality.json",
+          "bytes": 21089,
+          "sha256": "331a4ceb0944d33b80b0a6519c0148603b19b4fff1ae5136571ae3126cff3ec1"
+        }
+      ],
+      "failures": [],
+      "bytes": 4143697
+    },
+    "image_id": "sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc",
+    "image_digests": [
+      "python@sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 264.6,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 437168266,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-d46073537085f971407c",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-d46073537085f971407c/manifest.json",
+    "assets": [
+      {
+        "id": 718914354,
+        "size": 72,
+        "sha256": "4ee7e26d908931d38d2a2083bd9155bc85582b9902d323e013bef521731eceb3"
+      },
+      {
+        "id": 718914403,
+        "size": 4579,
+        "sha256": "a437d01bd7ada9fe730bfd0af0bd2553f7f70047252a02bdc0bba245d5aaebf1"
+      },
+      {
+        "id": 718914465,
+        "size": 235,
+        "sha256": "de310d2f72d3f462b024790ef991f6f6e94624902478bc84063f7fe9ffead957"
+      },
+      {
+        "id": 718914521,
+        "size": 193,
+        "sha256": "58d4eac211638d56b8fc641a9649f62dd9f1d264ac2588f9ddb4de77ea2a705f"
+      },
+      {
+        "id": 718914554,
+        "size": 475,
+        "sha256": "e1146eccd0232ab02b6880825bed5bdb4db84ad3536657e34683a53330067104"
+      },
+      {
+        "id": 718914587,
+        "size": 3531,
+        "sha256": "772ab130275de0ed9f9b6db3070af07ef3b473a8728779d5ae08566b25769e50"
+      },
+      {
+        "id": 718914652,
+        "size": 383,
+        "sha256": "cf940398a04273984c2a3f479f6e40aedb8619de032ec8d519ab7cd31ee25d74"
+      },
+      {
+        "id": 718914723,
+        "size": 53,
+        "sha256": "744bda047627391daae56a6ee25d24d62a979c3ea91cdf00a9bff5fbb967591b"
+      },
+      {
+        "id": 718914788,
+        "size": 178,
+        "sha256": "3f8edb1b95ce1261d46a7ab3f76ec2ea9fe680e14108fba9941702c7dad7c4d7"
+      },
+      {
+        "id": 718914850,
+        "size": 225280,
+        "sha256": "3ae32c40556e15844fe1e77bd6c27d83b49750b8590761928edd7bc8d949038c"
+      },
+      {
+        "id": 718914916,
+        "size": 2241,
+        "sha256": "297cf0c697f2291a6f18aa87f38a7405c0e3bd63196f19c9d1e77f8c0ef9a4f1"
+      },
+      {
+        "id": 718914967,
+        "size": 11167,
+        "sha256": "857581063f301c69f43ba4415dc981e046b277cf8b9ffa90d08af23334fa6b55"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-06T23:24:22.978574+00:00",
+  "deleted_at": "2026-11-06T23:27:06.596734+00:00"
+}

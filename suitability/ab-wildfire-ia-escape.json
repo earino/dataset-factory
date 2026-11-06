@@ -1,0 +1,75 @@
+{
+ "schema_version": 1,
+ "dataset": "ab-wildfire-ia-escape",
+ "release_tag": "v2026.11",
+ "artifact_version": "c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b44d0e43da2",
+ "reviewed_on": "2026-11-07",
+ "reviewer": "Scout, advancement session 2026-11-07 (review over the accepted abwildfire-build-001 artifact c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b44d0e43da2: gate 1.5.0 over the full artifact on the worker, 45 checks, failed_checks empty; exact-byte --accept on the worker and re-accept in abwildfire-baseline-002 before any score; construction-time references from the build job's score.py stage post-acceptance; runner-contract baseline and pre-registered deciding check from abwildfire-baseline-002). The release_tag v2026.11 is the planned tag of the staged private release; a different tag requires this record updated in the same change.",
+ "decision": "retain_restricted",
+ "summary": "Retained as an all-cause per-wildfire initial-attack escape prediction task for retrospective research and agent evaluation with the labeled eval split - a demonstrated-headroom finding under the pre-registered rule, with the persistence-strong structure of the task stated beside every figure. Each row is one wildfire in Alberta's Forest Protection Area (2006-2025, 27,828 assessed fires; the Government of Alberta's own operational record, OGL-Alberta v2.2) at the publisher-documented initial-assessment instant (assessment_datetime, 'originally assessed by Alberta Wildfire employees'; read as America/Edmonton local operational time, corroborated against the official 2016 Horse River review): predict whether the wildfire escapes initial attack, i.e. final area burned (current_size) >= 100 ha. Features are the crew-observed assessment record (assessment_hectares, fire_spread_rate, fire_type, fire_position_on_slope, the in-situ weather block, fuel_type), pre-instant timing fields (elapsed hours from reported/discovered/estimated start, detection_agent_type) and calendar/geography; the label sources (current_size, size_class, first_uc_date) are excluded from every shipped column, as are every post-instant family (cause, dispatch, suppression milestones) with measured ordering evidence (dispatch_date after assessment for 2.41% of rows). The archive is ONE current compilation (portal updated 2026-02-17, no historical per-fire vintages; the publisher documents in-place revision of area, cause and location, and the 2019 aggregate revision is measured at -10.4% against the publisher's own season statistics), so training-label timing is unverified and the scope is retrospective research: no operational as-of claim. The measured finding that defines the task, carried beside every figure: on the identical 5,707 eval rows (assessment years 2016-2020) the runner-contract baseline (the benchmark's own unmodified train.py + validate.sh, one XGBoost pass) scored eval AUC 0.9554 (train.py and validate.py agree), beating every pre-registered triad member with day-clustered paired bootstrap 95% CIs excluding zero - the persistence analogue (assessment_hectares, the fire's own observed size at the instant) 0.9096 (model-minus-persistence +0.0459, CI [+0.0154, +0.0871]), the calendar/identity prior (train rate per month x forest_area) 0.7130 (+0.2428, CI [+0.1911, +0.2998]), and the degenerate majority constant (model's own day-cluster AUC CI [0.9382, 0.9686] entirely above 0.5). The construction-time simple full-feature logistic reference reached 0.9206 with an INCONCLUSIVE edge over persistence (+0.0111, CI [-0.0292, +0.0514], interval contains zero): a simple linear reference does not demonstrably beat the one-feature persistence rule, the stock runner does. Splits by the assessment instant's calendar year: train 2006-2015 (15,864 rows / 297 positives, 1.87%), eval 2016-2020 (5,707 / 104, 1.82%, 79 distinct positive dates), holdout 2021-2025 (6,257 / 257, 4.11%, 128 distinct positive dates, SEALED and never scored; the higher rate is the documented 2023 record season). Positives cluster on extreme fire-weather days, so distinct-positive-date counts are the conservative independent-observation count and every interval is day-clustered (cluster = assessment_date).",
+ "evaluation_access": "isolated_rows",
+ "historical_availability": "unverified",
+ "training_label_timing": "unverified",
+ "vintage": "current_snapshot",
+ "selection": "prediction_time",
+ "cross_row_audit": {
+  "status": "bounded_no_recovery",
+  "scope": "Each wildfire appears exactly once ((YEAR, FIRE_NUMBER) unique, asserted at construction), so no serial per-entity join exists and no shipped column of any row is derived from another row's outcome: the label source (final area burned) and all milestone fields ship in no column (asserted on the written headers). The remaining structure is the same-day weather cluster, and the declared probe measures its nearest joinable edge: a same-forest-area fire assessed the next day donates its assessment_hectares (gt 100 tested against this row's escape). Measured on the accepted artifact (gate check contract.cross_row_probe_0): train 1,017 covered / 6 mismatches / 8,795 ambiguous-or-conflicting; eval 437 / 14 / 2,791; holdout 553 / 10 / 2,620 - a shared-weather covariate join with weak agreement, not a label-recovery identity. The mitigation is protocol as well as structure: access is isolated_rows and honest evaluation predicts row-wise without joining across rows.",
+  "evidence": "quality.json evaluation_contract.cross_row_audit (the declared next_day_neighbour_size probe with its rationale and auxiliary-files review) plus the gate 1.5.0 cross_row_probe_0 evidence measured on the full artifact (45 checks, failed_checks empty), both shipped with the package as release/ab-wildfire-ia-escape/quality.json (sha256 331a4ceb0944d33b...)."
+ },
+ "supported_uses": [
+  "Retrospective research and method comparison on the pinned artifact c2c8ceb5, predicting row-wise from the shipped at-instant columns under an isolated-rows protocol, with the labeled eval split (assessment years 2016-2020) as development/validation",
+  "Agent evaluation with the labeled eval split: the consumer is a coding agent that edits the runner's train.py; the recorded comparison (runner baseline 0.9554 beside persistence 0.9096, calendar/identity 0.7130, the construction-time logistic 0.9206 and majority-class accuracy 0.9818, with the day-clustered intervals) is the ladder that must be quoted beside any model figure",
+  "Reproducibility studies: the pinned source CSV (sha256 8b6ed447...), digest-pinned artifact, the gate report, the references implementation, the runner files and the reproduce scripts shipped with the package"
+ ],
+ "unsupported_uses": [
+  "Operational or live wildfire-suppression decision claims: the archive is one current compilation with no historical per-fire vintages and no first-publication ledger, so no historical point-in-time reconstruction is claimed or evidenced",
+  "Any certified historical-forecasting setup: training-label timing is unverified (the publisher revises area burned, cause and location in place) and no full-row availability ledger exists",
+  "Reading the runner baseline's +0.0459 edge over persistence as large or universal headroom: the construction-time simple logistic reference's edge over the same rule is INCONCLUSIVE (+0.0111, CI [-0.0292, +0.0514]), no model beyond the stock runner has been measured, and the holdout (2021-2025) is unspent",
+  "Quoting any single figure from this dataset without the comparison ladder beside it (baseline 0.9554 / persistence 0.9096 / calendar 0.7130 / logistic 0.9206 on identical eval rows, with the clustered intervals)",
+  "Presenting the derived dataset as a Government of Alberta or Alberta Wildfire product; the OGL-Alberta attribution sentence and non-endorsement condition carry through unchanged"
+ ],
+ "limitations": [
+  "The defining measured finding: headroom IS demonstrated under the pre-registered rule (the stock runner beats every triad member with day-clustered CIs excluding zero), but the task is persistence-strong - the fire's own observed size at assessment alone ranks escape at 0.9096, and the simple linear reference's edge over that rule is INCONCLUSIVE (+0.0111, CI [-0.0292, +0.0514]). Any consumer figure must carry this comparison.",
+  "Retrospective closed-compilation vintage: one current archive (updated 2026-02-17, covering through 2025), per-fire historical vintages not published and not recoverable; the publisher documents in-place revision of area burned (spring aerial-photography interpretation), cause and location, and the 2019 aggregate revision is measured at -10.4% against the publisher's own season statistics. Label-flip exposure is bounded but nonzero: 89 fires lie within +-20% of the 100 ha threshold.",
+  "No timezone marker in the source: timestamps are read as America/Edmonton local operational time - a declared assumption corroborated against the official 2016 Horse River review (detection 16:03h MDT 2016-05-01 = the record's naive 16:03; under-control and extinguished dates match).",
+  "Prevalence shift into the holdout (train 1.87% -> eval 1.82% -> holdout 4.11%): the 2021-2025 window contains the 2023 record season - documented non-stationarity, recorded as a property, not repaired.",
+  "Same-day weather clustering: positives arrive on the same extreme fire-weather day (79 distinct positive dates carry eval's 104 positives), so day-clustered intervals accompany every comparison and the distinct-date count is the conservative independent-observation count.",
+  "Missingness is real and drifting with the detection-channel mix (fuel_type 68.9% train / 81.6% holdout; discovery-to-assessment hours 89.1% train / 59.9% holdout, dictionary-documented unplanned-detection blanks); blanks ship as blanks and are never imputed by the build.",
+  "One jurisdiction, one record system: generalisation beyond Alberta's Forest Protection Area and the 2006-2025 regime is not established; the 42.0% already-controlled-at-assessment stratum means the secondary containment-duration formulation is a separate design decision, deliberately not shipped."
+ ],
+ "required_actions": [
+  "Before any evaluation: read the evaluation contract in the package quality.json; treat the labeled eval split as development/validation and keep the holdout (6,257 rows / 257 positives, sealed) outside evaluated agents' workspaces until a design is frozen",
+  "Any evaluated model figure must be quoted beside the pre-registered comparison on the identical eval rows: runner baseline 0.9554, persistence 0.9096, calendar/identity 0.7130, construction-time logistic 0.9206, majority-class accuracy 0.9818, with the day-clustered intervals from measurements.json",
+  "Honest evaluation keeps rows isolated: no cross-row joins (the declared nearest-edge probe is a shared-weather covariate join, not a recovery path, and no serial per-entity join exists)",
+  "Consumers must keep the OGL-Alberta attribution sentence ('Contains information licensed under the Open Government Licence - Alberta.' with a licence link) and the derived-labelling notice in every redistribution"
+ ],
+ "corrections": [],
+ "evidence": [
+  {
+   "claim": "The artifact passed the full-artifact qualification gate (1.5.0, 45 checks, failed_checks empty) and was exact-byte accepted on the worker; the baseline job re-accepted the fetched bytes before any score existed.",
+   "source": "candidates/ab-wildfire-ia-escape/record.json",
+   "detail": "record.qualification (gate 1.5.0, artifact c2c8ceb5..., report candidates/ab-wildfire-ia-escape/qualification-abwildfire-build-001.json sha256 16697cd8...); the gate report ships with the package as release/ab-wildfire-ia-escape/qualification.json; baseline re-accept recorded in candidates/ab-wildfire-ia-escape/baseline/baseline_result.json qualification_report.accepted_before_scoring true"
+  },
+  {
+   "claim": "The deciding comparison was measured on the identical 5,707 eval rows (2016-2020): runner baseline 0.9554 beats persistence 0.9096 (+0.0459, CI [+0.0154, +0.0871]), calendar/identity 0.7130 (+0.2428, CI [+0.1911, +0.2998]) and the degenerate majority constant (model day-cluster AUC CI [0.9382, 0.9686] entirely above 0.5); verdict headroom_demonstrated, eval only, holdout sealed.",
+   "source": "candidates/ab-wildfire-ia-escape/baseline/baseline_result.json",
+   "detail": "the collected abwildfire-baseline-002 result (sha256 a437d01b... equal to the staging manifest entry): contract block (both runner implementations print 0.9554, CONTRACT OK) + deciding_check block; the identical construction-time figures are in candidates/ab-wildfire-ia-escape/references-abwildfire-build-001.json (sha256 ab720e3b...) and shipped in release/ab-wildfire-ia-escape/measurements.json"
+  },
+  {
+   "claim": "The construction-time reference triad's own full-minus-persistence difference is INCONCLUSIVE: simple logistic 0.9206 vs persistence 0.9096, +0.0111 with day-cluster CI [-0.0292, +0.0514] (interval contains zero; not parity); the runner baseline sits +0.0348 above the logistic reference (supplementary, both models).",
+   "source": "candidates/ab-wildfire-ia-escape/references-abwildfire-build-001.json",
+   "detail": "references block: full_minus_persistence, full_minus_calendar, persistence_minus_calendar with day_cluster_bootstrap (500 resamples, fixed-seed LCG, reproducible); re-run byte-identically in abwildfire-baseline-002 except the report-path field"
+  },
+  {
+   "claim": "The evaluation contract is retrospective research over a current-snapshot vintage: training_label_timing unverified, access isolated_rows, selection prediction_time (assessment-based eligibility, no outcome-conditioned rule, 27,828/27,828 rows carry an assessment instant), vintage current_snapshot with the 2019 aggregate-revision evidence and the 89-fire threshold-band bound, plus the declared cross-row probe and its measured coverage/mismatches.",
+   "source": "release/ab-wildfire-ia-escape/quality.json",
+   "detail": "evaluation_contract block (gate-verified bytes, sha256 331a4ceb...): use, access, training_label_timing, scope_note, vintage, selection; timing.row_selection latest_period_used 2025; cross_row_audit probes (next_day_neighbour_size) with rationale and auxiliary-files review"
+  },
+  {
+   "claim": "Licensing is clean and carried: OGL-Alberta v2.2 (class A) with the attribution sentence verbatim and the non-endorsement condition satisfied by derived-labelling; our code MIT, our derived-compilation rights CC0-1.0, source terms preserved; the personal-information exemption verified not engaged by the shipped columns.",
+   "source": "candidates/ab-wildfire-ia-escape/license.json",
+   "detail": "the licence decision with its verbatim evidence quotes, the attribution sentence and suggested citation; record.license_evidence carries the measured position-code verification; LICENSE.md in the package reproduces the three grants from this declaration"
+  }
+ ]
+}
