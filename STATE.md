@@ -1,3 +1,30 @@
+## 2026-11-06 (23:04Z) - follow-up (worker-status runner): abwildfire-build-001 SUCCEEDED - outcome already recorded at 3fc9d96 and re-verified from committed evidence; cleanup provider-reconfirmed (404 "server not found"; 0 servers, 0 primary IPs); marked handled
+
+Watcher event: build job green (exit 0, 102.1 s, 14 assets, staging
+draft release 437132110). The advancement session had already collected
+(22:41:30Z, all 14 assets digest-verified) and recorded the outcome at
+3fc9d96 - the 22:50Z entry below carries the substance. This follow-up
+re-verified from the committed evidence: qualification-*.json "ok": true,
+failed_checks [], gate 1.5.0, artifact c2c8ceb5...; references-*.json
+pins the same artifact_version and accepted report, triad on eval only,
+holdout never opened; coverage 15,864/5,707/6,257 with escape positives
+297/104/257 and clustered dates 156/79/128, matching the measured
+discovery expectations; record status "qualified"; CI green at 3fc9d96
+(run 42307475618).
+
+Cleanup re-confirmed from the provider this session (api.hetzner.cloud):
+GET /v1/servers/174889543 -> 404 "server not found"; GET /v1/servers ->
+200, 0 entries; GET /v1/primary_ips -> 200, 0 entries. Read-back trap
+recorded: api.hetzner.com answers 404 "api route not found" for every
+path and proves nothing; the client base URL is api.hetzner.cloud
+(factory/cloud.py:13). No recovery needed; extract preserved in staging
+release 437132110, compact reports in candidates/ab-wildfire-ia-escape/.
+Unrelated untracked candidates/fenz-incident-data/ preserved untouched.
+
+Next action unchanged: package ab-wildfire-ia-escape with
+dataset-release from the staged extract (437132110); the cpcb flip
+remains the operator's.
+
 ## 2026-11-06 (22:50Z) - scheduled advancement: ab-wildfire-ia-escape CONSTRUCTED AND QUALIFIED (abwildfire-build-001: gate 1.5.0 all green on the full artifact on the worker, exact-byte --accept, reference triad measured; full-minus-persistence INCONCLUSIVE); record -> qualified; worker destroyed
 
 Construction session for the freshest READY candidate (the packaged
