@@ -510,6 +510,62 @@
    "defects_recorded": {
     "summary_job_label": "summary.json's 'job' field reads 'cpcb-aqi-build-003' (the literal was bumped for -003 and not re-bumped when job.json moved to -004). Auxiliary diagnostics file only: summary.json is not part of the runner layout, the gate does not read it, and the ledger, staging manifest and container.log all identify -004 correctly. To fix in any future rebuild; not an artifact defect."
    }
+  },
+  "baseline_deciding_check_2026_11_06": {
+   "recorded_at": "2026-11-06T07:05:22+00:00",
+   "job": "cpcb-aqi-baseline-001",
+   "commands": [
+    "python3 candidates/cpcb-aqi-exceedance/prepare_baseline_from_002.py cpcb-aqi-build-004",
+    "sh scripts/scout-factory worker launch .factory/jobs/cpcb-aqi-baseline-001/job.json",
+    "sh scripts/scout-factory worker collect cpcb-aqi-baseline-001",
+    "sh scripts/scout-factory worker destroy cpcb-aqi-baseline-001",
+    "verify: .factory/cpcb-aqi-baseline-001/reports/ (10 assets fetched from staging release 436196921, every sha256 equal to the ledger digests)"
+   ],
+   "ladder": {
+    "reaccept_before_any_score": "ACCEPTED /data/extract matches the qualified artifact a749f0df2f9dd010 (72 B acceptance log)",
+    "runner_contract": {
+     "contract_ok": true,
+     "eval_auc_train_py": 0.9734,
+     "eval_auc_validate_py": 0.9734,
+     "runner_files_unmodified": true
+    },
+    "holdout": "never copied into the workdir (materialize log); no holdout figure exists or is implied"
+   },
+   "deciding_check": {
+    "rule": "headroom ONLY if the model beats EVERY member with a station-clustered paired bootstrap 95% CI excluding zero in its favour (degenerate constant member: model AUC CI entirely above 0.5); written before any score",
+    "eval_rows": 126570,
+    "clusters": 509,
+    "model_eval_auc": 0.9734021284395283,
+    "vs_station_persistence": {
+     "member_auc": 0.9689109528605426,
+     "mean_diff": 0.004487,
+     "ci95": [
+      0.003777,
+      0.005159
+     ],
+     "beaten": true
+    },
+    "vs_state_season_climatology": {
+     "member_auc": 0.861668549124152,
+     "mean_diff": 0.111802,
+     "ci95": [
+      0.10015,
+      0.125189
+     ],
+     "beaten": true
+    },
+    "vs_global_rate_degenerate": {
+     "model_auc_ci95": [
+      0.971304,
+      0.975297
+     ],
+     "entirely_above_0_5": true,
+     "beaten": true
+    },
+    "verdict": "headroom_demonstrated",
+    "scope": "eval split only (2023 station-days); the +0.0045 gap over persistence is small but its station-clustered CI excludes zero decisively; prevalence decline and winter clustering are reported beside the number; the sealed holdout (2024) was not evaluated",
+    "reporting_defects_recorded": "agreement:false in the report is the afdb-precedent tolerance artifact (validate.py logs 4 decimals; the two AUCs agree to 7 significant figures)"
+   }
   }
  },
  "jobs": [
@@ -587,7 +643,7 @@
    "server_id": 174753994,
    "server_type": "cpx32",
    "location": "hel1",
-   "status": "running",
+   "status": "succeeded",
    "launched_at": "2026-11-06T06:43:41.610409+00:00",
    "expires_at": "2026-11-06T08:53:41+00:00",
    "timeout_minutes": 100,
@@ -596,13 +652,18 @@
    "provider_hourly_eur": 0.06924,
    "source_sha256": "fd50589b7a87d469c18c4c4b42b8d865aef86385db7622f40fe770186e4c1760",
    "staging_repo": "earino/dataset-factory-staging",
-   "what": "runner-contract baseline + pre-registered deciding check on the accepted artifact a749f0df2f9dd010... (fetched from staging release 436180445, re-accept before any score)"
+   "what": "runner-contract baseline + pre-registered deciding check on the accepted artifact a749f0df2f9dd010... (fetched from staging release 436180445, re-accept before any score)",
+   "exit_code": 0,
+   "staging_release_id": 436196921,
+   "destroyed_at": "2026-11-06T07:04:55+00:00",
+   "provider_read_back": "GET /v1/servers/174753994 -> 404 not_found (2026-11-06)",
+   "outcome": "runner contract OK (train.py 0.9734 == validate.py 0.9734, runner files digest-identical to the read-only clone) and the pre-registered deciding check returns headroom_demonstrated"
   }
  ],
  "artifacts": [],
  "rejection_reason": null,
  "review": "Five contracts reconciled 2026-11-05 against recorded evidence. (1) REDISTRIBUTION - supported, class A: CPCB's own publication is licensed GODL-India by the data.gov.in platform instrument (Wayback-read 2026-11-04, AIKosh-corroborated live; attribution template + non-endorsement to carry into LICENSE.md; no share-alike); the XKDR compilation is CC BY 4.0 (README, credit 'India Air Quality Database, XKDR Forum' + CPCB + US DoS); OpenAQ is CC BY 4.0 (docs + archived v2 meta 'CC BY 4.0d'). (2) PREDICTION TIMING - supported for a clearly-labelled retrospective-research scope with two declared, unverified assumptions: instant = 23:59 IST on day D; features = the station's own trailing PM2.5 history through day D (naive IST, calendar-day convention); label = calendar-day D+1 24-hr mean, entirely after the instant. Assumption (a) current-vintage: the archive is one export (2026-09-30), values 'as reported', 'no gap filling', 'preliminary and not fully validated' (XKDR README) - no operational as-of claim; revision behaviour unmeasured (a second export has never been observed). Assumption (b) day-D trailing hours are treated as complete at the instant: CPCB intraday latency is not measured (the publisher's own 4 PM bulletin averages the past 24 h and shows non-participating stations, e.g. Delhi 36/39 on 2024-11-18). (3) TARGET - supported: mechanical label (D+1 calendar-day mean > 90 ug/m3) from a published band edge of the publisher's own AQI instrument (Poor band lower edge 91; quote in measurements.threshold_fixture_2026_11_05); label-source series excluded from every shipped column; known-event fixture bound to the publisher's Daily AQI Bulletin (2024-11-18 Delhi Severe 494) AND confirmed in the measured panel (36/36 complete Delhi station-days TRUE); the bulletin is also the publisher-summary cross-check (category-level). (4) SPLIT CAPACITY - supported, measured on the full 2019-2025 panel and re-cut once with measured evidence before any score (see split_strategy): train 2019-2022 63735 positives, eval 2023 20773 positives over 357 distinct positive days, holdout 2024 19254 positives over 358 days; both classes in all three windows; winter clustering recorded and cluster-aware evaluation required at construction. (5) NOT A MIRROR - supported: novelty_check verdict differentiated (2026-10-20): research papers fit CPCB forecasters with private splits (arXiv 2404.08702 22-station; Discover AI 2026), Kaggle raw-data mirrors (CC BY-SA), and open archives (OpenAQ/XKDR/Vayuayan) - none ships this task with fixed splits and a scored contract. RESIDUAL LIMITATIONS carried to construction: (i) the cross-row exposure - a scored day-D row's label operand (day D+1 mean) appears inside the trailing features of days D+2..D+91 - requires the za-cct-style bounded-exposure design (restricted trailing aggregates, isolated_rows declared, gate-1.5 reverse-history probes measuring eval/holdout coverage and mismatch); (ii) label-availability exclusions (station-days with <18 h on D+1) must be counted and declared, never silently dropped; (iii) the export's 2025 hole (Jan-Mar, Oct-Dec absent; the 2025-04..09 tail excluded) and the OpenAQ 2023-2024 gap (zero files, measured) mean XKDR is the only channel that carries all three re-cut windows; the full-key bulk path stays behind the operator's email/key decision while the anonymous measurements-API batching path remains viable and measured.",
- "next_action": "COLLECT cpcb-aqi-baseline-001 (`sh scripts/scout-factory worker collect cpcb-aqi-baseline-001`) and verify IN THE COLLECTED BYTES, in order: (1) re-accept ACCEPTED for a749f0df2f9dd010... before any score; (2) the harness runner's eval AUC (train.py vs validate.sh agreement); (3) report.py's PRE-REGISTERED deciding check on the identical 126,570 eval rows - the model must beat EVERY triad member (station_persistence 0.9689, state_season_climatology 0.8617, degenerate global_rate) with the station-clustered paired bootstrap 95% CI excluding zero in its favour (and its own cluster-bootstrap AUC CI entirely above 0.5 for the degenerate member). Record the verdict EITHER WAY as a measured finding - headroom or triad dominance (drop/re-target per the rule written before any score); an interval containing zero is inconclusive, not parity. Destroy the worker with provider read-back. Holdout (2024) stays sealed; no re-tuning after any score. After the verdict: if headroom, package per dataset-release; if dominance/inconclusive, record and stop (the wb-loan/unhcr precedent).",
+ "next_action": "HEADROOM DEMONSTRATED (baseline_deciding_check_2026_11_06, pre-registered rule): package cpcb-aqi-exceedance per the dataset-release skill from the accepted artifact a749f0df2f9dd010... (staging release 436180445 holds the five runner-layout files + reports; digests in measurements.attempt_004_accepted_artifact_2026_11_06): assemble the package (README/card, data dictionary, licence from license_evidence - GODL-India attribution + XKDR CC BY 4.0, derived-data label), release-manifest.py, check-package.py, VERIFICATION.md with what was NOT covered (holdout sealed; current-vintage assumption; intraday latency unmeasured), then private staging and the review handoff. The holdout stays sealed until the design is frozen; no re-tuning of threshold, window, label or features after any score. The dvsa-mot-build-002 repair remains the next construction item on the actionable list.",
  "jurisdiction": {
   "country": "IN",
   "region": "South & South-East Asia",
@@ -629,5 +690,5 @@
  },
  "licence_class": "A",
  "licence_note": "REOPENED 2026-11-04: the publisher's own reuse licence is now read and recorded. CPCB's dataset 'Real time Air Quality Index from various locations' is contributed by CPCB (MoEFCC) on the Government of India OGD Platform, whose instrument licenses published datasets/resources under GODL-India (attribution-only, worldwide, royalty-free, commercial and derivative use permitted, no share-alike clause). CPCB's own site copyright policy is restrictive 'unless otherwise indicated'; the platform publication is the indicated licence. Any release carries GODL-India attribution to CPCB plus the access-channel attribution (XKDR Forum CC BY 4.0 compilation and/or OpenAQ CC BY 4.0), sources' designations preserved. The us_embassy (DS*) stream is excluded from the task population so the dataset is single-stream cpcb_caaqm.",
- "updated_at": "2026-11-06T06:44:55+00:00"
+ "updated_at": "2026-11-06T07:05:22+00:00"
 }

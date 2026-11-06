@@ -1,3 +1,63 @@
+## 2026-11-06 (07:11Z) - follow-up (worker-status runner): cpcb-aqi-build-003/-004 + cpcb-aqi-baseline-001 closed - baseline verdict HEADROOM DEMONSTRATED on the accepted artifact a749f0df (model 0.9734 beats every pre-registered triad member, station-clustered CIs excluding zero), all three workers provider-confirmed deleted, next action is packaging (advancement's)
+
+Watcher event for three jobs; the shared research mutex is this runner's.
+Unrelated untracked discovery work (candidates/fenz-incident-data/) inspected
+and left untouched, not committed.
+
+- cpcb-aqi-baseline-001 (server 174753994, exit 0, 17.4 min): collected 10
+  output assets from staging release 436196921 into
+  .factory/cpcb-aqi-baseline-001/reports/ - every sha256 re-verified equal to
+  the release manifest this session (source.tar deliberately left in staging:
+  it is the job's own input bundle, reconstructable from repo/harness sources
+  at the digests recorded in the job manifest). Ladder verified in the
+  collected bytes: (1) re-accept BEFORE any score - accept.log "ACCEPTED:
+  /data/extract matches the qualified artifact a749f0df2f9dd010" (72 B);
+  (2) runner contract OK - train.log and validate.log both eval AUC 0.9734,
+  validate.py "[validate] CONTRACT OK", runner files digest-identical to the
+  read-only clone; (3) materialize.log proves the private holdout was never
+  copied into the workdir (task.json rows train 288754 / eval 126570 / holdout
+  145124 - the accepted artifact's shipped rows, not the raw panel windows).
+  Pre-registered deciding check on the identical 126,570 eval rows (509
+  station clusters, 1000 resamples): model 0.9734021284 beats
+  station_persistence 0.9689109528 (paired diff +0.004487, CI95
+  [+0.003777, +0.005159]), beats state_season_climatology 0.8616685491
+  (+0.111802, CI95 [+0.10015, +0.125189]), beats the degenerate global_rate
+  member (model AUC CI95 [0.971304, 0.975297] entirely above 0.5) - verdict
+  headroom_demonstrated, eval 2023 only; the holdout (2024) stays sealed, no
+  holdout figure exists or is implied. "agreement": false in
+  baseline_result.json is the afdb-precedent flag artifact (validate.py logs
+  4 decimals; the two AUCs agree to ~2e-6) - recorded as a reporting defect,
+  not ignored. record.json carries the verdict block
+  (measurements.baseline_deciding_check_2026_11_06, written by
+  candidates/cpcb-aqi-exceedance/record_baseline_verdict_2026_11_06.py);
+  every figure re-checked against the collected reports this session before
+  committing. Worker destroyed 07:04:55Z; provider read-back
+  GET /v1/servers/174753994 -> 404 not_found. Cleanup: deletion confirmed by
+  the provider.
+- cpcb-aqi-build-003 (server 174749145, failed exit 1): nothing new to
+  collect. The Delhi fixture-operand refusal (station_days 39 != 38, registry
+  membership vs the 2026-11-05 preflight panel-row transcription) was
+  diagnosed from retained evidence and recorded by the 06:45Z advancement
+  session (commit 75652fb); compact diagnostics are durable in staging
+  release 436167238 (source.tar + container.log preserving the measured
+  counts); worker deleted, provider read-back 404 recorded in record.json.
+  Superseded by -004's accepted artifact; the one-repair budget for that
+  defect class was spent on -004, which is green.
+- cpcb-aqi-build-004 (server 174751006, succeeded exit 0): evidence already
+  collected, verified and committed at 75652fb - FULL LADDER GREEN (build rc0
+  -> gate 1.5.0 45/45 -> exact-byte accept a749f0df2f9dd010... -> score rc0;
+  triad persistence 0.9689 vs climatology 0.8617, cluster CI [+0.096,
+  +0.121]). The accepted artifact is durable in staging release 436180445
+  (five runner-layout files; digests in
+  measurements.attempt_004_accepted_artifact_2026_11_06; the baseline job's
+  fetch re-verified those digests before scoring). Worker deleted, provider
+  read-back 404.
+- All three .factory/<job_id>/handled markers written after this recording.
+  No publication, no tagging, no manifest change: the verdict advances the
+  candidate to record.next_action = package per the dataset-release skill
+  (assemble, licence from license_evidence, VERIFICATION.md, private staging,
+  review handoff), which is advancement's to run, not this event's.
+
 ## 2026-11-06 (06:45Z) - advancement session: cpcb-aqi-exceedance CONSTRUCTED, QUALIFIED and ACCEPTED end-to-end (attempts -003 and -004: -003 refused at a NEW fixture-operand defect, diagnosed from retained evidence and repaired in-session; -004 green through the whole ladder), triad measured on eval 2023 - persistence 0.9689 dominates climatology 0.8617 (cluster CI [+0.096, +0.121]) - and the baseline deciding job cpcb-aqi-baseline-001 LAUNCHED and running as the handoff
 
 Scheduled advancement session. Release work first: no packaged candidate is
