@@ -1,3 +1,67 @@
+## 2026-11-06 (13:12Z) - follow-up (worker-status runner): cpcb-aqi-consumer-001 FAILED pre-container at the fetch stage - a one-character digest transcription error in the job spec's public/eval.csv entry (position 36 'a' vs the frozen manifest's 'e'); the RELEASE ITSELF proven intact by live server-side read-back; the single changed retry cpcb-aqi-consumer-002 LAUNCHED and running (server 174810883); worker 174799070 destroyed with provider 404 read-back; no gate, acceptance or score ever ran on this job
+
+Watcher follow-up for cpcb-aqi-consumer-001 (cpcb-aqi-exceedance release sequence
+step 1, the fresh-consumer verification of private release 436366305). The shared
+research mutex was this runner's for the whole invocation. Related untracked work
+(candidates/fenz-incident-data/) inspected and left untouched.
+
+- COLLECTED (ledger status collected at 13:00:16Z by the watcher; result.json
+  present): result failed, failure class UploadError, elapsed 6.5 s, exit None -
+  the container NEVER ran. The host fetch stage verified 4/5 assets on arrival
+  (meta 1f59e74e, holdout 2dae0040, train 24b03a70, quality 98250e9d) and refused
+  public/eval.csv: 'Downloaded asset digest differs'. The staged container.log is
+  75 B: 'No such container: scout-cpcb-aqi-consumer-001'. NO gate, --accept,
+  baseline or deciding-check stage executed; NOTHING about the artifact is
+  quotable from this job.
+- DIAGNOSIS (defect class: job-spec transcription error, the nz-ea-baseline-001/002
+  class): programmatic diff of the job's fetch spec against the frozen
+  release/cpcb-aqi-exceedance/MANIFEST.json (the nz-ea lesson) finds exactly ONE
+  mismatch - the spec's public/eval.csv sha256 differed from the manifest at
+  position 36 ('a' vs 'e'); the other four assets were byte-equal. The RELEASE IS
+  INTACT: live authenticated read-back (~13:04Z) shows all five assets of release
+  436445352's target 436366305 reporting server digests equal to MANIFEST.json
+  (eval.csv 20210392 B, api digest match); cpcb-aqi-publish-001's transfer record
+  carries the manifest digest for asset 716782178 with failures []; the shipped
+  qualification.json .artifact.eval.sha256 equals the manifest digest. The job's
+  own uploaded staging manifest (release 436445352) embeds the defective spec
+  digest, confirming from preserved bytes that the worker refused on the spec.
+  Honest correction: the 12:15Z session's 'digests from the manifest, never
+  hand-copied' was false for the eval.csv line (committed in cc426eb).
+- EVIDENCE PRESERVED before teardown: staging release 436445352 (source.tar
+  430080 B b4caa611 API-digest-verified; container.log 75 B 9dbe18bb;
+  manifest.json 11737 B 09955f29) - the two small assets fetched to
+  .factory/cpcb-aqi-consumer-001/reports/ and sha256-verified against the ledger.
+  No bulk data through the coordinator (eval.csv/train.csv never downloaded
+  here; read-back used the API digest field only).
+- CLEANUP (deletion confirmed by the provider): worker 174799070 destroyed
+  13:08:39Z; GET /v1/servers/174799070 -> 404 not_found; project servers 0,
+  primary_ips 0.
+- RECOVERY (the one changed retry this defect allows, per the record's
+  documented 'diagnose before any retry; one changed retry per defect'):
+  consumer/source/job.json eval sha256 corrected BY JSON LOAD/COPY/DUMP from
+  MANIFEST.json (never retyped; git diff = 2 lines: the digest + the id bump to
+  cpcb-aqi-consumer-002); assembled .factory/jobs/cpcb-aqi-consumer-002
+  (source_sha256 d46b21d6) with the fetch spec re-verified equal to the manifest
+  on all five assets; plan rc=0 (reservation EUR 0.32, 0 cloud calls); LAUNCHED
+  2026-11-06T13:09:58Z, server 174810883, status running, expires ~14:49:58Z.
+  This retry SPENT the one recovery for this defect chain: a second failure is a
+  recorded finding handed to advancement, never another silent retry. The running
+  job is the handoff.
+- Record: jobs[] -001 -> failed_and_deleted (+ failure summary, staging release),
+  jobs[] + -002 running (parent_job linkage),
+  measurements.consumer_001_fetch_failure_2026_11_06 written with every assert
+  passing before the write; next_action step (1) rewritten for -002 collection,
+  steps (2)-(5) (HF destination, DESTINATIONS.json, packaged/awaiting_operator,
+  checks) unchanged.
+
+Next action (also in record.next_action): collect
+cpcb-aqi-consumer-002 when it finishes, require the full consumer.txt green
+acceptance (gate 1.5.0 PASSED, exact-byte --accept a749f0df, both AUC prints
+0.9734 CONTRACT OK, references equal measurements.json, deciding check
+reproduced), then destroy with provider 404 read-back, then the HF sequence
+steps (2)-(5) exactly as recorded. The flip remains the operator's single
+approval.
+
 ## 2026-11-06 (12:53Z) - discovery session (EU/EEA tick): efsa-health-claim-opinion-outcome DROPPED on split capacity - every access/licence/timing blocker resolved first (FIP register API measured: 2,337 decided claims in one anonymous 19.9 MB call; OpenEFSA real API found behind a 123*floor(t)+369 x-security header; Wiley 403 passes in-browser), but the population cannot fill a scored holdout (36 decided 13.5/14 claims 2016-2022, 2 positives; 22 applications received post-2020)
 
 Scheduled discovery tick, regional focus Europe - EU/EEA. Started from
