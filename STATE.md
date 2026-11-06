@@ -1,3 +1,60 @@
+## 2026-11-06 (16:51Z) - scheduled discovery session (UK focus): defra-avian-influenza-spillover READY (wild-bird-to-poultry spillover; measured splits, OGL A, UKGWA vintage evidence); ea-flood-defence-asset-condition opened + PARKED (current-state-only, no vintages); companies-house Gazette label path measured, park unchanged; checks green
+
+Discovery-only session (regional focus UK: ONS, NHS Digital, Defra, EA, Companies House,
+data.gov.uk). No construction, qualification, packaging or publication; the packaged
+cpcb-aqi-exceedance track was not touched and still awaits the operator's flip.
+
+- defra-avian-influenza-spillover (NEW, ready): at the Monday publication of APHA's weekly
+  wild-bird findings report for ISO week t, predict per English county whether at least one
+  new poultry-premises avian influenza case opens during ISO week t+2. Measured from the
+  source 2026-11-06: case listing 340 entries = 339 premises + 1 AIPZ zone entry (mix
+  recorded); positive county-weeks per season: 2022-23 93 (162 cases, 36 counties),
+  2024-25 56 (73), 2025-26 65 (80), 2021-22 tail 18 (22; the season bulk was never on the
+  live or archived listing - optional recovery from APHA epidemiology-report PDFs at
+  construction), 2023-24 4, 2026-27 in progress 2. Cross-checked against the publisher's
+  own UK season table (158/207/6/82/100) and the 2026-27 latest-situation cases.
+  Features: per-year wild-bird findings CSV/XLSX 2016-2026, weekly updates, four schema
+  generations (2021/2022 at district grain - normalization is bounded construction work).
+  Availability contract: UKGWA replay resolves 12/12 probe timestamps (~monthly); dated
+  vintage example - the 2022-11-14 snapshot serves ai-findings-week-2022-44.csv with
+  weeks 1-44 only (570 rows) vs 825 rows in the current 2022 file; live attachment URLs
+  are current-state (2025 Week-8/Week-23 media URLs now serve identical 69,118-byte
+  files). Residual assumption (no retro-addition of past-week rows between snapshots)
+  recorded and assigned to construction (verify more snapshots or declare in
+  quality.json.evaluation_contract). Licence OGL v3 from the GOV.UK footer on both source
+  pages, class A. Novelty verdict differentiated (check-novelty.py): Open Avian Flu
+  Dataset (Zenodo 8246456) is a raw compilation; US county-month and Europe-WAHIS
+  modeling studies use internal data; no published ML-ready task. Probes kept:
+  probe_case_listing.py / probe_wildbirds_counts.py / probe_archived_listings.py with
+  result JSONs (~43 requests total, all small). Dated example worked in notes.md
+  (week-43 2026 publication -> week-45 target, Lincolnshire positive via AIV 2026/23).
+- ea-flood-defence-asset-condition (NEW, parked): the asset-maintenance shape (condition
+  grade at next inspection) exists in the open product - OGC API fields
+  current_condition/target_condition/last+next_inspection_date confirmed, 141,416
+  assets, 83/500 sample carry a condition grade - and the licence is OGL A on the
+  publisher's record (not the class-D Conditional Licence of the permit products).
+  Blocker: daily-updated current-state extract, no published historical vintages, so
+  condition-transition labels need ~12+ months of scheduled captures and are gated by
+  the multi-year inspection cycle. Reopen path and first measurement recorded.
+- companies-house-company-exit (parked by operator 2026-10-20, NOT reopened): The
+  Gazette measured - notice content is OGL v3 class A with free query channels, but the
+  structured Companies longitudinal bulk datasets are charged, Gazette labels provide no
+  Companies House feature vintages, and strike-off is near-mechanical in the shipped
+  overdue flags. Evidence + revised reopen conditions in
+  measurements.gazette_label_path_2026_11_06; next_action updated.
+- Region coverage: GB 16 -> 18 candidates (140 total, 55 live, non-US 49/55 = 89%).
+  ONS stays parked on the recorded aggregate-grain reason and NHS Digital on the dropped
+  nhs-ae persistence family (HES microdata gated); both were swept, not re-probed.
+- Checks run at close: check-candidate --all rc=0; discovery-coverage green (no
+  unstated jurisdiction, exits non-zero otherwise); python3 -m unittest discover -s
+  tests: 723 tests OK.
+
+Next action: a construction session may take defra-avian-influenza-spillover through the
+recorded handoff (worker build, gate 1.5 evaluation_contract, then full-worker
+qualification -> exact-byte acceptance -> baselines before any quoted number); the
+packaged cpcb-aqi-exceedance track still outranks new construction per AGENTS.md and
+awaits the operator's flip.
+
 ## 2026-11-06 (2026-11-06T16:17:40Z) - follow-up (worker-status runner): cpcb-aqi-hf-002 SUCCEEDED - HF bulk upload complete and verified (eval at the manifest digest, Hub read-back 5/5 manifest digests at commit 2535150e, load_dataset green); 53 recorded acceptance checks pass; worker 174835948 destroyed with provider 404 read-back (0 servers, 0 IPs); remaining: hf-publish --verify, --tag, DESTINATIONS github block, packaged + pre-flip audit prompt + awaiting_operator; nothing public, holdout sealed
 
 Watcher follow-up for cpcb-aqi-hf-002 (the single changed retry for the hf-001 eval-digest

@@ -1,0 +1,48 @@
+{
+  "id": "ea-flood-defence-asset-condition",
+  "status": "parked",
+  "created_at": "2026-11-06T16:46:06+00:00",
+  "domain": "flood risk management infrastructure / defence asset condition deterioration between inspections",
+  "prediction_question": "Given the Environment Agency's AIMS flood-defence asset record as captured at a dated monthly snapshot, will an asset be recorded at a worse condition grade at its next inspection - the asset-maintenance prioritisation question the EA's own six-year capital programme answers with inspection resources? An infrastructure-maintenance prediction shape this bench does not yet cover.",
+  "prediction_time": "A scheduled monthly capture of the AIMS Asset Bundle (the publisher updates the extract daily and no dated vintages are published, so a feature vintage exists only from the moment collection starts; each capture is dated by its own retrieval).",
+  "target_definition": "Transition of current_condition for the same asset_id between consecutive observed inspections, captured as the diff of the condition/inspection fields across consecutive dated bundle captures (downgrade vs not). Label source fields (current_condition at the later capture, last_inspection_date) are excluded from features.",
+  "sources": [
+    {
+      "name": "AIMS Asset Bundle (AfA345) - Environment Agency flood defence assets, all asset types",
+      "url": "https://environment.data.gov.uk/dataset/019a8eaa-b27f-4ae6-a9fd-e8e27cdd101a",
+      "api": "OGC API - Features: https://environment.data.gov.uk/spatialdata/aims-asset-bundle/ogc/features/v1 (12 collections; AIMS_Spatial_Flood_Defences_Including_Standardised_Attributes measured numberMatched=141,416)",
+      "access": "anonymous; updated daily per the publisher; full national download 'may take 7-8 minutes' (publisher statement); direct /dataset/<id>/<file>.zip URLs answer 404 to plain HEAD - downloads go through the area-of-interest explorer",
+      "license": "Licence: Open Government Licence (v3), identified on the publisher's dataset record; attribution '© Environment Agency copyright and/or database right 2020. All rights reserved.' (read 2026-11-06)"
+    },
+    {
+      "name": "Asset Information - Decommissioned Flood Defence Assets (point / polylines), data.gov.uk mirror",
+      "url": "https://www.data.gov.uk/dataset/4731d19e-2eac-4565-a2d6-530e3fdc2f9f/asset-information-decommissioned-flood-defence-assets-point",
+      "access": "anonymous ZIP downloads with asset end date / decommission status / decommission status date (a separate lifecycle-event stream, not a condition history)",
+      "license": "© Environment Agency copyright and/or database right 2016 (attribution on the data.gov.uk record)"
+    }
+  ],
+  "license_evidence": [
+    "environment.data.gov.uk dataset record for AIMS Asset Bundle (read 2026-11-06): 'Use of this data is subject to the licence identified.' with 'Licence: Open Government Licence' linking to the OGL v3 text, and use-limitation statement 'There are no public access constraints to this data.'",
+    "Same record, attribution statement: '© Environment Agency copyright and/or database right 2020. All rights reserved.' - the EA's standard dual statement; the licence identified on this record is OGL v3, unlike the Conditional Licence that governs the permit-compliance products (the class-D veto recorded on ea-permit-compliance-breach, which does not apply to this dataset)."
+  ],
+  "licence_class": "A",
+  "construction_script": "",
+  "split_strategy": "Not computable today: condition-transition labels require at least two observed condition states per asset, and the bundle is a current-state extract with no published historical vintages (no archive of prior bundles located). Split windows can only be defined after forward collection has accumulated observed transitions.",
+  "measurements": {
+    "fields_measured_2026_11_06": "One feature from AIMS_Spatial_Flood_Defences_Including_Standardised_Attributes carries 37 property fields including current_condition, target_condition, last_inspection_date, next_inspection_date, asset_start_date, asset_length, asset_owner/operator/maintainer - the condition task's fields exist in the open product.",
+    "panel_size_measured": "numberMatched = 141,416 assets in the flood-defences collection via the OGC API.",
+    "condition_coverage_sample": "First 500 items via OGC API (non-random sample, default ordering): 83/500 carry a current_condition grade (value mix: '3' 49, '2' 23, '4' 7, '5' 2, '1' 1, '0' 1, empty 417); 466/500 carry last_inspection_date. A condition-graded subpopulation on the order of tens of thousands of assets, subject to a measured full-coverage count at collection time.",
+    "update_and_access": "Publisher: 'This data is updated daily'; 'no public access constraints'; OGC API answers anonymous requests; full-download size unmeasured (direct HEAD 404s; publisher states 7-8 minutes for the national dataset).",
+    "no_historical_vintages": "No dated prior captures of the bundle are published by the EA or found on data.gov.uk; the separate decommissioned-assets products carry lifecycle end dates, not condition histories. Forward collection is the only label channel."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": "PARK on the label/timing prerequisite, not on licence or access (both clean, class A): the AIMS bundle is a daily-updated current-state extract with no published historical vintages, so per-asset condition transitions cannot be observed for any past period and no split window can be computed today. Labels accumulate only through scheduled forward collection of dated bundle captures - and the observable transition rate is additionally gated by the EA's multi-year per-asset inspection cycle (the bundle's own last/next inspection dates make that cycle measurable after a few months of captures). What would reopen it: (a) a monthly bundle-capture schedule has run long enough that the observed transition count and inspection-cycle distribution are measured and support splits, or (b) a dated historical source of per-asset condition grades is located.",
+  "review": "The shape is genuinely new for the bench (infrastructure asset-maintenance prediction with a real operator decision behind it), the licence is clean OGL v3 on the publisher's own record, and the feature fields for the task are present in the open product. The blocker is structural and measured, not speculative: without historical vintages there is no label for any past instant, and this bench does not run multi-year collection projects on spec.",
+  "next_action": "No construction. If the operator wants this task, first step is a scheduled monthly bundle capture (staging-side; full download ~7-8 minutes per publisher, or OGC API paging) recording asset_id, current_condition, last/next inspection dates per capture; after 3-4 captures, measure the inspection-cycle distribution and the expected transition count to decide whether splits can ever carry both classes. Reopen decision at that point.",
+  "jurisdiction": {
+    "country": "GB",
+    "region": "Europe",
+    "publisher": "Environment Agency (England), an executive agency of Defra"
+  }
+}

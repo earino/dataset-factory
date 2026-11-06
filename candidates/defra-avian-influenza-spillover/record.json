@@ -1,0 +1,141 @@
+{
+  "id": "defra-avian-influenza-spillover",
+  "status": "ready",
+  "created_at": "2026-11-06T16:46:06+00:00",
+  "domain": "animal health epidemiology / wild-bird-to-poultry spillover early warning (county-week event panel)",
+  "prediction_question": "At the Monday publication of APHA's weekly wild-bird HPAI findings report for ISO week t, will at least one new notifiable avian influenza premises case be confirmed (case opened) in each English county during ISO week t+2? A useful prediction supports APHA-style early warning: targeting surveillance, control-zone preparedness and poultry-industry biosecurity at the county level one to two weeks ahead, using only the open weekly surveillance stream.",
+  "prediction_time": "The Monday publication of APHA's weekly wild-bird findings list for ISO week t (measured update-log entries: '2 November 2026 - Updated the ... list with data for week 44 of 2026' and '26 October 2026 - Weekly update ...', both Mondays). Features are the report rows with week label <= t, plus previously published case history; the target window (ISO week t+2, Monday-Sunday) lies entirely after the prediction instant, so no part of the target precedes it and the next report's publication (week t+1) is never a feature. Where the exact publication time-of-day is needed, the instant is taken as 23:59 Europe/London of the publication day and the page's atom feed is the recorded channel for the exact timestamp (construction fetches it).",
+  "target_definition": "Binary label per (English county, ISO week): 1 iff at least one HPAI premises case whose gov.uk case-listing 'Opened' date falls inside target week t+2 names that county. Source: the gov.uk notifiable-animal-disease case listing, entries carrying an outbreak id - current '(AIV 2026/23)' form or 2022-era '(2022/73)'/'(SOS AIV 2022/19)' form. Provenance mix measured 2026-11-06: 339 premises entries vs 1 regional zone entry (an AIPZ prevention zone, excluded) in 340 total; strain mix 334 H5N1, 1 H5N5, 4 unspecified on the old-format entries. The label source columns (opened dates, titles, counties) are excluded from shipped features.",
+  "sources": [
+    {
+      "name": "Bird flu (avian influenza): cases in wild birds - APHA weekly findings publication (features)",
+      "url": "https://www.gov.uk/government/publications/avian-influenza-in-wild-birds",
+      "api": "per-year CSV/XLSX attachments, e.g. https://assets.publishing.service.gov.uk/media/6ae49bfd3d3bf10d23546209/Avian_influenza_in_wild_birds_for_week_44_2026.csv (24,771 bytes fetched 2026-11-06)",
+      "access": "anonymous HTTP; weekly updates recorded in the page update history (300+ entries back to 2018); files per year 2016-17..2026, all small (2.4-69 KB)",
+      "license": "OGL v3.0 (GOV.UK footer: 'All content is available under the Open Government Licence v3.0, except where otherwise stated')"
+    },
+    {
+      "name": "Notifiable animal disease cases and control zones - gov.uk case listing, bird-flu filtered (target)",
+      "url": "https://www.gov.uk/animal-disease-cases-england?disease_type%5B%5D=bird-flu",
+      "access": "anonymous HTML finder, 50 cards/page, 7 pages measured (8 requests, 1,251,470 bytes, 4.9 s on the coordinator, 2026-11-06); each entry carries virus strain, control-zone state, Opened and Closed dates; counties are in the entry titles ('near Brigg, North Lincolnshire, Lincolnshire (AIV 2026/23)')",
+      "license": "OGL v3.0 (same GOV.UK footer, read 2026-11-06)"
+    },
+    {
+      "name": "UK Government Web Archive (dated vintages of both streams)",
+      "url": "https://webarchive.nationalarchives.gov.uk/ukgwa/<timestamp>mp_/https://www.gov.uk/government/publications/avian-influenza-in-wild-birds",
+      "access": "anonymous replay; 12/12 evenly spaced probe timestamps between 2021-06 and 2026-02 resolved to snapshots (~monthly cadence); the 2022-11-14 snapshot of the findings page links and serves ai-findings-week-2022-44.csv (570 rows, weeks 1-44 only) vs 825 rows in the current 2022 file; case-listing snapshots resolved: 2022-10-27 (97 all-disease entries), 2022-12-15 (157), 2024-01-05 (192; the publisher's own 'previous cases' pointer)",
+      "license": "UKGWA terms cover access to archived public web content; the archived content itself is Crown-copyright GOV.UK material under OGL v3.0"
+    },
+    {
+      "name": "Bird flu (avian influenza): latest situation in England - publisher season summary table (cross-check product)",
+      "url": "https://www.gov.uk/guidance/bird-flu-avian-influenza-latest-situation-in-england",
+      "access": "anonymous; publisher's own table of confirmed UK HPAI/LPAI cases per Oct-Sep outbreak season",
+      "license": "OGL v3.0 (GOV.UK footer)"
+    }
+  ],
+  "license_evidence": [
+    "GOV.UK footer on the wild-birds publication page (read 2026-11-06 from the raw page HTML): 'All content is available under the <link>Open Government Licence v3.0</link>, except where otherwise stated' - no dataset-specific term on either source page.",
+    "Same GOV.UK footer on the case-listing page (read 2026-11-06 from the raw page HTML).",
+    "No personal data in the intended shipped rows: wild-bird findings carry species/county/counts only; case entries are published by Defra at 'near <town>, <district>, <county>' grain with no names, and the shipped task uses only county/date/strain abstractions of them."
+  ],
+  "licence_class": "A",
+  "construction_script": "",
+  "split_strategy": "Temporal by outbreak season (1 October - 30 September), measured from the case listing and its archived snapshots on 2026-11-06. Candidate partition: train = 2021-22 tail + 2022-23 (162 cases, 93 positive county-weeks, 36 counties; the 2021-22 bulk - cases opened Oct 2021-Aug 2022 - was never carried by the live or archived listing, which both start at 2022-08-27, so train currently includes only the measured 22-case tail; recovering the bulk from APHA's 2021-22 epidemiology report annex tables is optional bounded construction work, ~1-2 PDFs); eval = 2024-25 (73 cases, 56 positive county-weeks, 20 counties) plus 2023-24 (4 cases) folded in or excluded at construction; holdout = 2025-26 (80 cases, 65 positive county-weeks, 23 counties); 2026-27 (in progress, 2 England cases to date) reserved for post-publication scoring. Both classes present in every window (negatives are the bulk of every county-week panel). Positives cluster at national-wave level: 1-2 waves per season window, so wave-level independence is 1-2 per window and county-week counts within a wave are correlated - recorded as the clustered count that constrains score precision.",
+  "measurements": {
+    "target_stream_measured_2026_11_06": "Live listing: 340 entries = 339 premises cases + 1 AIPZ zone entry; all premises entries carry opened dates (parse fix applied; earlier run's 24 'undated' were a parser artifact). Per-season England premises cases / distinct counties / positive county-weeks: 2021-22 tail 22/9/18, 2022-23 162/36/93, 2023-24 4/4/4, 2024-25 73/20/56, 2025-26 80/23/65, 2026-27 2/2/2, plus one legacy 2005-06 entry excluded by split windows. Archived snapshots union: 187 entries, consistent with the live listing (2022-23 identical at 162).",
+    "publisher_cross_check": "Publisher's UK season table (HPAI cases): 2021-22 158, 2022-23 207, 2023-24 6, 2024-25 82, 2025-26 100 - measured England counts (22-tail-only / 162 / 4 / 73 / 80) are consistent England-majority subsets; 2026-27 latest-situation page (read 2026-11-06) names exactly the 2 England cases the listing shows (Belford, Northumberland 2026-10-19; Brigg, North Lincolnshire 2026-11-04).",
+    "feature_stream_measured_2026_11_06": "Wild-bird findings per year-file: 2016-17 67 rows/17 locations/45 positive birds; 2018 63/15/101; 2020 166/37/277; 2021 258/120/459; 2022 825/283/1,876; 2023 458 rows/93 counties; 2025 1,203 rows parsed from XLSX with openpyxl 3.1.5 on the coordinator; 2026 309 rows/81 locations/348 positive birds, weeks 1-44. Four schema generations: 2016-2020 'Location (county)'; 2021-2022 'Location' at district/council grain (283 distinct in 2022); 2023+ county-normalized ('Week, District, County, Species, Pathotype, Total'). Grain normalization for 2021-2022 is bounded construction work.",
+    "vintage_evidence": "UKGWA replay works anonymously (307 to nearest snapshot). Dated example: the 2022-11-14 snapshot of the findings page links ai-findings-week-2022-44.csv and the archived attachment contains weeks 1-44 only (570 rows) vs 825 rows in the current 2022 file - a row's week label is its availability week at snapshot time. Corroboration: search-indexed 2025 files 'Week_8' and 'Week_23' showed weeks 1-8 and 1-23 respectively, but both media URLs served identical 69,118-byte current-year files when fetched 2026-11-06 - live attachment URLs are current-state and replaced in place, so per-week vintages are recoverable only from UKGWA captures.",
+    "availability_assumption": "Residual, stated: no retro-addition of rows to past weeks between snapshot captures is observed at the dated example, but UKGWA's ~monthly cadence cannot exclude it within uncaptured weeks; construction verifies additional snapshots before shipping a strict as-of build and otherwise declares the assumption in quality.json.evaluation_contract (gate 1.5).",
+    "extraction_cost_measured": "Case listing: 8 requests / 1,251,470 bytes / 4.9 s. Feature files: 7 CSVs, 150 KB total, ~30 s including downloads. Archived listings: 15 requests / 2,906,321 bytes. UKGWA coverage probes: 12 HEAD requests. All on the 1.9 GiB coordinator; a full worker build is bounded by tens of small fetches (feature files + ~10-20 archived vintages + 1-2 epidemiology PDFs).",
+    "probe_scripts": "candidates/defra-avian-influenza-spillover/probe_case_listing.py, probe_wildbirds_counts.py, probe_archived_listings.py (results JSON beside each)"
+  },
+  "jobs": [],
+  "artifacts": [],
+  "novelty_check": {
+    "checked_at": "2026-11-06T16:47:35+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "avian influenza outbreak prediction dataset poultry wild bird spillover",
+      "bird flu county week prediction benchmark UK HPAI premises"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "avian influenza outbreak prediction dataset poultry wild bird spillover",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "bird flu county week prediction benchmark UK HPAI premises",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "avian influenza outbreak prediction dataset poultry wild bird spillover",
+          "hits": 465820,
+          "top": [
+            "Connect to Protect: Dynamics and Genetic Connections of Highly Pathogenic Avian Influenza Outbreaks in Poultry during the 2016-2021 Epidemics in Germany",
+            "Data from: Ecosystem interactions underlie the spread of avian influenza A viruses with pandemic potential",
+            "Data from: Inferring epidemiologic dynamics from viral evolution: 2014\u20132015 Eurasian/North American highly pathogenic avian influenza viruses exceed transmission threshold, R0 = 1, in wild birds and poultry in North America",
+            "Annual report on surveillance for avian influenza in poultry and wild birds in Member States of the European Union in 2021 \u2013 monthly maps",
+            "Siipikarjan lintuinfluenssariski Suomessa \u2013 riskiprofiili"
+          ]
+        },
+        {
+          "query": "bird flu county week prediction benchmark UK HPAI premises",
+          "hits": 360325,
+          "top": [
+            "Highly pathogenic avian influenza in wild mammals: critical appraisal of spill-over events and of strategies for prevention, surveillance and preparedness",
+            "Tropism of Highly Pathogenic Avian Influenza H5 Viruses from the 2020/2021 Epizootic in Wild Ducks and Geese",
+            "Data complementing the Avian influenza overview September\u2013December 2023",
+            "Data complementing the Avian influenza overview December 2023 - March 2024",
+            "Protocol for a case-control study on risk factors for introduction of highly pathogenic avian influenza into holdings with poultry and other captive birds in Denmark"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "avian influenza outbreak prediction dataset poultry wild bird spillover",
+          "hits": 5,
+          "top": [
+            "The role of wild birds in the global highly pathogenic avian influenza H5 panzootic",
+            "Modeling the spillover risk of highly pathogenic avian influenza from wild birds to cattle in Denmark: A data-driven ris",
+            "Leveraging Social Media and Google Trends to Identify Waves of Avian Influenza Outbreaks in USA and Canada",
+            "Outbreak Patterns of the Novel Avian Influenza (H7N9)",
+            "Genomic-Informed Heterogeneous Graph Learning for Spatiotemporal Avian Influenza Outbreak Forecasting"
+          ]
+        },
+        {
+          "query": "bird flu county week prediction benchmark UK HPAI premises",
+          "hits": 5,
+          "top": [
+            "Projected Effects of Naloxone and Buprenorphine Scale-Up on Opioid Overdose Mortality in Six Pennsylvania Counties",
+            "Improving Bird Classification with Unsupervised Sound Separation",
+            "Convolutional Recurrent Neural Networks for Bird Audio Detection",
+            "Infected surfaces of vehicles as possible way of people's infection by bird flu pathogenic culture",
+            "A mathematical model of HPAI transmission between dairy cattle and wild birds with environmental effects"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'avian influenza outbreak prediction dataset poultry wild bird spillover': 0 hit(s) - nothing notable\n- huggingface_datasets / 'bird flu county week prediction benchmark UK HPAI premises': 0 hit(s) - nothing notable\n- zenodo_records / 'avian influenza outbreak prediction dataset poultry wild bird spillover': 465820 hit(s) - Connect to Protect: Dynamics and Genetic Connections of Highly Pathogenic Avian Influenza Outbreaks in Poultry during the 2016-2021 Epidemics in Germany, Data from: Ecosystem interactions underlie the spread of avian influenza A viruses with pandemic potential, Data from: Inferring epidemiologic dynamics from viral evolution: 2014\u20132015 Eurasian/North American highly pathogenic avian influenza viruses exceed transmission threshold, R0 = 1, in wild birds and poultry in North America, Annual report on surveillance for avian influenza in poultry and wild birds in Member States of the European Union in 2021 \u2013 monthly maps, Siipikarjan lintuinfluenssariski Suomessa \u2013 riskiprofiili\n- zenodo_records / 'bird flu county week prediction benchmark UK HPAI premises': 360325 hit(s) - Highly pathogenic avian influenza in wild mammals: critical appraisal of spill-over events and of strategies for prevention, surveillance and preparedness, Tropism of Highly Pathogenic Avian Influenza H5 Viruses from the 2020/2021 Epizootic in Wild Ducks and Geese, Data complementing the Avian influenza overview September\u2013December 2023, Data complementing the Avian influenza overview December 2023 - March 2024, Protocol for a case-control study on risk factors for introduction of highly pathogenic avian influenza into holdings with poultry and other captive birds in Denmark\n- arxiv_preprints / 'avian influenza outbreak prediction dataset poultry wild bird spillover': 5 hit(s) - The role of wild birds in the global highly pathogenic avian influenza H5 panzootic, Modeling the spillover risk of highly pathogenic avian influenza from wild birds to cattle in Denmark: A data-driven ris, Leveraging Social Media and Google Trends to Identify Waves of Avian Influenza Outbreaks in USA and Canada, Outbreak Patterns of the Novel Avian Influenza (H7N9), Genomic-Informed Heterogeneous Graph Learning for Spatiotemporal Avian Influenza Outbreak Forecasting\n- arxiv_preprints / 'bird flu county week prediction benchmark UK HPAI premises': 5 hit(s) - Projected Effects of Naloxone and Buprenorphine Scale-Up on Opioid Overdose Mortality in Six Pennsylvania Counties, Improving Bird Classification with Unsupervised Sound Separation, Convolutional Recurrent Neural Networks for Bird Audio Detection, Infected surfaces of vehicles as possible way of people's infection by bird flu pathogenic culture, A mathematical model of HPAI transmission between dairy cattle and wild birds with environmental effects",
+    "prior_art": [
+      "Open Avian Flu Dataset (Zenodo 8246456); PMC13060427 US county-month H5N1 GBM study (2025); PMC11189914 US spillover-risk framework (2024); PMC12271378 Europe WAHIS HPAI prediction study; Kaggle 'Bird Flu Dataset EDA, Classification' (US detections)"
+    ],
+    "theirs": "the events themselves are public (APHA wild-bird findings; gov.uk case listing) and a third-party raw compilation exists (Open Avian Flu Dataset, Zenodo 8246456, incl. a gov.uk-derived England table); the modeling literature predicts similar outcomes on internal or assembled data (US county-month GBM AUC 0.856; Europe WAHIS 2006-2021 XGBoost; Netherlands/Korea/France/Taiwan studies; a 2025 GB modelling assessment using APHA data) and a Kaggle notebook classifies a US HPAI detections table - none publishes the task with a prediction instant, availability-keyed features, splits and a scored contract",
+    "ours": "the first ML-ready, split, publication-timed UK county-week spillover benchmark: wild-bird surveillance rows keyed to their availability week (UKGWA vintage evidence), an explicitly stated Monday report publication instant, ISO-week target strictly after it, and a scored binary per-county outcome built only from open OGL gov.uk streams",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "rejection_reason": null,
+  "review": "An event-emergence shape the bench does not yet cover (hazard-warning escalation on ea-flood is a different hazard and population; efsa-one-health-sample-prevalence was per-sample test positivity, not event emergence). Decision utility is real and documented: APHA runs county-level risk assessments and declares control zones; the modeling literature (US county-month GBM AUC 0.856; Europe WAHIS 2006-2021 XGBoost; Netherlands/Korea/France/Taiwan studies) shows the wild-bird-exposure signal is predictive but none of it publishes an ML-ready task. Licence is OGL v3 from the publisher's own footer on both streams. Timing has dated vintage evidence at UKGWA snapshot granularity with the residual intra-snapshot assumption stated. Splits are measured and both classes appear in every window; positives are wave-clustered and recorded as such.",
+  "next_action": "Construction handoff (worker build, licence class A): (1) fetch current per-year feature files (CSV 2016-2023, XLSX 2024-2026) and the UKGWA vintages listed in probe_archived_listings_result.json; verify 3+ additional snapshot attachments for the retro-addition assumption; (2) decide 2021-22 scope: measured 22-case tail only, or add the APHA 2021-22 epidemiology-report annex extraction (~1-2 PDFs) as a documented retrospective source; (3) normalize 2021-2022 'Location' (district/council grain) to counties; (4) build the county-week panel: features = week-label<=t wild-bird rows + published case history + calendar; target = any premises case opened in week t+2; panel denominator = English counties x ISO weeks, base rate to be measured in-build; (5) write quality.json.evaluation_contract with the as-of assumption, then run the qualification gate on the worker over the full artifact; then exact-byte acceptance, reference baselines (persistence, county-only, calendar-only) and the runner-contract baseline before any quoted number.",
+  "jurisdiction": {
+    "country": "GB",
+    "region": "Europe",
+    "publisher": "Animal and Plant Health Agency (APHA) / Department for Environment, Food and Rural Affairs (Defra), published on GOV.UK; wild-bird surveillance covers Great Britain, the case listing and target panel are England"
+  }
+}
