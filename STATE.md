@@ -1,3 +1,54 @@
+## 2026-11-06 (03:12Z) - follow-up (worker-status runner): cpcb-aqi-build-001/-002 verified handled - collection, report digests, both diagnoses, staging releases and provider deletion re-confirmed from live evidence; no gate, --accept or score ever existed on either attempt (nothing quotable beyond the refusal diagnostics); 02:45Z entry's release-ID typo fixed (436037000 -> 436041182); the -003 repair stays advancement's
+
+Watcher follow-up for the two failed cpcb-aqi-exceedance build jobs. The 02:45Z
+advancement session owned both attempts and already recorded the durable
+outcome (STATE entry, record.jobs[] x2 failed_and_deleted,
+measurements.attempt_002_refusal_2026_11_06 with the -003 repair in
+record.next_action, commits f19aaa3..01137bc pushed with green CI). This
+session verified that recording; it rebuilt nothing: no worker launched,
+EUR 0, no release byte, tag, manifest or destination touched.
+
+- COLLECTION verified, not re-run: jobs/cpcb-aqi-build-00{1,2}.json both
+  terminal status "deleted" (collected_at 02:33:04Z / 02:59:06Z, deleted_at
+  02:33:50Z / 03:00:09Z); .factory/<job>/result.json present and equal to
+  each ledger-embedded result. Bounded reports re-verified with locally
+  recomputed sha256 equal to the ledger asset digests: -001 container.log
+  143 B 4d490847... + staging manifest 3671 B 6bcbce9f...; -002
+  container.log 800 B f383e195... + staging manifest 3903 B 87c4b1ce....
+  The 225,280 B source.tar bundles stayed in the private staging releases
+  (436031882 / 436041182); no bulk data was downloaded.
+- DIAGNOSES confirmed word-for-word from the logs: -001 "BUILD REFUSED:
+  station site_5405 carries no state_name" at 10.1 s; -002 sentinel applied
+  (62 of 549 stations), vintage pin matched, fetch clean (168 requests,
+  0 truncated, 0 unparseable, 54,138,890 B, 512.7 s), then "BUILD REFUSED:
+  fetched panel rows 717429 != 716750" at 524.2 s. Both logs end "the
+  extract is incomplete and qualification is not meaningful": no gate run,
+  no --accept, no score on either attempt. No accepted artifact ever
+  existed, so the staged diagnostics carry the whole preservation
+  obligation; both staging manifests list only source.tar + container.log.
+- CORRECTION in the 02:45Z entry (this session): its staging-release line
+  said 436037000; the ledger result.release_id, the release's own manifest
+  (assets under untagged-1b3c1a4533988d90514a) and record.json all say
+  436041182 for -002 - fixed in place.
+- CLEANUP re-confirmed by the provider at 03:12Z (read-only): GET
+  /servers/174723039 and /servers/174723938 both HTTP 404, project lists
+  0 servers and 0 primary IPs. Deletion is provider-confirmed, not
+  requested-only.
+- HANDLED markers written: .factory/cpcb-aqi-build-001/handled and
+  .factory/cpcb-aqi-build-002/handled (evidence paths + the -003 handoff
+  line). Ledger entries left exactly as the owner wrote them; no status
+  invented, no slot freed.
+- Hygiene: check-candidate --all rc=0; doctor rc=0.
+  candidates/fenz-incident-data/ left untracked for its owner.
+
+Next action unchanged (advancement owns it; recorded in record.next_action):
+ATTEMPT -003 with the count anchors restructured per
+measurements.attempt_002_refusal_2026_11_06.repair_for_attempt_003 (keep the
+vintage pin, 549-station count, Delhi + monsoon fixtures and the 2025-hole
+assertion; record the measured counts in summary.json and assert internal
+consistency), re-run the synthetic dry run, then the standing ladder: build
+rc=0 -> gate 1.5.0 ok=true -> exact-byte --accept -> triad; holdout sealed.
+
 ## 2026-11-06 (02:45Z) - advancement session: cpcb-aqi-exceedance construction written, dry-run green (gate 1.5.0 + --accept + score.py end-to-end) and LAUNCHED twice - attempt -001 refused in 10 s at a real source gap (62 of 549 stations carry no state_name; sentinel repair), attempt -002 is running with its construction/qualification stages sound but a known O(n^2) defect in its BUNDLED scoring stage (found post-launch, fixed in source, cannot be stopped through any supported control) - no score exists; the running job is the handoff
 
 Scheduled advancement session. Release work first: no packaged candidate is
@@ -78,7 +129,7 @@ run.sh + job.json + bundle.json + the mandatory local dry run + launch).
   MARK kept batches 'done'), so its 716,750 total and the per-window counts
   derived from it are not exact export facts. The O(n^2) score defect never
   executed. Worker 174723938 destroyed 03:00:09Z, provider read-back 0 servers /
-  0 primary IPs. Staging release 436037000 holds source.tar + container.log +
+  0 primary IPs. Staging release 436041182 holds source.tar + container.log +
   manifest. Still NO score.
 - EUR: four November reservations now (0.08 afdb + 0.32 x3 here) - 1.04 of the
   15 EUR construction allowance, EUR 5 release reserve untouched.
