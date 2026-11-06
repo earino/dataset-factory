@@ -67,6 +67,12 @@ run.sh + job.json + bundle.json + the mandatory local dry run + launch).
   task.
 - EUR: four November reservations now (0.08 afdb + 0.32 x3 here) - 1.04 of the
   15 EUR construction allowance, EUR 5 release reserve untouched.
+- HYGIENE: check-candidate --all rc=0; suite python3 -m unittest discover -s
+  tests 723/723 OK (32.5 s); doctor rc=0; worker 174723039 provider read-back
+  GET /servers/174723039 -> 404 (1 server / 1 primary IP in the project: the
+  running -002); commit f19aaa3 pushed, CI run 42152105132 push
+  completed/success for that exact commit. candidates/fenz-incident-data/ left
+  untracked for its owner (concurrent writer, not this session).
 
 Next action (a fresh session can carry it out; also in record.next_action):
 collect cpcb-aqi-build-002 after ~04:15Z; require the uploaded summary anchors,
