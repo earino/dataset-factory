@@ -33,6 +33,8 @@ NEW_SUMMARY = ROOT / ".factory" / "dvsa-mot-build-004" / "staged-summary.json"
 
 LINE_RE = re.compile(
     r"^(\d{4}): rows_seen=(\d+) class4=(\d+) sampled=(\d+) results=")
+HIST_RE = re.compile(r"results=(\{.*\})\s*$")
+COMPLETED = {"P", "F", "PRS"}
 
 
 def log_receipts(path: Path) -> dict:
@@ -43,6 +45,21 @@ def log_receipts(path: Path) -> dict:
             year, rows, class4, sampled = match.groups()
             recorded[year] = (int(rows), int(class4), int(sampled))
     return recorded
+
+
+def log_histograms(path: Path) -> dict:
+    """Per-year result histograms from a collected container.log."""
+    out = {}
+    for line in path.read_text().splitlines():
+        match = LINE_RE.match(line)
+        if match:
+            hist_match = HIST_RE.search(line)
+            if hist_match is None:
+                continue
+            hist = json.loads(hist_match.group(1))
+            out[match.group(1)] = {k: v for k, v in hist.items()
+                                   if k not in COMPLETED}
+    return out
 
 
 def main() -> int:
@@ -56,9 +73,36 @@ def main() -> int:
     print(f"build-003 container.log receipts: {len(receipts_003)} years "
           f"({min(receipts_003)}..{max(receipts_003)})")
 
-    summary = json.loads(NEW_SUMMARY.read_text())
-    assert summary["job"] == "dvsa-mot-build-004", "wrong job in summary.json"
-    per_year = summary["population"]["per_year"]
+    summary_path = NEW_SUMMARY
+    receipts_source = "summary.json"
+    if not NEW_SUMMARY.is_file():
+        # A build that dies before writing outputs ships no summary.json
+        # (dvsa-mot-build-004 was OOM-killed mid-2022 with /output/extract
+        # empty); the container.log receipts are the same per-year counters
+        # and are the chain source for the failed builds.
+        LOG_004 = ROOT / ".factory" / "dvsa-mot-build-004" / "staged-container.log"
+        if not LOG_004.is_file():
+            raise SystemExit("neither staged-summary.json nor "
+                             "staged-container.log exists; run the fetch first")
+        receipts_source = "container.log"
+        per_year = {year: {"rows_seen": rows, "class4_rows": class4,
+                           "sampled_rows": sampled}
+                    for year, (rows, class4, sampled)
+                    in log_receipts(LOG_004).items()}
+        histograms = log_histograms(LOG_004)
+        for year, extras in histograms.items():
+            if year in per_year:
+                per_year[year]["non_completed_rows"] = sum(extras.values())
+                per_year[year]["non_completed_values"] = sorted(extras)
+        print("no summary.json (failed build); using build-004 "
+              "container.log receipts as the per-year source; non-completed "
+              "counts derived from its result histograms")
+    else:
+        summary = json.loads(NEW_SUMMARY.read_text())
+        assert summary["job"] == "dvsa-mot-build-004", \
+            "wrong job in summary.json"
+        per_year = summary["population"]["per_year"]
+    print(f"per-year source: {receipts_source}")
 
     mismatches = []
     for year in sorted(receipts_003, key=int):

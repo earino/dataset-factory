@@ -1,3 +1,82 @@
+## 2026-11-07 (10:55Z) - scheduled advancement: dvsa-mot-build-004 FAILED BY HOST-LEVEL OOM at 2022 (~7.2 GB anon RSS on the 7.56 GiB cpx32, kernel global_oom) - but the macOS junk-skip repair is PROVEN on the real 2018-2021 zips (four new-year receipts; 2005-2017 chain reproduced EXACTLY 13/13; cross-check PASSED rc=0); collected, destroyed with provider read-back; FOURTH-rebuild boundary reached -> next_action is the OPERATOR DECISION, no build-005 launched
+
+Construction follow-through for the running handoff (brief priority; no
+packaged candidate is actionable: all five packaged records carry
+awaiting_operator TRUE - the flip is the operator's single approval and a
+pure human wait; no remediation hold is active). This session executed the
+recorded standing order for dvsa-mot-next-test-outcome: collect build-004,
+deterministic cross-check, require gate + accept before any figure, destroy,
+then the baseline bundle.
+
+- PREPARED WHILE THE BUILD RAN (committed 2d8adfa): the build-004 collection
+  tooling - probe/fetch_build003_diagnostics_2026_11_07.py recovered
+  build-003's container.log + staging manifest from staging release 437475493
+  digest-verified (2017 receipt 38,056,161/35,983,938/35,975 confirmed from
+  bytes, not prose); probe/fetch_diagnostics_build004 + verify_crosscheck_
+  build004 chain 001->002->003->004 with 2018+ as new evidence (falls back to
+  container.log receipts when a failed build ships no summary.json, and
+  derives non-completed counts from the collected result histograms);
+  baseline/make_fetch_build004 fills the dvsa-mot-baseline-001 fetch block
+  programmatically (never launched; id unused). Chain sources verified
+  parsing 10/12/13 years in full agreement before launch outcome was known.
+- MID-RUN PEEKS (bounded SSH log tails, the same practice as previous
+  sessions): 2005-2011 parsed at 19 min, 2012 at 25, 2015 ABRVE=242 and 2016
+  ABRVE=27 matching build-002 EXACTLY, 2017 matching build-003 EXACTLY, then
+  2018 PARSED (the junk-member skip rule works on real data), 2019, 2020,
+  2021 in sequence - pace ~3 min/year txt.gz, ~6 min/zip-year.
+- OUTCOME (dvsa-mot-build-004, server 174959633, cpx32 hel1, exit 137,
+  oom_killed true, elapsed 3,122 s, staging release 437508692, collected
+  10:49:00Z, destroyed 10:50:59Z): the kernel's global OOM killer killed
+  python3 at 10:42:48Z, ~50 s after the 2021 receipt printed, i.e. at the
+  start of 2022 processing (the 2022 zip was already prefetched to disk).
+  dmesg read on the worker before destroy: 'Out of memory: Killed process
+  2659 (python3) total-vm:9959464kB anon-rss:7548860kB', CONSTRAINT_NONE,
+  global_oom - the whole 7.564 GiB host was exhausted; no container cap was
+  reached. /output/extract empty; no summary.json; NO extract, gate,
+  acceptance, triad or score exists for this build; the holdout was never
+  reached.
+- NEW EVIDENCE (first zip-era years ever parsed, from the collected
+  container.log): 2018 38,681,801/36,597,485/36,609 (ABRVE=30, non-completed
+  229,568); 2019 39,310,698/37,203,595/37,224 (ABRVE=53, 219,917); 2020
+  38,594,013/36,607,155/36,792 (ABRVE=31, 212,364); 2021 40,380,646/
+  38,155,866/38,353 (ABRVE=57, 225,532); non-completed values [ABA, ABR,
+  ABRVE] every year. DETERMINISTIC CROSS-CHECK PASSED
+  (verify_crosscheck_build004_2026_11_07.py, rc=0): 2005-2017 reproduce the
+  recorded chain EXACTLY 13/13 (001/002/003 logs, every year checked against
+  every earlier log); sampled rows 2005-2017 = 417,792, 2005-2021 = 566,770.
+- DIAGNOSIS (static code walk of the shipped build.py, bundle 275b8729): the
+  only structure designed to grow across years is all_rows - 566,770 slim
+  14-field tuples by 2021, estimated well under ~1 GB; the Deflate64 member
+  decode is a ~350-400 MB per-member transient; downloads stream to disk.
+  The designed footprint at the 2022 boundary is therefore ~1.5 GB, so the
+  measured ~7.5 GB anon RSS is ~6 GB BEYOND the designed accumulation and is
+  not explained by static reading: allocator/arena retention under the
+  ~38M rows/year parse churn vs an unlocated leak - distinguishing them
+  needs a bounded instrumented run (per-year RSS prints), not more reading.
+- THE PRE-REGISTERED BOUNDARY FIRED: build-005 would be the FOURTH rebuild
+  of the same construction (002 ABRVE, 003 Deflate64, 004 macOS junk - and
+  004 then hit a fifth, distinct defect), and the record's standing rule
+  says the task-design question goes to the operator instead of another
+  retry. NOT LAUNCHED. The recorded next_action presents the measured
+  options: (a) one diagnostic-instrumented cpx42 relaunch (16 GB, 0.15
+  EUR/h, ~0.60 EUR reservation; additive per-year RSS print only -
+  simultaneously the cheapest discriminating measurement and, if 16 GB
+  suffices, the completing construct->qualify->accept->triad job); (b) a
+  bounded accumulation redesign (per-vehicle incremental pairing is NOT
+  possible without a censoring rule - a vehicle's later tests can arrive in
+  any later year; the realistic repair is a compact row store or per-year
+  intermediate files re-streamed at pair time); (c) drop/re-scope. Scout
+  does not launch build-005 without the operator's recorded choice.
+- CLEANUP (deletion confirmed by the provider, read 10:51:03Z):
+  GET /v1/servers/174959633 -> 404 'server not found'; GET /servers -> 0
+  entries; GET /primary_ips -> 0 entries. Nothing scored, nothing public,
+  no tag touched; candidates/fenz-incident-data/ untracked work untouched.
+
+Next action (record.next_action): the OPERATOR DECISION above; on approval
+of (a), the RSS-print change + dry-run legs + assemble + plan + launch +
+the full collection/cross-check/gate/accept/triad order recorded in the
+candidate record.
+
 ## 2026-11-07 (10:04Z) - follow-up (worker-status runner): dvsa-mot-build-003 event processed - the job was already collected, destroyed and recorded by the 09:58Z advancement session; re-verified from ledger + live provider and marked handled; dvsa-mot-build-004 RUNNING as the standing handoff
 
 Watcher event: dvsa-mot-build-003 failed (exit 1, ~36 min, 3 assets, staging
