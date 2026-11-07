@@ -124,6 +124,38 @@ Read-only verification on the deployed tree:
   audits/resilience/2026-11-07-answer-scrub.json plus this local read-back -
   static, not full qualification.
 
+## A1-small historical acceptance worker: resilience-a1-small-002 (Scout, 2026-11-07 ~19:5xZ)
+
+First bounded R1 acceptance run, executed by Scout as sole launcher on reviewed
+commit `dc0cb94` (branch codex/deterministic-recovery-gate), job pinned to
+source-bundle SHA256 `3828cf1485bbf296068c4445f0dec99a59315cb63dfbe12f9dd40c57c0ac8384`
+(pin verified at plan; hold stayed true; one cx23, EUR 0.06 reservation,
+inside policy). Worker elapsed 39.9 s; collected; destroyed; provider read-back
+0 servers / 0 IPs; ledger reconciled. No retry, no extra jobs, no rebuild, no
+publication.
+
+acceptance-summary.json: ok=true, all four cases exit 0 (nzea, unhcr, nsbwa,
+ocha). Compact per-case evidence committed under
+audits/resilience/2026-11-07-a1-small-002-acceptance/ (summary, per-case
+acceptance/battery/qualification). Full results JSONL and the 4.6 MB fetched
+historical bytes remain worker scratch and staging release 437762044 only.
+
+- nzea: ok, strict gate REFUSED, bytes unchanged; 8.2 s, peak RSS 56,424 KiB.
+- nsbwa (e8ed2a53): ok, strict gate REFUSED, bytes unchanged; 7.3 s, peak RSS
+  32,432 KiB.
+- unhcr (6fa7becd core + pinned members): gate 1.6.0 refused with
+  failed_checks including battery.exact_recovery, artifacts.no_shipped_answers,
+  contract.cross_row_probe_0; the battery reproduced the documented successor
+  recoveries exactly - 12 exact rules (self/all x successor_flag x
+  successor_count x eval/holdout x declared), 0 errors, AUC 1.0 on covered
+  rows; successor_missing_zero heuristic 0.9753 eval / 0.9830 holdout.
+- ocha (e7441e1f): battery probes recorded in the per-case files; strict
+  refusal in its qualification.json.
+
+Acceptance meaning: the draft gate reproduced the specified historical defects
+and refused the old artifacts. This is experimental acceptance of a draft gate
+under the hold - not production deployment, not A1 complete (remaining cases
+pending), and no blocked package was repaired or requalified by this run.
 ## Next action
 
 Run pinned R1 historical acceptance through Scout, then complete the remaining gates
