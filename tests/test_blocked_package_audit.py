@@ -62,11 +62,12 @@ class BlockedPackageTests(unittest.TestCase):
             _, before = audit.package_binding(case, root)
             output = parent / 'out'; output.mkdir(); scratch = parent / 'scratch'; scratch.mkdir()
             stages = audit.run_stages(root, output, scratch)
-            self.assertEqual(8, len(stages))
+            self.assertEqual(9, len(stages))
             self.assertTrue(all(v['completed'] for v in stages.values()), stages)
             self.assertFalse(stages['license_admission']['ok'])
             self.assertFalse(stages['qualification_admission']['ok'])
             self.assertTrue(stages['claims']['completed'])
+            self.assertFalse(stages['suitability_admission']['ok'])
             self.assertEqual(before, audit.package_binding(case, root)[1])
             self.assertFalse(any(p.stat().st_size >= 256 * 1024 for p in output.iterdir()))
 
@@ -118,6 +119,13 @@ class BlockedPackageTests(unittest.TestCase):
             for entry in case['files'] + case['archives']:
                 source = fetch[entry['fetch_dest']]
                 self.assertEqual((entry['sha256'], entry['size']), (source['sha256'], source['size']))
+            review = case['review_archive']
+            source = fetch[review['fetch_dest']]
+            self.assertEqual((review['sha256'], review['size']), (source['sha256'], source['size']))
+            self.assertIn('suitability/'+case['dataset']+'.json', {e['path'] for e in review['members']})
+            evidence = json.loads((ROOT/'audits/resilience/2026-11-07-a4-review-evidence.json').read_text())
+            self.assertEqual(review['members'], evidence['members'])
+            self.assertTrue(all(e['size'] < 256 * 1024 for e in review['members']))
 
 
 if __name__ == '__main__': unittest.main()
