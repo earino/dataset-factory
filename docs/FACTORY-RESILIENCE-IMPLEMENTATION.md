@@ -15,17 +15,17 @@ proof of exact reconstruction. Published data, tags and manifests remain frozen.
 | Work | Status | Acceptance evidence still needed |
 | --- | --- | --- |
 | R6: config-driven admission hold | Shipped in PR #26, merge `16657ab`; exact-commit CI passed; Scout deployment read-back in `d1e6030` below | Hold remains active until R1-R4/A4 acceptance |
-| R1: deterministic label-blind battery, gate 1.6 | Shipped PR #28, merge `94ece4d`; A1 all seven historical cases reproduced and refused, compact evidence independently verified; complete job ledgers on main | A2 comparisons remain pending; hold stays true |
+| R1: deterministic label-blind battery, gate 1.6 | Shipped PR #28, merge `94ece4d`; A1 all seven historical cases reproduced and refused, compact evidence independently verified; complete job ledgers on main | A2 first eight comparisons passed without exact-recovery failure in 6171970; remaining 90 configurations pending; hold stays true |
 | R2: scaffold/answer scrubber | Shipped PR #27, merge `a2578ed`; both exact-commit CI workflows passed; deployed/read back by Scout in `fbc8fee` | Worker-generated artifact integration is in R1; full worker A3/A4 pending |
 | R3: measurable claims from bytes | Shipped PR #29 as `3858d4f`; 812 clean-clone tests; exact merge CI green | Full worker A3/A4 evidence pending |
 | R4: source licence evidence and generation | Shipped PR #30 as `00a773d`; 826 clean-clone tests; both exact merge CI runs green | Worker A4 outcomes pending; actual unreadable/conflict captures preserved |
 | R5: autonomous independent adversarial audit | Pending | Bounded auditor stage, digest-bound verdict, queue admission enforced |
-| Review item 2: publication invariants/rule consolidation | Implemented on `codex/publication-invariants`: strict current-review admission, verified descriptor regression, normative inventory and reconciled publication/licence wording | Integrated clean-clone/CI and deployment pending; approvals/R5 separate |
+| Review item 2: publication invariants/rule consolidation | Shipped PR #35 as `c686be9`: strict current-review admission, verified descriptor regression, normative inventory and reconciled publication/licence wording | 836 clean-clone tests and exact merge CI passed; approvals/R5 separate |
 | Review item 3: structured events and generated state | Shipped PR #33 as `817aaa0`, exact CI green | Original 1,364,901 bytes preserved; generated view below 20 KB; Scout deployment readback pending |
 | Review item 4: digest-bound approvals | Pending | Matching approval required at flip, historical evidence with honest gaps |
-| Review item 5: deterministic reconciliation | Shipped PR #34 as `e79b0f1`; 785 clean-clone tests, exact merge CI green | Scout reports first live bookkeep passed at 20:38Z; durable receipt handoff pending; replay remains conditional |
+| Review item 5: deterministic reconciliation | Shipped PR #34 as `e79b0f1`; 785 clean-clone tests, exact merge CI green | First live bookkeep passed at 20:38Z; ledger-bound live receipt committed in 6171970; replay remains conditional |
 | Review item 6: actor identity | In progress | Codex author on new commits; no history rewrite |
-| A4: four blocked packages through full pipeline | Prepared and shipped PR #31 as `08919d3`; 831 clean-clone tests and exact merge CI green; sealed job 003 not admitted/launched | Current pipeline changes require rechecking the prepared source pin; full worker outcomes and operator disposition pending |
+| A4: four blocked packages through full pipeline | Prepared PR #31 and current-evidence refresh PR #36 (`2d5b79a`), exact merge CI green, 836 clean-clone tests; job 004 pin admitted after A2 cleanup | Full worker outcomes and operator disposition pending; older sealed preparations remain unlaunched |
 
 Each item gets a separate branch/PR. This ledger is implementation status, not a passing
 audit or permission to publish. Do not treat partial code or synthetic unit fixtures as
