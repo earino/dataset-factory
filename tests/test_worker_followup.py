@@ -21,6 +21,9 @@ finally:
 
 class WorkerFollowupTests(unittest.TestCase):
     def setUp(self):
+        bookkeeping = patch.object(followup, 'bookkeep', return_value={'handled': False, 'reason': 'test mismatch'})
+        bookkeeping.start()
+        self.addCleanup(bookkeeping.stop)
         hold = patch.object(followup.session, 'hold_reason', return_value=None)
         hold.start()
         self.addCleanup(hold.stop)
@@ -35,6 +38,14 @@ class WorkerFollowupTests(unittest.TestCase):
     def tearDown(self):
         self.paths.stop()
         self.temp.cleanup()
+
+    def test_verified_completed_bookkeeping_starts_no_agent(self):
+        with patch.object(followup.watch, 'watchlist', return_value=['old-job']), \
+                patch.object(followup.watch, 'state_of', return_value={'job': 'old-job', 'state': 'succeeded'}), \
+                patch.object(followup, 'bookkeep', return_value={'handled': True}), \
+                patch.object(followup.session, 'run_session') as run:
+            self.assertEqual(0, followup.main())
+            run.assert_not_called()
 
     def test_empty_and_running_ticks_start_no_agent(self):
         for jobs in ([], ['running-job']):
