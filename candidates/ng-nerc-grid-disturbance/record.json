@@ -1,0 +1,41 @@
+{
+  "id": "ng-nerc-grid-disturbance",
+  "status": "dropped",
+  "created_at": "2026-11-07T00:00:00+00:00",
+  "domain": "power systems / national grid disturbance (system collapse) prediction (Nigeria)",
+  "prediction_question": "At a day-ahead instant, predict whether the Nigerian national grid will record a total or partial system collapse on the following day, from published grid-operating history (generation, frequency, load). A useful prediction would support the system operator's and large consumers' preparedness decisions. Closed at the licence gate before any task probing; the secondary task-shape and timing observations below are from the publisher's published report text, not from a constructed dataset.",
+  "prediction_time": "A day-ahead instant. Not further specified: the licence veto stands on its own, and the feature-timing contract is separately unresolved (see target_definition).",
+  "target_definition": "Binary (collapse day vs non-collapse day; optionally total vs partial). Label source: NERC's unit-level system-collapse event tables in quarterly and annual reports (date, time, type, immediate cause, restoration date/time; e.g. 2025 Annual Report Table 24 'System Collapses in 2019 - 2025'). Event-grain positives are sparse and declining: NERC order NERC/2023/035 (published figures) lists partial/total 2016: 6/22, 2017: 9/15, 2018: 1/12, 2019: 1/10, 2020: 0/4, 2021: 2/2, 2022: 2/4, 2023: 0/3; the 2024 Annual Report records 9 incidents in 2024; the 2025 Annual Report records 2; the 2026 Q1 report records 2 (one total 23 Jan, one partial 27 Jan). Roughly 90 events 2016-2025 against ~3,650 days, with positives clustered within crisis years. The deeper timing defect: daily-resolution features are NOT published in bulk - NERC's operational data products are monthly/quarterly aggregates (average daily system frequency by month, average hourly generation) plus the event tables themselves, so a day-ahead operational task cannot be assembled from published features without a feature source that has not been identified.",
+  "sources": [
+    {
+      "name": "NERC quarterly and annual reports (grid event tables and operational aggregates)",
+      "url": "https://nerc.gov.ng/resource-category/statistics-and-performance-data/",
+      "api": "No API; PDF reports. Report front matter states the reports are 'freely available to stakeholders... Individuals can also access any issue freely from the Commission's Website' - a free-of-charge statement, not a reuse/redistribution licence.",
+      "access": "anonymous"
+    }
+  ],
+  "license_evidence": [
+    "Publisher instrument 1 (2026-11-07): NERC site footer on the rendered homepage reads '© 2026 Nigerian Electricity Regulatory Commission. All rights reserved.'",
+    "Publisher instrument 2 (2026-11-07): https://nerc.gov.ng/terms-conditions/ returns a WordPress critical error page ('There has been a critical error on this website') - no terms instrument readable at the conventional path.",
+    "Publisher instrument 3 (2026-11-07): the site's only 'Licensing' links are electricity-sector licensing ('Licensing, Permits & Authorizations', 'licencees'), not data licensing.",
+    "Report text (read 2026-11-07 in published PDFs found via search): 'freely available to... stakeholders' / 'Individuals... can also obtain any issue without a charge' - free-of-charge language only; no reuse, adaptation or redistribution grant."
+  ],
+  "construction_script": null,
+  "split_strategy": "Not reached (licence veto). Scale planning on any reopen: ~90 recorded collapse events 2016-2025 (publisher's own figures quoted in target_definition), declining sharply after 2020; three disjoint windows with both classes present is plausible on the day-grain population but positives are strongly year-clustered; no counts were computed.",
+  "measurements": {
+    "channel_sweep_2026_11_07": "Homepage footer copyright (rendered, curl); /terms-conditions/ = WordPress critical error; no legal/licence pages in the navigation; commands in notes.md.",
+    "event_counts_from_publisher_text_2026_11_07": "Quoted figures only (not a constructed count): NERC/2023/035 Figure 2 collapse records 2016-2023; 2024 Annual Report: 9 incidents; 2025 Annual Report: 2; 2026 Q1 Report: 2. Transcribed in target_definition."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "jurisdiction": {
+    "country": "NG",
+    "region": "Africa",
+    "publisher": "Nigerian Electricity Regulatory Commission (nerc.gov.ng)",
+    "recorded_at": "2026-11-07"
+  },
+  "licence_class": "C",
+  "rejection_reason": "Licence veto (class C, closed under the 2026-10-21 standing policy): bare copyright with all rights reserved on the publisher's footer, the terms page unreadable (WordPress critical error), and only free-of-charge language in the reports - no redistribution grant on any instrument. Secondary defects recorded but NOT the basis of the closure (a licence fix alone would not make the task buildable): (i) PDF-only publisher - no bulk data channel; (ii) daily-resolution operational features are not published (monthly/quarterly aggregates only), so the day-ahead timing contract has no identified feature source; (iii) sparse, year-clustered positives (~90 events 2016-2025 per the publisher's own figures). Nigeria's statistics bureau was already closed as class D (ng-nbs-state-price-exceedance); NERC now closes the regulator channel. Novelty was never reached and is NOT claimed in either direction.",
+  "review": "The grid-collapse task is the most evocative Nigeria story this tick, and closing it took three cheap instruments to read, not three weeks of PDF scraping: footer, terms page, report front matter. The general lesson the record carries for Nigeria: NBS prohibited (class D), NERC silent-with-copyright (class C) - the two most task-shaped Nigerian publishers are both licence-blocked, so a Nigeria-focused session should budget for reading terms first and expect closures.",
+  "next_action": "Closed 2026-11-07. Reopen ONLY if: (a) NERC states terms permitting redistribution of derived event/operational rows on a publisher instrument (re-check the footer and a fresh terms-path sweep once the WordPress error is repaired; the 2026-11-07 channel list is in license_evidence); (b) the operator records an explicit candidate-specific risk acceptance per skills/dataset-discovery/references/licence-posture.md; or (c) the operator authorises a written licence enquiry (standing default: no unsolicited permission email). A reopen must ALSO resolve the feature-timing defect: identify a published daily-resolution operational feature stream (the current quarterly/annual PDFs are month-grain aggregates), because without one no day-ahead task exists even under a clean licence."
+}

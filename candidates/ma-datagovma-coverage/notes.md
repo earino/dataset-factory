@@ -84,3 +84,23 @@ further probes spent.
 - Count 699 vs 697 recorded on 2026-10-23 (+2, not material); no new publisher org checked
   further because the count trigger alone is not met. Reopen condition still NOT met.
   Stays parked; no further probes spent this tick.
+
+## 2026-11-07 — reopen-condition re-check (Africa tick): NOT met, stays parked
+
+One title-level re-census per the record's own reopen rule (probe script retained at
+`probe_recensus_2026_11_07.py`):
+
+```
+GET https://www.data.gov.ma/data/api/3/action/package_search?rows=0
+    -> HTTP 200, count: 699   (baseline at census: 697; +2 = not material)
+facet organization: top orgs unchanged in composition and rank
+    (ministere-de-la-justice 84, haut-commissariat-au-plan 82, economie-et-finances 75,
+     matnuhpv 58, bank-al-maghrib 43, mjcc 41, acaps 34, commune-ait-melloul 27, ...)
+```
+
+Named candidate orgs from the reopen condition: `q=ONCF` -> 0, `q=ONEE` -> 0,
+`q=ONICL` -> 0 (a full-text `q=office-des-changes` matched 565 datasets across the
+catalogue, i.e. common-word tokenisation, not an organisation page - no such publisher
+org exists in the facet). Neither reopen trigger fired. The park verdict stands unchanged;
+no dataset on the portal was opened or read.
+

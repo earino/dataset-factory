@@ -69,3 +69,17 @@ substance from the 2026-10-21 evidence: "All material on this site is subject to
 No open licence, no redistribution grant, no terms change. Footer "© 2025 Copyright: SAPS".
 The unpark question is unchanged: an external written answer from SAPS, which a tick
 cannot resolve under the standing class C policy. Park stands.
+
+## 2026-11-07 — dated re-verification of the park's access premise (Africa tick)
+
+```
+getent hosts www.data.gov.za data.gov.za   -> no records (NXDOMAIN)
+getent hosts www.saps.gov.za                -> 164.151.129.210 (host resolves)
+curl https://www.data.gov.za/ and http://  -> "Could not resolve host" (both)
+```
+
+No change in the recorded blockers: data.gov.za (the portal that could have carried a
+fallback open-data licence) is still absent from DNS, and no new licence instrument for
+SAPS station data has appeared, so the licence escalation recorded in the park decision
+stands. No unpark evidence; nothing further probed.
+

@@ -1,3 +1,76 @@
+## 2026-11-07 (04:20Z) - discovery (Africa tick): four new licence-first closures recorded (ke-ppra-ppip, gh-bog-treasury-auction, ng-nerc-grid-disturbance, gh-gss-coverage); ma-datagovma + saps dated re-checks confirm both parks; no new viable lead - the region's named institutions all have verdicts
+
+Regional focus: Africa (SA, KE, NG, GH, MA, AfDB, UNECA). Licence-first triage
+throughout; every closure was decided on the publisher's own instrument before
+any task probing. No construction, no qualification, no bulk data.
+
+- ke-ppra-ppip-procurement-outcome -> DROPPED, class C. The strongest task-shaped
+  unit-level Kenyan source found to date (OCDS contracting processes for all
+  national+county buyers, Jul 2018-present, daily updates; OCP mirror counts
+  262,961 tenders / 109,607 awards; publisher API live but 429-rate-limited from
+  the coordinator; measured 2018 mirror sample: 6,727 processes, 30.8% with a
+  published award, tender.status null throughout). Killed by bare copyright on
+  every publisher instrument: PPIP footer "© 2026 All Rights Reserved", helpdesk
+  footer "Copyright © 2026 PPRA. All rights reserved", no terms page anywhere,
+  PPRA "Licensing" menu = supplier licensing, OCP's own registry licence field
+  empty. Executive Order No. 2 of 2018 is a disclosure mandate, not a licence -
+  recorded so it is never mistaken for one. Reopen = explicit PPRA grant,
+  candidate-specific operator risk acceptance, or operator-authorised enquiry.
+- gh-bog-treasury-auction -> DROPPED, class C. Weekly GOG T-bill and BOG bill
+  auction results (unit-level, ongoing, twice-weekly BOG tenders; GOG tender
+  numbering observed through 2032, BOG through 886) under bare "© 2026 Bank of
+  Ghana. All rights reserved." with an accuracy-only disclaimer, a 404 terms
+  page and a 404 robots.txt. Third central-bank auction archive closed on this
+  identical posture (CBK 2026-10-30, BoG today) - the pattern, not an isolated
+  case. Archive never scraped; novelty never reached.
+- ng-nerc-grid-disturbance -> DROPPED, class C, with secondary defects recorded
+  so a reopen is not read as "one licence fix away": PDF-only publisher;
+  free-of-charge front matter, not a reuse grant; terms page a WordPress error;
+  footer "All rights reserved"; and no published daily-resolution feature
+  stream (month/quarter aggregates only), so the day-ahead timing contract has
+  no feature source even under a clean licence. Publisher's own figures: ~90
+  collapse events 2016-2025, sparse and year-clustered. With ng-nbs (class D)
+  this closes Nigeria's two most task-shaped publishers.
+- gh-gss-coverage -> DROPPED (class C posture + aggregate-only content family
+  defect, same as uneca-ecastats-coverage): bare-copyright footer, legal links
+  are statutory/privacy pages, and the site's "Open Data" link resolves to the
+  AfDB-hosted Open-Data-for-Africa aggregate gateway. Completes the Ghana sweep
+  with gh-opendata-coverage (TCP-refused) and gh-bog: all three obvious Ghana
+  publishers now on record.
+- ma-datagovma-coverage -> stays PARKED: dated reopen-condition re-check
+  (probe_recensus_2026_11_07.py retained) shows portal count 699 vs 697
+  baseline (+2, not material), top orgs unchanged, and none of the named new
+  orgs present (ONCF/ONEE/ONICL = 0; the office-des-changes query matched 565
+  datasets via common-word tokenisation, not an org).
+- saps-station-crime-quarter -> park re-verified with today's evidence:
+  www.data.gov.za and data.gov.za still NXDOMAIN (no portal licence fallback),
+  www.saps.gov.za resolves (164.151.129.210) but no new SAPS instrument exists.
+  No unpark evidence; nothing further probed.
+- Named institutions all carried verdicts before this tick: AfDB (class A,
+  CC BY 4.0 - but its one task was dropped on MEASURED no-headroom vs the
+  trailing country rate, and a relabelled retry from the same IATI files is
+  re-derivation of that family defect); UNECA ECAStats (aggregate-only
+  republishing gateway, dropped); StatsSA (2 ready + 1 packaged ZA candidates
+  already cover it); data.gov.za (dead).
+- Strongest remaining uncertainty in the region is a decision, not a probe:
+  kenya-opendata-knbs is parked pending the OPERATOR DECISION on CC BY-NC 4.0
+  (is an NC-conditioned source acceptable for our free public releases with NC
+  carried into LICENSE.md, or disqualifying by policy?). That is the only
+  clean-licence Kenyan channel on record; no further probing until decided.
+- Hygiene: check-candidate --all rc=0 (147 records; 4 new), suite 723 OK
+  (python3 -m unittest discover -s tests), discovery-coverage now Africa 18
+  (KE 3, GH 3, NG 2, ZA 7, MA 1, CI 1, ET 1), live non-US 51/57 (90%). No
+  bulk data through the coordinator (largest fetch: one 863,775-byte mirror
+  year-file). No new ready candidate - an honest empty tick for new leads,
+  with the closures as the durable evidence.
+
+Next action (a fresh session can carry it out): (1) the operator decision on
+KNBS CC BY-NC is the cheapest regional unlock - if acceptable, the record's
+own next_action continues with the item-level census of repository.knbs.or.ke.
+(2) The two ZA packaged/awaiting items (cqc flip awaiting the pre-flip audit;
+za-cct packaging steps in its record.next_action) remain the advancement queue
+- untouched by this discovery tick.
+
 ## 2026-11-07 (02:44Z) - follow-up (worker-status runner): abwildfire-consumer-001 + abwildfire-hf-001 SUCCEEDED - both outcomes already recorded by the 02:35Z advancement entry and re-verified from the collected evidence and the live provider; the advancement recording is committed by this follow-up (its session hit the wall-clock ceiling before commit); one timestamp-label defect fixed in the appended consumer check; cleanup provider-reconfirmed; both marked handled
 
 Watcher follow-up for the two release jobs. The shared research mutex was
