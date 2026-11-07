@@ -1,3 +1,57 @@
+## 2026-11-07 (11:30Z) - queue audit verdicts: ALL FOUR staged packages DO NOT PUBLISH (zero bad datasets reached the public); corrections recorded per item; Tier C verdicts applied; fixture-shipping added to the skill's failure modes
+
+The operator relayed the 2026-11-07 independent queue audit (Codex, report at
+audits/2026-11-07-queue-audit-codex.md). All four staged v2026.11 packages are
+blocked; nothing was published and both destinations of each stay private. The
+audit did its job four times in a row: every defective package was caught at the
+pre-flip boundary.
+
+Per-item dispositions (full designs in each record's next_action):
+- ab-wildfire-ia-escape: shipped named-fire fixture answer table (3 eval + 4
+  holdout labels recovered exactly), false holdout-guarantee language, wrong
+  prevalence, @@TOTAL@@/@@WINTER@@ placeholders unfilled, and the Alberta OGL
+  page 403s (readable-licence precondition). Corrections + licence read, then
+  requal/restage/re-audit. Rebuild, integrity and bounded novelty PASSED.
+- cpcb-aqi-exceedance: the panel self-answers by construction (next-day mean
+  shipped as lags/recency; 99.37% eval / 99.08% holdout recovered exactly, and
+  single-split donors still recover 99%+), pm25_max/min REVERSED in
+  serialization, upstream licence unresolved, source rebuild HTTP 409. Session
+  recommendation recorded: DROP - the honest signal is station persistence and
+  a rolling-window panel cannot ship without self-answering. Operator decision.
+- cqc-care-home-deregistration: builder ships the pseudonym salt + fixture
+  answers (4 eval labels recovered exactly from shipped code), categorical
+  unlinkability claims contradicted by measured cross-split successor joins
+  (11,258 eval rows covered, 8 errors, covered AUC 0.974), beds_bucket
+  dictionary wrong, REPRODUCE.md command incomplete. Corrections recorded;
+  a construction decision on the successor linkage is the operator's after
+  correction. Source rebuild, licence and novelty PASSED.
+- za-cct-substation-evening-peak-exceedance: the most correctable - all
+  failures documentary. The README worked example prints a declared holdout
+  row's label; the claimed per-page digest enforcement is not implemented; the
+  interval-direction claims are reversed; the printed rebuild command omits
+  --summary-out. No general label recovery demonstrated. Corrections then
+  requal/restage/re-audit.
+
+SYSTEMIC LESSON (added to the dataset-release skill's failure modes): build
+sessions shipped test scaffolding inside release bytes - fixture IDs with
+expected answers, hash salts, and README worked examples naming scored rows.
+Rule: fixture answers, salts and raw fixture IDs never ship; worked examples
+use train rows or abstract values; builder fixtures assert counts and
+exclusions, never labels. check-package gaining a guard for this class is the
+follow-up for the next maintenance pass.
+
+Tier C: datasus-sinasc LICENCE-BLOCKED (cc-by metadata vs BY-ND footer);
+wto-dispute FIX-THE-RECORD (Sattler-Spilker-Bernauer is model-usable prior
+art - differentiate establishment vs ruling explicitly); tw-typhoon READY
+with a named dedup qualification; cra, ibama, npri, oecd, defra, my-rapidrail
+READY-TO-BUILD (craig's direct-download channel caveat recorded). The
+auditor's note that the factory repository reads public is correct by design
+(free Actions, operator-confirmed 2026-11-01).
+
+Nothing flipped this session; the flip queue is now empty and the correction
+queue holds the four designs above.
+
+
 ## 2026-11-07 (10:55Z) - scheduled advancement: dvsa-mot-build-004 FAILED BY HOST-LEVEL OOM at 2022 (~7.2 GB anon RSS on the 7.56 GiB cpx32, kernel global_oom) - but the macOS junk-skip repair is PROVEN on the real 2018-2021 zips (four new-year receipts; 2005-2017 chain reproduced EXACTLY 13/13; cross-check PASSED rc=0); collected, destroyed with provider read-back; FOURTH-rebuild boundary reached -> next_action is the OPERATOR DECISION, no build-005 launched
 
 Construction follow-through for the running handoff (brief priority; no

@@ -206,7 +206,7 @@
   "seasonality_fixture": "Known-event fixture (verified measured): Cape Town winter evening-peaking. Monthly mean evening peak over all stations: 2024-07 61.9 MVA vs 2024-12 44.1 MVA; same May-August rise in 2022 (2022-08 60.3 vs 2022-12 48.0) and 2023 (2023-07 60.6 vs 2023-12 45.9). Per-station winter(May-Aug)/summer(Nov-Feb) mean evening-peak ratios: Grassy Park 66kV 1.25, Atlantis Industrial 132kV 1.22, Foreshore 132kV (CBD) 0.98 - winter-peaking residential/industrial substations and a flat CBD profile, exactly as expected for Cape Town's winter-heating, summer-cooling-mild coastal climate.",
   "target_labels_measured": "Evening-peak p95-exceedance labels (trailing 90 evenings, min 30 prior evenings, evening window 16:00-22:00 SAST): 2022 positives 1,539/13,735 (11.20%); 2023 positives 1,256/14,965 (8.39%); 2024 positives 1,382/15,006 (9.21%). Total 4,177/43,706. Both classes present in every year. Commands in notes.md (probe_fullscan.py, probe_cluster.py)."
  },
- "next_action": "FLIP BOUNDARY REACHED 2026-11-04T21:06:41Z: za-cct-substation-evening-peak-exceedance v2026.11 is STAGED PRIVATE and VERIFIED on BOTH destinations (GitHub release 434422204, tag v2026.11 == main b4e351a94d9166445736b0d75b5180365e515e7d, 5/5 server-side digests equal to the package MANIFEST; Hub tag v2026.11 == main 9df60163315a2daae0e878e02c89efae1dc386d7, hf_loading ok, fresh-consumer job za-cct-consumer-001 green end-to-end on the published bytes: gate PASSED, --accept ACCEPTED 9f2e10ce, baseline 0.5107 both prints CONTRACT OK quoted beside morning_ratio 0.7340, references recomputed equal, rebuild byte-identical). The pre-flip adversarial audit prompt is GENERATED at candidates/za-cct-substation-evening-peak-exceedance/pre-flip-audit-prompt.md (digests filled programmatically from the frozen manifest by publish/generate_pre_flip_audit_prompt.py; the auditor must be independent of the sessions that built and staged this release). THE FLIP (both destinations public + anonymous verification + current editorial refresh of card/LOADING/README/release notes + DESTINATIONS visibility fields) is the operator's single approval and waits for the auditor's verdict unless waived. On flip: apply skills/dataset-release 'Publication' order (flip both, prove anonymously, re-verify the pinned package, refresh the shipped documents, verify the existing tag without moving it, check-suitability notice carried). Everything else is done and recorded: jobs/za-cct-publish-001.json, jobs/za-cct-hf-001.json, jobs/za-cct-consumer-001.json, release/za-cct-substation-evening-peak-exceedance/DESTINATIONS.json. All three workers destroyed with provider 404 read-back + zero inventory. The comparison ladder (stock 0.5107 beside morning_ratio 0.7340) leads every package document per operator decision (a); the holdout stays sealed.",
+ "next_action": "FLIP BLOCKED (2026-11-07 queue audit, DO NOT PUBLISH) - the most correctable of the four: no general label recovery was demonstrated (the morning features do not decode the evening label; the frozen one-day history rule covers all rows with ~6,700 errors). All failures are documentary: (1) the README/builder worked example names Grassy_Park_66kV 2024-07-15 - a DECLARED HOLDOUT ROW - and prints its label 1; worked examples use train rows or abstract values only; (2) the claimed per-page source-digest enforcement ('build fails if any pinned bytes change') is not what the builder does - either implement the pinned-digest comparison or state the actual behavior (fixture checks + byte reproduction); (3) the interval-direction claims are wrong: morning_ratio minus persistence is +0.0838 [+0.0706, +0.1012] (persistence minus morning_ratio is the negative reverse), and persistence vs calendar_identity is inconclusive [-0.0168, +0.0161], not 'inseparable'; (4) add the required --summary-out to the printed reconstruction command. Correct (package + builder both copies), requal, restage, fresh audit. Integrity 24/24, byte-for-byte rebuild (54 pages, 52,608 rows), licence (City custom terms, NOASSERTION correctly scoped) and bounded novelty PASSED.",
  "notes_ref": "notes.md",
  "novelty_check": {
   "checked_at": "2026-11-01T05:36:00+00:00",
@@ -382,5 +382,15 @@
   "source": "za-cct-001 gate report values (summary.json labels_by_year), cross-checked against meta.json rows/positive_rate and baseline_result.json before the release manifest was generated (packaging session 2026-11-04)"
  },
  "packaged_at": "2026-11-04T21:06:41Z",
- "awaiting_operator": true
+ "awaiting_operator": false,
+ "audits": {
+  "independent_queue_audit_2026_11_07": {
+   "auditor": "Codex (independent, read-only, no publisher contact)",
+   "report": "audits/2026-11-07-queue-audit-codex.md",
+   "verdict": "DO NOT PUBLISH",
+   "critical_finding": "documentary holdout answer exposure (worked example prints a declared holdout row label) + false digest-enforcement and interval-direction claims",
+   "passed": "integrity 24/24, byte-for-byte rebuild, licence scope, bounded novelty; no general exact recovery demonstrated",
+   "disposition": "correctable package/docs-only"
+  }
+ }
 }
