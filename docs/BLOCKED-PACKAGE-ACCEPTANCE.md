@@ -40,3 +40,8 @@ cleanup grace. It needs a reviewed exact source pin, current complete worker led
 passing CI, budget admission and zero active workers before Scout alone launches.
 The admission hold, spending limits, frozen artifacts and public destinations stay
 unchanged. Collect and reconcile cleanup before any next worker.
+
+The active declaration is `resilience-a4-blocked-002`. The sealed local 001
+preparation was never admitted or launched and remains preserved. The fresh ID
+includes the claims-vocabulary correction: categories may be absent from a temporal
+split, while observed bins outside the documented vocabulary still refuse.
