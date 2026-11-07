@@ -107,8 +107,9 @@ tw-typhoon novelty (agent maintains the prior repo is a different task); pins le
 2. cpcb-aqi-exceedance is staged with `awaiting_operator=true` while its suitability record
    says `cross_row_audit.status = recovery_demonstrated`. The pre-flip audit prompt says a
    demonstrated recovery on shipped bytes is an automatic DO NOT PUBLISH. Unruled conflict.
-3. Commits on 2026-10-22..24 under the operator's git identity appear to be Codex; the
-   operator's own policy edits cannot be separated by author name.
+3. RESOLVED 2026-11-07: commits on 2026-10-22..24 under the operator's git identity were authored by Codex, directed and approved by the operator (`../OPERATOR-NOTES.md`). Still open: the 6 commits on
+   2026-09-17..19 under the same identity, including the Austin `response_time` leak fix
+   (the "builder review") and its revert.
 4. Deduplication across chunks is approximate (exact candidate + class + detector match
    for audit events; an explicit list for STATE.md chunks). Some nhs-ae timing events
    still appear twice under different detectors.

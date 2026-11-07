@@ -27,3 +27,13 @@ Implication for the paper: the manual gate was primarily a diagnostic instrument
 operator (learning where the agent fails, to improve it), not only a safety control.
 Automation of Codex checks is planned; record the switch-over date when it happens, so the
 manual period and the automated period can be compared.
+
+## Authorship of commits under the operator's identity (2026-11-07)
+
+> "i directed and approved. i didn't write that code."
+
+Applies to the 129 commits on main dated 2026-10-22 to 2026-10-24 under
+"Eduardo Arino de la Rubia" / "E. Ariño de la Rubia" (PRs #1-#24: hardening, prompt
+evaluation, deferred-slot resumption, issue #17 remediation). Attribute them in the paper
+as: operator directed and approved; Codex authored. The 2026-09-17..19 commits under the
+same identity have not been attributed yet.
