@@ -964,6 +964,25 @@ use a new attempt ID rather than deleting it to make the assembler proceed.
 Descriptor paths must remain within their declared source/output roots. Absolute paths,
 traversal, symlinks and duplicate/reserved destinations are refused before installation.
 A failed assembly cannot replace an existing bundle or leave a launchable partial target.
+
+The assembler also runs the answer-artifact scrubber before sealing a bundle.
+Fixture answer tables, raw fixture identifiers, literal pseudonym salts and unresolved
+template tokens refuse assembly. Use counts/exclusions as construction assertions;
+scored-row examples belong outside the shipped package. `check-package.py` scans every
+package file too, using scored IDs when CSVs are present and the declared split windows.
+For a compact diagnostic outside the directory being inspected:
+
+```bash
+python3 -m factory.artifact_scrub release/<dataset> --dataset release/<dataset> \
+    --report /tmp/answer-scrub.json
+```
+
+This is bounded static analysis, not a claim that all possible answer encodings are
+detected. Non-split binary/oversized files and opaque containers require inspectable
+text. Full worker qualification and the independent audit remain necessary. Exact
+old files in `config/frozen-releases.json` produce historical package warnings; new
+or changed files cannot use that record as an exemption. Audit jobs fetch defective
+historical input on the worker instead of shipping it as clean construction code.
 Only the fresh temporary staging directory is automatically cleaned up. Qualification and
 runner files are still copied verbatim and the existing qualification-before-scoring sequence
 is unchanged. No cloud action is performed by assembly.

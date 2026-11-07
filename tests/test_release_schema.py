@@ -10,6 +10,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from factory.common import FactoryError
 
 from factory.release_schema import (Release, ReleaseShapeError, load_release, from_manifest,
                                     normalise_baseline, normalise_splits,
@@ -237,8 +238,15 @@ class OfflineSitePackageTests(unittest.TestCase):
                 package = ROOT / 'release' / editorial.stem
                 if package.is_dir():
                     with self.subTest(dataset=editorial.stem):
-                        prepare(package, json.loads(editorial.read_text()), config,
-                                Path(tmp).resolve() / editorial.stem)
+                        if editorial.stem in ('cqc-care-home-deregistration', 'unhcr-refugee-data-finder'):
+                            # Private, rejected historical artifacts cannot become a site
+                            # preview that silently implies the new packaging gate passed.
+                            with self.assertRaisesRegex(FactoryError, 'fixture_answers'):
+                                prepare(package, json.loads(editorial.read_text()), config,
+                                        Path(tmp).resolve() / editorial.stem)
+                        else:
+                            prepare(package, json.loads(editorial.read_text()), config,
+                                    Path(tmp).resolve() / editorial.stem)
         self.assertEqual(before, hashes(ROOT / 'release'))
 
     def test_declared_external_csvs_are_metadata_only_not_local_verification(self):

@@ -64,6 +64,12 @@ class AssemblySafetyTests(unittest.TestCase):
         owner = json.loads((self.target / assembler.OWNER_FILE).read_text())
         self.assertEqual('example-001', owner['job_id'])
 
+    def test_fixture_answer_is_refused_before_bundle_install(self):
+        (self.source / 'build.py').write_text('FIXTURES = {"event-123456": {"label": 1}}\n')
+        with self.assertRaisesRegex(SystemExit, 'scaffold refused'):
+            self.run_assembly()
+        self.assertFalse(self.target.exists())
+
     def test_existing_unowned_directory_is_preserved(self):
         self.target.mkdir(parents=True)
         (self.target / 'notes.md').write_text('irreplaceable work')

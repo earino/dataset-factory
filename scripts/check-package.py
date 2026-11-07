@@ -20,6 +20,10 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from factory.artifact_scrub import scan_tree
+from factory.frozen import historical_files
+
 # Documents a reviewer needs. Directories are checked separately.
 REQUIRED_FILES = (
     "README.md", "DATA_DICTIONARY.md", "LICENSE.md", "REPRODUCE.md", "RELEASE_NOTES.md",
@@ -231,6 +235,23 @@ def check_package(package_dir, *, external_assets=False):
                     )
         else:
             notes.append("MANIFEST.json: no 'assets' block to cross-check SHA256SUMS against")
+
+    # Every shipped file is scanned, including unmanifested files. Only an exact
+    # frozen historical file may be a warning; a published=true claim is no waiver.
+    try:
+        scrub = scan_tree(package_dir, dataset=package_dir if (package_dir / 'quality.json').is_file() else None)
+        frozen = historical_files(package_dir)
+        for finding in scrub['findings']:
+            name = finding['file']
+            message = f"{name}:{finding['line']}: {finding['rule']}: {finding['detail']}"
+            if name in frozen and frozen[name] == scrub['files'].get(name):
+                notes.append('Frozen historical finding (not new-release clearance): ' + message)
+            else:
+                problems.append(message)
+        if scrub['truncated']:
+            problems.append('Answer scan has more findings than the compact report limit; inspect full tree')
+    except (OSError, ValueError, KeyError) as exc:
+        problems.append('Answer-artifact scan incomplete: ' + str(exc))
 
     return problems, notes
 
