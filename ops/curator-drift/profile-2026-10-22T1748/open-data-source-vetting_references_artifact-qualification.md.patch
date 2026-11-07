@@ -1,0 +1,40 @@
+--- /opt/data/cache/scratch/handoff/ops/skills/open-data-source-vetting/references/artifact-qualification.md	2026-10-22 17:28:47.457924358 +0000
++++ /opt/data/skills/research/open-data-source-vetting/references/artifact-qualification.md	2026-10-22 17:48:08.461619885 +0000
+@@ -53,6 +53,37 @@
+ any file that changed after qualification. Without this, "we qualified it" means "we qualified
+ something like it at some point".
+ 
++### Two hashes answer two different questions
++
++The gate digest covers the files that carry the data *and its descriptor* - typically the split
++CSVs plus `meta.json` and `quality.json`. A package digest covers the prose: README, licence,
++release notes. Keep them named separately, because they move independently:
++
++- correcting a sentence changes the package digest and **does not requalify the rows** - never report
++  a documentation edit as "bytes re-verified";
++- editing the descriptor (`quality.json`, `meta.json`) **does** change the artifact digest, because
++  the gate hashes it - that is a real requalification and needs a new artifact version, even though
++  not one row moved.
++
++When a manifest is regenerated after publication, the artifact digest is unchanged only if neither
++of those descriptor files was touched; say which digest moved rather than whether "the dataset
++changed".
++
++### A declaration of timing is not evidence of timing
++
++A gate can only check the lag the descriptor declares; it cannot know the publisher's calendar. So
++the declaration must be built from **observed release dates**, not from an assumed schedule:
++
++- record several `period_end -> published` pairs and keep the maximum, not the mean and not a round
++  number that "looks about right";
++- express the instant as a bound above every observation ("at least N days"), and say which
++  observation set it;
++- when a later release exceeds the bound, the descriptor is wrong and the timing claim must be
++  re-derived, not patched with a note.
++
++An audit that recomputes the claim from the publisher's own record is the only check that catches
++this class; a passing gate is not evidence that the numbers were available when claimed.
++
+ ## Run it where the rows are
+ 
+ The check reads the data, so a bounded local sample cannot stand in for it. Run the gate on the

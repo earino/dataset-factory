@@ -1,0 +1,42 @@
+--- /opt/data/cache/scratch/handoff/ops/skills/open-data-source-vetting/references/release-packaging.md	2026-10-22 17:28:47.457924358 +0000
++++ /opt/data/skills/research/open-data-source-vetting/references/release-packaging.md	2026-10-22 17:41:28.524257667 +0000
+@@ -38,6 +38,39 @@
+ a prefix. Fetch the full value from the source of truth before recording it, and if you cannot,
+ record the prefix and label it as one.
+ 
++## One release record, and readers that do not invent their own
++
++The manifest, the gate's quality descriptor, the build summary, the candidate record and the
++destination evidence are five descriptions of one release, written by different steps. Left alone
++they diverge: split counts appear as `{"train": {"rows": n}}` in one, as file paths in another, and
++absent in a third; a baseline AUC lives under `eval_auc`, `train_py_eval_auc`, `auc_from_train_py`
++or `auc_eval_runner_measured`, sometimes as a string.
++
++- **Define the record once and normalise on read.** A schema module with `load_release(path)` that
++  accepts each legacy shape and raises a named error (file + field) is cheaper than five readers
++  each growing a fallback.
++- **Writers fail closed.** A manifest generator that writes `{}` or null for an absent field has
++  converted a defect into a silent blank; refuse to emit instead. An empty split map is a bug, not
++  a row count of zero.
++- **A structured result carries its scope.** A maximum over configs, a median over a suite, or a
++  per-level score must never be flattened into one bare number: emit `{eval_auc, scope}` or nothing,
++  and name the level when a single headline is deliberately chosen. Readers that take `max(aucs)`
++  publish a number nobody can reproduce from the record.
++- **Add a conformance check over every release directory** so a shape drift fails CI on the commit
++  that introduces it, rather than surfacing later as a blank cell on a page.
++
++## Two identities: qualified bytes vs package documents
++
++- The **artifact digest** covers the gated data files including `meta.json` and `quality.json`.
++  Changing a row, a split boundary, or the quality descriptor changes it and requires the gate to
++  run again.
++- **Package-document hashes** cover README, LICENSE and release notes. Correcting prose changes them
++  and does **not** requalify the rows. Never describe a documentation edit as "re-verified bytes";
++  say which identity changed.
++- Prefer immutable published packages: once public, a manifest correction is a new version, not an
++  in-place rewrite. If the tooling refuses to regenerate a published package, the message must say
++  what to do instead (bump, stage, verify) rather than only reporting that nothing was written.
++
+ ## Decisions to surface, not to make
+ 
+ Put these in the handover explicitly. Each is a judgement about risk or rights that a builder should

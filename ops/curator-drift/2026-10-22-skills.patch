@@ -1,0 +1,47 @@
+diff --git a/skills/dataset-qualification/SKILL.md b/skills/dataset-qualification/SKILL.md
+index 021a29f..61045e2 100644
+--- a/skills/dataset-qualification/SKILL.md
++++ b/skills/dataset-qualification/SKILL.md
+@@ -333,6 +333,7 @@ and any column shipped beyond the declared set.
+ | A model AUC is quoted with no reference | Only one baseline was ever run, or the reference lives in a notes field nobody compares | Run the triad (persistence, calendar-only, full model) on identical rows; record all three beside the number |
+ | The gate dies with `ValueError: labels and scores must align and be non-empty` | A split has a duplicate header or a ragged row, so one column's values no longer align with the labels | Fix the build's column list; the gate now reports `leakage.every_column_could_be_scored` naming the column and split instead of aborting - keep that behaviour, a bare traceback hides which column is malformed |
+ | The model trails a one-line rule | The label is largely persistent, or the eval window shifts prevalence | Record it as a defect; re-target a change/onset label or report the task as persistence |
++| The document promises a horizon the evaluation never measured | The metric was computed on daily or weekly rows while the prose claims an end-of-month or longer-range outcome; the numbers are right and the sentence is wrong | Score the stated horizon or narrow the prose to the task measured; a reproducible number attached to the wrong horizon is still an unsupported claim |
+ 
+ ## Completion criteria
+ 
+diff --git a/skills/dataset-release/SKILL.md b/skills/dataset-release/SKILL.md
+index a45734d..9eb363d 100644
+--- a/skills/dataset-release/SKILL.md
++++ b/skills/dataset-release/SKILL.md
+@@ -65,6 +65,21 @@ sh scripts/scout-factory worker plan <job.json>     # always plan first
+ sh scripts/scout-factory worker run  <job.json>
+ ```
+ 
++## A reproducible claim is not a true claim
++
++Reproducing the bytes proves the pipeline, not the story told about it. Before a release goes
++out, every performance or forecasting claim in the README, card and site page must be checked
++against a **domain baseline** computed on the *published* bytes: persistence/last-value for
++level series, seasonal-naive for seasonal series, the trivial majority class for
++classification. If the baseline matches or beats the model, the claim is unsupported and the
++number comes out of the document - not softened into "promising". A reviewer who can fetch,
++unpack and re-run the artifact but cannot find the baseline is a reproducibility check only;
++record that limit in `VERIFICATION.md` rather than presenting it as validation.
++
++State claims at the resolution the split supports. An end-of-month or horizon-level statement
++derived from daily rows is a different, harder task than the one measured; either measure that
++task or describe only the task measured.
++
+ ## Required evidence
+ 
+ - `MANIFEST.json` covering **every** file in the package, with sizes and hashes.
+@@ -289,6 +304,8 @@ and run its commands.
+ | `PUT .../pages` answered 404 "The certificate does not exist yet" | HTTPS enforcement precedes the first deployment, and only a deployment issues the certificate | Tolerate it before a deployment, retry after one succeeds, and read the enforced state back in `verify` |
+ | Website publication refuses with "dataset is private" | Correct refusal, not a defect: a public page must not link to a private destination | Complete the approved public data release first |
+ | Prose says a check passed while the job record says it failed | The job's overall status was read as the check's outcome; the result carried `ok: false` | Read the specific check's field in the job result - a job can upload every file correctly and still fail the verification written beside it |
++| A published claim no baseline supports | The metric reproduced exactly, so the audit stopped at the digest and never asked whether the number meant anything | Compute the domain baseline on the released bytes and cite both; a reproducible overstatement is still an overstatement |
++| A horizon claim the split cannot support | End-of-month wording was carried over from a daily-resolution evaluation | Measure the stated horizon or narrow the sentence to the task actually measured |
+ | A card fix that was never exercised | The corrected card was uploaded and the documented path never re-run against the published revision | Re-run the documented load anonymously after any card or split change; a fix is not a verification |
+ | A recorded commit hash that does not exist | The hash was transcribed by hand instead of read back | Read the pin from the API and confirm the commit resolves; a 422 is the only thing that catches a corrupted tail |
+ | The card's loading example promises row counts the manifest does not have | Counts are typed into the template, so they drift silently when the build changes | Derive the `configs` block and the counts from the manifest in a test (`tests/test_hf_card.py`); show the test fails on the pre-fix card |
