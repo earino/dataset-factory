@@ -126,9 +126,8 @@ Read-only verification on the deployed tree:
 
 ## Next action
 
-Ship R2 after clean-clone and exact-commit CI. Implement R1 with the generated-artifact
-scrub on the worker, bind every diagnostic to the scanned bytes, and run pinned historical
-acceptance through Scout. Keep the hold active; do not rebuild the blocked datasets in A4.
+Run pinned R1 historical acceptance through Scout, then complete the remaining gates
+and architecture items. Keep the hold active; do not rebuild the blocked datasets in A4.
 
 ## R1 implementation checkpoint (Codex, 2026-11-07)
 
@@ -151,5 +150,14 @@ Targeted suites have passed (117 construction/gate tests, 119 receipt/site tests
 and 15 battery algorithm/phase tests in separate runs). Full clean-clone and CI
 validation, pinned historical worker acceptance and complete A1/A2/A4 remain pending.
 No new gate has been claimed deployed and no real-artifact recovery numbers have
-been computed on the coordinator. Next: finish review/CI, prepare exact frozen-input
-fetch bundles, and give Scout the reviewed source hashes for bounded acceptance jobs.
+been computed on the coordinator.
+
+At `02b0345`, a fresh clone passed all 765 tests (13 platform-specific skips), gate
+selftest, runtime source inventory and suitability checks. Both push and PR CI
+workflows passed for the exact SHA. PR #28 remains draft pending historical evidence.
+The first reviewed worker attempt `resilience-a1-small-002` fetches four original
+artifacts and original source members directly from private staging (4,580,565 bytes).
+Its exact source-bundle hash is pinned while `hold` remains true. Archive safety,
+plan identity and degraded-recovery regressions passed with assembly safety (19 tests).
+This is preparation, not a completed acceptance run. Scout must read back the live
+plan and bounded allowance, operate the sole worker, collect diagnostics and clean up.

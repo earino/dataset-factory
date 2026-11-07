@@ -7,10 +7,12 @@ remains true with an empty worker allowlist. No datasets were rebuilt or publish
 R1 work on `codex/deterministic-recovery-gate` adds a two-phase feature-only battery,
 strict exact-recovery refusal, generated-file scrub, quality receipt, all-file
 acceptance and package/manifest admission. Targeted regression suites pass.
-Full clean-clone/CI and A1/A2/A4 worker acceptance remain pending. See
+Clean clone passed 765 tests (13 skips); all four exact-SHA CI runs for `02b0345`
+passed. A1/A2/A4 worker acceptance remains pending. See
 `docs/RECOVERY-BATTERY.md` and the implementation ledger for code boundaries.
-Next: review/CI, then prepare pinned historical input fetches and reviewed bundles
-for Scout as sole worker-launch coordinator. Preserve every blocked/frozen artifact.
+Next: Scout runs the reviewed `resilience-a1-small-002` acceptance bundle under its
+exact policy pin (four original artifacts, no rebuild), collects compact reports and
+destroys the worker. PR #28 remains draft; preserve every blocked/frozen artifact.
 
 ## 2026-11-07 — Codex: admission hold deployed; answer-artifact scrubber implemented
 

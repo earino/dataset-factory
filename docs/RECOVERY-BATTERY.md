@@ -100,3 +100,36 @@ It is a counts-only construction receipt. Do not put scored identifiers, fixture
 answers or salts in that receipt or in shipped code. The receipt is a declaration
 whose source/measurement provenance remains auditable; the gate does not claim that
 an arbitrary supplied hash independently proves the source semantics.
+
+## Historical acceptance operation
+
+`resilience-a1-small` is a four-case read-only worker bundle declared under
+`candidates/nz-ea-wholesale-price-exceedance/resilience-a1/`. The candidate field
+only anchors the existing job system; its cases cover NZ-EA, UNHCR, original
+NS-BWA and original OCHA artifacts. Core hashes reconstruct each audited artifact
+version. Original code is fetched from already-staged source archives and copied
+only by explicitly named member and digest. It is never executed. Missing bytes,
+changed hashes, reduced expected coverage or any error in the expected exact
+recovery fails acceptance. No old package is repaired or requalified by this run.
+
+The first assembled ID `resilience-a1-small-001` was superseded locally before
+launch after a path-containment unit test exposed macOS `/tmp` ancestry handling.
+It has no admission pin. The reviewed attempt is `resilience-a1-small-002`, pinned
+in `config/admission.json`. The job uses one cx23, 3 GiB container memory, 90-minute
+timeout, 120-minute lifetime and 20 MiB output cap. Scout must confirm the live
+worker plan and allowance before launch; no allowance or policy limit is raised.
+
+Scout is the sole launcher. Fetch the reviewed PR commit into the existing checkout
+only with a clean working tree, assemble `resilience-a1-small`, verify the generated
+source-bundle hash equals the policy pin, and use the existing worker plan/launch,
+collect and destroy operations. This is acceptance of a draft gate under the hold,
+not a claim that the gate is ready for ordinary construction. Return to the main
+branch after the experiment, preserving the ledger and collected reports. Do not
+launch a second attempt without a recorded diagnosis and separately reviewed pin.
+
+Collect `acceptance-summary.json`, each case's `acceptance.json`, `qualification.json`,
+`battery.json` and bounded `results-*.jsonl`. Their hashes bind all original inputs
+and the new gate code. Full prediction vectors remain worker scratch and are
+discarded at cleanup; they never become dataset release assets. A job success means
+the specified historical defects were reproduced and refused, not that those old
+artifacts passed qualification. A1's remaining cases and all A2/A4 work are separate.
