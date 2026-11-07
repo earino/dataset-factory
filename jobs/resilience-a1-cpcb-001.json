@@ -1,0 +1,231 @@
+{
+  "job": {
+    "id": "resilience-a1-cpcb-001",
+    "candidate": "cpcb-aqi-exceedance",
+    "image": "python:3.13-slim",
+    "command": [
+      "python3",
+      "-B",
+      "/workspace/historical-recovery-audit.py"
+    ],
+    "server_type": "cpx32",
+    "location": "hel1",
+    "cpus": 4,
+    "memory_mb": 6144,
+    "timeout_minutes": 120,
+    "lifetime_minutes": 180,
+    "max_disk_mb": 20000,
+    "max_artifact_mb": 20,
+    "release": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "assets": [
+        {
+          "asset_id": 716182946,
+          "dest": "cpcb/meta.json",
+          "size": 1197,
+          "sha256": "1f59e74e4d6003f03371c4514ee9edda7e79e8ecfa3f995723b1520bac6e2fd7"
+        },
+        {
+          "asset_id": 716182991,
+          "dest": "cpcb/private/holdout.csv",
+          "size": 22967353,
+          "sha256": "2dae0040cdc2c80fa4adc9cc3b48f26882a6a20f451a252ac3a72f10da8f460f"
+        },
+        {
+          "asset_id": 716183073,
+          "dest": "cpcb/public/eval.csv",
+          "size": 20210392,
+          "sha256": "e187f645445e135e092898a280e74a2ecba6e75cb25ed9c5470d6f96f779c478"
+        },
+        {
+          "asset_id": 716183169,
+          "dest": "cpcb/public/train.csv",
+          "size": 45644743,
+          "sha256": "24b03a701c34d91834a7c5285d1c928ec33cda9282a2085405b06d541faa9c73"
+        },
+        {
+          "asset_id": 716183333,
+          "dest": "cpcb/quality.json",
+          "size": 22603,
+          "sha256": "98250e9d2731f89da021aec360f5d5535fc374241a98db14f185397f9126849a"
+        },
+        {
+          "asset_id": 716183748,
+          "dest": "cpcb/original-source.tar",
+          "size": 235520,
+          "sha256": "90fd916354115b53910118e42df6c3aea91a41a10011b18bc5fc4d92b8612e25"
+        }
+      ]
+    },
+    "note": "Read-only A1 strict-recovery acceptance over original full CPCB artifact and pinned nonexecuted build.py. Scout sole launcher, one attempt after budget/pin/no-active-worker checks. Existing cpx32 ceiling EUR 0.08/hour; maximum reservation EUR 0.32 with 60-minute grace. No rebuild, publication, adapter retry or policy allowance change. Collect bounded reports, destroy and reconcile.",
+    "source_files": [
+      {
+        "bundled_as": "historical-recovery-audit.py",
+        "source": "scripts/historical-recovery-audit.py",
+        "bytes": 7899,
+        "sha256": "81467d34ef6221e356b1ec901ac3c079c633d2212b452f7fa95d2f16c50fefe1"
+      },
+      {
+        "bundled_as": "cases.json",
+        "source": "candidates/cpcb-aqi-exceedance/resilience-a1/cases.json",
+        "bytes": 2257,
+        "sha256": "5349b07ad0698e61d2fb414b1727dacffb258d524255d6c13284163f426731d9"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 62645,
+        "sha256": "83a5f14b9427fdd115dff26a4d65f43b28781774818b8da7ae6641d5848e6959"
+      },
+      {
+        "bundled_as": "artifact_scrub.py",
+        "source": "factory/artifact_scrub.py",
+        "bytes": 11369,
+        "sha256": "8c663253e691a7b8751f9c853b40a3752a833360caafb1ea8e8f534e64af4b68"
+      },
+      {
+        "bundled_as": "leakage_battery.py",
+        "source": "factory/leakage_battery.py",
+        "bytes": 17379,
+        "sha256": "adbf7ee0aca0012b78cc1f1e4aeb968a23717cae30f66a02e080215e75f830e3"
+      },
+      {
+        "bundled_as": "recovery_recipes.py",
+        "source": "factory/recovery_recipes.py",
+        "bytes": 17609,
+        "sha256": "f64c542fcda232169c95ace17421b45275194b934938c0ea4c9b68e6f844ad0e"
+      }
+    ]
+  },
+  "reservation_eur": "0.32",
+  "rate_ceiling_eur": "0.08",
+  "reserved_hours": 4,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 215040,
+  "source_sha256": "b5a4f3eb9e849cc585ef6b6d71dea30c6483bea55082977b8915f35296b84758",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-07T19:13:59.135930+00:00",
+  "expires": 1794089639,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0692400000000000",
+  "server_id": 175022272,
+  "known_hosts": "/opt/data/dataset-factory/.factory/resilience-a1-cpcb-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "resilience-a1-cpcb-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": null,
+      "fetched": [
+        {
+          "dest": "cpcb/meta.json",
+          "bytes": 1197,
+          "sha256": "1f59e74e4d6003f03371c4514ee9edda7e79e8ecfa3f995723b1520bac6e2fd7"
+        },
+        {
+          "dest": "cpcb/private/holdout.csv",
+          "bytes": 22967353,
+          "sha256": "2dae0040cdc2c80fa4adc9cc3b48f26882a6a20f451a252ac3a72f10da8f460f"
+        },
+        {
+          "dest": "cpcb/public/eval.csv",
+          "bytes": 20210392,
+          "sha256": "e187f645445e135e092898a280e74a2ecba6e75cb25ed9c5470d6f96f779c478"
+        },
+        {
+          "dest": "cpcb/public/train.csv",
+          "bytes": 45644743,
+          "sha256": "24b03a701c34d91834a7c5285d1c928ec33cda9282a2085405b06d541faa9c73"
+        },
+        {
+          "dest": "cpcb/quality.json",
+          "bytes": 22603,
+          "sha256": "98250e9d2731f89da021aec360f5d5535fc374241a98db14f185397f9126849a"
+        },
+        {
+          "dest": "cpcb/original-source.tar",
+          "bytes": 235520,
+          "sha256": "90fd916354115b53910118e42df6c3aea91a41a10011b18bc5fc4d92b8612e25"
+        }
+      ],
+      "failures": [],
+      "bytes": 89081808
+    },
+    "image_id": "sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc",
+    "image_digests": [
+      "python@sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 863.9,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 437793118,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-879c5a6008676a6a20ec",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-879c5a6008676a6a20ec/manifest.json",
+    "assets": [
+      {
+        "id": 721709065,
+        "size": 161,
+        "sha256": "809addb5d63bfddea27a4106519b43cb0a85ae5ac70e060c7a54eaff744f803c"
+      },
+      {
+        "id": 721709123,
+        "size": 2883,
+        "sha256": "3e0194040d6921335ba27426e056801774ed5f3b457f4c782dc06830f3c93b34"
+      },
+      {
+        "id": 721709170,
+        "size": 39467,
+        "sha256": "7ebdeb8073b9fe6ed2f298fa613aa52127e8c209c8c18a5fcdf7122f45630fcf"
+      },
+      {
+        "id": 721709214,
+        "size": 62423,
+        "sha256": "ff38b56b3fd596ecc963939da979f94a014360a8995e3c26a249d6b28aa4f03b"
+      },
+      {
+        "id": 721709305,
+        "size": 245632,
+        "sha256": "d21978ef1d61bed113c4d2225c816b9e089d8700f785554c79119d53043e7517"
+      },
+      {
+        "id": 721709355,
+        "size": 245533,
+        "sha256": "6a00ede267ae723c7964429e4fd77282ff744d499d87fbb0c97581629d136241"
+      },
+      {
+        "id": 721709414,
+        "size": 56741,
+        "sha256": "cccfcee3b624614fa0134e88411e7c406c8dccbe500186a2e5f2476b6a0e9253"
+      },
+      {
+        "id": 721709462,
+        "size": 215040,
+        "sha256": "b5a4f3eb9e849cc585ef6b6d71dea30c6483bea55082977b8915f35296b84758"
+      },
+      {
+        "id": 721709538,
+        "size": 57,
+        "sha256": "be5db5effd536faba4d5fa130e67bb82e8d114d0034a9984f82fa409e01abf34"
+      },
+      {
+        "id": 721709616,
+        "size": 8700,
+        "sha256": "7ae0cf44d18f9e73f67aa5bae1f6743aff4c038e91349a1d1e2348440df41907"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-07T19:35:28.374799+00:00",
+  "deleted_at": "2026-11-07T20:00:38.852021+00:00"
+}

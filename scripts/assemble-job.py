@@ -196,6 +196,19 @@ def assemble(spec: dict, job: dict, target: Path):
         recorded.append({"bundled_as": name, "source": relative,
                          "bytes": source.stat().st_size, "sha256": sha256_of(source)})
 
+    # A gate bundle always gets its canonical stdlib dependencies. No vendored copy
+    # or optional builder declaration can select an older battery implementation.
+    gate_source = 'skills/dataset-qualification/scripts/qualify_dataset.py'
+    for name, relative in spec['files']:
+        if relative != gate_source:
+            continue
+        for dependency in ('artifact_scrub.py','leakage_battery.py','recovery_recipes.py'):
+            source = safe_path(ROOT, 'factory/'+dependency)
+            destination = (Path(name).parent/dependency).as_posix()
+            copy(source,destination)
+            recorded.append({'bundled_as':destination,'source':'factory/'+dependency,
+                             'bytes':source.stat().st_size,'sha256':sha256_of(source)})
+
     for destination, source_dir in spec.get("trees", []):
         # A whole directory, laid out under a subdirectory of the bundle - used to give a job the
         # published package exactly as a consumer would see it after cloning.

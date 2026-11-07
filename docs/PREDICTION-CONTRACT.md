@@ -53,6 +53,14 @@ record the evidence status in the public suitability summary. For real-time fore
 source must support historical vintages, each input's availability must be verified, and scored
 membership must be decidable at prediction time.
 
+Gate 1.6 additionally runs the automatic feature-only recovery battery, regardless of
+declared probes. Exact reconstruction of at least one eval/holdout label with zero errors
+blocks new qualification in every scope, including `isolated_rows` and `chronological`.
+Disclosures or restrictions do not waive demonstrated recovery. Statistical warning flags
+remain distinct from algebraic/fixture identities. See `RECOVERY-BATTERY.md` for the
+explicit construction write to `quality.json`, byte-bound acceptance and historical
+comparison of frozen releases.
+
 ## Full-row availability ledger
 
 For historical forecasting, supply `availability_ledger`, a relative private artifact path to CSV:

@@ -54,7 +54,8 @@ class AssembledBundle(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name).resolve()
         spec = assemble_job.BUNDLES["austin-911-response"]
-        for relative in [spec["job_file"], *(source for _, source in spec["files"])]:
+        for relative in [spec["job_file"], *(source for _, source in spec["files"]),
+                         "factory/artifact_scrub.py", "factory/leakage_battery.py", "factory/recovery_recipes.py"]:
             destination = self.root / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / relative, destination)
@@ -78,13 +79,19 @@ class AssembledBundle(unittest.TestCase):
 
     def test_the_bundle_is_self_contained(self):
         names = {entry["bundled_as"] for entry in self.report["files"]}
-        self.assertEqual(names, {"build.py", "run.sh", "qualify_dataset.py"})
+        self.assertEqual(names, {"build.py", "run.sh", "qualify_dataset.py", "artifact_scrub.py",
+                                 "leakage_battery.py", "recovery_recipes.py"})
         self.assertTrue((self.directory / "build.py").is_file())
         self.assertTrue((self.directory / "run.sh").is_file())
         # The gate inside the bundle is the repository's gate, byte for byte.
         canonical = ROOT / "skills" / "dataset-qualification" / "scripts" / "qualify_dataset.py"
         self.assertEqual((self.directory / "qualify_dataset.py").read_bytes(),
                          canonical.read_bytes())
+        proc = subprocess.run([sys.executable, str(self.directory/'qualify_dataset.py'), '--help'],
+                              cwd=self.directory, env={'PATH':'/usr/bin:/bin','PYTHONDONTWRITEBYTECODE':'1'},
+                              capture_output=True, text=True)
+        self.assertEqual(proc.returncode,0,proc.stderr)
+        self.assertIn('--record-battery',proc.stdout)
 
     def test_the_bundle_passes_the_worker_source_rules(self):
         bundle = worker.source_bundle(self.directory / "job.json", self.job)

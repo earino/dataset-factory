@@ -1,3 +1,90 @@
+## 2026-11-07 — Codex: all seven A1 recoveries measured; cleanup handoff pending
+
+CPCB compact reports independently match the raw staging manifest and expected
+zero-error recoveries. A1 measurement coverage is complete; provider cleanup and
+the CPCB ledger commit remain pending. No next worker is authorized yet.
+The concurrent follow-up 451516f replaced STATE with its own entry; prior history
+is restored verbatim below that entry. No history was rewritten. Read the top
+entries and implementation ledger for current work, not the entire historical file.
+A2 plans cover all 98 frozen task artifacts; A4 original-package plans are prepared
+on separate branches. R1 remains draft pending A2. The admission hold stays active.
+The preceding 41da507 commit recorded CPCB verification only; this commit performs
+the history restoration mentioned prematurely in that commit title.
+
+## 2026-11-07 (19:48Z) - follow-up (worker-status runner): resilience-a1-fixtures-001 + resilience-a1-small-002 SUCCEEDED - both already collected, destroyed, recorded and independently verified; re-verified per-case and against the live provider this session; both marked handled; resilience-a1-cpcb-001 RUNNING as the standing handoff
+
+Watcher event for the two A1 acceptance jobs. Both had already been
+collected, destroyed and recorded by the earlier session (fixtures
+evidence 8e7009c, small evidence 13737a6 + 58e127e, independent
+verification and CPCB pin 9e61565). This follow-up verified from
+committed evidence and read-only live calls only; no collect, launch,
+recovery or score, nothing re-run:
+
+- resilience-a1-fixtures-001: acceptance-summary ok (cqc, wildfire
+  exit 0), both per-case acceptance.json ok:true with
+  strict_gate_refused:true; receipt pins staging release 437775462
+  (manifest 0b62e5a9...), worker cx23 172.9 s EUR 0.06 destroyed;
+  ledger status deleted, collected 18:57:33Z, deleted 18:58:34Z
+  (server 175019878).
+- resilience-a1-small-002: acceptance-summary ok (nzea, unhcr, nsbwa,
+  ocha exit 0), all four per-case acceptance.json ok:true with
+  strict_gate_refused:true; receipt pins staging release 437762044
+  (manifest 95c6da86...), worker cx23 39.9 s EUR 0.06 destroyed;
+  ledger status deleted, collected 18:32:13Z, deleted 18:34:23Z
+  (server 175017328).
+- Cleanup re-confirmed live by this session (read-only provider GETs,
+  19:48Z): GET /v1/servers/175019878 -> 404 "server not found";
+  GET /v1/servers/175017328 -> 404 "server not found"; project
+  inventory holds exactly ONE server, 175022272
+  scout-resilience-a1-cpcb-001 (running) with its one assigned primary
+  IP - the expected running handoff per the recorded next action, not
+  cleanup residue.
+- Exact-commit CI read: 9e61565, 8e7009c and 13737a6 push runs all
+  completed/success (plus their pull_request runs).
+- Both jobs marked handled (.factory/resilience-a1-fixtures-001/
+  handled, .factory/resilience-a1-small-002/handled, citing the
+  evidence commits). A1 acceptance progress only - NOT package
+  clearance; no published byte, tag, manifest or destination changed.
+
+Next action unchanged (top entry + docs/FACTORY-RESILIENCE-IMPLEMENTATION.md):
+resilience-a1-cpcb-001 (server 175022272, launched 19:13:59Z, EUR 0.32
+reservation) is running; its ledger record is live and untracked; the
+next worker-status event handles its collection and cleanup. The
+untracked jobs/resilience-a1-cpcb-001.json is that live record and is
+preserved untouched by this follow-up.
+
+
+## 2026-11-07 — Codex: six historical recovery families verified; CPCB prepared
+
+The two Scout acceptance workers are complete and deleted. Their compact reports
+were independently hash-checked against staging manifests. NZEA, UNHCR, NS-BWA,
+OCHA, CQC and wildfire reproduced the expected exact recovery; gate 1.6 refused
+every original artifact. This is A1 progress only, not package clearance.
+Fixture receipt metadata is corrected with the prior claim preserved; original
+worker reports and dataset bytes stay unchanged. Scout reports zero servers/IPs.
+Next: green CI then Scout alone launches resilience-a1-cpcb-001, source pin
+b5a4f3eb9e849cc585ef6b6d71dea30c6483bea55082977b8915f35296b84758,
+existing cpx32 policy, at most EUR 0.32 reservation, one attempt followed by
+collection and cleanup. R3 PR #29 and R4 PR #30 remain separate draft branches;
+R4 916bc92 passed 805 clean-clone tests and all four exact-SHA CI runs. Admission
+hold stays active; A2/A3/A4, adversarial audit and architecture work remain pending.
+
+## 2026-11-07 — Codex: R2 shipped/deployed; gate 1.6 implementation awaiting acceptance
+
+R2 PR #27 merged as `a2578ed`, passed both exact-merge CI workflows, and Scout
+recorded deployed refusals for all four blocked packages in `fbc8fee`. The hold
+remains true with an empty worker allowlist. No datasets were rebuilt or published.
+
+R1 work on `codex/deterministic-recovery-gate` adds a two-phase feature-only battery,
+strict exact-recovery refusal, generated-file scrub, quality receipt, all-file
+acceptance and package/manifest admission. Targeted regression suites pass.
+Clean clone passed 765 tests (13 skips); all four exact-SHA CI runs for `02b0345`
+passed. A1/A2/A4 worker acceptance remains pending. See
+`docs/RECOVERY-BATTERY.md` and the implementation ledger for code boundaries.
+Next: Scout runs the reviewed `resilience-a1-small-002` acceptance bundle under its
+exact policy pin (four original artifacts, no rebuild), collects compact reports and
+destroys the worker. PR #28 remains draft; preserve every blocked/frozen artifact.
+
 ## 2026-11-07 — Codex: admission hold deployed; answer-artifact scrubber implemented
 
 PR #26 merge `16657ab` passed exact-commit CI. Scout deployed and recorded read-back

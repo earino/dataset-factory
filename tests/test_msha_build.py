@@ -426,7 +426,7 @@ class Constructed(unittest.TestCase):
         for name in self.manifest["shipped_configs"]:
             report = gate.qualify(self.out / name)
             self.assertFalse(report.ok)
-            if report.failed_checks != ["contract.declared"]:
+            if report.failed_checks != ["battery.recorded_in_quality", "contract.declared"]:
                 failures.append((name, report.failed_checks))
         self.assertEqual(failures, [])
 

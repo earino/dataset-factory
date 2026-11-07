@@ -359,7 +359,7 @@ class CQCSyntheticRehearsal(unittest.TestCase):
         cls.report = cls.tmp / "qualification.json"
         proc = run([sys.executable, str(GATE), str(cls.out), "--json",
                     "--report", str(cls.report)])
-        assert proc.returncode == 0, f"gate failed:\n{proc.stdout}\n{proc.stderr}"
+        assert proc.returncode != 0, "retained defective CQC builder must not pass gate 1.6"
         cls.gate_report = json.loads(cls.report.read_text())
 
     @classmethod
@@ -370,9 +370,10 @@ class CQCSyntheticRehearsal(unittest.TestCase):
         with (self.out / rel).open() as handle:
             return list(csv.DictReader(handle))
 
-    def test_01_gate_passed_with_zero_failed_checks(self):
-        self.assertEqual(self.gate_report.get("failed_checks"), [])
-        self.assertTrue(self.gate_report.get("ok"))
+    def test_01_old_builder_fails_strict_recovery_and_shipped_answer_checks(self):
+        self.assertIn('battery.exact_recovery', self.gate_report['failed_checks'])
+        self.assertIn('artifacts.no_shipped_answers', self.gate_report['failed_checks'])
+        self.assertFalse(self.gate_report['ok'])
 
     def test_02_single_instant_scored_frames(self):
         evald = self.read_split("public/eval.csv")
@@ -382,7 +383,7 @@ class CQCSyntheticRehearsal(unittest.TestCase):
         train = self.read_split("public/train.csv")
         self.assertEqual({r["instant"] for r in train}, {"2016-01", "2021-01"})
 
-    def test_03_pseudonym_unlinkability_and_no_raw_ids(self):
+    def test_03_pseudonym_rotation_is_not_a_claim_of_unlinkability(self):
         # a location active at several instants must carry a DIFFERENT key at
         # each instant, and no raw location id may appear in any split file
         with (self.out / "auxiliary" / "location_map.csv").open() as handle:
@@ -439,20 +440,16 @@ class CQCSyntheticRehearsal(unittest.TestCase):
             self.assertEqual(results_per_split["holdout"]["covered"], 0,
                              f"{name}: holdout successor coverage must be 0")
 
-    def test_06_accept_exact_bytes_then_score_references(self):
-        proc = run([sys.executable, str(GATE), "--accept", str(self.report),
-                    str(self.out)])
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        refs = self.tmp / "references.json"
-        proc = run([sys.executable, str(SCORE), "--data", str(self.out),
-                    "--accepted-report", str(self.report),
-                    "--report", str(refs)])
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        data = json.loads(refs.read_text())
-        self.assertEqual(data["rows"]["eval"], len(self.read_split("public/eval.csv")))
-        for name in ("local_authority_rate", "last_rating_rate",
-                     "beds_bucket_rate", "hsca_start_year_rate"):
-            self.assertIn(name, data["references"])
+    def test_06_failed_qualification_cannot_be_accepted_for_scoring(self):
+        proc = run([sys.executable, str(GATE), "--accept", str(self.report), str(self.out)])
+        self.assertNotEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn('did not pass', proc.stdout)
+        references = self.tmp/'refused-references.json'
+        score = run([sys.executable, str(SCORE), '--data', str(self.out),
+                     '--accepted-report', str(self.report), '--report', str(references)])
+        self.assertNotEqual(score.returncode,0)
+        self.assertIn('refusing to score',score.stdout+score.stderr)
+        self.assertFalse(references.exists())
 
     def test_07_byte_identical_rebuild(self):
         out2 = self.tmp / "extract2"

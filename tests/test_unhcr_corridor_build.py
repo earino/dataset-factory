@@ -179,7 +179,7 @@ class UNHCRCorridorSyntheticRehearsal(unittest.TestCase):
         cls.report = cls.tmp / "qualification.json"
         proc = run([sys.executable, str(GATE), str(cls.out), "--json",
                     "--report", str(cls.report)])
-        assert proc.returncode == 0, f"gate failed:\n{proc.stdout}\n{proc.stderr}"
+        assert proc.returncode != 0, "legacy answer-bearing descriptor must fail gate 1.6"
         cls.gate_report = json.loads(cls.report.read_text())
 
     @classmethod
@@ -195,9 +195,9 @@ class UNHCRCorridorSyntheticRehearsal(unittest.TestCase):
                 + self.read_split("public/eval.csv")
                 + self.read_split("private/holdout.csv"))
 
-    def test_01_gate_passed_with_zero_failed_checks(self):
-        self.assertEqual(self.gate_report.get("failed_checks"), [])
-        self.assertTrue(self.gate_report.get("ok"))
+    def test_01_legacy_descriptor_answer_examples_are_refused(self):
+        self.assertIn('artifacts.no_shipped_answers', self.gate_report['failed_checks'])
+        self.assertFalse(self.gate_report['ok'])
 
     def test_02_one_row_per_corridor_across_all_splits(self):
         seen = {}
@@ -250,31 +250,16 @@ class UNHCRCorridorSyntheticRehearsal(unittest.TestCase):
                        ("OLE", "HLE"), ("OL2", "HL2"), ("ONC", "HNC")):
             self.assertNotIn(absent, built, f"{absent} must not be built")
 
-    def test_06_accept_exact_bytes_then_score_references(self):
-        proc = run([sys.executable, str(GATE), "--accept", str(self.report),
-                    str(self.out)])
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        refs = self.tmp / "references.json"
-        proc = run([sys.executable, str(SCORE), "--data", str(self.out),
-                    "--accepted-report", str(self.report),
-                    "--report", str(refs)])
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        data = json.loads(refs.read_text())
-        self.assertEqual(data["rows"]["eval"],
-                          len(self.read_split("public/eval.csv")))
-        for name in ("identity_only_origin", "identity_only_host",
-                     "identity_combined", "momentum_raw",
-                     "momentum_bucket_rate", "persistence_state_rate",
-                     "persistence_last_value", "global_rate",
-                     "majority_class"):
-            self.assertIn(name, data["references"])
-        self.assertIn(data["deciding_check"]["verdict"],
-                      ("headroom_demonstrated_at_reference_level",
-                       "identity_prior_dominates_no_headroom",
-                       "no_demonstrated_headroom_inconclusive"))
-        # the holdout is never opened by the scoring stage
-        for name, entry in data["references"].items():
-            self.assertNotIn("holdout_auc", entry)
+    def test_06_failed_qualification_cannot_be_accepted_for_scoring(self):
+        proc = run([sys.executable, str(GATE), "--accept", str(self.report), str(self.out)])
+        self.assertNotEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn('did not pass', proc.stdout)
+        references = self.tmp/'refused-references.json'
+        score = run([sys.executable, str(SCORE), '--data', str(self.out),
+                     '--accepted-report', str(self.report), '--report', str(references)])
+        self.assertNotEqual(score.returncode,0)
+        self.assertIn('refusing to score',score.stdout+score.stderr)
+        self.assertFalse(references.exists())
 
     def test_07_byte_identical_rebuild(self):
         out2 = self.tmp / "extract2"

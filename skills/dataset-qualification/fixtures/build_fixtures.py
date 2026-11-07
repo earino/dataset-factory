@@ -5,7 +5,7 @@ Four tiny synthetic datasets used by `qualify_dataset.py --selftest`:
 
 * `corrected/`          - a clean extract. The gate must accept it.
 * `broken/`             - the general defect set: a shipped answer source, a post-hoc feature,
-                          an unrecorded known-event fixture, a public holdout, an undeclared
+                          an missing counts-only unit-validation receipt, a public holdout, an undeclared
                           high-cardinality column, and a declared positive count that
                           disagrees with the rows.
 * `broken-overlap/`     - **evaluation rows drawn from the training period**, while the
@@ -119,11 +119,7 @@ def shared_quality() -> dict:
         ],
         "external_threshold": {"value": THRESHOLD_SECONDS, "unit": "seconds",
                                "source": "20 minutes, frozen from the training window"},
-        "known_event": {
-            "name": "record event the method must flag",
-            "expected_verdict": "exceeds",
-            "source": "recorded fixture",
-        },
+        "unit_validation": {'checks': 1, 'mismatches': 0, 'source': 'synthetic qualification selftest; not a source-data measurement', 'evidence_sha256': '08a9be640721cde9d1ea20c0acdb5320295f1afb1ac0b3b731b8ecd1c5195e52'},
         "split_windows": WINDOWS,
         # The clean fixture has no repeated identifiers, and saying so explicitly exercises the
         # declared path rather than the "no declaration" path.
@@ -171,7 +167,7 @@ def build_broken(root: Path) -> None:
     quality = shared_quality()
     quality["features"] = ["initial_problem_category", "sector", "priority_level"]
     quality["high_cardinality_columns"] = []
-    quality.pop("known_event")
+    quality.pop("unit_validation")
     quality["positive_events"]["eval"] = {"positives": 7, "distinct_events": 30}
     write_dataset(root, splits, rows, DIRTY_COLUMNS, quality)
 

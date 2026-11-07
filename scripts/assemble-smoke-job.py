@@ -227,6 +227,10 @@ def assemble(job_path: Path, harness: Path, out_path: Path | None,
     bundle_files = smoke.get("bundle_files")
     if not isinstance(bundle_files, dict) or not bundle_files:
         raise ValueError("smoke.bundle_files must map bundle paths to sources")
+    bundle_files = dict(bundle_files)
+    if bundle_files.get('gate/qualify_dataset.py') == 'repo:skills/dataset-qualification/scripts/qualify_dataset.py':
+        for dependency in ('artifact_scrub.py','leakage_battery.py','recovery_recipes.py'):
+            bundle_files['gate/'+dependency] = 'repo:factory/'+dependency
     fill_expected_assets(smoke, dataset)
 
     files = {}

@@ -19,6 +19,8 @@ import contextlib
 import csv
 import importlib.util
 import io
+import hashlib
+import shutil
 import json
 import sys
 import tempfile
@@ -107,9 +109,20 @@ def build_austin_fixture(out_dir: str, *, spread_days: bool = True,
     q = json.loads(qp.read_text())
     meta = json.loads((Path(out_dir) / "meta.json").read_text())
     q["evaluation_contract"] = research_contract(meta["columns"], q["target"])
+    q.pop('known_event', None)
+    q['unit_validation'] = {'checks': sum(map(len,batches)), 'mismatches': 0,
+        'source': 'synthetic mocked API response times, 1200 seconds = 20 minutes',
+        'evidence_sha256': hashlib.sha256(json.dumps(batches,sort_keys=True).encode()).hexdigest()}
     qp.write_text(json.dumps(q))
     manifest = json.loads((Path(out_dir) / "manifest.json").read_text())
     return Path(out_dir), manifest
+
+
+def qualify_fixture(dataset):
+    with tempfile.TemporaryDirectory() as tmp:
+        copied = Path(tmp)/'extract'
+        shutil.copytree(dataset,copied)
+        return qualify_dataset.qualify(copied, record_battery=True)
 
 
 def findings(report) -> dict:
@@ -125,17 +138,17 @@ class GateFixtures(unittest.TestCase):
         self.assertEqual(code, 0, captured.getvalue())
 
     def test_corrected_fixture_is_accepted(self):
-        report = qualify_dataset.qualify(FIXTURES / "corrected")
+        report = qualify_fixture(FIXTURES / "corrected")
         self.assertTrue(report.ok, report.render())
 
     def test_general_broken_fixture_is_rejected_with_named_reasons(self):
-        report = qualify_dataset.qualify(FIXTURES / "broken")
+        report = qualify_fixture(FIXTURES / "broken")
         self.assertFalse(report.ok)
         failed = {name for name, ok in findings(report).items() if not ok}
         for expected in ("leakage.answer_source_absent",
                          "leakage.no_single_column_determines_the_target",
                          "timing.no_post_hoc_feature",
-                         "units.known_event_fixture_recorded",
+                         "units.validation_receipt",
                          "splits.positive_events_match_rows",
                          "runner.layout"):
             self.assertIn(expected, failed, f"{expected} should have failed")
@@ -146,7 +159,7 @@ class GateFixtures(unittest.TestCase):
         Every declaration is the clean one, so nothing but the rows themselves reveals that
         the eval split sits inside the training period.
         """
-        report = qualify_dataset.qualify(FIXTURES / "broken-overlap")
+        report = qualify_fixture(FIXTURES / "broken-overlap")
         self.assertFalse(report.ok)
         failed = {name for name, ok in findings(report).items() if not ok}
         self.assertIn("splits.actual_ranges_disjoint", failed)
@@ -161,7 +174,7 @@ class GateFixtures(unittest.TestCase):
 
     def test_regression_evaluation_split_with_no_negatives(self):
         """The other false pass: an eval split that contains only positives."""
-        report = qualify_dataset.qualify(FIXTURES / "broken-single-class")
+        report = qualify_fixture(FIXTURES / "broken-single-class")
         self.assertFalse(report.ok)
         failed = {name for name, ok in findings(report).items() if not ok}
         self.assertIn("splits.eval_and_holdout_have_both_classes", failed)
@@ -175,7 +188,7 @@ class GateFixtures(unittest.TestCase):
         The earlier version of this check reported both with the same message, which read
         "... in train and train" and failed a usable dataset for the wrong reason.
         """
-        report = qualify_dataset.qualify(FIXTURES / "broken-duplicates")
+        report = qualify_fixture(FIXTURES / "broken-duplicates")
         self.assertFalse(report.ok)
         failed = {name for name, ok in findings(report).items() if not ok}
         self.assertIn("splits.duplicate_entities_within_splits", failed)
@@ -191,7 +204,7 @@ class GateFixtures(unittest.TestCase):
         The claim is what makes the check meaningful: without it, a reused identifier carrying
         two labels is a measured source property, not a defect (see the next test).
         """
-        report = qualify_dataset.qualify(FIXTURES / "broken-duplicate-labels")
+        report = qualify_fixture(FIXTURES / "broken-duplicate-labels")
         self.assertFalse(report.ok)
         failed = {name for name, ok in findings(report).items() if not ok}
         self.assertIn("splits.repeated_identifiers_carry_one_label", failed)
@@ -200,7 +213,7 @@ class GateFixtures(unittest.TestCase):
 
     def test_regression_documented_repeats_are_accepted_with_the_count_recorded(self):
         """The real Austin shape: a reused identifier, no entity-key claim, accepted."""
-        report = qualify_dataset.qualify(FIXTURES / "documented-repeats")
+        report = qualify_fixture(FIXTURES / "documented-repeats")
         self.assertTrue(report.ok, report.render())
         result = next(r for r in report.results
                       if r["check"] == "splits.repeated_identifiers_carry_one_label")
@@ -231,11 +244,11 @@ class GateOnGeneratedOutput(unittest.TestCase):
         self.assertEqual(quality["split_windows"], austin_build.SPLIT_WINDOWS)
 
     def test_real_extract_passes_the_whole_gate(self):
-        report = qualify_dataset.qualify(self.out)
+        report = qualify_dataset.qualify(self.out, record_battery=True)
         self.assertTrue(report.ok, report.render())
 
     def test_real_extract_passes_every_check_it_is_responsible_for(self):
-        report = qualify_dataset.qualify(self.out)
+        report = qualify_dataset.qualify(self.out, record_battery=True)
         status = findings(report)
         for check in ("leakage.declared_columns",
                       "leakage.answer_source_absent",
@@ -260,7 +273,7 @@ class GateOnGeneratedOutput(unittest.TestCase):
     def test_reshipping_the_answer_source_is_rejected_on_the_real_files(self):
         """The regression that motivated the gate, replayed on generated output."""
         self._inject_response_time()
-        report = qualify_dataset.qualify(self.out)
+        report = qualify_dataset.qualify(self.out, record_battery=True)
         status = findings(report)
         self.assertFalse(status["leakage.answer_source_absent"])
         self.assertFalse(status["leakage.no_single_column_determines_the_target"])
@@ -281,7 +294,7 @@ class GateOnGeneratedOutput(unittest.TestCase):
             writer = csv.DictWriter(handle, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(rows)
-        report = qualify_dataset.qualify(self.out)
+        report = qualify_dataset.qualify(self.out, record_battery=True)
         self.assertFalse(findings(report)["splits.actual_ranges_disjoint"])
         self.assertFalse(findings(report)["splits.rows_within_declared_windows"])
 
@@ -296,7 +309,7 @@ class GateOnGeneratedOutput(unittest.TestCase):
             writer = csv.DictWriter(handle, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(rows)
-        report = qualify_dataset.qualify(self.out)
+        report = qualify_dataset.qualify(self.out, record_battery=True)
         self.assertFalse(findings(report)["splits.eval_and_holdout_have_both_classes"])
 
     def test_moving_an_incident_across_splits_is_rejected_as_leakage(self):
@@ -317,7 +330,7 @@ class GateOnGeneratedOutput(unittest.TestCase):
             writer = csv.DictWriter(handle, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(rows)
-        report = qualify_dataset.qualify(self.out)
+        report = qualify_dataset.qualify(self.out, record_battery=True)
         status = findings(report)
         self.assertFalse(status["splits.no_cross_split_entities"])
         detail = next(r["detail"] for r in report.results
@@ -334,7 +347,7 @@ class GateOnGeneratedOutput(unittest.TestCase):
             writer = csv.DictWriter(handle, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(rows)
-        report = qualify_dataset.qualify(self.out)
+        report = qualify_dataset.qualify(self.out, record_battery=True)
         status = findings(report)
         # Not leakage - nothing spans two splits.
         self.assertTrue(status["splits.no_cross_split_entities"])
@@ -363,7 +376,7 @@ class GateOnGeneratedOutput(unittest.TestCase):
         quality = json.loads(path.read_text())
         quality["positive_events"]["eval"]["distinct_events"] = 999
         path.write_text(json.dumps(quality))
-        report = qualify_dataset.qualify(self.out)
+        report = qualify_dataset.qualify(self.out, record_battery=True)
         self.assertFalse(findings(report)["splits.distinct_events_match_rows"])
 
     def test_missing_event_key_column_is_rejected(self):
@@ -371,7 +384,7 @@ class GateOnGeneratedOutput(unittest.TestCase):
         quality = json.loads(path.read_text())
         quality.pop("event_key_column")
         path.write_text(json.dumps(quality))
-        report = qualify_dataset.qualify(self.out)
+        report = qualify_dataset.qualify(self.out, record_battery=True)
         self.assertFalse(findings(report)["splits.event_key_column_declared"])
 
     def test_gate_rejects_a_public_holdout(self):
@@ -381,7 +394,7 @@ class GateOnGeneratedOutput(unittest.TestCase):
         quality = json.loads(quality_path.read_text())
         quality["splits"]["holdout"] = "public/holdout.csv"
         quality_path.write_text(json.dumps(quality))
-        report = qualify_dataset.qualify(self.out)
+        report = qualify_dataset.qualify(self.out, record_battery=True)
         self.assertFalse(findings(report)["runner.layout"])
 
     def _inject_response_time(self):
@@ -404,10 +417,10 @@ class AcceptanceGate(unittest.TestCase):
 
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
-        self.out, _ = build_austin_fixture(self._tmp.name)
+        self.out, _ = build_austin_fixture(str(Path(self._tmp.name)/"extract"))
         self.report = Path(self._tmp.name) / "qualification.json"
         self.assertTrue(qualify_dataset.main(
-            [str(self.out), "--json", "--report", str(self.report)]) == 0)
+            [str(self.out), "--record-battery", "--json", "--report", str(self.report)]) == 0)
 
     def tearDown(self):
         self._tmp.cleanup()
@@ -421,6 +434,16 @@ class AcceptanceGate(unittest.TestCase):
             handle.write("")  # no content change
         path.write_text(path.read_text().replace("Alpha", "Alpha ").strip() + "\n")
         self.assertEqual(qualify_dataset.accept(self.report, self.out), 1)
+
+    def test_new_auxiliary_file_invalidates_acceptance_without_changing_csvs(self):
+        (self.out/'new-note.txt').write_text('new unqualified bytes')
+        self.assertEqual(qualify_dataset.accept(self.report,self.out),1)
+
+    def test_top_level_ok_cannot_hide_a_missing_battery_check(self):
+        value=json.loads(self.report.read_text())
+        value['results']=[r for r in value['results'] if r['check'] != 'battery.exact_recovery']
+        self.report.write_text(json.dumps(value))
+        self.assertEqual(qualify_dataset.accept(self.report,self.out),1)
 
     def test_failed_report_is_refused(self):
         failed = dict(json.loads(self.report.read_text()))

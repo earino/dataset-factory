@@ -49,10 +49,21 @@ import csv
 import datetime
 import hashlib
 import json
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
-GATE_VERSION = "1.5.0"
+try:
+    import leakage_battery as battery
+    from artifact_scrub import scan_tree
+except ModuleNotFoundError:
+    if '__file__' in globals():
+        sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+    from factory import leakage_battery as battery
+    from factory.artifact_scrub import scan_tree
+
+GATE_VERSION = "1.6.0"
 
 MIN_GROUP_FOR_CATEGORICAL = 5
 MIN_EVAL_POSITIVES = 30
@@ -409,9 +420,11 @@ def check_evaluation_contract(dataset, quality, report, columns_by_split):
             try:
                 results = cross_row_probe(columns_by_split, quality, probe)
                 exposed = any(v['covered'] for v in results.values())
+                exact = any(v['covered'] >= 1 and v['mismatches'] == 0
+                            for s,v in results.items() if s in ('eval','holdout'))
                 report.add(f'contract.cross_row_probe_{index}',
-                           not exposed or access in ('isolated_rows', 'chronological'),
-                           'Outcome-bearing later-row exposure requires restricted evaluation access; mismatches are reported', results)
+                           not exact and (not exposed or access in ('isolated_rows', 'chronological')),
+                           'Exact scored-row recovery blocks every scope; approximate exposure still requires restricted access', results)
             except (KeyError, ValueError, TypeError, IndexError) as exc:
                 report.add(f'contract.cross_row_probe_{index}', False, f'Invalid probe: {exc}')
     if scope == 'historical_forecasting':
@@ -569,17 +582,18 @@ def check_units_and_frames(quality: dict, report: Report) -> None:
                {"measurements": measured})
 
     if quality.get("external_threshold"):
-        event = quality.get("known_event") or {}
-        has_event = bool(event.get("name")) and \
-            event.get("expected_verdict") in ("exceeds", "below") and bool(event.get("source"))
-        report.add("units.known_event_fixture_recorded", has_event,
-                   f"known-event fixture recorded: {event.get('name')!r}" if has_event
-                   else "an external threshold is used but no verifiable known-event fixture "
-                        "is recorded",
-                   {"known_event": event})
+        receipt = quality.get('unit_validation') or {}
+        valid = (isinstance(receipt,dict) and type(receipt.get('checks')) is int
+                 and receipt['checks'] > 0 and receipt.get('mismatches') == 0
+                 and bool(receipt.get('source')) and isinstance(receipt.get('evidence_sha256'),str)
+                 and len(receipt['evidence_sha256']) == 64
+                 and all(c in '0123456789abcdef' for c in receipt['evidence_sha256']))
+        report.add('units.validation_receipt', valid,
+                   'External-threshold checks need a source-bound counts-only receipt; never ship fixture answers',
+                   {'receipt':receipt})
     else:
-        report.add("units.known_event_fixture_recorded", True,
-                   "no external threshold, so no known-event fixture is required")
+        report.add('units.validation_receipt', True,
+                   'No external threshold, so no unit-validation receipt is required')
 
 
 def check_splits(quality: dict, report: Report, columns_by_split: dict) -> None:
@@ -891,15 +905,49 @@ def check_runner(dataset: Path, quality: dict, report: Report,
                else f"identifiers listed as features: {sorted(id_cols & set(quality.get('features', [])))}")
 
 
-def qualify(dataset: Path) -> Report:
+def qualify(dataset: Path, *, record_battery=False, battery_output=None) -> Report:
     report = Report(dataset)
     quality_path = dataset / "quality.json"
-    if not quality_path.is_file():
+    if dataset.is_symlink() or quality_path.is_symlink() or not quality_path.is_file():
         report.add("descriptor", False, f"quality.json not found in {dataset}")
         return report
-    quality = json.loads(quality_path.read_text())
+    try:
+        quality = json.loads(quality_path.read_text())
+        if not isinstance(quality,dict) or not isinstance(quality.get('splits'),dict):
+            raise ValueError('descriptor and splits must be objects')
+        for relative in quality['splits'].values():
+            path = dataset/relative
+            if path.is_symlink() or not path.resolve().is_relative_to(dataset.resolve()):
+                raise ValueError('split path escapes artifact')
+    except (OSError, ValueError, TypeError) as exc:
+        report.add('descriptor',False,f'Invalid descriptor: {exc}')
+        return report
     report.add("descriptor", True,
                f"quality.json loaded for {quality.get('name', dataset.name)!r}")
+
+    # No scored target column is materialized before the blind prediction freeze.
+    # The optional write is an explicit construction step, never historical audit.
+    try:
+        with tempfile.TemporaryDirectory(prefix='factory-battery-') as temporary:
+            output = Path(battery_output) if battery_output else Path(temporary)/'audit'
+            result = battery.run(dataset, output)
+        if record_battery:
+            quality['adversarial_battery'] = result
+            quality_path.write_text(json.dumps(quality, indent=2, allow_nan=False)+'\n')
+        report.add('battery.exact_recovery', result['ok'],
+                   'Any zero-error exact reconstruction of a scored row blocks qualification', result)
+        report.add('battery.recorded_in_quality', quality.get('adversarial_battery') == result,
+                   'Construction must record the computed battery receipt in quality.json; use --record-battery')
+    except (OSError, ValueError, KeyError, TypeError, IndexError, OverflowError, csv.Error, RecursionError) as exc:
+        report.add('battery.completed', False, f'Battery incomplete: {type(exc).__name__}: {exc}')
+    try:
+        scrub = scan_tree(dataset, dataset=dataset)
+        report.add('artifacts.no_shipped_answers', scrub['ok'],
+                   'Every generated artifact file is scanned for shipped answer scaffolds', scrub)
+        # These exact auxiliary bytes, including newly added files, must survive acceptance.
+        report.scanned_files = scrub['files']
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        report.add('artifacts.no_shipped_answers', False, f'Artifact scan incomplete: {exc}')
 
     splits = quality.get("splits", {})
     columns_by_split: dict[str, tuple] = {}
@@ -922,6 +970,7 @@ def qualify(dataset: Path) -> Report:
     report.artifact["quality.json"] = {"file": "quality.json",
                                        "sha256": sha256_of(quality_path),
                                        "bytes": quality_path.stat().st_size}
+    report.artifact['scanned_files'] = getattr(report, 'scanned_files', {})
     check_evaluation_contract(dataset, quality, report, columns_by_split)
     report.artifact["artifact_version"] = {
         "digest": hashlib.sha256(
@@ -955,10 +1004,30 @@ def accept(report_path: Path, dataset: Path) -> int:
         print("ACCEPT FAILED: the qualification report did not pass. Failed checks: "
               + ", ".join(report.get("failed_checks", [])))
         return 1
+    checks = report.get('results', [])
+    required_checks = {'battery.exact_recovery', 'battery.recorded_in_quality', 'artifacts.no_shipped_answers'}
+    if (not checks or any(r.get('ok') is not True for r in checks)
+            or not required_checks <= {r.get('check') for r in checks}
+            or report.get('failed_checks') != []):
+        print('ACCEPT FAILED: missing, failed or inconsistent mandatory gate results')
+        return 1
     recorded = report.get("artifact", {})
     problems = []
     required = ["train", "eval", "holdout", "meta.json", "quality.json"]
     descriptor = json.loads((dataset / "quality.json").read_text())
+    receipt = descriptor.get('adversarial_battery')
+    reported_receipt = next(r.get('evidence') for r in checks if r.get('check') == 'battery.exact_recovery')
+    if (receipt != reported_receipt or not isinstance(receipt, dict) or not receipt.get('ok')
+            or receipt.get('version') != battery.VERSION or receipt.get('code') != battery.code_identity()):
+        problems.append('battery receipt is missing, stale or differs from computed qualification evidence')
+    try:
+        if not receipt or receipt.get('input_digest') != battery.digest(battery.input_identity(dataset)):
+            problems.append('battery input digest differs from current full artifact')
+        current = scan_tree(dataset, dataset=dataset)
+        if not current['ok'] or current['files'] != recorded.get('scanned_files'):
+            problems.append('generated artifact file inventory changed or contains answer scaffolds')
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        problems.append('artifact reinspection incomplete: '+str(exc))
     if descriptor.get("evaluation_contract", {}).get("availability_ledger"):
         required.append("availability_ledger")
     for key in required:
@@ -967,6 +1036,9 @@ def accept(report_path: Path, dataset: Path) -> int:
             problems.append(f"{key} is missing from the report")
             continue
         path = dataset / entry["file"]
+        if path.is_symlink() or not path.resolve().is_relative_to(dataset.resolve()):
+            problems.append(f'{key} escapes artifact')
+            continue
         if not path.is_file():
             problems.append(f"{entry['file']} is missing from {dataset}")
             continue
@@ -991,7 +1063,7 @@ SELFTEST_EXPECTATIONS = {
             "leakage.answer_source_absent",
             "leakage.no_single_column_determines_the_target",
             "timing.no_post_hoc_feature",
-            "units.known_event_fixture_recorded",
+            "units.validation_receipt",
             "runner.layout",
         },
     },
@@ -1035,7 +1107,10 @@ def selftest(fixtures_root: Path) -> int:
         if not dataset.is_dir():
             failures.append(f"{name}: fixture directory missing at {dataset}")
             continue
-        report = qualify(dataset)
+        with tempfile.TemporaryDirectory(prefix='qualification-selftest-') as tmp:
+            copied = Path(tmp)/name
+            shutil.copytree(dataset,copied)
+            report = qualify(copied, record_battery=True)
         failed_checks = {result["check"] for result in report.results if not result["ok"]}
         print(f"--- fixture {name}: ok={report.ok} (expected {expectation['expected_ok']})")
         print(report.render())
@@ -1062,6 +1137,10 @@ def main(argv=None) -> int:
     parser.add_argument("dataset", nargs="?", help="dataset directory to check")
     parser.add_argument("--json", action="store_true", help="emit the report as JSON")
     parser.add_argument("--report", help="write the JSON report to this path")
+    parser.add_argument('--record-battery', action='store_true',
+                        help='construction only: write computed aggregate results into quality.json')
+    parser.add_argument('--battery-output', type=Path,
+                        help='fresh directory outside the dataset for full audit diagnostics')
     parser.add_argument("--accept", metavar="REPORT",
                         help="verify a report and its artifact hashes against the dataset")
     parser.add_argument("--selftest", action="store_true",
@@ -1074,9 +1153,14 @@ def main(argv=None) -> int:
         parser.error("a dataset directory is required unless --selftest is used")
 
     if args.accept:
+        if args.record_battery or args.battery_output:
+            parser.error('--accept cannot modify or recompute the artifact')
         return accept(Path(args.accept), Path(args.dataset))
 
-    report = qualify(Path(args.dataset))
+    if args.report and Path(args.report).resolve().is_relative_to(Path(args.dataset).resolve()):
+        parser.error('--report must be outside the artifact to avoid self-referential hashes')
+    report = qualify(Path(args.dataset), record_battery=args.record_battery,
+                     battery_output=args.battery_output)
     payload = report.as_dict()
     if args.report:
         Path(args.report).write_text(json.dumps(payload, indent=1) + "\n")
