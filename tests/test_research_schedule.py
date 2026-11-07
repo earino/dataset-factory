@@ -25,6 +25,7 @@ class ResumptionTests(unittest.TestCase):
         self.folder = Path(temporary.name)
         stack = contextlib.ExitStack()
         self.addCleanup(stack.close)
+        stack.enter_context(patch.object(session, "hold_reason", return_value=None))
         for name, value in (("FACTORY_DIR", self.folder), ("LOCK", self.folder / "session.lock"),
                             ("LOG", self.folder / "sessions.jsonl")):
             stack.enter_context(patch.object(session, name, value))

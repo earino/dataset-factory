@@ -281,6 +281,10 @@ class ManifestWriterTests(unittest.TestCase):
             with self.subTest(missing=missing), tempfile.TemporaryDirectory() as tmp:
                 root = Path(tmp)
                 candidate = root / 'candidates/example'
+                (root / 'config').mkdir()
+                (root / 'config/admission.json').write_text(json.dumps({
+                    'version': 1, 'hold': False, 'reason': 'isolated manifest test',
+                    'allowed_worker_bundles': {}}))
                 (candidate / 'baseline').mkdir(parents=True)
                 package = root / 'release/example'
                 package.mkdir(parents=True)

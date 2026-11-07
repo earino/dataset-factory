@@ -76,6 +76,9 @@ class GateResponseTests(unittest.TestCase):
 
 class SessionOutcomeTests(unittest.TestCase):
     def setUp(self):
+        hold = patch.object(wrapper, "hold_reason", return_value=None)
+        hold.start()
+        self.addCleanup(hold.stop)
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         root = Path(self.tmp.name)
@@ -169,6 +172,10 @@ class ProcessAdmissionTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
+        (self.root / 'config').mkdir()
+        (self.root / 'config/admission.json').write_text(json.dumps({
+            'version': 1, 'hold': False, 'reason': 'isolated process test',
+            'allowed_worker_bundles': {}}))
         self.processes = []
         self.addCleanup(self.stop_processes)
         # The gate pauses before its decision so another wrapper contests the

@@ -53,6 +53,9 @@ def _resolve_repo():
 
 
 REPO = _resolve_repo()
+sys.path.insert(0, str(REPO))
+from factory.admission import hold_reason
+from factory.common import FactoryError
 BUDGET = REPO / "scripts" / "research-budget.py"
 PROMPT_TEMPLATE = REPO / "docs" / "research-session-prompt.md"
 HERMES_PYTHON = "/opt/hermes/.venv/bin/python3"
@@ -363,11 +366,22 @@ def main(argv=None):
         return 2
 
 
-def run_session(args, lock_fd, observe=None):
+def run_session(args, lock_fd, observe=None, *, worker_followup=False):
     # The scheduled caller records admission durably before any model process starts.
     # Observation never supplies a gate decision or changes the execution path.
     scheduled = observe is not None
     observe = observe or (lambda event, reason: None)
+    if not worker_followup:
+        try:
+            remediation = hold_reason(REPO)
+        except FactoryError as exc:
+            raise AdmissionError(str(exc)) from None
+        if remediation:
+            note({"event": "skipped", "reason": remediation})
+            observe("held", remediation)
+            if args.dry_run or args.fallback_report:
+                print(f"GATE: HELD - {remediation}")
+            return 0
     if args.if_work:
         work = actionable_work()
         if not work:

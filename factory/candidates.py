@@ -1,10 +1,12 @@
 from pathlib import Path
 
 from .common import FactoryError, identifier, read_json, utcnow, write_json
+from .admission import require
 
 
 def create(root, candidate_id):
     identifier(candidate_id)
+    require(root, "discovery")
     folder = Path(root) / "candidates" / candidate_id
     if folder.exists():
         raise FactoryError("Candidate already exists")

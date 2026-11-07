@@ -38,6 +38,9 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from factory.admission import require
+from factory.common import FactoryError
 HOST_STORE = Path("/opt/data/standing-captures")
 CONFIG_PATH = ROOT / "scripts" / "standing-capture-sources.json"
 UA = "dataset-factory-standing-capture/1.0 (research evidence pinning)"
@@ -83,6 +86,11 @@ def main(argv=None):
     args = ap.parse_args(argv)
     if not args.all and not args.source:
         ap.print_help()
+        return 2
+    try:
+        require(ROOT, "discovery collection")
+    except FactoryError as exc:
+        print(str(exc), file=sys.stderr)
         return 2
     config = json.loads(CONFIG_PATH.read_text())
     now = dt.datetime.now(dt.timezone.utc)
