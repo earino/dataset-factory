@@ -1,7 +1,7 @@
 """Merge per-chunk defect extractions into one normalised table.
 
-Inputs: defects_[1-5].jsonl (STATE.md chunks) and, if present, defects_audits.jsonl,
-from the extraction directory given as argv[1]. Output: paper/evidence/defects.jsonl.
+Inputs: raw/defects_[1-5].jsonl (STATE.md chunks) and raw/defects_audits.jsonl,
+from the directory given as argv[1] (paper/evidence/raw). Brief: raw/EXTRACTION-BRIEF.md. Output: paper/evidence/defects.jsonl.
 Merges and tiers are explicit below so every count can be traced and changed.
 """
 import json, glob, sys, os, collections
