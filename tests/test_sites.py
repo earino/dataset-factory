@@ -266,27 +266,20 @@ class WebsiteTests(unittest.TestCase):
         gh, hub = FakeGitHub(self.record), FakeHub()
         self.complete(self.plan, self.out, gh, hub)
         old = self.record["dataset"]
-        # A second metadata fixture goes through the real preparation contract, not a special renderer path.
-        package = self.root / "second-package"
-        shutil.copytree(ROOT / "release/austin-911-response", package)
-        for filename in ("MANIFEST.json", "DESTINATIONS.json"):
-            (package / filename).write_text((package / filename).read_text().replace(old, "second-task").replace("v2026.09", "v2026.10"))
-        editorial = copy.deepcopy(self.editorial)
-        editorial.update({"title": "Second task fixture", "release_date": "2026-10-01"})
+        # A second frozen release goes through the same preparation contract.
+        package = ROOT / "release/abs-visitor-arrivals-direction"
+        editorial = read(ROOT / "sites/abs-visitor-arrivals-direction.json")
         other = self.root / "second"
-        review = read(ROOT / "suitability/austin-911-response.json")
-        review.update(dataset="second-task", release_tag="v2026.10")
-        with patch("factory.site_model.load_suitability", return_value=review):
-            prepare(package, editorial, self.config, other)
+        prepare(package, editorial, self.config, other)
         second = load_bundle(other)
         record = second["record"]
         gh.add_dataset(record)
         self.complete(second, other, gh, hub)
         catalog = self.config["catalog_repository"]
         records = [json.loads(v) for k, v in gh.files[catalog].items() if k.startswith(".dataset-site/records/")]
-        self.assertEqual({r["dataset"] for r in records}, {old, "second-task"})
+        self.assertEqual({r["dataset"] for r in records}, {old, "abs-visitor-arrivals-direction"})
         rendered = RUNTIME["render"](json.loads(gh.files[catalog][".dataset-site/config.json"]), records)
-        self.assertIn("releases/second-task/v2026.10/index.html", rendered)
+        self.assertIn("releases/abs-visitor-arrivals-direction/v2026.10/index.html", rendered)
         self.assertIn("releases/austin-911-response/v2026.09/index.html", rendered)
 
     def test_reusing_version_for_different_content_is_refused(self):

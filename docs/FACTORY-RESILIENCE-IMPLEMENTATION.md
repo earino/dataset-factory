@@ -15,8 +15,8 @@ proof of exact reconstruction. Published data, tags and manifests remain frozen.
 | Work | Status | Acceptance evidence still needed |
 | --- | --- | --- |
 | R6: config-driven admission hold | Shipped in PR #26, merge `16657ab`; exact-commit CI passed; Scout deployment read-back in `d1e6030` below | Hold remains active until R1-R4/A4 acceptance |
-| R1: deterministic label-blind battery, gate 1.6 | Pending | Historical A1 reproductions, published A2 comparison, exact-byte binding and worker integration |
-| R2: scaffold/answer scrubber | Implemented on `codex/answer-artifact-scrubber`: assembly and package guards, all-file inventory, pinned historical warnings | Clean-clone/CI, worker-generated artifact integration with R1, full worker A3/A4 |
+| R1: deterministic label-blind battery, gate 1.6 | In progress on `codex/deterministic-recovery-gate`: two-phase stdlib battery, full generated-artifact scan, quality receipt and strict package admission | Historical A1 reproductions, published A2 comparison, exact-byte binding and worker integration |
+| R2: scaffold/answer scrubber | Shipped PR #27, merge `a2578ed`; both exact-commit CI workflows passed; deployed/read back by Scout in `fbc8fee` | Worker-generated artifact integration is in R1; full worker A3/A4 pending |
 | R3: measurable claims from bytes | Pending | Dictionary/min-max/interval/prevalence/placeholder/digest regressions |
 | R4: source licence evidence and generation | Pending | Browser-capable evidence path, unreadable and conflicting source refusals |
 | R5: autonomous independent adversarial audit | Pending | Bounded auditor stage, digest-bound verdict, queue admission enforced |
@@ -129,3 +129,27 @@ Read-only verification on the deployed tree:
 Ship R2 after clean-clone and exact-commit CI. Implement R1 with the generated-artifact
 scrub on the worker, bind every diagnostic to the scanned bytes, and run pinned historical
 acceptance through Scout. Keep the hold active; do not rebuild the blocked datasets in A4.
+
+## R1 implementation checkpoint (Codex, 2026-11-07)
+
+The new stdlib modules freeze feature-only predictions before scored-label access,
+keep supervised controls separate, and bind receipts to all inspected inputs and code.
+Audited recipes cover successor/lag/recency, rounded count/rate and rolling-mean
+identities, plus literal fixture lookups. Generic joins and rank/token/lookup controls
+remain explicitly statistical or heuristic. Scored-label mutations leave frozen
+predictions unchanged; data/auxiliary/vector mutations refuse later acceptance.
+
+Gate 1.6 and package/manifest guards require the matching computed receipt. The
+constructor explicitly records it with `--record-battery`; historical audit is read-only.
+The assembler includes canonical dependencies. Unit evidence is counts-only, preserving
+source-validation provenance outside the scored package instead of shipping answers.
+The CQC and UNHCR-corridor legacy builder rehearsals now require rejection for their
+retained defects, while their construction/format regressions remain exercised.
+See `docs/RECOVERY-BATTERY.md` for finite bounds and provenance.
+
+Targeted suites have passed (117 construction/gate tests, 119 receipt/site tests,
+and 15 battery algorithm/phase tests in separate runs). Full clean-clone and CI
+validation, pinned historical worker acceptance and complete A1/A2/A4 remain pending.
+No new gate has been claimed deployed and no real-artifact recovery numbers have
+been computed on the coordinator. Next: finish review/CI, prepare exact frozen-input
+fetch bundles, and give Scout the reviewed source hashes for bounded acceptance jobs.

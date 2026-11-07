@@ -62,6 +62,10 @@ class ScrubTests(unittest.TestCase):
         (self.root/'opaque.dat').write_bytes(b'\xff\x00hidden')
         self.assertEqual('uninspected_binary', scan_tree(self.root)['findings'][0]['rule'])
 
+    def test_json_lines_fixture_tables_are_scanned_structurally(self):
+        text='{"counts": 4}\n{"fixtures": {"event-123456": {"label": 1}}}\n'
+        self.assertIn('fixture_answers',{r['rule'] for r in scan_text(text,'notes.jsonl')})
+
     def test_symlink_is_refused_without_following_it(self):
         (self.root/'escape').symlink_to('/not-a-package-file')
         self.assertEqual('unsafe_path', scan_tree(self.root)['findings'][0]['rule'])

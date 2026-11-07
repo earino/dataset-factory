@@ -277,14 +277,14 @@ class GateAcceptanceTests(unittest.TestCase):
 
     def test_01_qualification_report_passes(self):
         completed = subprocess.run(
-            [sys.executable, str(GATE), str(self.derivative),
+            [sys.executable, str(GATE), str(self.derivative), "--record-battery",
              "--report", str(self.report)],
             capture_output=True, text=True, timeout=300)
         self.assertEqual(completed.returncode, 0, completed.stdout[-2000:])
         payload = json.loads(self.report.read_text())
         self.assertTrue(payload["ok"],
                         f"failed checks: {payload.get('failed_checks')}")
-        self.assertEqual(payload["gate_version"], "1.5.0")
+        self.assertEqual(payload["gate_version"], "1.6.0")
         self.assertEqual(payload["failed_checks"], [])
 
     def test_02_accept_succeeds_on_qualified_bytes(self):

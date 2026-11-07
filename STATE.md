@@ -1,3 +1,17 @@
+## 2026-11-07 — Codex: R2 shipped/deployed; gate 1.6 implementation awaiting acceptance
+
+R2 PR #27 merged as `a2578ed`, passed both exact-merge CI workflows, and Scout
+recorded deployed refusals for all four blocked packages in `fbc8fee`. The hold
+remains true with an empty worker allowlist. No datasets were rebuilt or published.
+
+R1 work on `codex/deterministic-recovery-gate` adds a two-phase feature-only battery,
+strict exact-recovery refusal, generated-file scrub, quality receipt, all-file
+acceptance and package/manifest admission. Targeted regression suites pass.
+Full clean-clone/CI and A1/A2/A4 worker acceptance remain pending. See
+`docs/RECOVERY-BATTERY.md` and the implementation ledger for code boundaries.
+Next: review/CI, then prepare pinned historical input fetches and reviewed bundles
+for Scout as sole worker-launch coordinator. Preserve every blocked/frozen artifact.
+
 ## 2026-11-07 — Codex: admission hold deployed; answer-artifact scrubber implemented
 
 PR #26 merge `16657ab` passed exact-commit CI. Scout deployed and recorded read-back

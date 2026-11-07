@@ -23,6 +23,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from factory.artifact_scrub import scan_tree
 from factory.frozen import historical_files
+from factory.qualification_receipt import check as check_qualification_receipt
 
 # Documents a reviewer needs. Directories are checked separately.
 REQUIRED_FILES = (
@@ -241,6 +242,8 @@ def check_package(package_dir, *, external_assets=False):
     try:
         scrub = scan_tree(package_dir, dataset=package_dir if (package_dir / 'quality.json').is_file() else None)
         frozen = historical_files(package_dir)
+        if not frozen:
+            problems.extend(check_qualification_receipt(package_dir,manifest,external_assets=external_assets))
         for finding in scrub['findings']:
             name = finding['file']
             message = f"{name}:{finding['line']}: {finding['rule']}: {finding['detail']}"

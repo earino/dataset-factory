@@ -1,7 +1,7 @@
 ---
 name: dataset-qualification
 description: "Use when a constructed dataset is about to be scored or published. Gate for leakage, prediction timing, units/frames, temporal splits and runner compatibility."
-version: 2.0.0
+version: 2.1.0
 license: MIT
 platforms: [linux, macos]
 metadata:
@@ -30,8 +30,8 @@ any number taken from the result.
 
 ```bash
 # the gate, over a dataset directory in runner layout
-python3 skills/dataset-qualification/scripts/qualify_dataset.py <dataset-dir>
-python3 skills/dataset-qualification/scripts/qualify_dataset.py <dataset-dir> --json --report out.json
+python3 skills/dataset-qualification/scripts/qualify_dataset.py <dataset-dir> --record-battery
+python3 skills/dataset-qualification/scripts/qualify_dataset.py <dataset-dir> --record-battery --json --report out.json
 
 # the downstream gate: a written report must still match the bytes on disk
 python3 skills/dataset-qualification/scripts/qualify_dataset.py --accept <report.json> <dataset-dir>
@@ -43,6 +43,15 @@ python3 skills/dataset-qualification/scripts/qualify_dataset.py --selftest
 `<dataset-dir>` holds the runner layout (`public/train.csv`, `public/eval.csv`,
 `private/holdout.csv`, `meta.json`) plus a `quality.json` descriptor. Exit status is 0 only
 when every check passes; each failure names the column, split or declaration responsible.
+
+Gate 1.6 always runs the deterministic two-phase recovery battery before scored-label
+inspection. Any exact feature-only recovery of at least one eval/holdout row with zero
+errors blocks new qualification in every scope. Disclosure and restricted access do not
+waive this rule. Statistical/heuristic flags remain distinct from exact identities.
+See `docs/RECOVERY-BATTERY.md` for families, bounds, byte binding and historical comparison.
+`--record-battery` is an explicit construction-only write to `quality.json`; omit it for
+read-only historical audits. Keep reports and prediction vectors outside the dataset;
+never ship the audit vectors. Missing/stale receipts refuse downstream acceptance.
 
 **Run it on the full artifact, where the rows are.** The gate reads rows, so a bounded local
 sample cannot stand in for it; run it and exact-byte `--accept` on the worker. Keep the
@@ -74,7 +83,7 @@ a replacement runner. `build.py` only constructs files and gate diagnostics.
 ```sh
 set -eu
 python3 /workspace/build.py --out /output/extract
-python3 /workspace/qualify_dataset.py /output/extract --json \
+python3 /workspace/qualify_dataset.py /output/extract --record-battery --json \
     --report /output/qualification.json
 python3 /workspace/qualify_dataset.py --accept \
     /output/qualification.json /output/extract
@@ -108,7 +117,9 @@ Every one of these must exist before "qualified" can be claimed. Absence is not 
 
 1. A `quality.json` declaring `time_column`, `event_key_column`, machine-readable per-split
    `split_windows`, the label source, and - where an external threshold is used - a
-   `known_event` fixture with a named event, its expected verdict and a source.
+   `unit_validation` counts-only receipt with `checks`, `mismatches`, `source` and
+   `evidence_sha256`. Do not ship fixture identities or expected answers. Preserve the
+   underlying validation evidence outside the scored package for audit.
 2. A **passing** report from the current gate version, written against the exact artifact
    version that will be scored or shipped.
 3. `--accept` re-verifying that report against the bytes on disk at hand-off time.

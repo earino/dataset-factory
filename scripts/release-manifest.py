@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from factory.admission import require
 from factory.common import FactoryError
+from factory.qualification_receipt import check as check_qualification_receipt
 from factory.release_schema import (ReleaseShapeError, load_release, from_manifest,
                                     normalise_destinations, normalise_splits,
                                     combined_artifact_version, atomic_write)
@@ -284,6 +285,9 @@ def main() -> int:
         if split.positive_rate is not None:
             group[split.name]["positive_rate"] = split.positive_rate
     manifest.update(splits=split_doc)
+    qualification_problems = check_qualification_receipt(release, manifest, external_assets=True)
+    if qualification_problems:
+        raise SystemExit('Package construction refused: '+'; '.join(qualification_problems))
     text = json.dumps(manifest, indent=2, allow_nan=False) + "\n"
     # All shape/licence checks precede the first write. Each replace is atomic; manifest last.
     release.mkdir(parents=True, exist_ok=True)

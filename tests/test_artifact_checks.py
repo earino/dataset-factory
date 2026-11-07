@@ -12,6 +12,7 @@ import hashlib
 import importlib.util
 import io
 import json
+import shutil
 import sys
 import tempfile
 import unittest
@@ -173,13 +174,23 @@ class PackageCheckTests(unittest.TestCase):
 
         (root / "LICENSE-MIT.txt").write_text("MIT text\n")
         (root / "LICENSE-CC0-1.0.txt").write_text("CC0 text\n")
+        fixture = ROOT/'skills/dataset-qualification/fixtures/corrected'
+        shutil.copytree(fixture,root,dirs_exist_ok=True)
+        gate = load('package_fixture_gate',ROOT/'skills/dataset-qualification/scripts/qualify_dataset.py')
+        qualification = gate.qualify(root,record_battery=True).as_dict()
+        self.assertTrue(qualification['ok'],qualification['failed_checks'])
+        (root/'qualification.json').write_text(json.dumps(qualification))
         files = {
             str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in sorted(root.rglob("*")) if p.is_file()
         }
-        assets = {"public/train.csv": {"asset_name": "train.csv", "sha256": "a" * 64}}
+        assets = {entry['file']: {'asset_name':entry['file'].replace('/','-'),
+                  'sha256':entry['sha256'],'bytes':entry['bytes']}
+                  for key,entry in qualification['artifact'].items()
+                  if key in ('train','eval','holdout','meta.json','quality.json')}
         manifest = {
-            "dataset": "example", "release_tag": "v1", "artifact_version": "b" * 64,
+            "dataset": "example", "release_tag": "v1",
+            "artifact_version": qualification["artifact"]["artifact_version"]["digest"],
             "qualification": {"result": "PASSED"}, "published": published,
             "package_files": files, "assets": assets,
             "licenses": {
@@ -194,7 +205,7 @@ class PackageCheckTests(unittest.TestCase):
         (root / "MANIFEST.json").write_text(json.dumps(manifest, indent=1))
         (root / "SHA256SUMS").write_text(
             "".join(f"{digest}  {name}\n" for name, digest in (sums or
-                    {"public/train.csv": "a" * 64}).items()))
+                    {name:entry["sha256"] for name,entry in assets.items()}).items()))
         return root
 
     def test_a_consistent_package_passes(self):
@@ -202,6 +213,19 @@ class PackageCheckTests(unittest.TestCase):
             root = self._build(Path(tmp))
             problems, _ = package_check.check_package(root)
             self.assertEqual([], problems)
+
+    def test_manifest_claim_cannot_replace_a_passing_battery_receipt(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=self._build(Path(tmp))
+            path=root/'qualification.json'
+            value=json.loads(path.read_text()); value['ok']=False
+            path.write_text(json.dumps(value))
+            manifest=json.loads((root/'MANIFEST.json').read_text())
+            manifest['published']=True
+            manifest['package_files']['qualification.json']=hashlib.sha256(path.read_bytes()).hexdigest()
+            (root/'MANIFEST.json').write_text(json.dumps(manifest))
+            problems,_=package_check.check_package(root)
+            self.assertTrue(any('passing gate 1.6' in p for p in problems),problems)
 
     def test_a_tampered_file_is_refused(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -15,7 +15,7 @@ from pathlib import Path
 import re
 import sys
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 LIMIT = 2 * 1024 * 1024
 MAX_FINDINGS = 200
 PLACEHOLDER = re.compile(r"@@[A-Za-z][A-Za-z0-9_]*@@")
@@ -112,6 +112,15 @@ def scan_text(text, name, *, scored_ids=(), windows=()):
         except (ValueError, RecursionError):
             if name.endswith('.json'):
                 add('unreadable_json', 1, 'Cannot inspect malformed JSON')
+            else:
+                # JSON Lines is common in generated evidence; a renamed stream
+                # must not bypass structural fixture/salt inspection.
+                for line_number,line in enumerate(text.splitlines(),1):
+                    if line.lstrip().startswith(('{','[')):
+                        try:
+                            inspect(json.loads(line),f'line_{line_number}')
+                        except (ValueError,RecursionError):
+                            pass  # ordinary Markdown links and prose are still scanned above
     if name.endswith('.py') or re.search(r'(?im)^\s*\w*(?:fixture|salt|answer_table)\w*\s*=', text):
         try:
             tree = ast.parse(text)

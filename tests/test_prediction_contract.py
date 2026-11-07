@@ -107,7 +107,7 @@ class ContractTests(unittest.TestCase):
             p={'entity_columns':['entity'],'time_column':'date','left':'prev','operation':'copy','offset_months':offset}
             self.assertEqual(gate.cross_row_probe({'eval':columns(rows)},self.q,p)['eval']['mismatches'],0)
 
-    def test_batch_contract_refuses_recoverable_history_but_research_rows_can_qualify(self):
+    def test_exact_recovery_refuses_both_batch_and_research_scopes(self):
         self.rows={'eval':columns([{'id':'a','date':'2020-01-01','x':0,'y':1},
                                   {'id':'a','date':'2020-01-02','x':1,'y':0}])}
         c=self.q['evaluation_contract'];c['access']='common_cutoff_batch'
@@ -116,7 +116,7 @@ class ContractTests(unittest.TestCase):
         self.assertFalse(checks['contract.cross_row_probe_0']['ok'])
         c['access']='isolated_rows'
         checks,_=self.checks()
-        self.assertTrue(checks['contract.cross_row_probe_0']['ok'])
+        self.assertFalse(checks['contract.cross_row_probe_0']['ok'])
 
     def test_cross_split_donor_and_price_operand(self):
         rows={'train':columns([{'entity':'a','date':'2020-01-08','price':3,'y':0}]),
