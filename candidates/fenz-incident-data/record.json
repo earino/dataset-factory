@@ -1,0 +1,47 @@
+{
+  "id": "fenz-incident-data",
+  "status": "investigating",
+  "created_at": "2026-11-04T16:42:50.235338+00:00",
+  "domain": "emergency response / per-incident and per-exposure register",
+  "prediction_question": "OPEN - to be fixed by the field-list probe before this can advance. Two candidate framings: (a) sibling framing, NOT differentiated on its own: for an emergency incident dispatched to FENZ, will the first-appliance arrival exceed a fixed response-time threshold (the published austin-911-response candidate, US, is exactly this task family for police calls - a FENZ version would need a stated substantive difference beyond jurisdiction); (b) distinctive framing, preferred for novelty: for a fire/vegetation-fire incident given what is known at dispatch or at first report, will the incident develop additional property exposures (one record per exposure; an incident with >1 exposure means the hazard spread to another building/location)? The metadata field list decides which framings the source can carry.",
+  "prediction_time": "OPEN - depends on the framing fixed by the field-list probe. Framing (b) would use the dispatch/first-report instant: incident type as called in, time of day, season, location (region/station-area), and whatever pre-attendance fields the CAD (ICAD) record carries at that moment; every Station Management System field completed after attendance is post-instant and must not ship.",
+  "target_definition": "OPEN - framing (b): binary per-incident additional-exposure occurrence derived from the exposure grain (the publisher states one record per exposure; an incident is a single episode that can contain multiple exposures). Source column: the incident/exposure identifier pair; excludable from shipped features by construction.",
+  "sources": [
+    {
+      "name": "Fire and Emergency New Zealand Incident Data - catalogue record 86c374bf-9741-4258-b906-4863ef9af293 (catalogue.data.govt.nz, CKAN)",
+      "url": "https://catalogue.data.govt.nz/dataset/fire-and-emergency-new-zealand-incident-data",
+      "api": "https://catalogue.data.govt.nz/api/3/action/package_show?id=fire-and-emergency-new-zealand-incident-data (read through the supported browser session 2026-11-04; the catalogue host sits behind an Incapsula bot wall that blocks plain HTTP clients)",
+      "access": "eight annual TSV resources, financial years 2017-18 through 2024-25, measured sizes 66,841,072 / 69,660,523 / 69,824,510 / 70,681,024 / 70,682,540 / 70,810,244 / 72,881,612 / 75,130,424 bytes (total about 596 MB); plus the field metadata PDF (1,337,658 bytes); resource last_modified stamps 2026-02-22 (seven files) and 2026-07-01 (2024-25)",
+      "licence": "Creative Commons Attribution 4.0 International (license_id CC-BY-4.0 on the package record, read 2026-11-04)"
+    },
+    {
+      "name": "FENZ Incident Metadata 2026_01.pdf - the field dictionary (descriptions of specific categories and deprecated fields, per the publisher's notes)",
+      "url": "https://catalogue.data.govt.nz/dataset/86c374bf-9741-4258-b906-4863ef9af293/resource/f9fd8a83-cc92-41f4-9205-b834dc04ce22/download/fenz-incident-metadata-2026_01.pdf",
+      "access": "1,337,658 bytes; NOT yet read: a plain HTTP GET from this environment returns a 6 KB Incapsula interstitial, and the browser-mediated transfer this session produced a byte-shifted reassembly that is not trusted for quoting. Reading this PDF cleanly is the recorded next probe.",
+      "licence": "Creative Commons Attribution 4.0 International"
+    }
+  ],
+  "license_evidence": [
+    "catalogue.data.govt.nz CKAN package_show for fire-and-emergency-new-zealand-incident-data (read via the supported browser session, 2026-11-04): license_id 'CC-BY-4.0', license_title 'Creative Commons Attribution 4.0 International'. This is the dataset-specific instrument on the publisher's catalogue record, not a general policy page.",
+    "Access evidence: curl/plain-HTTP fetch of both the annual TSVs and the metadata PDF from this environment returns a ~6 KB Incapsula challenge interstitial (recorded; sha256 5c380a6c881a5fa812cf1f1bb4c36b98 of the 5,996-byte challenge body for the metadata PDF URL). The same URLs fetch 200 with full bytes from inside the supported browser session after the bot wall clears. A blocked page is not evidence of absent terms; the licence above was read from the API JSON, which the browser session reaches.",
+    "Publisher revision note (dataset notes, read 2026-11-04): 'FENZ updates its data from time to time for correctness and completeness' - current archives are revised vintages, not immutable snapshots; any construction must record an as-of policy for features sourced from post-incident completions."
+  ],
+  "construction_script": null,
+  "split_strategy": "OPEN - eight financial years (2017-18..2024-25) is enough calendar span for roughly 2+2+3 train/eval/holdout windows if per-year counts support it; per-year incident and exposure counts are unmeasured and are part of the next probe. Positives (multi-exposure incidents, or late arrivals under framing (a)) cluster in time (weather, wildfire seasons), so clustered counts per season are the conservative independent-positive measure.",
+  "measurements": {
+    "catalogue_sweep_2026_11_04": "data.govt.nz/catalogue.data.govt.nz searched through the browser session (7 queries: emergency incident response time, fire and emergency incidents, building consent, resource consent, crash analysis, food safety inspection, trademark, earthquake). Notable results with measured licences: FENZ Incident Data CC BY 4.0; Waka Kotahi Crash Analysis System (CAS) CC BY 4.0; Co-Lab 'Food Premise' + 'Food Premise Verification' CC BY 4.0 (sibling of the existing food-inspection task family); MPI registers CC BY 3.0 NZ; Greater Wellington Regional Council resource consents CC BY-ND 4.0 (NoDerivatives - a derived benchmark cannot ship under it; exactly the licence trap the Oceania brief warned about); several council records carry no licence (Marlborough 2020 vintage, Bay of Plenty, Northland) and are class C under standing policy. 'trademark' query: 0 results (no NZ IP register bulk data on this catalogue). Stats NZ organisation query returned no parseable package list this tick - not separately enumerated.",
+    "grain_and_coverage_measured": "Per the publisher's notes: one record per EXPOSURE (a building or other location potentially impacted), incidents can have multiple exposures; data from ICAD (the emergency-communications dispatch system) and SMS (post-attendance reports); eight financial years 2017/18-2024/25; total download about 596 MB across eight TSVs.",
+    "access_channel_measured": "Plain HTTP (curl and python urllib) from this environment: Incapsula interstitial (~6 KB) on catalogue resource URLs; full 200 content via the supported browser session. Whether a Hetzner worker's plain fetch passes the bot wall is UNTESTED - it must be probed before any bulk construction job is planned (the files are 67-75 MB each; if the wall blocks workers too, construction needs a browser-mediated or cookie-carrying fetch path, which must be recorded)."
+  },
+  "jobs": [],
+  "artifacts": [],
+  "rejection_reason": null,
+  "review": null,
+  "next_action": "The cheapest unresolved fact is the field list, because it decides which prediction task this source can carry at all. Next probe, in order: (1) read FENZ Incident Metadata 2026_01.pdf cleanly - try (a) a plain fetch from a worker (tests both the bot wall and the bulk path in one probe) and (b) a fresh browser-session download if (a) is blocked; enumerate every timestamp field (call received, dispatch, arrival), the pre-attendance CAD fields, the post-attendance SMS fields, and the exposure/incident identifier pair; (2) with the field list, fix the target: prefer the exposure-formation framing (b) unless the timestamps for it are post-dispatch completions; a response-time target requires a written differentiation against the published austin-911-response candidate (US police calls) beyond jurisdiction; (3) measure per-year incident and exposure counts and the multi-exposure base rate from one annual TSV (bounded, 67-75 MB, worker-side); (4) run check-novelty.py once the target is fixed. Do not spend further probes before (1) - everything downstream depends on it.",
+  "jurisdiction": {
+    "country": "NZ",
+    "region": "Oceania",
+    "publisher": "Fire and Emergency New Zealand (FENZ), national fire and emergency services entity, published through data.govt.nz / catalogue.data.govt.nz"
+  },
+  "licence_class": "A"
+}
