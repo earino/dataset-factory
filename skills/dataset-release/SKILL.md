@@ -1,7 +1,7 @@
 ---
 name: dataset-release
 description: "Use when a qualified dataset is being packaged for review, transferred, or published. Package layout, private staging, verification, publication gates."
-version: 1.0.0
+version: 1.1.0
 license: MIT
 platforms: [linux, macos]
 metadata:
@@ -87,6 +87,16 @@ sh scripts/scout-factory worker run  <job.json>
 ```
 
 ## Required evidence
+
+Read `docs/SOURCE-LICENSE-EVIDENCE.md`. New packaging captures both the source
+catalogue and terms, preserving raw/text evidence through HTTP or the existing
+native browser path. Unreadable or conflicting evidence refuses packaging without
+a precedence interpretation. `LICENSE-EVIDENCE.json` quotes the captured source;
+`scripts/license-evidence.py generate` produces LICENSE.md, card.md and the bound
+receipt. Every card licence statement comes from that block. Keep the upstream
+terms and attribution; compilation terms cover only our own contribution. Source
+scope and compatibility still require the independent audit. Historical frozen
+receipts are not invented or retroactively backfilled.
 
 Read `docs/CLAIMS-FROM-BYTES.md`. New packages require `CLAIMS.json`, a worker-produced
 `claims-facts.json` tied to the exact passing qualification, and generated claim

@@ -21,6 +21,7 @@ from factory.common import FactoryError
 from factory.qualification_receipt import check as check_qualification_receipt
 from factory.asset_integrity import check as check_assets
 from factory.claim_contract import validate as validate_claims
+from factory.license_contract import validate as validate_license
 from factory.release_schema import (ReleaseShapeError, load_release, from_manifest,
                                     normalise_destinations, normalise_splits,
                                     combined_artifact_version, atomic_write)
@@ -36,45 +37,6 @@ def sha256_of(path: Path) -> str:
         for block in iter(lambda: handle.read(1 << 20), b""):
             digest.update(block)
     return digest.hexdigest()
-
-
-def licenses_block(candidate: str) -> dict:
-    """Terms for this dataset, from the declared decision plus the standing policy.
-
-    Built here rather than edited into the manifest afterwards: a hand-edited block is silently
-    lost the next time the manifest is regenerated, which is exactly when it needs to be right.
-    """
-    policy = load(ROOT / "config" / "licensing-policy.json") or {}
-    declared = load(ROOT / "candidates" / candidate / "license.json")
-    if not declared:
-        return {"policy_version": policy.get("policy_version"),
-                "status": "UNDECLARED - candidates/<id>/license.json is missing",
-                "rules": policy.get("rules", [])}
-    code = declared.get("code") or {}
-    compilation = declared.get("compilation") or {}
-    source = declared.get("source") or {}
-    # The licence *text* a dataset ships is normally the standing default, but a dataset whose
-    # source does not permit a standard open dedication must be able to name its own file - the
-    # policy default is CC0-1.0, and a manifest that names LICENSE-CC0-1.0.txt for a compilation
-    # the candidate record forbids declaring as CC0 is a false licence claim in a published
-    # artifact. The declaration wins; the default is only a fallback.
-    code_file = code.get("file") or (policy.get("code_default") or {}).get("file")
-    compilation_file = compilation.get("file") or (policy.get("compilation_default") or {}).get("file")
-    return {
-        "policy_version": policy.get("policy_version"),
-        "decided": declared.get("decided"),
-        "code": {"spdx": code.get("spdx"), "file": code_file,
-                 "copyright": code.get("copyright"),
-                 "third_party": code.get("third_party") or []},
-        "data_compilation": {"spdx": compilation.get("spdx"), "file": compilation_file,
-                             "scope": compilation.get("scope")},
-        "source_data": {"spdx": source.get("spdx"), "status": source.get("status"),
-                        "evidence": source.get("evidence") or [],
-                        "attribution": source.get("attribution"),
-                        "citation": source.get("citation"),
-                        "derived_labelling": source.get("derived_labelling")},
-        "rules": policy.get("rules", []),
-    }
 
 
 def publication_state(release: Path) -> tuple[bool, str, str]:
@@ -264,7 +226,14 @@ def main() -> int:
                           ROOT / "candidates" / candidate / "record.json", "qualification.splits"))
     if baseline is None and desc.get("baseline_reason"):
         manifest["baseline_reason"] = desc["baseline_reason"]
-    manifest["licenses"] = licenses_block(candidate)
+    # New releases use fetched, reproducible source evidence. Old candidate
+    # declarations remain historical records, never new-release admission.
+    try:
+        terms = validate_license(release, fresh=True,
+                                 template=(ROOT/'candidates'/candidate/'card.md').read_text())
+        manifest["licenses"] = terms['manifest']
+    except (OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
+        raise SystemExit('Package source licence evidence refused: '+str(exc)) from None
     # The Hub path for each file, when the dataset declares its own. Emitted only when it differs
     # from the flat default, so a single-level release's manifest is unchanged.
     declared_hub = desc.get("hf_paths")

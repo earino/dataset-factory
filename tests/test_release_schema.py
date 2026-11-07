@@ -311,6 +311,9 @@ class ManifestWriterTests(unittest.TestCase):
                     record['construction_output']['splits'] = {}
                     (candidate / 'baseline/baseline_result.json').write_text('{"eval_auc": 0.6}')
                 (candidate / 'record.json').write_text(json.dumps(record))
+                from tests.license_fixture import prepare, TEMPLATE
+                prepare(package)
+                (candidate/'card.md').write_text(TEMPLATE)
                 before = hashes(package)
                 with patch.object(writer, 'ROOT', root), patch.object(sys, 'argv', ['release-manifest', 'example']):
                     with self.assertRaisesRegex(ReleaseShapeError, missing):

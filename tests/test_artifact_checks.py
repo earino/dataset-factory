@@ -190,6 +190,8 @@ class PackageCheckTests(unittest.TestCase):
         (root/'claims-facts.json').write_text(json.dumps(facts))
         (root/'README.md').write_text('<!-- FACTORY-CLAIM eval-population -->\n'+render(claim,facts)+
                                     '\n<!-- /FACTORY-CLAIM -->\n')
+        from tests.license_fixture import prepare
+        terms=prepare(root)
         files = {
             str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in sorted(root.rglob("*")) if p.is_file()
@@ -208,12 +210,7 @@ class PackageCheckTests(unittest.TestCase):
             "qualification": {"result": "PASSED"}, "published": published,
             "package_files": files, "assets": assets,
             "files": {k: {'sha256': v['sha256'], 'bytes': v['bytes']} for k, v in assets.items()},
-            "licenses": {
-                "code": {"spdx": "MIT", "file": "LICENSE-MIT.txt"},
-                "data_compilation": {"spdx": "CC0-1.0", "file": "LICENSE-CC0-1.0.txt"},
-                "source_data": {"spdx": "LicenseRef-Public-Domain",
-                                "status": "Public Domain, preserved"},
-            },
+            "licenses": terms['manifest'],
         }
         if note:
             manifest["publication_note"] = "Awaiting review."
