@@ -1,6 +1,6 @@
 {
  "id": "ab-wildfire-ia-escape",
- "status": "qualified",
+ "status": "packaged",
  "created_at": "2026-11-06T20:55:00+00:00",
  "domain": "wildfire operations - initial-attack escape and containment-duration prediction from the regulator's assessment record (per-incident classification, Alberta Forest Protection Area 2006-2025)",
  "prediction_question": "At Alberta Wildfire's recorded initial assessment of a newly discovered wildfire (assessment_datetime, 'originally assessed'), predict whether the wildfire will escape initial attack - final area burned at least 100 ha (variants at 4/40/200 ha) - and/or remain uncontained more than 72 hours (time from assessment to first under control), using only the crew-observed assessment record (size at assessment, rate of spread, fire behaviour type, position on slope, in-situ weather over the fire, FBP fuel type), pre-instant timing fields (estimated ignition, reported, detection channel), and calendar/geography. A useful prediction supports the actual initial-attack resourcing decision - airtanker/crew prioritization and same-day escalation - which the agency itself states happens at this instant.",
@@ -227,6 +227,70 @@
    "anonymous_read_back": "404 (correctly private)",
    "destinations_block": "release/ab-wildfire-ia-escape/DESTINATIONS.json github block written 2026-11-06T23:38:39Z with files_verified as the logical path list; huggingface block pending",
    "note": "nothing public; the flip is the operator's single approval and waits for the independent pre-flip audit verdict unless waived"
+  },
+  "runner_consumer_001_2026_11_07": {
+   "date": "2026-11-07",
+   "job": "abwildfire-consumer-001 (cx23 hel1, server 174915106, 256.6 s, exit 0; destroyed after verified collection at 2026-11-07T02:23:45Z, reservation 0.04 EUR)",
+   "position": "clean consumer: container held no credential and no factory access; the worker host fetched the released bytes",
+   "package_vs_manifest": "every published file matches MANIFEST.json",
+   "get_dataset": "5 assets already present at the restored layout, size+sha256 verified, no download needed",
+   "sha256sums": "OK over the restored tree",
+   "gate": "PASSED on the full published artifact (gate 1.5.0, artifact c2c8ceb56c7ff52a)",
+   "accept": "ACCEPTED: the released bytes match the qualified artifact c2c8ceb56c7ff52a",
+   "baseline": {
+    "contract_ok": true,
+    "eval_auc_from_train_py": 0.9554,
+    "eval_auc_from_validate_py": 0.9554,
+    "holdout_isolated": "the private holdout was NOT copied into any workdir",
+    "dependencies": {
+     "python": "3.13.18",
+     "pandas": "2.3.3",
+     "numpy": "2.5.4",
+     "xgboost": "3.4.1",
+     "scikit-learn": "1.9.1"
+    }
+   },
+   "references_equal_measurements": true,
+   "deciding_check_reproduced": {
+    "model_eval_auc": 0.9554428259586211,
+    "model_minus_persistence_ci": {
+     "resamples": 500,
+     "ci_low": 0.0154,
+     "ci_high": 0.0871,
+     "median": 0.0433
+    },
+    "model_minus_calendar_ci": {
+     "resamples": 500,
+     "ci_low": 0.1911,
+     "ci_high": 0.2998,
+     "median": 0.2434
+    },
+    "model_auc_ci": {
+     "resamples": 500,
+     "auc_ci95_low": 0.9382,
+     "auc_ci95_high": 0.9686
+    },
+    "member_aucs": {
+     "persistence_assessment_hectares": 0.9095728249975974,
+     "calendar_identity_only": 0.712964551957056
+    },
+    "eval_rows": 5707,
+    "eval_distinct_positive_days": 79,
+    "identical_to_recorded": true
+   },
+   "rebuild_from_source": "not run (optional per REPRODUCE.md; build.py refuses any source other than the pinned publisher CSV)",
+   "reports": ".factory/abwildfire-consumer-001/reports/ (consumer.txt, qualification.txt, accept.txt, versions.txt, baseline.log, references.json, deciding_check.json, container.log)"
+  },
+  "hub_staging_2026_11_07": {
+   "date": "2026-11-07",
+   "repository": "earino/ab-wildfire-ia-escape (private Hugging Face dataset)",
+   "job": "abwildfire-hf-001 (cx23 hel1, server 174915997, 98.7 s, exit 0; destroyed after verified collection at 2026-11-07T02:30:25Z, reservation 0.04 EUR)",
+   "small_files": "uploaded 2026-11-07 by hf-publish.py --create --upload-small from the release manifest (card, LOADING.md, MANIFEST, SHA256SUMS, licences, DATA_DICTIONARY, VERIFICATION, measurements)",
+   "uploads": "5/5 assets at data/<flat-name> (or root for meta/quality), each digest-verified after upload; failures []; skipped []",
+   "loading_check": "all three splits load via the documented load_dataset path at revision main: rows 15,864/5,707/6,257, positives 297/104/257, the 25 shipped columns, label escape with values [0,1]; problems []",
+   "tag": "v2026.11 == main == 54e70b441e70ec24e198775e0bcb0ccf35fb192c; hf-publish.py --verify digest-verified all five files at the tag revision with the worker receipt",
+   "destinations_block": "release/ab-wildfire-ia-escape/DESTINATIONS.json huggingface block written (files_verified = the five Hub target paths, loading_check verified by worker job abwildfire-hf-001)",
+   "note": "nothing public; anonymous access refused while private; the flip remains the operator's single approval"
   }
  },
  "jobs": [
@@ -278,12 +342,59 @@
    "collected_at": "2026-11-06T23:37:54.051838+00:00",
    "deleted_at": "2026-11-06T23:38:14.186866+00:00",
    "what": "release-flagged transfer job: 5/5 accepted assets copied from staging release 437132110 into private earino/ab-wildfire-ia-escape release 437179999 (v2026.11) under flat names, each sha256 verified on arrival and server-side; bytes never through the coordinator; worker destroyed with provider 404 read-back (0 servers, 0 primary IPs) re-confirmed by record_github_block_2026_11_07.py"
+  },
+  {
+   "id": "abwildfire-consumer-001",
+   "candidate": "ab-wildfire-ia-escape",
+   "status": "succeeded",
+   "exit_code": 0,
+   "elapsed_seconds": 256.6,
+   "server_id": 174915106,
+   "server_type": "cx23",
+   "location": "hel1",
+   "reservation_eur": "0.04",
+   "collected_at": "2026-11-07T02:22:17.336614+00:00",
+   "deleted_at": "2026-11-07T02:23:45.107247+00:00",
+   "what": "fresh-consumer verification of the RELEASED bytes of private GitHub release 437179999 (fetch of the five flat assets with the read credential outside the container, digest-verified on arrival): package-vs-MANIFEST OK, get_dataset.py re-verification OK, sha256sum -c OK, gate 1.5.0 PASSED on the published bytes, exact-byte --accept ACCEPTED for c2c8ceb5, baseline reproduce (both AUC prints 0.9554, [validate] CONTRACT OK, holdout never copied into a workdir), score.py references recomputed equal to measurements.json, and the pre-registered deciding check recomputed identical; reports collected digest-verified from staging release 437264584 into .factory/abwildfire-consumer-001/reports/"
+  },
+  {
+   "id": "abwildfire-hf-001",
+   "candidate": "ab-wildfire-ia-escape",
+   "status": "succeeded",
+   "exit_code": 0,
+   "elapsed_seconds": 98.7,
+   "server_id": 174915997,
+   "server_type": "cx23",
+   "location": "hel1",
+   "reservation_eur": "0.04",
+   "collected_at": "2026-11-07T02:29:16.786720+00:00",
+   "deleted_at": "2026-11-07T02:30:25.080256+00:00",
+   "what": "hf_publish worker job: fetched the five released assets from private GitHub release 437179999 (digest-verified on arrival), uploaded all five to the private Hugging Face dataset earino/ab-wildfire-ia-escape at the manifest digests (4,143,697 B, failures [], skipped []), deleted the local copies, and exercised the documented load_dataset path against the uploaded bytes - all three splits load with the recorded rows/positives/columns and label values [0,1], problems []; the local copies deleted; bytes never through the coordinator"
   }
  ],
- "artifacts": [],
+ "artifacts": [
+  {
+   "artifact_version": "c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b44d0e43da2",
+   "digest_of": "sha256 over public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json (gate 1.5.0)",
+   "gate": "1.5.0 over the full artifact on the worker, ok=true; exact-byte --accept ACCEPTED before any score (abwildfire-build-001; re-accepted from fetched bytes in abwildfire-baseline-002 and re-verified on the released bytes in abwildfire-consumer-001)",
+   "repo": "earino/ab-wildfire-ia-escape (private)",
+   "release_url": "https://github.com/earino/ab-wildfire-ia-escape/releases/tag/v2026.11",
+   "release_id": 437179999,
+   "tag": "v2026.11",
+   "target_commit": "d610ffe20959ce747635631fc8aba659be3b4823",
+   "hub_repo": "earino/ab-wildfire-ia-escape (private Hugging Face dataset, tag v2026.11 == main 54e70b441e70ec24e198775e0bcb0ccf35fb192c)",
+   "staging_release": "earino/dataset-factory-staging release 437132110 (durable artifact + reports copy); consumer job reports in staging 437264584, evidence in jobs/abwildfire-consumer-001.json",
+   "rows": {
+    "train": "15,864 / 297 positives (1.87%) - assessment instants 2006-2015 (America/Edmonton)",
+    "eval": "5,707 / 104 positives (1.82%) - assessment instants 2016-2020 (America/Edmonton)",
+    "holdout": "6,257 / 257 positives (4.11%) - assessment instants 2021-2025 (America/Edmonton) (sealed)"
+   },
+   "accepted": "exact-byte --accept on the worker against artifact_version c2c8ceb56c7f; re-verified on the released bytes by abwildfire-consumer-001"
+  }
+ ],
  "rejection_reason": null,
  "review": "All five discovery contracts reconciled against recorded evidence (probes and full transcripts in candidates/ab-wildfire-ia-escape/). (1) Redistribution: class A - OGL-Alberta v2.2 permits redistribution and derivatives; the attribution sentence and non-endorsement wording are recorded verbatim and carried into LICENSE.md; the personal-information exemption was checked against the shipped columns (position codes, not names). (2) Prediction timing: the instant is the publisher's own initial-assessment timestamp and every intended feature is documented 'at the time of initial assessment' by the publisher's dictionary - the strongest timing documentation of any source this bench has opened; post-instant families (cause, dispatch, suppression milestones) are excluded with measured ordering evidence; declared limitations: no timezone marker in timestamps (read as America/Edmonton, assumption to confirm) and a single current compilation (no historical per-fire vintages) - the task is labelled current-compilation retrospective, and evaluation_contract must state these assumptions plus the bounded revision-flip exposure (89 fires within +-20% of 100 ha). (3) Target: labels derive from the record's own post-instant fields (current_size, first_uc_date), excludable from shipped features; eligibility is assessment-based with 100% coverage - no outcome-conditioned selection; no censoring (terminal status on every row, 99.9% extinguished). (4) Split capacity: three disjoint year windows carry both classes for both labels (escape 1.86%/1.85%/4.11%; containment 3.2%/3.4%/9.8%), with same-day clustered counts recorded (independence scale = the extreme fire-weather day); the holdout's higher rate is the documented 2023 record season. (5) Not a mirror: the IA-escape family is precedented (WildfireIA US benchmark, Mesogeos, Zong et al. Alberta powerline subset, Korkola et al. Ontario, UAlberta IA-difficulty study) - none ships an all-cause, assessment-instant task on the regulator's own in-situ assessment observations with containment-milestone labels; WildfireIA's own abstract records that such 'response records' are non-public in the US, which is precisely the gap this source closes for a public jurisdiction. Novelty verdict 'differentiated' recorded by script. Residual uncertainties for construction: confirm the timezone reading against a publicly documented fire timeline; decide the already-controlled stratum's treatment for the containment label; winter/season scope decision.",
- "next_action": "Private staging continues from the verified GitHub destination (repo earino/ab-wildfire-ia-escape, release 437179999, tag v2026.11 == main == d610ffe2, DESTINATIONS.json github block written): (1) the fresh-consumer worker job on the released bytes (cqc/cpcb consumer pattern; fetch block from release 437179999: meta.json 718800868-mapped, public-train.csv, public-eval.csv, private-holdout.csv, quality.json at the flat asset names; digests from MANIFEST.json) - gate 1.5.0 re-run, exact-byte --accept c2c8ceb5, get_dataset.py + sha256sum -c, baseline reproduce (both AUC prints 0.9554, CONTRACT OK, holdout never copied into a workdir), score.py references recomputed equal to measurements.json (fixed-seed CIs reproduce exactly), then APPEND the consumer check to the DESTINATIONS github block (merge, never replace); (2) hf-publish.py --plan, --create --upload-small, the hf_publish worker job, --verify, --tag LAST, then the DESTINATIONS huggingface block; (3) record -> packaged with packaged_at + structured artifacts[0] + awaiting_operator TRUE only after the pre-flip adversarial audit prompt is generated from the frozen manifest (skills/dataset-release/templates/pre-flip-audit-prompt.md, digests filled programmatically); then check-candidate --all, check-package, check-suitability, suite, CI for the exact commit. The flip is the operator's single approval. The cpcb flip remains the operator's.",
+ "next_action": "AWAITING OPERATOR (flip is the sole remaining step; publisher side complete, nothing public, holdout sealed on both destinations). v2026.11 is staged private and verified on BOTH destinations: GitHub earino/ab-wildfire-ia-escape release 437179999 (tag v2026.11 == main == d610ffe20959, 5 flat assets at the package MANIFEST digests, server-side digest-verified by abwildfire-publish-001, fresh-consumer green by abwildfire-consumer-001: gate PASSED, --accept ACCEPTED for c2c8ceb5, both AUC prints 0.9554 CONTRACT OK, references equal measurements.json, deciding check reproduced) and Hugging Face earino/ab-wildfire-ia-escape (tag v2026.11 == main == 54e70b441e70, 5/5 digest-verified by abwildfire-hf-001 and re-verified by hf-publish.py --verify with the worker loading receipt; anonymous read-back refused while private). The accepted artifact c2c8ceb56c7f... sits at those digests on both destinations. OPERATOR PATH: (1) relay candidates/ab-wildfire-ia-escape/pre-flip-audit-prompt.md to an independent auditor; the flip waits for that verdict unless waived; (2) the operator's single flip approval (both destinations; never change inference auth to publish). AFTER THE FLIP (no further approval needed): anonymous verification from a credential-less client (repo page 200, ranged GET on every asset, Hub API private:false, data files at the tag revision), record visibility + note in DESTINATIONS.json (files_verified lists preserved), refresh current editorial copies (card via hf-publish.py --upload-small, LOADING.md, repository README, release notes - apply-navigation so the managed links are present), re-run check-package.py, carry the check-suitability.py public notice, then prepare and review the site plan (sites/<id>.json) and publish/verify after the operator review. Holdout stays sealed from evaluated agents. NO new construction while this candidate is actionable-packaged; awaiting_operator exempts the queue. The cpcb-aqi-exceedance flip remains the operator's too.",
  "jurisdiction": {
   "country": "CA",
   "region": "North America",
@@ -455,5 +566,10 @@
    }
   },
   "source": "abwildfire-build-001 gate report values (the artifact's own quality.json split_counts, digest-verified equal to the accepted artifact c2c8ceb56c7ff52a...), cross-checked against meta.json rows/positive_rate and the abwildfire-baseline-002 baseline_result.json before the release manifest was generated (packaging session 2026-11-07)"
- }
+ },
+ "packaged_at": "2026-11-07T02:31:25+00:00Z",
+ "awaiting_operator": true,
+ "awaiting_operator_scope": "the private-to-public flip of earino/ab-wildfire-ia-escape on both destinations; both are staged, verified and private (GitHub release 437179999, tag v2026.11 == main == d610ffe20959, 5 flat assets at the package MANIFEST digests, fresh-consumer green by abwildfire-consumer-001; Hub tag v2026.11 == main == 54e70b441e70, all five files digest-verified by abwildfire-hf-001 and hf-publish.py --verify). The independent pre-flip audit prompt is at candidates/ab-wildfire-ia-escape/pre-flip-audit-prompt.md (digests filled programmatically from the frozen manifest); the flip waits for the auditor's verdict unless the operator waives it",
+ "awaiting_operator_since": "2026-11-07T02:31:25+00:00Z",
+ "updated_at": "2026-11-07T02:31:25+00:00Z"
 }

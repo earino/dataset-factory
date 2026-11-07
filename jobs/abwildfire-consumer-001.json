@@ -1,0 +1,371 @@
+{
+  "job": {
+    "id": "abwildfire-consumer-001",
+    "candidate": "ab-wildfire-ia-escape",
+    "release": true,
+    "image": "python:3.13-slim",
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 4096,
+    "timeout_minutes": 40,
+    "lifetime_minutes": 60,
+    "max_disk_mb": 8000,
+    "max_artifact_mb": 8,
+    "what": "Fresh-consumer verification of the ab-wildfire-ia-escape v2026.11 private release (artifact c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b44d0e43da2): the worker host fetches the five released assets from earino/ab-wildfire-ia-escape release 437179999 with digest verification (the container holds no credential), then the container runs every published REPRODUCE.md step against the released bytes - package-vs-MANIFEST check, get_dataset.py verification, sha256sum -c, gate 1.5.0 re-run on the full artifact, exact-byte --accept against the shipped qualification.json, declared dependency imports, baseline reproduce (both AUC prints 0.9554, CONTRACT OK, holdout never copied into a workdir), score.py references recomputed equal to measurements.json (fixed-seed CIs reproduce exactly) - and additionally recomputes the pre-registered deciding check measurements.json records (model-minus-persistence [0.0154, 0.0871], model-minus-calendar [0.1911, 0.2998], model AUC CI [0.9382, 0.9686] entirely above 0.5, verdict headroom_demonstrated) from the released bytes through the shipped baseline/train.py and code/score.py, never reimplemented. The optional rebuild-from-source step is not run: it needs the pinned 10.4 MB publisher CSV, code/build.py refuses any other source, and REPRODUCE.md documents it as optional. Bytes never pass through the coordinator.",
+    "stopping_condition": "any digest mismatch at fetch fails the job before the container starts; a gate failure, acceptance failure, baseline mismatch, reference mismatch or deciding-check mismatch fails at that step with diagnostics uploaded - none of them is a retry trigger and no figure may be quoted from a failed stage; the target repository must stay private and the flip remains the operator's single approval",
+    "fetch": {
+      "repo": "earino/ab-wildfire-ia-escape",
+      "release": 437179999,
+      "assets": [
+        {
+          "asset_id": 718949719,
+          "dest": "meta.json",
+          "size": 1217,
+          "sha256": "aeb2ef927fc0d8565a86a6901afe5ee29359787bb39693342d18ce6850a9bcfb"
+        },
+        {
+          "asset_id": 718949927,
+          "dest": "private/holdout.csv",
+          "size": 930923,
+          "sha256": "53583f4d2dff386bfebe864f49dba348d9717ee7bf96d28574082f80668edc12"
+        },
+        {
+          "asset_id": 718949862,
+          "dest": "public/eval.csv",
+          "size": 838515,
+          "sha256": "d099e4cb9da999e3e301b0e4da1cc98cd56fc11371feba7711447571c83a7759"
+        },
+        {
+          "asset_id": 718949791,
+          "dest": "public/train.csv",
+          "size": 2351953,
+          "sha256": "575649d52c304d2fa0751411e0e4dc291309b42fbd0b280cbeae9e4b747cc2ae"
+        },
+        {
+          "asset_id": 718949984,
+          "dest": "quality.json",
+          "size": 21089,
+          "sha256": "331a4ceb0944d33b80b0a6519c0148603b19b4fff1ae5136571ae3126cff3ec1"
+        }
+      ]
+    },
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "source_files": [
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/ab-wildfire-ia-escape/consumer/source/run.sh",
+        "bytes": 5497,
+        "sha256": "dabf98930322770cc1eecae0ea6c37b50295bc64a0c1a5340d041cdcc3549c2a"
+      },
+      {
+        "bundled_as": "verify_package.py",
+        "source": "candidates/ab-wildfire-ia-escape/consumer/source/verify_package.py",
+        "bytes": 2068,
+        "sha256": "82f77c2243d61035e4d99103f45e9cc43be8b7b65161409683e673c7c6dc8fbc"
+      },
+      {
+        "bundled_as": "check_references.py",
+        "source": "candidates/ab-wildfire-ia-escape/consumer/source/check_references.py",
+        "bytes": 5063,
+        "sha256": "7a8b28d82214defb651704e68962c12a2e87f79f9dbd5032bc45895c28d2710d"
+      },
+      {
+        "bundled_as": "decide_check.py",
+        "source": "candidates/ab-wildfire-ia-escape/consumer/source/decide_check.py",
+        "bytes": 9141,
+        "sha256": "59ee78f412780424aa819d74f4ef87c4973e341eb8e43a4efe5ba97b15eda683"
+      },
+      {
+        "bundled_as": "repo/DATA_DICTIONARY.md",
+        "source": "release/ab-wildfire-ia-escape/DATA_DICTIONARY.md",
+        "bytes": 5270,
+        "sha256": "229b99b9f58d1667db41da64fdc62ae5f57188bb58fd4c767e0bf3875bbc56f1"
+      },
+      {
+        "bundled_as": "repo/DESTINATIONS.json",
+        "source": "release/ab-wildfire-ia-escape/DESTINATIONS.json",
+        "bytes": 1981,
+        "sha256": "9c689c956c3808dc516509e0c7c7b8ef8b13a78bb26454a5ce036c3b36d99633"
+      },
+      {
+        "bundled_as": "repo/LICENSE-CC0-1.0.txt",
+        "source": "release/ab-wildfire-ia-escape/LICENSE-CC0-1.0.txt",
+        "bytes": 7048,
+        "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+      },
+      {
+        "bundled_as": "repo/LICENSE-MIT.txt",
+        "source": "release/ab-wildfire-ia-escape/LICENSE-MIT.txt",
+        "bytes": 1086,
+        "sha256": "200f782f6b8bc23b926ea774cbacb4147826b3b2b59200917d8dc5ec68159535"
+      },
+      {
+        "bundled_as": "repo/LICENSE.md",
+        "source": "release/ab-wildfire-ia-escape/LICENSE.md",
+        "bytes": 2874,
+        "sha256": "b4a30f76bb586781d4567a3ceaaab55d6b5b89411a1376acf8bde6f452ccf7ce"
+      },
+      {
+        "bundled_as": "repo/MANIFEST.json",
+        "source": "release/ab-wildfire-ia-escape/MANIFEST.json",
+        "bytes": 43616,
+        "sha256": "86b2da764a765d4f518ef062a96bf25518056660da0bcd380eb11d6af83e7233"
+      },
+      {
+        "bundled_as": "repo/README.md",
+        "source": "release/ab-wildfire-ia-escape/README.md",
+        "bytes": 7914,
+        "sha256": "1c036e4903f0a5fae9bd6d91300f2c5843c6444449032a4ea2b67617bede54d7"
+      },
+      {
+        "bundled_as": "repo/RELEASE_NOTES.md",
+        "source": "release/ab-wildfire-ia-escape/RELEASE_NOTES.md",
+        "bytes": 5524,
+        "sha256": "04397fb4c603bed2efbae0b34c1bfa8952d2168b26e2ff6deab62fc2169cd9b5"
+      },
+      {
+        "bundled_as": "repo/REPRODUCE.md",
+        "source": "release/ab-wildfire-ia-escape/REPRODUCE.md",
+        "bytes": 4302,
+        "sha256": "0710dc0f93127bf05f53a6bf9ab097e8f719d18d0f25a027311fa5652c9ba8fe"
+      },
+      {
+        "bundled_as": "repo/SHA256SUMS",
+        "source": "release/ab-wildfire-ia-escape/SHA256SUMS",
+        "bytes": 406,
+        "sha256": "7705734c8d7b47d3e5a5a9dccc24f6c0f837db3244ab3364ca3ccfe64c63527b"
+      },
+      {
+        "bundled_as": "repo/VERIFICATION.md",
+        "source": "release/ab-wildfire-ia-escape/VERIFICATION.md",
+        "bytes": 6407,
+        "sha256": "50f7121798a3b8b721c58b6e182fcc90cb037c052ad7e579e963b67367d41b26"
+      },
+      {
+        "bundled_as": "repo/baseline/README.md",
+        "source": "release/ab-wildfire-ia-escape/baseline/README.md",
+        "bytes": 1086,
+        "sha256": "3079d77eb371049b3830b09f1cf146b6ac3258458d55c2c86a6e110415efa7b1"
+      },
+      {
+        "bundled_as": "repo/baseline/reproduce_baseline.sh",
+        "source": "release/ab-wildfire-ia-escape/baseline/reproduce_baseline.sh",
+        "bytes": 1536,
+        "sha256": "e81e1c8aa4bb37aaae88558bd66bc2b4f9877ae70b6b45197fb7474323e6411c"
+      },
+      {
+        "bundled_as": "repo/baseline/train.py",
+        "source": "release/ab-wildfire-ia-escape/baseline/train.py",
+        "bytes": 2500,
+        "sha256": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8"
+      },
+      {
+        "bundled_as": "repo/baseline/validate.py",
+        "source": "release/ab-wildfire-ia-escape/baseline/validate.py",
+        "bytes": 1277,
+        "sha256": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b"
+      },
+      {
+        "bundled_as": "repo/baseline/validate.sh",
+        "source": "release/ab-wildfire-ia-escape/baseline/validate.sh",
+        "bytes": 482,
+        "sha256": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d"
+      },
+      {
+        "bundled_as": "repo/code/build.py",
+        "source": "release/ab-wildfire-ia-escape/code/build.py",
+        "bytes": 53195,
+        "sha256": "9200a30fa4cd6f7f97d3f9edc1fdf9ca0a84bf6d86f995e9a87d223d9d060418"
+      },
+      {
+        "bundled_as": "repo/code/materialize.py",
+        "source": "release/ab-wildfire-ia-escape/code/materialize.py",
+        "bytes": 2593,
+        "sha256": "2a210c6bf41a7c8605a0239011640a2d19af0815c3d64ed67621f752b7e17a14"
+      },
+      {
+        "bundled_as": "repo/code/qualify_dataset.py",
+        "source": "release/ab-wildfire-ia-escape/code/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      },
+      {
+        "bundled_as": "repo/code/run.sh",
+        "source": "release/ab-wildfire-ia-escape/code/run.sh",
+        "bytes": 1905,
+        "sha256": "98a53051bad6545a1b822747c760d914fe8cdeaa8eaf5cc881fb3868819367f4"
+      },
+      {
+        "bundled_as": "repo/code/score.py",
+        "source": "release/ab-wildfire-ia-escape/code/score.py",
+        "bytes": 16613,
+        "sha256": "202402288a37d16c5163556ab94305ab79896ae2f82ebc224ec5c6a4e3f9687e"
+      },
+      {
+        "bundled_as": "repo/get_dataset.py",
+        "source": "release/ab-wildfire-ia-escape/get_dataset.py",
+        "bytes": 6280,
+        "sha256": "3ae05fa9d754910e70004732bdf9994c57e8bc9911886b3e1ec10175e753471f"
+      },
+      {
+        "bundled_as": "repo/measurements.json",
+        "source": "release/ab-wildfire-ia-escape/measurements.json",
+        "bytes": 20960,
+        "sha256": "2c67f679b61a81c77737f97823b6c62a2724ff40785d05864c147ddb6f858e52"
+      },
+      {
+        "bundled_as": "repo/meta.json",
+        "source": "release/ab-wildfire-ia-escape/meta.json",
+        "bytes": 1217,
+        "sha256": "aeb2ef927fc0d8565a86a6901afe5ee29359787bb39693342d18ce6850a9bcfb"
+      },
+      {
+        "bundled_as": "repo/publisher-data-dictionary-transcript.md",
+        "source": "release/ab-wildfire-ia-escape/publisher-data-dictionary-transcript.md",
+        "bytes": 7676,
+        "sha256": "2585984daf4f812ed08ca563bcd9dc8204f024a1aa5f522d6a14e8b562582c3c"
+      },
+      {
+        "bundled_as": "repo/qualification.json",
+        "source": "release/ab-wildfire-ia-escape/qualification.json",
+        "bytes": 17051,
+        "sha256": "16697cd8aef51394f84b125964104adea5bf9dd8536f4fde291f817469cb07bb"
+      },
+      {
+        "bundled_as": "repo/quality.json",
+        "source": "release/ab-wildfire-ia-escape/quality.json",
+        "bytes": 21089,
+        "sha256": "331a4ceb0944d33b80b0a6519c0148603b19b4fff1ae5136571ae3126cff3ec1"
+      }
+    ]
+  },
+  "reservation_eur": "0.04",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 2,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 450560,
+  "source_sha256": "0208d7e6a07aea7e31817531013393224fc57d0cb67c7f3f83f689e770dd95e8",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-07T02:16:03.124334+00:00",
+  "expires": 1794021363,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 174915106,
+  "known_hosts": "/opt/data/dataset-factory/.factory/abwildfire-consumer-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "abwildfire-consumer-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/ab-wildfire-ia-escape",
+      "release": 437179999,
+      "fetched": [
+        {
+          "dest": "meta.json",
+          "bytes": 1217,
+          "sha256": "aeb2ef927fc0d8565a86a6901afe5ee29359787bb39693342d18ce6850a9bcfb"
+        },
+        {
+          "dest": "private/holdout.csv",
+          "bytes": 930923,
+          "sha256": "53583f4d2dff386bfebe864f49dba348d9717ee7bf96d28574082f80668edc12"
+        },
+        {
+          "dest": "public/eval.csv",
+          "bytes": 838515,
+          "sha256": "d099e4cb9da999e3e301b0e4da1cc98cd56fc11371feba7711447571c83a7759"
+        },
+        {
+          "dest": "public/train.csv",
+          "bytes": 2351953,
+          "sha256": "575649d52c304d2fa0751411e0e4dc291309b42fbd0b280cbeae9e4b747cc2ae"
+        },
+        {
+          "dest": "quality.json",
+          "bytes": 21089,
+          "sha256": "331a4ceb0944d33b80b0a6519c0148603b19b4fff1ae5136571ae3126cff3ec1"
+        }
+      ],
+      "failures": [],
+      "bytes": 4143697
+    },
+    "image_id": "sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc",
+    "image_digests": [
+      "python@sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 256.6,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 437264584,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-22ace6995260c18b2150",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-22ace6995260c18b2150/manifest.json",
+    "assets": [
+      {
+        "id": 719326563,
+        "size": 68,
+        "sha256": "69ad2744359b5a93b57c48f06215e876155605d69bd13d4a78f26be7e8112773"
+      },
+      {
+        "id": 719326606,
+        "size": 1264,
+        "sha256": "d9a29edf42d93f9743b6562a1df5504b0f33c52e946775b740894aedf51cea97"
+      },
+      {
+        "id": 719326679,
+        "size": 917,
+        "sha256": "43c594f27669205b5e5eed5f1cd90221e961e7f4ab89852400028914da5c754d"
+      },
+      {
+        "id": 719326763,
+        "size": 1034,
+        "sha256": "7b9bcf247a5c52f5a045095cb353a1f2dc5b86f1164ddae60332100be175e5ec"
+      },
+      {
+        "id": 719326842,
+        "size": 4275,
+        "sha256": "8f77f7329e97115718f66f6871d34b6b19ee680a4ecb7f56afde85c99e777e24"
+      },
+      {
+        "id": 719326911,
+        "size": 3536,
+        "sha256": "428410d02f38a479fdb88f99ff1aef62bc0d48de57b941b4ef3777813ca6962d"
+      },
+      {
+        "id": 719326971,
+        "size": 44,
+        "sha256": "fd85c743877a3741f46de68ad2645e5d0dcb2d9511d7271c60b4dcb7717f4df9"
+      },
+      {
+        "id": 719327076,
+        "size": 450560,
+        "sha256": "0208d7e6a07aea7e31817531013393224fc57d0cb67c7f3f83f689e770dd95e8"
+      },
+      {
+        "id": 719327128,
+        "size": 5308,
+        "sha256": "c58ac9fd4684c068f8fb5e136c855e07c5326a1d0c81a0954ce0b6ab54b48818"
+      },
+      {
+        "id": 719327195,
+        "size": 15717,
+        "sha256": "346b6ba8dcd21c15b043c95c92b0b8d5d5069744217f78bdaa8101ce3a490a49"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-07T02:22:17.336614+00:00",
+  "deleted_at": "2026-11-07T02:23:45.107247+00:00"
+}

@@ -1,3 +1,137 @@
+## 2026-11-07 (02:44Z) - follow-up (worker-status runner): abwildfire-consumer-001 + abwildfire-hf-001 SUCCEEDED - both outcomes already recorded by the 02:35Z advancement entry and re-verified from the collected evidence and the live provider; the advancement recording is committed by this follow-up (its session hit the wall-clock ceiling before commit); one timestamp-label defect fixed in the appended consumer check; cleanup provider-reconfirmed; both marked handled
+
+Watcher follow-up for the two release jobs. The shared research mutex was
+this runner's for the whole invocation. The advancement session ended at its
+ceiling right after writing the 02:35Z entry (last write 02:35:06Z; none of
+its processes alive at 02:38Z), leaving its finished recording uncommitted -
+an idle coordinator with a documented handoff, so this session handled only
+the two named jobs and the ab-wildfire-ia-escape candidate. Unrelated
+untracked work (candidates/fenz-incident-data/) preserved untouched, not
+committed.
+
+- abwildfire-consumer-001 (server 174915106, exit 0, 256.6 s, staging
+  437264584, ledger deleted): every required check re-read green in the
+  collected bytes - gate 1.5.0 PASSED on the full published artifact,
+  exact-byte --accept ACCEPTED c2c8ceb5, both AUC prints 0.9554 with
+  [validate] CONTRACT OK, holdout never copied into a workdir, references
+  recomputed equal to measurements.json (persistence 0.9096 / calendar
+  0.7130 / logistic 0.9206 / majority accuracy 0.9818), and the
+  pre-registered deciding check recomputed IDENTICAL to the recorded
+  comparison (model-minus-persistence [0.0154, 0.0871], model-minus-calendar
+  [0.1911, 0.2998], model AUC CI [0.9382, 0.9686], verdict
+  headroom_demonstrated). Rebuild-from-source correctly not run (optional
+  per REPRODUCE.md; build.py refuses any other source).
+- abwildfire-hf-001 (server 174915997, 98.7 s, staging 437267896, ledger
+  deleted): hf_publish 5/5 uploads at the MANIFEST digests (meta aeb2ef92,
+  holdout 53583f4d, eval d099e4cb, train 575649d5, quality 331a4ceb),
+  failures [], skipped []; load_dataset green on all three splits
+  (15,864/5,707/6,257 rows, 297/104/257 positives, the 25 shipped columns,
+  labels [0,1]); tag v2026.11 == main == 54e70b441e70ec24 with the
+  hf-publish --verify receipt recorded; DESTINATIONS huggingface block
+  complete (files_verified = the five Hub target paths).
+- DEFECT FOUND AND FIXED in the advancement session's own appended consumer
+  check: its "verified ... 2026-11-07T02:24:36+00:00" timestamp was the
+  record-write instant (record_consumer_check_2026_11_07.py now_iso()), not
+  the verification instant - it postdates the job's own collected_at
+  02:22:17Z and destroyed_at 02:23:45Z quoted in the same string. Reworded
+  in release/ab-wildfire-ia-escape/DESTINATIONS.json (mutable destination
+  evidence, deliberately outside the frozen manifest) so the timestamp names
+  what it is; no number changed.
+- CLEANUP (deletion confirmed by the provider, re-read this session 02:39Z):
+  GET /v1/servers/174915106 -> 404 "server not found";
+  GET /v1/servers/174915997 -> 404 "server not found"; GET /v1/servers ->
+  200, 0 entries; GET /v1/primary_ips -> 200, 0 entries. NOTHING PUBLIC
+  re-asserted anonymously: GitHub earino/ab-wildfire-ia-escape API 404, Hub
+  401. Holdout sealed; preservation stands (accepted bytes durable on
+  GitHub release 437179999 server-side at the MANIFEST digests, on the Hub
+  at the tag revision, and in staging 437132110).
+- Checks run by this follow-up: check-candidate --all rc=0 (143 records),
+  check-package release/ab-wildfire-ia-escape OK, check-suitability 22 OK,
+  full suite 723 OK (32.8 s).
+- Both jobs marked handled (.factory markers citing this commit). The
+  candidate stays awaiting_operator: true - the flip of both destinations
+  remains the operator's single approval and waits for the independent
+  auditor's verdict on
+  candidates/ab-wildfire-ia-escape/pre-flip-audit-prompt.md (9,699 chars, no
+  unfilled placeholder, digests filled programmatically) unless waived;
+  cpcb-aqi-exceedance also still awaits its own flip.
+
+## 2026-11-07 (02:35Z) - scheduled advancement: ab-wildfire-ia-escape RELEASE PREP COMPLETE ON BOTH DESTINATIONS -> PACKAGED + AWAITING OPERATOR (fresh-consumer abwildfire-consumer-001 GREEN on the released bytes of private release 437179999: gate PASSED, --accept c2c8ceb5, both AUC prints 0.9554 CONTRACT OK, references equal measurements.json, deciding check reproduced IDENTICALLY; Hub earino/ab-wildfire-ia-escape created private, 10 small files + 5/5 assets digest-verified, load_dataset verified on all three splits, tag v2026.11 LAST == main == 54e70b44; pre-flip audit prompt generated; nothing public, holdout sealed)
+
+Release work only (brief priority). Two worker jobs, both cx23 hel1, both
+destroyed with provider 404 read-back (0 servers, 0 primary IPs); 0.08 EUR
+reserved total this session.
+
+- FRESH-CONSUMER VERIFICATION (abwildfire-consumer-001, server 174915106,
+  256.6 s, exit 0): the cqc/cpcb consumer pattern on the RELEASED bytes.
+  Job spec generated programmatically (consumer/make_job_2026_11_07.py):
+  digests copied from MANIFEST.json by JSON load, release asset ids resolved
+  live by name+digest match - the cpcb-aqi-consumer-001 hand-typed-digest
+  defect class is designed out. The worker host fetched the five flat
+  assets from private release 437179999 (read credential outside the
+  container; 4,143,697 B, failures []), then the credential-less container
+  ran every published REPRODUCE.md step: package-vs-MANIFEST OK;
+  get_dataset.py re-verification OK (layout already restored);
+  sha256sum -c OK; gate 1.5.0 PASSED on the full published artifact
+  (c2c8ceb56c7ff52a); exact-byte --accept ACCEPTED; declared deps import
+  (python 3.13.18, pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1,
+  scikit-learn 1.9.1); baseline reproduce - both AUC prints 0.9554,
+  [validate] CONTRACT OK, "the private holdout was NOT copied";
+  score.py references recomputed EQUAL to measurements.json (57 figures,
+  persistence 0.9096 / calendar 0.7130 / logistic 0.9206 / majority
+  accuracy 0.9818, fixed-seed CIs exact); and the pre-registered deciding
+  check recomputed IDENTICAL to the recorded comparison: model 0.9554428,
+  model-minus-persistence [0.0154, 0.0871] median 0.0433,
+  model-minus-calendar [0.1911, 0.2998] median 0.2434, model AUC CI
+  [0.9382, 0.9686], member AUCs full-precision equal, verdict
+  headroom_demonstrated. The optional rebuild-from-source step not run
+  (needs the pinned 10.4 MB publisher CSV; build.py refuses any other
+  source; REPRODUCE.md documents it as optional). Reports collected
+  digest-verified from staging 437264584; compact copies committed at
+  candidates/ab-wildfire-ia-escape/consumer/reports-abwildfire-consumer-001/.
+  Consumer check APPENDED (merge, never replace) to the DESTINATIONS.json
+  github block: 3 checks, github destination COMPLETE.
+- HUGGING FACE DESTINATION (hf-publish.py from the same manifest):
+  --create --upload-small wrote the private Hub repo earino/
+  ab-wildfire-ia-escape with 10 small files (generated card README.md from
+  the new dataset-supplied candidates/ab-wildfire-ia-escape/card.md,
+  LOADING.md, MANIFEST, SHA256SUMS, licences, DATA_DICTIONARY,
+  VERIFICATION, measurements); abwildfire-hf-001 (server 174915997, 98.7 s,
+  exit 0) fetched the five released assets from GitHub release 437179999
+  (digest-verified on arrival), uploaded 5/5 to the Hub at the manifest
+  digests (failures [], skipped []), deleted local copies, and exercised
+  the documented load_dataset path: all three splits load with the
+  recorded rows (15,864/5,707/6,257), positives (297/104/257), the 25
+  shipped columns and label values [0,1] - problems [], ok true.
+  hf-publish.py --verify digest-verified all five at main; --tag LAST
+  created v2026.11 == main == 54e70b441e70ec24e198775e0bcb0ccf35fb192c
+  with the worker receipt recorded; DESTINATIONS.json huggingface block
+  written (files_verified = the five Hub target paths).
+- RECORD -> PACKAGED: candidates/ab-wildfire-ia-escape/record.json status
+  packaged, packaged_at 2026-11-07T02:31:25Z, structured artifacts[0],
+  both job outcomes + measurement blocks appended; the pre-flip
+  adversarial audit prompt generated from the frozen manifest
+  (candidates/ab-wildfire-ia-escape/pre-flip-audit-prompt.md, digests
+  filled programmatically, verified against MANIFEST.json; the
+  2026-10-27 operator-endorsed standing practice) and awaiting_operator
+  TRUE with scope = the flip of both destinations. check-candidate --all
+  rc=0 (143), check-package OK (DESTINATIONS.json deliberately outside
+  the frozen manifest), check-suitability 22 OK, suite 723 OK (measured by the 02:44Z follow-up: python3 -m unittest discover -s tests, 723 tests in 32.8 s, OK).
+- NOTHING PUBLIC: GitHub repo and release 437179999 private (anonymous
+  404 re-asserted), Hub repo private, holdout sealed and never scored (no
+  holdout figure exists or is implied). THE FLIP IS THE OPERATOR'S SINGLE
+  APPROVAL (both ab-wildfire-ia-escape and cpcb-aqi-exceedance now wait on
+  it); the flip waits for the independent auditor's verdict on the
+  generated prompt unless waived.
+
+Next action (record.next_action): AWAITING OPERATOR - relay
+candidates/ab-wildfire-ia-escape/pre-flip-audit-prompt.md to the
+independent auditor, then the operator's single flip approval of both
+destinations; after the flip, anonymous verification, DESTINATIONS
+visibility record, editorial refresh (card/LOADING/README/notes with
+apply-navigation), check-package, suitability notice, then the site plan
+(sites/ab-wildfire-ia-escape.json) through prepare/inspect/publish/verify.
+
 ## 2026-11-07 (00:20Z) - scheduled discovery (LatAm tick): anm-sigbm-emergency-transition OPENED (investigating, one measured prerequisite short of ready) - Brazilian tailings-dam emergency-status transition panel; cl-sadu-respiratory-weekly DROPPED on licence (CC-NC, both DEIS emergency-attendance packages) before any task probing
 
 Discovery only; no construction, qualification or release work. Region

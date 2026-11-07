@@ -1,0 +1,21 @@
+workdir: /tmp/tmp.gNabZNNbRQ
+== re-accept the artifact against its qualification report ==
+ACCEPTED: /tmp/task matches the qualified artifact c2c8ceb56c7ff52a
+== materialize the runner workdir (public train+eval only) ==
+  task.json: target=escape positive_label=1 id_columns=['fire_id'] rows={'train': 15864, 'eval': 5707, 'holdout': 6257}
+  data/: train.csv + eval.csv copied; the private holdout was NOT copied
+== the benchmark's own runner, unmodified ==
+Training time: 0.2s
+Eval time: 0.0s
+Eval AUC: 0.9554
+Training time: 0.2s
+Eval time: 0.0s
+Eval AUC: 0.9554
+[validate] train.py ran in 0.5s
+[validate] eval AUC via predict_proba (target column removed): 0.9554
+[validate] CONTRACT OK
+== pre-registered references on the identical eval rows ==
+{"ok": true, "note": "holdout exists and was NOT opened by this stage"}
+{"ok": true, "stage": "references", "artifact_version": "c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b44d0e43da2", "references": {"majority_constant": 0.5, "persistence_assessment_hectares": 0.9095728249975974, "calendar_identity_only": 0.712964551957056, "full_feature_logistic": 0.9206280289405401}}
+expected: persistence 0.9096, calendar 0.7130, logistic 0.9206, model 0.9554
+done - compare the printed AUCs with measurements.json

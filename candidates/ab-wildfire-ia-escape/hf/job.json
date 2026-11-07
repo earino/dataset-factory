@@ -1,0 +1,105 @@
+{
+ "id": "abwildfire-hf-001",
+ "candidate": "ab-wildfire-ia-escape",
+ "release": true,
+ "server_type": "cx23",
+ "location": "hel1",
+ "cpus": 2,
+ "memory_mb": 4096,
+ "timeout_minutes": 40,
+ "lifetime_minutes": 60,
+ "max_disk_mb": 4000,
+ "max_artifact_mb": 8,
+ "what": "Complete pinned verification of the ab-wildfire-ia-escape artifact c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b44d0e43da2 on the private Hugging Face repo earino/ab-wildfire-ia-escape: fetch all five released files from the private GitHub release 437179999 at their recorded asset ids (digests equal to the package MANIFEST.json, resolved by digest match through the live release API), verify each sha256 on arrival, upload each with the Hub-reported digest verified after upload, delete the local copy, and run the documented load_dataset path against the uploaded bytes (splits, columns, label values as recorded in the manifest). The bytes never pass through the coordinator; peak worker disk is one asset (4.1 MB total).",
+ "stopping_condition": "a digest mismatch at fetch or after upload fails the job with diagnostics uploaded; a partial upload is reconciled by digest in the next deliberately planned attempt, never by re-running blind; the Hub repository must be created private and the flip remains the operator's single approval",
+ "hf_publish": {
+  "repo": "earino/ab-wildfire-ia-escape",
+  "revision": "main",
+  "source_repo": "earino/ab-wildfire-ia-escape",
+  "assets": [
+   {
+    "asset_id": 718949719,
+    "dest": "meta.json",
+    "target": "meta.json",
+    "size": 1217,
+    "sha256": "aeb2ef927fc0d8565a86a6901afe5ee29359787bb39693342d18ce6850a9bcfb"
+   },
+   {
+    "asset_id": 718949927,
+    "dest": "private-holdout.csv",
+    "target": "data/private-holdout.csv",
+    "size": 930923,
+    "sha256": "53583f4d2dff386bfebe864f49dba348d9717ee7bf96d28574082f80668edc12"
+   },
+   {
+    "asset_id": 718949862,
+    "dest": "public-eval.csv",
+    "target": "data/public-eval.csv",
+    "size": 838515,
+    "sha256": "d099e4cb9da999e3e301b0e4da1cc98cd56fc11371feba7711447571c83a7759"
+   },
+   {
+    "asset_id": 718949791,
+    "dest": "public-train.csv",
+    "target": "data/public-train.csv",
+    "size": 2351953,
+    "sha256": "575649d52c304d2fa0751411e0e4dc291309b42fbd0b280cbeae9e4b747cc2ae"
+   },
+   {
+    "asset_id": 718949984,
+    "dest": "quality.json",
+    "target": "quality.json",
+    "size": 21089,
+    "sha256": "331a4ceb0944d33b80b0a6519c0148603b19b4fff1ae5136571ae3126cff3ec1"
+   }
+  ],
+  "verify_loading": {
+   "splits": {
+    "train": {
+     "rows": 15864,
+     "positives": 297
+    },
+    "eval": {
+     "rows": 5707,
+     "positives": 104
+    },
+    "holdout": {
+     "rows": 6257,
+     "positives": 257
+    }
+   },
+   "columns": [
+    "fire_id",
+    "assessment_ts",
+    "assessment_date",
+    "day_of_week",
+    "month",
+    "doy_sin",
+    "doy_cos",
+    "forest_area",
+    "latitude",
+    "longitude",
+    "assessment_hectares",
+    "fire_spread_rate",
+    "fire_type",
+    "fire_position_on_slope",
+    "weather_conditions_over_fire",
+    "temperature",
+    "relative_humidity",
+    "wind_speed",
+    "wind_direction",
+    "fuel_type",
+    "detection_agent_type",
+    "hours_report_to_assessment",
+    "hours_discovery_to_assessment",
+    "hours_start_to_assessment",
+    "escape"
+   ],
+   "label": "escape",
+   "label_values": [
+    0,
+    1
+   ]
+  }
+ }
+}

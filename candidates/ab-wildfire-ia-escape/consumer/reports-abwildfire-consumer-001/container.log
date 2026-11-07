@@ -1,0 +1,83 @@
+== 1. the cloned package matches MANIFEST.json ==
+  checked 25 files against MANIFEST.json
+  note: 1 file(s) present but not in the manifest: ['DESTINATIONS.json']
+  PACKAGE OK: every listed file matches its recorded hash
+== 2. the release assets, as fetched, carry the layout get_dataset.py restores ==
+/data/meta.json
+/data/private/holdout.csv
+/data/public/eval.csv
+/data/public/train.csv
+/data/quality.json
+== 3. get_dataset.py verifies the restored tree (files already present; no credential) ==
+  meta.json: already present and matching
+  private/holdout.csv: already present and matching
+  public/eval.csv: already present and matching
+  public/train.csv: already present and matching
+  quality.json: already present and matching
+downloaded and verified 5 files, 4143697 bytes, into /tmp/task
+task: ab-wildfire-ia-escape target=escape rows={'train': 15864, 'eval': 5707, 'holdout': 6257}
+== 4. sha256sum -c SHA256SUMS (the published verification command) ==
+meta.json: OK
+private/holdout.csv: OK
+public/eval.csv: OK
+public/train.csv: OK
+quality.json: OK
+== 5. the published gate re-runs on the published bytes ==
+QUALIFICATION PASSED
+== 6. exact-byte acceptance against the shipped qualification report ==
+ACCEPTED: /tmp/task matches the qualified artifact c2c8ceb56c7ff52a
+== 7. dependencies (the published ranges) ==
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 26.2.2 -> 26.3
+[notice] To update, run: pip install --upgrade pip
+imports OK: 3.13.18 2.3.3 2.5.4 3.4.1 1.9.1
+== 8. the published baseline reproduces ==
+workdir: /tmp/tmp.gNabZNNbRQ
+== re-accept the artifact against its qualification report ==
+ACCEPTED: /tmp/task matches the qualified artifact c2c8ceb56c7ff52a
+== materialize the runner workdir (public train+eval only) ==
+  task.json: target=escape positive_label=1 id_columns=['fire_id'] rows={'train': 15864, 'eval': 5707, 'holdout': 6257}
+  data/: train.csv + eval.csv copied; the private holdout was NOT copied
+== the benchmark's own runner, unmodified ==
+Training time: 0.2s
+Eval time: 0.0s
+Eval AUC: 0.9554
+Training time: 0.2s
+Eval time: 0.0s
+Eval AUC: 0.9554
+[validate] train.py ran in 0.5s
+[validate] eval AUC via predict_proba (target column removed): 0.9554
+[validate] CONTRACT OK
+== pre-registered references on the identical eval rows ==
+{"ok": true, "note": "holdout exists and was NOT opened by this stage"}
+{"ok": true, "stage": "references", "artifact_version": "c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b44d0e43da2", "references": {"majority_constant": 0.5, "persistence_assessment_hectares": 0.9095728249975974, "calendar_identity_only": 0.712964551957056, "full_feature_logistic": 0.9206280289405401}}
+expected: persistence 0.9096, calendar 0.7130, logistic 0.9206, model 0.9554
+done - compare the printed AUCs with measurements.json
+auc prints: ['0.9554', '0.9554', '0.9554']
+== 9. the published references recompute ==
+{"ok": true, "note": "holdout exists and was NOT opened by this stage"}
+{"ok": true, "stage": "references", "artifact_version": "c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b44d0e43da2", "references": {"majority_constant": 0.5, "persistence_assessment_hectares": 0.9095728249975974, "calendar_identity_only": 0.712964551957056, "full_feature_logistic": 0.9206280289405401}}
+  57 figures and row counts recomputed equal to measurements.json
+  persistence 0.9096, calendar 0.7130, logistic 0.9206, majority accuracy 0.9818
+== 10. the pre-registered deciding check recomputes on the released bytes ==
+  task.json: target=escape positive_label=1 id_columns=['fire_id'] rows={'train': 15864, 'eval': 5707, 'holdout': 6257}
+  data/: train.csv + eval.csv copied; the private holdout was NOT copied
+Training time: 0.2s
+Eval time: 0.0s
+Eval AUC: 0.9554
+  model AUC 0.9554 (recorded 0.9554)
+  model minus persistence: [0.0154, 0.0871] (recorded [0.0154, 0.0871])
+  model minus calendar: [0.1911, 0.2998] (recorded [0.1911, 0.2998])
+  model AUC CI: [0.9382, 0.9686] (entirely above 0.5)
+  verdict: headroom_demonstrated
+== consumer verification passed ==
+package: every file matches MANIFEST.json
+download: 5 assets host-fetched and digest-verified, layout restored, get_dataset.py re-verification OK
+checksums: sha256sum -c SHA256SUMS OK over the restored tree
+gate: PASSED on the full published artifact (gate 1.5.0)
+accept: ACCEPTED for artifact c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b44d0e43da2
+baseline: CONTRACT OK, both AUC prints 0.9554, holdout never copied into a workdir
+references: recomputed equal to measurements.json (persistence 0.9096, calendar/identity 0.7130, logistic 0.9206, majority accuracy 0.9818; fixed-seed CIs reproduce exactly)
+deciding check: model-minus-persistence [0.0154, 0.0871] and model-minus-calendar [0.1911, 0.2998] reproduced; model AUC CI [0.9382, 0.9686] entirely above 0.5; verdict headroom_demonstrated
+rebuild: not run (optional per REPRODUCE.md; build.py refuses any source other than the pinned publisher CSV)

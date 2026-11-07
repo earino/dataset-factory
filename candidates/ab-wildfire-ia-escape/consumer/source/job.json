@@ -1,0 +1,52 @@
+{
+ "id": "abwildfire-consumer-001",
+ "candidate": "ab-wildfire-ia-escape",
+ "release": true,
+ "image": "python:3.13-slim",
+ "server_type": "cx23",
+ "location": "hel1",
+ "cpus": 2,
+ "memory_mb": 4096,
+ "timeout_minutes": 40,
+ "lifetime_minutes": 60,
+ "max_disk_mb": 8000,
+ "max_artifact_mb": 8,
+ "what": "Fresh-consumer verification of the ab-wildfire-ia-escape v2026.11 private release (artifact c2c8ceb56c7ff52aaf748473e1251725c4ee86912edb9b17387e6b44d0e43da2): the worker host fetches the five released assets from earino/ab-wildfire-ia-escape release 437179999 with digest verification (the container holds no credential), then the container runs every published REPRODUCE.md step against the released bytes - package-vs-MANIFEST check, get_dataset.py verification, sha256sum -c, gate 1.5.0 re-run on the full artifact, exact-byte --accept against the shipped qualification.json, declared dependency imports, baseline reproduce (both AUC prints 0.9554, CONTRACT OK, holdout never copied into a workdir), score.py references recomputed equal to measurements.json (fixed-seed CIs reproduce exactly) - and additionally recomputes the pre-registered deciding check measurements.json records (model-minus-persistence [0.0154, 0.0871], model-minus-calendar [0.1911, 0.2998], model AUC CI [0.9382, 0.9686] entirely above 0.5, verdict headroom_demonstrated) from the released bytes through the shipped baseline/train.py and code/score.py, never reimplemented. The optional rebuild-from-source step is not run: it needs the pinned 10.4 MB publisher CSV, code/build.py refuses any other source, and REPRODUCE.md documents it as optional. Bytes never pass through the coordinator.",
+ "stopping_condition": "any digest mismatch at fetch fails the job before the container starts; a gate failure, acceptance failure, baseline mismatch, reference mismatch or deciding-check mismatch fails at that step with diagnostics uploaded - none of them is a retry trigger and no figure may be quoted from a failed stage; the target repository must stay private and the flip remains the operator's single approval",
+ "fetch": {
+  "repo": "earino/ab-wildfire-ia-escape",
+  "release": 437179999,
+  "assets": [
+   {
+    "asset_id": 718949719,
+    "dest": "meta.json",
+    "size": 1217,
+    "sha256": "aeb2ef927fc0d8565a86a6901afe5ee29359787bb39693342d18ce6850a9bcfb"
+   },
+   {
+    "asset_id": 718949927,
+    "dest": "private/holdout.csv",
+    "size": 930923,
+    "sha256": "53583f4d2dff386bfebe864f49dba348d9717ee7bf96d28574082f80668edc12"
+   },
+   {
+    "asset_id": 718949862,
+    "dest": "public/eval.csv",
+    "size": 838515,
+    "sha256": "d099e4cb9da999e3e301b0e4da1cc98cd56fc11371feba7711447571c83a7759"
+   },
+   {
+    "asset_id": 718949791,
+    "dest": "public/train.csv",
+    "size": 2351953,
+    "sha256": "575649d52c304d2fa0751411e0e4dc291309b42fbd0b280cbeae9e4b747cc2ae"
+   },
+   {
+    "asset_id": 718949984,
+    "dest": "quality.json",
+    "size": 21089,
+    "sha256": "331a4ceb0944d33b80b0a6519c0148603b19b4fff1ae5136571ae3126cff3ec1"
+   }
+  ]
+ }
+}
