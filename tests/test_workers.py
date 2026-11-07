@@ -67,6 +67,9 @@ class WorkerTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
+        write_json(self.root / "config/admission.json", {
+            "version": 1, "hold": False, "reason": "isolated lifecycle test",
+            "allowed_worker_bundles": {}})
         (self.root / "jobs").mkdir()
         source = self.root / "source"
         source.mkdir()
@@ -106,6 +109,25 @@ class WorkerTests(unittest.TestCase):
             self.launch()
         self.github.assert_not_called()
         self.assertEqual(self.cloud.created, 0)
+
+    def test_remediation_hold_refuses_release_flag_before_network(self):
+        write_json(self.root / "config/admission.json", {
+            "version": 1, "hold": True, "reason": "acceptance pending",
+            "allowed_worker_bundles": {}})
+        self.job["release"] = True
+        write_json(self.path, self.job)
+        with self.assertRaisesRegex(FactoryError, "remediation hold"):
+            self.launch()
+        self.github.assert_not_called()
+        self.assertEqual(self.cloud.created, 0)
+
+    def test_pinned_remediation_launch_uses_exact_planned_bundle(self):
+        proposal = worker.plan(self.root, self.path, self.config)
+        write_json(self.root / "config/admission.json", {
+            "version": 1, "hold": True, "reason": "acceptance pending",
+            "allowed_worker_bundles": {self.job["id"]: proposal["source_sha256"]}})
+        self.launch()
+        self.assertEqual(self.cloud.created, 1)
 
     def test_allowance_blocks_before_creation(self):
         self.config["monthly_budget_eur"] = "0.01"

@@ -133,6 +133,9 @@ class FooterTests(unittest.TestCase):
 
 class HeldTickTests(unittest.TestCase):
     def setUp(self):
+        hold = patch.object(wrapper, "hold_reason", return_value=None)
+        hold.start()
+        self.addCleanup(hold.stop)
         # The wrapper appends to the routine's runtime log. A test must never write there: the
         # log is evidence about real sessions, and test entries in it are indistinguishable from
         # held ticks that actually happened.

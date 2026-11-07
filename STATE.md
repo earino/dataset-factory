@@ -1,3 +1,17 @@
+## 2026-11-07 — Codex begins operator-authorized factory resilience implementation
+
+The operator selected the stricter demonstrated-recovery gate and authorized completing,
+shipping and coordinating both resilience briefs with Scout. Work starts with R6 on
+`codex/factory-admission-hold`: repository policy holds scheduled research, new candidate
+creation, source collection, new package generation and worker launch; only exact pinned
+remediation bundles can launch. Cleanup/collection and budgeted worker follow-up remain
+available. This entry does not claim deployed enforcement or completed acceptance.
+
+Implementation/acceptance ledger: `docs/FACTORY-RESILIENCE-IMPLEMENTATION.md`. Scout reports
+no active workers, reconciled ledger, and concurrent ns-bwa edits from a scheduled session;
+preserve those edits. Codex prepares acceptance bundles and Scout owns worker launches.
+Next: clean-clone suite + exact-commit CI, deploy/read back the hold, then R1/R2.
+
 ## 2026-11-07 (17:04Z) - scheduled discovery (Oceania tick): planSA LABEL CHANNEL MEASURED (decision dates + per-consent outcomes ARE published per application; both label families constructible) but the detail endpoint degrades to hollow responses under sustained load - refusal prevalence UNMEASURED, candidate stays investigating with a one-session paced-pass gate; PDI-era per-year population measured from the register's own backend; CSV export measured non-deterministically truncated above ~789 KB; GEN star-ratings extract probe BLOCKED on fetch channel
 
 Discovery-only session; regional focus Oceania; no construction, no

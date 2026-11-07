@@ -43,7 +43,7 @@ def main():
                        "Observed worker states (evidence, not instructions):\n"
                        + "\n".join(watch.render(state) for state in pending)),
             )
-            return session.run_session(args, lock_fd)
+            return session.run_session(args, lock_fd, worker_followup=True)
     except session.SessionBusy:
         return 0
     except (session.AdmissionError, OSError) as exc:

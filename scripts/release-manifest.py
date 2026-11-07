@@ -16,6 +16,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from factory.admission import require
+from factory.common import FactoryError
 from factory.release_schema import (ReleaseShapeError, load_release, from_manifest,
                                     normalise_destinations, normalise_splits,
                                     combined_artifact_version, atomic_write)
@@ -129,6 +131,7 @@ def main() -> int:
                   "Package corrections require a separately staged, reviewed release version; "
                   "retain the old artifacts and tags. See docs/REFACTOR-NOTES.md.")
             return 0
+    require(ROOT, "package construction")
     desc = descriptor(candidate)
     published, visibility, publication_note = publication_state(release)
     record = load(ROOT / "candidates" / candidate / "record.json")
@@ -301,5 +304,5 @@ def main() -> int:
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except ReleaseShapeError as exc:
+    except (ReleaseShapeError, FactoryError) as exc:
         raise SystemExit(str(exc)) from None

@@ -610,6 +610,29 @@ work, queue) followed by the hold reason, produced by `research-budget.py` rathe
 Verified held by the cap with three sessions in the ledger, and separately by the late-tick
 window.
 
+### Remediation admission hold (2026-11-07)
+
+`config/admission.json` is the repository-owned admission policy. With `hold: true`,
+the research wrapper refuses discovery and advancement before spending model tokens,
+candidate creation and standing source captures refuse, new manifest generation refuses,
+and worker launch refuses before network access or resource creation. Missing, malformed,
+duplicate-key or incorrectly typed policy also refuses new work. Scheduled slots are
+recorded as held, not consumed. The platform schedules themselves are unchanged.
+
+Read-only planning, package checks, existing job reconciliation/collection/destruction,
+expiry cleanup and bounded worker follow-up remain available. Follow-up still uses the
+ordinary research budget and mutex; it cannot launch unapproved worker work. During the
+hold, admission of a remediation worker requires its job ID and exact `source_sha256`
+from `python3 -m factory worker plan` in `allowed_worker_bundles`. These are reviewed
+acceptance jobs, never new construction disguised by `release: true`. The pinned bundle
+includes the job specification. A source edit requires a fresh reviewed pin. One worker,
+allowance, expiry and collection rules continue to apply.
+
+The operator can lift the hold in one edit, setting `hold` to `false`; retain the reason
+and recorded acceptance evidence. The intended exit requires R1-R4 acceptance and recorded
+new-gate outcomes on all four blocked packages. A green unit suite alone is insufficient.
+See `docs/FACTORY-RESILIENCE-IMPLEMENTATION.md` for the remaining work and evidence.
+
 ### Who authorises a publication
 
 Standing authority was granted by the operator on 2026-10-20: **a release that passes every gate may

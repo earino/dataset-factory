@@ -21,6 +21,9 @@ finally:
 
 class WorkerFollowupTests(unittest.TestCase):
     def setUp(self):
+        hold = patch.object(followup.session, 'hold_reason', return_value=None)
+        hold.start()
+        self.addCleanup(hold.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
         self.state = self.root / 'state'
@@ -54,7 +57,8 @@ class WorkerFollowupTests(unittest.TestCase):
         def collect(job):
             assert_locked()
             return {'job':job,'state':'failed','exit_code':1}
-        def run(args, fd):
+        def run(args, fd, *, worker_followup=False):
+            self.assertTrue(worker_followup)
             assert_locked()
             self.assertIn('job-one: failed', args.extra)
             self.assertEqual('docs/worker-watch-prompt.md', args.prompt_file)

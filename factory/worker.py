@@ -15,6 +15,7 @@ import tarfile
 import time
 
 from .cloud import Cloud
+from .admission import require as require_admission
 from .common import FactoryError, identifier, locked, read_json, utcnow, write_json
 from .http import API, credential_status, secret
 
@@ -294,11 +295,18 @@ def launch(root, job_path, config, cloud=None):
     job_path = Path(job_path).resolve()
     proposal = plan(root, job_path, config)
     job, now = proposal["job"], utcnow()
+    bundle = source_bundle(job_path, job)
+    if hashlib.sha256(bundle).hexdigest() != proposal["source_sha256"]:
+        raise FactoryError("Job source changed after planning; re-plan before launch")
+    require_admission(root, "worker", job_id=job["id"],
+                      bundle_sha256=proposal["source_sha256"])
     if not Path(config["ssh_private_key"]).expanduser().is_file() or not config["ssh_key_name"]:
         raise FactoryError("Configure an existing SSH key and its registered Hetzner name")
     github(config)  # Verify upload access's repository visibility before paid resources.
     cloud = cloud or Cloud()
     with locked(root):
+        require_admission(root, "worker", job_id=job["id"],
+                          bundle_sha256=proposal["source_sha256"])
         record_path = Path(root) / "jobs" / (job["id"] + ".json")
         if record_path.exists():
             raise FactoryError("Job ID already recorded; use status/reconcile, never relaunch it")
@@ -352,7 +360,7 @@ def launch(root, job_path, config, cloud=None):
         cloud.label_ips(server)
         cloud.wait_action(response["action"])
     # Lock does not span boot wait; the durable job blocks competing launches.
-    return resume(root, job["id"], config, cloud, bundle=source_bundle(job_path, job))
+    return resume(root, job["id"], config, cloud, bundle=bundle)
 
 
 def load_record(root, job_id):
