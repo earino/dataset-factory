@@ -175,11 +175,21 @@ class PackageCheckTests(unittest.TestCase):
         (root / "LICENSE-MIT.txt").write_text("MIT text\n")
         (root / "LICENSE-CC0-1.0.txt").write_text("CC0 text\n")
         fixture = ROOT/'skills/dataset-qualification/fixtures/corrected'
-        shutil.copytree(fixture,root,dirs_exist_ok=True)
         gate = load('package_fixture_gate',ROOT/'skills/dataset-qualification/scripts/qualify_dataset.py')
-        qualification = gate.qualify(root,record_battery=True).as_dict()
+        with tempfile.TemporaryDirectory() as source:
+            dataset = Path(source)/'artifact'
+            shutil.copytree(fixture,dataset)
+            qualification = gate.qualify(dataset,record_battery=True).as_dict()
+            shutil.copytree(dataset,root,dirs_exist_ok=True)
         self.assertTrue(qualification['ok'],qualification['failed_checks'])
         (root/'qualification.json').write_text(json.dumps(qualification))
+        from factory.claim_contract import compute, render
+        claim={'id':'eval-population','kind':'population','split':'eval'}
+        (root/'CLAIMS.json').write_text(json.dumps({'version':1,'claims':[claim]}))
+        facts=compute(root,qualification=root/'qualification.json')
+        (root/'claims-facts.json').write_text(json.dumps(facts))
+        (root/'README.md').write_text('<!-- FACTORY-CLAIM eval-population -->\n'+render(claim,facts)+
+                                    '\n<!-- /FACTORY-CLAIM -->\n')
         files = {
             str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in sorted(root.rglob("*")) if p.is_file()
@@ -188,11 +198,16 @@ class PackageCheckTests(unittest.TestCase):
                   'sha256':entry['sha256'],'bytes':entry['bytes']}
                   for key,entry in qualification['artifact'].items()
                   if key in ('train','eval','holdout','meta.json','quality.json')}
+        expected = {v['asset_name']: {'sha256': v['sha256'], 'bytes': v['bytes']} for v in assets.values()}
+        layout = {v['asset_name']: k for k, v in assets.items()}
+        (root/'get_dataset.py').write_text(f'TAG = "v1"\nEXPECTED = {expected!r}\nLAYOUT = {layout!r}\n')
+        files['get_dataset.py'] = hashlib.sha256((root/'get_dataset.py').read_bytes()).hexdigest()
         manifest = {
             "dataset": "example", "release_tag": "v1",
             "artifact_version": qualification["artifact"]["artifact_version"]["digest"],
             "qualification": {"result": "PASSED"}, "published": published,
             "package_files": files, "assets": assets,
+            "files": {k: {'sha256': v['sha256'], 'bytes': v['bytes']} for k, v in assets.items()},
             "licenses": {
                 "code": {"spdx": "MIT", "file": "LICENSE-MIT.txt"},
                 "data_compilation": {"spdx": "CC0-1.0", "file": "LICENSE-CC0-1.0.txt"},
@@ -288,7 +303,7 @@ class PackageCheckTests(unittest.TestCase):
             self.assertTrue(any("UNDECLARED" in problem for problem in problems))
 
     def test_the_committed_package_passes(self):
-        problems, _ = package_check.check_package(REAL_PACKAGE)
+        problems, _ = package_check.check_package(REAL_PACKAGE, external_assets=True)
         self.assertEqual([], problems)
 
 

@@ -68,8 +68,11 @@ only, and any runner code the benchmark needs shipped verbatim with its provenan
 # build the manifest and checksums from recorded evidence
 python3 scripts/release-manifest.py <package-dir>
 
-# mechanical completeness check over an assembled package
+# full check on a worker with every asset present (hashes actual asset bytes)
 python3 scripts/check-package.py <package-dir>
+
+# coordinator/offline check: absent data assets are metadata-only, NOT verified bytes
+python3 scripts/check-package.py <package-dir> --external-assets
 
 # publication: dry-run by default, executes only with an explicit flag
 python3 scripts/publish-dataset.py <candidate-id> --repo <owner>/<name>
@@ -84,6 +87,20 @@ sh scripts/scout-factory worker run  <job.json>
 ```
 
 ## Required evidence
+
+Read `docs/CLAIMS-FROM-BYTES.md`. New packages require `CLAIMS.json`, a worker-produced
+`claims-facts.json` tied to the exact passing qualification, and generated claim
+blocks for measurable document statements. The worker recomputes population,
+domains, grain, years, min/max invariants and paired intervals from the bytes.
+Summary counts need count-only `summary.json` inside the qualified artifact.
+Neither a declaration nor a static lint substitutes for the independent audit.
+
+Every release asset must agree across `assets`, `files`, `SHA256SUMS` and the
+loader's literal `EXPECTED`/`LAYOUT`/`TAG`, even when absent from `package_files`.
+A present asset is always hashed, including in `--external-assets` mode. Metadata
+agreement never replaces worker/consumer verification of the actual downloaded
+bytes. Old frozen loader defects are recorded warnings only for the exact pinned
+file; edits and new releases must satisfy the check.
 
 - `MANIFEST.json` covering **every** file in the package, with sizes and hashes.
 - `SHA256SUMS` over the assets, in a form `sha256sum -c` accepts.
