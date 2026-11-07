@@ -21,7 +21,7 @@ proof of exact reconstruction. Published data, tags and manifests remain frozen.
 | R4: source licence evidence and generation | Pending | Browser-capable evidence path, unreadable and conflicting source refusals |
 | R5: autonomous independent adversarial audit | Pending | Bounded auditor stage, digest-bound verdict, queue admission enforced |
 | Review item 2: publication invariants/rule consolidation | Pending | Verify reported hash gap; strict recovery rule, normative-rule inventory |
-| Review item 3: structured events and generated state | Pending | Byte-preserved narrative archive, deterministic current state under 20 KB |
+| Review item 3: structured events and generated state | Implemented on `codex/structured-operational-state`; not deployed | 1,364,901 original bytes preserved by monthly partitions; 4,354-byte generated view; clean-clone/CI and Scout handoff next |
 | Review item 4: digest-bound approvals | Pending | Matching approval required at flip, historical evidence with honest gaps |
 | Review item 5: deterministic reconciliation | Implemented on `codex/mechanical-worker-reconciliation`; not deployed | 30 recorded follow-ups replayed, five conditionally eligible; clean-clone/CI and live Scout readback next |
 | Review item 6: actor identity | In progress | Codex author on new commits; no history rewrite |
