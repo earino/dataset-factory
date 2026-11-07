@@ -72,6 +72,31 @@ class ClaimFactsTests(unittest.TestCase):
         self.assertEqual(['unsupported_scoring_guarantee'],[f['rule'] for f in findings])
         self.assertTrue(text_claims('The holdout stays outside evaluated agents workspaces.'))
 
+    def test_real_disclaimer_nothing_enforces_isolation_is_not_a_guarantee(self):
+        # Exact sentence from ZA's hash-bound A4 package, split from scope_note.
+        text = ("The isolated-rows declaration is the required posture for the probe-measured "
+                "morning-history exposure and is not an enforcement claim: the illustrative runner "
+                "still passes the whole eval feature table to the predictor in one call, nothing "
+                "in this package enforces isolation, and the absence of a known recovery is not "
+                "a proof against future attacks - the independent pre-flip audit must attack "
+                "the shipped bytes before any publication.")
+        self.assertEqual([],text_claims(text))
+        self.assertTrue(text_claims(text+' However, the runner enforces holdout isolation.'))
+        self.assertTrue(text_claims('Nothing here proves safety, but the runner guarantees isolation.'))
+
+    def test_opening_split_name_does_not_capture_the_first_rate_in_a_breakdown(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);self.make(root);facts=measure(root)
+            # Real wildfire wording, with fixture rates substituted. Prefix and
+            # suffix labels must both work without attaching 50% to holdout twice.
+            facts['splits']['holdout']['positive_rate']=.75
+            text=('positive rate rises into the holdout (50.0% train 2020-2020 -> '
+                  '50.0% eval 2021-2021 -> 75.0% holdout 2022-2022): documented non-stationarity')
+            self.assertEqual([],text_claims(text,facts))
+            findings=text_claims(text.replace('50.0% eval','40.0% eval'),facts)
+            self.assertEqual(['eval'],[f['split'] for f in findings if f['rule']=='prevalence_prose'])
+            self.assertEqual([],text_claims('positive rate: train 50% eval 50% holdout 75%.',facts))
+
     def test_interval_sign_and_equivalence_language(self):
         self.assertTrue(text_claims('Its edge over persistence is measured: difference [-0.10, -0.07].'))
         self.assertEqual([],text_claims('Persistence minus ratio: [-0.10, -0.07]. An interval spanning zero does not establish equivalence.'))
