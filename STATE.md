@@ -1,3 +1,55 @@
+## 2026-11-07 (12:47Z) - scheduled discovery (East Asia tick): Seoul catalog sweep gate ANSWERED NEGATIVE (Korea option (b) closed by measurement); NEW CANDIDATE jp-meti-recall-expansion opened (Japan, consumer-product recall lifecycle-update prediction; investigating, buffer-only under the factory-repair directive)
+
+Discovery-only session; regional focus East Asia; no build, qualification,
+packaging, publication or advancement; no worker spend; no bulk data on the
+coordinator.
+
+- KOREA (kr-kosis-kma-access, stays parked): the recorded Seoul-catalog gate
+  ("enumerate for an event-grain register OUTSIDE the bench's existing families")
+  is now answered. 25 family keywords POSTed to the portal's server-rendered
+  search (recipe probe_kr_seoul_sweep_2026_11_07.py, committed): every hit is an
+  aggregate statistical table (traffic accidents, fire, EMS use, complaints,
+  leaks, enforcement counts - all by-district/by-month); zero hits for
+  recall/defect/elevator-safety/power-incident/construction-delay families; all
+  33 public-data '사고' cards read - all aggregates. The Seoul gate collapses to
+  the single recorded operator decision on OA-23122 (food dispositions,
+  enforcement family). KOSIS/KMA park unchanged (operator credential).
+- JAPAN (NEW candidate jp-meti-recall-expansion, investigating): consumer-product
+  recall lifecycle-update prediction on METI's 製品安全ガイド リコール情報 register
+  (per-recall rows since 2007-05-14; a genuinely new bench family). Licence
+  triaged first: NITE channel CLASS D (site terms: reproduction needs NITE
+  permission - quoted in record); CAA major-notice channel volume-rejected (265
+  records/~18y); METI channel CLASS B under the government-standard PDL 1.0
+  (利用規約 quote recorded; attribution + no-official-endorsement + third-party
+  images never shipped). Grain + later-resolving target measured: register rows
+  carry two-date update markers (対象追加/型番追加/品番追加・対象期間拡大/対策内容更新
+  = label classes, sample base rate ~3-4% on the highest-volume sub-page; cosmetic
+  update classes excluded); measured lags span 42 days to ~4.9 years; detail-page
+  schema verified on one modern page (EAN/batch codes, 販売期間, 対象台数, remedy,
+  reason, 法人番号, 最終更新日); AS-OF FINDING: updated rows link to the CURRENT
+  detail-page revision, so per-row publication-day features need Wayback vintages
+  - recorded as the as-of uncertainty (current-compilation retrospective unless
+  bounded). Prior art searched (RECALL-MM US-CPSC hazard classification,
+  SemEval-2025 Task 9, NHTSA complaints): no ML-ready per-recall
+  scope-expansion task found; formal check-novelty.py at ready-review. Probe
+  script + output JSON committed (reproducible; METI WAF pacing constraints
+  documented: hubs 403 to plain clients, bursts get 202 challenges, urllib gets
+  empty 200s - spaced curl or the browser).
+- Region coverage otherwise unchanged: Singapore park stands (quarterly catalog
+  diff not yet due, last sweep 2026-10-20); HK red-tide park stands (timing
+  contract; no new dictionary/vintage evidence); tw-reservoir investigating with
+  its recorded worker handoff untouched; tw-taipower/tw-typhoon unchanged.
+- Checks this session: check-candidate jp-meti-recall-expansion OK,
+  kr-kosis-kma-access OK, check-candidate --all rc=0 (148 records); local suite
+  723 tests OK (unittest discover).
+
+Next action (record.next_action): jp-meti-recall-expansion ordered handoff -
+cross-era detail-page schema verification, full-register enumeration (polite
+paced; per-year counts, marker base rates, update-lag distribution, clustered
+positives -> split capacity verdict), Wayback CDX vintages, CAA cross-check,
+formal novelty check, five-contract reconciliation -> ready review. NO
+construction while the operator's 2026-11-07 factory-repair directive stands.
+
 ## 2026-11-07 (12:06Z) - follow-up (worker-status runner): ns-bwa-002 + ns-bwa-baseline-002 SUCCEEDED - the 11:39Z advancement session had already collected, destroyed and recorded both jobs but ended at its wall-clock ceiling before committing; this follow-up re-verified every required check from the collected bytes, the live provider and the live staging releases, corrected two timestamp slips against the job ledgers, committed the recording and marked both jobs handled
 
 The shared research mutex was this runner's for the whole invocation; no
