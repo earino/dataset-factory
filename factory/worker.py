@@ -379,18 +379,22 @@ def reconcile(root, job_id, config, cloud=None):
         server = matches[0]
         if record.get("server_id") not in (None, server["id"]):
             raise FactoryError("Provider ID differs from job record")
+        if record.get("status") == "deleted":
+            raise FactoryError("Ledger says deleted but the owned worker still exists; cleanup is not verified")
         record.update(server_id=server["id"], ipv4=server["public_net"]["ipv4"]["ip"])
     elif record.get("server_id"):
         # A filtered list alone is not proof of deletion: a label may have changed.
         if cloud.server(record["server_id"]) is not None:
             raise FactoryError("Worker still exists with changed labels; inspect ownership")
         cloud.clean_job_ips(config["project"], job_id)
-        record.update(status="deleted", deleted_at=utcnow().isoformat())
+        record["status"] = "deleted"
+        record.setdefault("deleted_at", utcnow().isoformat())
     else:
         if time.time() > record["expires"] + record["cleanup_grace_minutes"] * 60:
             cloud.clean_job_ips(config["project"], job_id)
-            record.update(status="deleted", deleted_at=utcnow().isoformat(),
+            record.update(status="deleted",
                           reconciliation="No server found after expiry and cleanup grace; reservation retained")
+            record.setdefault("deleted_at", utcnow().isoformat())
         else:
             record["status"] = "creation-unresolved"
     write_json(Path(root) / "jobs" / f"{job_id}.json", record)
@@ -472,6 +476,19 @@ def collect(root, job_id, config, cloud=None):
     if report.get("uploaded") is not True or report.get("repo") != record["staging_repo"]:
         write_json(folder / "result.json", report)
         raise FactoryError("Artifacts not preserved; inspect local compact report; expiry still applies")
+    verify_preserved_report(record, report, api)
+    write_json(folder / "result.json", report)
+    record.update(status="collected", result=report, collected_at=utcnow().isoformat())
+    write_json(Path(root) / "jobs" / f"{job_id}.json", record)
+    return report
+
+
+def verify_preserved_report(record, report, api):
+    """Shared live staging verification for collection and repeated bookkeeping."""
+    job_id = record['job']['id']
+    if (report.get('job_id') != job_id or report.get('uploaded') is not True
+            or report.get('repo') != record['staging_repo']):
+        raise FactoryError('Preserved report does not match the job and staging repository')
     release = api.request("GET", f"repos/{record['staging_repo']}/releases/{int(report['release_id'])}")
     if release["tag_name"] != "job-" + job_id:
         raise FactoryError("Staging release tag differs from this job")
@@ -488,10 +505,7 @@ def collect(root, job_id, config, cloud=None):
         actual = actual_assets.get(asset["id"], {})
         if actual.get("size") != asset["size"] or actual.get("digest") != "sha256:" + asset["sha256"]:
             raise FactoryError("Uploaded artifact size/digest mismatch")
-    write_json(folder / "result.json", report)
-    record.update(status="collected", result=report, collected_at=utcnow().isoformat())
-    write_json(Path(root) / "jobs" / f"{job_id}.json", record)
-    return report
+    return {'release_id': report['release_id'], 'assets_verified': len(expected)}
 
 
 def destroy(root, job_id, config, cloud=None):

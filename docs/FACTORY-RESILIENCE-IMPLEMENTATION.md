@@ -21,9 +21,9 @@ proof of exact reconstruction. Published data, tags and manifests remain frozen.
 | R4: source licence evidence and generation | Pending | Browser-capable evidence path, unreadable and conflicting source refusals |
 | R5: autonomous independent adversarial audit | Pending | Bounded auditor stage, digest-bound verdict, queue admission enforced |
 | Review item 2: publication invariants/rule consolidation | Pending | Verify reported hash gap; strict recovery rule, normative-rule inventory |
-| Review item 3: structured events and generated state | Pending | Byte-preserved narrative archive, deterministic current state under 20 KB |
+| Review item 3: structured events and generated state | Implemented on `codex/structured-operational-state`; not deployed | 1,364,901 original bytes preserved by monthly partitions; 4,354-byte generated view; clean-clone/CI and Scout handoff next |
 | Review item 4: digest-bound approvals | Pending | Matching approval required at flip, historical evidence with honest gaps |
-| Review item 5: deterministic reconciliation | Pending | Replay actual watcher events, preserve every verification |
+| Review item 5: deterministic reconciliation | Implemented on `codex/mechanical-worker-reconciliation`; not deployed | 30 recorded follow-ups replayed, five conditionally eligible; clean-clone/CI and live Scout readback next |
 | Review item 6: actor identity | In progress | Codex author on new commits; no history rewrite |
 | A4: four blocked packages through full pipeline | Pending | Worker-side frozen-artifact outcomes; disposition remains operator's |
 
@@ -124,6 +124,63 @@ Read-only verification on the deployed tree:
   audits/resilience/2026-11-07-answer-scrub.json plus this local read-back -
   static, not full qualification.
 
+## A1-small historical acceptance worker: resilience-a1-small-002 (Scout, 2026-11-07 ~19:5xZ)
+
+First bounded R1 acceptance run, executed by Scout as sole launcher on reviewed
+commit `dc0cb94` (branch codex/deterministic-recovery-gate), job pinned to
+source-bundle SHA256 `3828cf1485bbf296068c4445f0dec99a59315cb63dfbe12f9dd40c57c0ac8384`
+(pin verified at plan; hold stayed true; one cx23, EUR 0.06 reservation,
+inside policy). Worker elapsed 39.9 s; collected; destroyed; provider read-back
+0 servers / 0 IPs; ledger reconciled. No retry, no extra jobs, no rebuild, no
+publication.
+
+acceptance-summary.json: ok=true, all four cases exit 0 (nzea, unhcr, nsbwa,
+ocha). Compact per-case evidence committed under
+audits/resilience/2026-11-07-a1-small-002-acceptance/ (summary, per-case
+acceptance/battery/qualification). Full results JSONL and the 4.6 MB fetched
+historical bytes remain worker scratch and staging release 437762044 only.
+
+- nzea: ok, strict gate REFUSED, bytes unchanged; 8.2 s, peak RSS 56,424 KiB.
+- nsbwa (e8ed2a53): ok, strict gate REFUSED, bytes unchanged; 7.3 s, peak RSS
+  32,432 KiB.
+- unhcr (6fa7becd core + pinned members): gate 1.6.0 refused with
+  failed_checks including battery.exact_recovery, artifacts.no_shipped_answers,
+  contract.cross_row_probe_0; the battery reproduced the documented successor
+  recoveries exactly - 12 exact rules (self/all x successor_flag x
+  successor_count x eval/holdout x declared), 0 errors, AUC 1.0 on covered
+  rows; successor_missing_zero heuristic 0.9753 eval / 0.9830 holdout.
+- ocha (e7441e1f): battery probes recorded in the per-case files; strict
+  refusal in its qualification.json.
+
+Acceptance meaning: the draft gate reproduced the specified historical defects
+and refused the old artifacts. This is experimental acceptance of a draft gate
+under the hold - not production deployment, not A1 complete (remaining cases
+pending), and no blocked package was repaired or requalified by this run.
+## A1-fixtures historical acceptance worker: resilience-a1-fixtures-001 (Scout, 2026-11-07 ~20:1xZ)
+
+Second bounded R1 acceptance run on branch codex/deterministic-recovery-gate
+(merged tip 13737a6: my evidence d2ba315/58e127e merged with Codex d75cbf5, no
+reset/rebase). Job pinned to source SHA256
+`a00d503cbe4471e88c574b9b132f9b413dd5921710e49bb437cd9097e45db8d5` (verified at
+plan), one cx23, EUR 0.06 reservation. Worker elapsed 172.9 s; collected;
+destroyed; provider read-back 0 servers / 0 IPs; hold stayed true; no rebuild,
+no publication, no retry.
+
+acceptance-summary.json: ok=true, both cases exit 0. Expected fixture
+recoveries reproduced exactly and the strict gate REFUSED both old artifacts:
+- cqc (afe9ee20-era fixture channel): fixture:code/build.py lookup recovered
+  4/4 eval labels, 0 errors; gate failed checks: battery.exact_recovery,
+  battery.recorded_in_quality, artifacts.no_shipped_answers. 127.8 s,
+  peak RSS 184,772 KiB.
+- ab-wildfire (c2c8ceb5-era fixture channel): fixture:code/build.py recovered
+  3 eval and 4 holdout labels, 0 errors; gate failed checks additionally
+  include units.validation_receipt. 32.3 s, peak RSS 71,512 KiB.
+
+Evidence committed by manifest logical path (single-object acceptance/battery/
+qualification per case, validated), plus receipt.json binding staging release
+437775462, manifest sha corrected to 0b62e5a9... by independent download below; per-file asset IDs/digests and runtime.
+Full results JSONL and the 17.8 MB historical bytes remain staging-only.
+Compact evidence: audits/resilience/2026-11-07-a1-fixtures-001-acceptance/.
 ## Next action
 
 Run pinned R1 historical acceptance through Scout, then complete the remaining gates
@@ -161,3 +218,30 @@ Its exact source-bundle hash is pinned while `hold` remains true. Archive safety
 plan identity and degraded-recovery regressions passed with assembly safety (19 tests).
 This is preparation, not a completed acceptance run. Scout must read back the live
 plan and bounded allowance, operate the sole worker, collect diagnostics and clean up.
+
+## Independent fixture verification and remaining CPCB A1 run
+
+Codex verified all seven fixture worker reports byte-for-byte against staging
+manifest asset 721626471 (12,477 bytes, SHA256
+`0b62e5a9003f65d28ff3f41b6965ec99bba2358091cfbc95453228eac45731cb`).
+The previous receipt's manifest hash was inaccurate; the correction preserves that
+previous claim and its evidence. Worker report bytes are unchanged. Full vectors
+are temporary worker scratch; bounded diagnostic JSONL remains in private staging.
+See `audits/resilience/2026-11-07-a1-fixtures-independent-verification.json`.
+CQC recovered four eval labels and wildfire three eval plus four holdout labels,
+all without errors; gate 1.6 refused both original artifacts. This completes six
+of the seven A1 recovery families, not A2/A3/A4 acceptance or release clearance.
+
+Scout reported zero servers/IPs and a reconciled ledger after both jobs. Existing
+worker options are cx23 at EUR 0.02/h, cpx32 at EUR 0.08/h and cpx42 at EUR 0.15/h;
+no policy allowances changed. The remaining original CPCB panel is prepared as
+`resilience-a1-cpcb-001`, cpx32, 6 GiB container, four CPUs, 120-minute timeout,
+180-minute lifetime, maximum reservation EUR 0.32 including existing cleanup grace.
+The exact source-bundle pin is
+`b5a4f3eb9e849cc585ef6b6d71dea30c6483bea55082977b8915f35296b84758`.
+The 89,081,808 bytes of historical inputs move only to the worker. Expected exact
+coverage is pinned before launch: self eval 125,277; all-scope eval 125,776 and
+holdout 143,793, each with zero errors. Scout must verify the plan, budget, exact
+pin and absence of active workers before one attempt, collect bounded reports,
+destroy/reconcile, preserve evidence and check the exact pushed commit's CI.
+No rebuild, publication or scoring-adapter experiment is authorized by this job.
