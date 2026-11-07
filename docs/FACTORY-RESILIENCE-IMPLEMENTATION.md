@@ -93,6 +93,10 @@ The 14 published package identities and existing editorial hashes are frozen in
 `config/frozen-releases.json`; only exact old files receive historical warnings.
 New/changed files and a self-asserted `published: true` cannot bypass the guard.
 
+Validation at `6b0faf9`: 103 targeted tests passed; a fresh clone ran the complete
+745-test suite successfully (13 platform-specific skips). Runtime source inventory
+passed. Exact-commit remote CI remains required after pushing.
+
 ## Next action
 
 Ship R2 after clean-clone and exact-commit CI. Implement R1 with the generated-artifact
