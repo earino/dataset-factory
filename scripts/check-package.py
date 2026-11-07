@@ -24,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from factory.artifact_scrub import scan_tree
 from factory.frozen import historical_files
 from factory.qualification_receipt import check as check_qualification_receipt
+from factory.asset_integrity import check as check_asset_integrity, safe_path
 
 # Documents a reviewer needs. Directories are checked separately.
 REQUIRED_FILES = (
@@ -87,6 +88,17 @@ def check_package(package_dir, *, external_assets=False):
         problems.append(f"MANIFEST.json: not valid JSON ({exc})")
         return problems, notes
 
+    frozen = historical_files(package_dir)
+    asset_problems, asset_notes = check_asset_integrity(
+        package_dir, manifest, external_assets=external_assets, require_loader=not bool(frozen))
+    for problem in asset_problems:
+        if (problem.startswith('get_dataset.py ') and frozen.get('get_dataset.py')
+                and sha256_of(package_dir/'get_dataset.py') == frozen['get_dataset.py']):
+            notes.append('Frozen historical finding (not new-release clearance): ' + problem)
+        else:
+            problems.append(problem)
+    notes.extend(asset_notes)
+
     for field in ("dataset", "release_tag", "artifact_version", "qualification", "published"):
         if manifest.get(field) in (None, "", [], {}):
             problems.append(f"MANIFEST.json: '{field}' is empty - a reviewer needs it")
@@ -138,7 +150,11 @@ def check_package(package_dir, *, external_assets=False):
         if path.is_file()
     }
     for name, digest in sorted(recorded.items()):
-        target = package_dir / name
+        try:
+            target = safe_path(package_dir, name)
+        except ValueError as exc:
+            problems.append(f'{name}: {exc}')
+            continue
         if not target.is_file():
             # Offline site preparation has no dataset rows. Accept only an explicitly declared
             # external CSV with the SAME valid digest in all three manifest records. This is a
@@ -241,7 +257,6 @@ def check_package(package_dir, *, external_assets=False):
     # frozen historical file may be a warning; a published=true claim is no waiver.
     try:
         scrub = scan_tree(package_dir, dataset=package_dir if (package_dir / 'quality.json').is_file() else None)
-        frozen = historical_files(package_dir)
         if not frozen:
             problems.extend(check_qualification_receipt(package_dir,manifest,external_assets=external_assets))
         for finding in scrub['findings']:
@@ -263,9 +278,11 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("package", help="package directory, e.g. release/<dataset>")
     parser.add_argument("--json", action="store_true", help="machine-readable output")
+    parser.add_argument("--external-assets", action="store_true",
+                        help="Metadata-only check for absent data assets; does not verify their bytes")
     args = parser.parse_args(argv)
 
-    problems, notes = check_package(args.package)
+    problems, notes = check_package(args.package, external_assets=args.external_assets)
     if args.json:
         print(json.dumps({"package": args.package, "problems": problems, "notes": notes}, indent=2))
     else:

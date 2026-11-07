@@ -17,7 +17,7 @@ proof of exact reconstruction. Published data, tags and manifests remain frozen.
 | R6: config-driven admission hold | Shipped in PR #26, merge `16657ab`; exact-commit CI passed; Scout deployment read-back in `d1e6030` below | Hold remains active until R1-R4/A4 acceptance |
 | R1: deterministic label-blind battery, gate 1.6 | In progress on `codex/deterministic-recovery-gate`: two-phase stdlib battery, full generated-artifact scan, quality receipt and strict package admission | Historical A1 reproductions, published A2 comparison, exact-byte binding and worker integration |
 | R2: scaffold/answer scrubber | Shipped PR #27, merge `a2578ed`; both exact-commit CI workflows passed; deployed/read back by Scout in `fbc8fee` | Worker-generated artifact integration is in R1; full worker A3/A4 pending |
-| R3: measurable claims from bytes | Pending | Dictionary/min-max/interval/prevalence/placeholder/digest regressions |
+| R3: measurable claims from bytes | In progress on `codex/claims-from-bytes`: complete asset hashing and literal loader digest checks | Dictionary/min-max/interval/prevalence/placeholder regressions and historical worker acceptance |
 | R4: source licence evidence and generation | Pending | Browser-capable evidence path, unreadable and conflicting source refusals |
 | R5: autonomous independent adversarial audit | Pending | Bounded auditor stage, digest-bound verdict, queue admission enforced |
 | Review item 2: publication invariants/rule consolidation | Pending | Verify reported hash gap; strict recovery rule, normative-rule inventory |
