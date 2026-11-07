@@ -48,6 +48,8 @@ def main(argv=None):
     create = actions.add_parser("create")
     create.add_argument("id")
     actions.add_parser("list")
+    audit = commands.add_parser("audit", help="Bounded autonomous release audit; never a publication approval")
+    audit.add_argument("audit_args", nargs=argparse.REMAINDER)
     workers = commands.add_parser("worker", help="Plan, run, reconcile, collect and delete workers")
     workers.add_argument("--config", type=Path, help="Defaults to ROOT/config/local.json")
     operations = workers.add_subparsers(dest="action", required=True)
@@ -71,6 +73,9 @@ def main(argv=None):
                                     if not state["ready"]]
         elif args.command == "candidate":
             result = candidates.create(root, args.id) if args.action == "create" else candidates.listing(root)
+        elif args.command == "audit":
+            from .audit_workflow import main as audit_main
+            return audit_main(root, args.audit_args)
         elif args.action == "sweep":
             result = worker.sweep(args.project)
         else:

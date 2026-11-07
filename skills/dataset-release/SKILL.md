@@ -215,14 +215,23 @@ A dropped session, a gateway restart or a background-process notification is **n
 point. If the task was already authorised, resume it and report the outcome; asking again for work
 the operator has already scoped reads as stalling and costs a whole cycle.
 
-After the flip, publication is automatic: GitHub and Hugging Face, the site page, and the anonymous
-verification all run without another yes, and the operator is told the link. Do not re-ask for a
-per-release approval you already have, and do not infer a flip from a plan digest you happen to hold.
+After an approved flip, finish GitHub/Hugging Face publication and anonymous verification
+without asking again. Execute the site release when its operator-reviewed plan is also in
+place, and report the verified link. Do not infer a flip from a plan digest you happen to hold.
 
 Record the boundary in the candidate record so both humans and the scheduler can see it:
 
 - `packaged_at` - ISO timestamp, set when the package is verified.
-- `awaiting_operator: true` - set **only** while the flip is the sole remaining step; clear it after.
+- `awaiting_operator: true` - the autonomous audit command sets this only after the current
+  staged package passes its model and worker checks; the remaining work is the operator's
+  independent review and flip decision. A manually asserted flag is not an audited wait.
+
+After private staging, run `python3 -m factory audit prepare|model|worker-plan|accept|check`
+as described in `docs/AUTONOMOUS-RELEASE-AUDIT.md`. Use the existing session and worker
+allowances. The model must challenge assumptions beyond the fixed battery; it cannot waive
+a failing deterministic check. Only the content-bound session, collected worker evidence
+and current staging/review bindings can clear this internal queue gate. Keep the final
+operator-relayed independent audit separate.
 
 ### Shipping outranks building
 
@@ -244,8 +253,8 @@ on a person. Surface the wait as an ageing item on the dashboard instead, and al
 release work sits for hours. A human wait is not only the flip: a release blocked on an operator
 **decision** - a DO-NOT-PUBLISH audit verdict whose reopen path (repair, re-describe or drop) is the
 operator's to choose - carries `operator_decision_pending: true`, which preemption exempts the same
-way. Keep the two markers distinct: `awaiting_operator` still means "the flip is the sole remaining
-step" (the notifier tells the operator they can reply `flip ...`), while `operator_decision_pending`
+way. Keep the two markers distinct: a verified `awaiting_operator` means the internal audit
+passed and operator review/publication authority is still required, while `operator_decision_pending`
 means "the next step is the operator's choice among recorded paths" and must never trigger a
 flip-ready notification.
 
@@ -259,7 +268,7 @@ When it is approved:
    practice since the operator endorsed it on 2026-10-27: it exists because
    blind-join label recovery has repeatedly passed every internal gate
    (nz-ea at AUC 1.0; 7 of 10 in the catalog-wide audit). The flip waits for
-   the auditor's verdict unless the operator waves it. The auditor must be
+   the auditor's version-bound verdict. The internal model pass does not replace it. The auditor must be
    independent of the sessions that built and staged the release.
 
 1. **Flip both destinations, then prove it anonymously.** GitHub: `gh api -X PATCH repos/<owner>/<repo>`

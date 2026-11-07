@@ -17,7 +17,7 @@ defaults to prose-only. `--check` detects stale inventory or stale mappings.
 See [publication rule decisions](PUBLICATION-INVARIANTS.md) for contradictions
 resolved from existing operator instructions and remaining judgment boundaries.
 
-Inventory: 121 source blocks; 6 mapped as enforced.
+Inventory: 122 source blocks; 6 mapped as enforced.
 
 ## a5e967126dafd57bf445 — prose-only
 
@@ -1521,9 +1521,22 @@ Source: [skills/dataset-release/SKILL.md:188](../skills/dataset-release/SKILL.md
 
 No complete mechanical enforcement identified; retain as an agent/operator obligation.
 
+## 13fbc9c2d5fbe1e1f353 — prose-only
+
+Source: [skills/dataset-release/SKILL.md:229](../skills/dataset-release/SKILL.md#L229).
+
+> After private staging, run `python3 -m factory audit prepare|model|worker-plan|accept|check`
+> as described in `docs/AUTONOMOUS-RELEASE-AUDIT.md`. Use the existing session and worker
+> allowances. The model must challenge assumptions beyond the fixed battery; it cannot waive
+> a failing deterministic check. Only the content-bound session, collected worker evidence
+> and current staging/review bindings can clear this internal queue gate. Keep the final
+> operator-relayed independent audit separate.
+
+No complete mechanical enforcement identified; retain as an agent/operator obligation.
+
 ## 3145b682dedd20df2be2 — prose-only
 
-Source: [skills/dataset-release/SKILL.md:233](../skills/dataset-release/SKILL.md#L233).
+Source: [skills/dataset-release/SKILL.md:242](../skills/dataset-release/SKILL.md#L242).
 
 > - **Preemption.** The worker launcher refuses a construction job while an actionable packaged
 >   candidate exists, and names the candidate. Release jobs - or a job flagged `release: true` - may
@@ -1534,9 +1547,9 @@ Source: [skills/dataset-release/SKILL.md:233](../skills/dataset-release/SKILL.md
 
 No complete mechanical enforcement identified; retain as an agent/operator obligation.
 
-## 6eaf564c4be8e7cb4c2f — prose-only
+## e910bfc200afe301a351 — prose-only
 
-Source: [skills/dataset-release/SKILL.md:240](../skills/dataset-release/SKILL.md#L240).
+Source: [skills/dataset-release/SKILL.md:249](../skills/dataset-release/SKILL.md#L249).
 
 > **Exempt the human wait, or the queue starves.** A packaged candidate waiting on the operator must
 > not block anything - otherwise a slow approval freezes every build behind it. That is exactly why
@@ -1545,16 +1558,16 @@ Source: [skills/dataset-release/SKILL.md:240](../skills/dataset-release/SKILL.md
 > release work sits for hours. A human wait is not only the flip: a release blocked on an operator
 > **decision** - a DO-NOT-PUBLISH audit verdict whose reopen path (repair, re-describe or drop) is the
 > operator's to choose - carries `operator_decision_pending: true`, which preemption exempts the same
-> way. Keep the two markers distinct: `awaiting_operator` still means "the flip is the sole remaining
-> step" (the notifier tells the operator they can reply `flip ...`), while `operator_decision_pending`
+> way. Keep the two markers distinct: a verified `awaiting_operator` means the internal audit
+> passed and operator review/publication authority is still required, while `operator_decision_pending`
 > means "the next step is the operator's choice among recorded paths" and must never trigger a
 > flip-ready notification.
 
 No complete mechanical enforcement identified; retain as an agent/operator obligation.
 
-## d8828d0d784d075287b4 — prose-only
+## 5a8a04960638dd724b45 — prose-only
 
-Source: [skills/dataset-release/SKILL.md:254](../skills/dataset-release/SKILL.md#L254).
+Source: [skills/dataset-release/SKILL.md:263](../skills/dataset-release/SKILL.md#L263).
 
 > 0. **Offer the independent pre-flip audit.** Before the flip, generate the
 >    adversarial audit prompt from
@@ -1564,14 +1577,14 @@ Source: [skills/dataset-release/SKILL.md:254](../skills/dataset-release/SKILL.md
 >    practice since the operator endorsed it on 2026-10-27: it exists because
 >    blind-join label recovery has repeatedly passed every internal gate
 >    (nz-ea at AUC 1.0; 7 of 10 in the catalog-wide audit). The flip waits for
->    the auditor's verdict unless the operator waves it. The auditor must be
+>    the auditor's version-bound verdict. The internal model pass does not replace it. The auditor must be
 >    independent of the sessions that built and staged the release.
 
 No complete mechanical enforcement identified; retain as an agent/operator obligation.
 
 ## 6c1694dc76cbd711bb99 — prose-only
 
-Source: [skills/dataset-release/SKILL.md:265](../skills/dataset-release/SKILL.md#L265).
+Source: [skills/dataset-release/SKILL.md:274](../skills/dataset-release/SKILL.md#L274).
 
 > 1. **Flip both destinations, then prove it anonymously.** GitHub: `gh api -X PATCH repos/<owner>/<repo>`
 >    -F private=false`. Hugging Face: `HfApi.update_repo_settings(repo_id=..., repo_type="dataset",
@@ -1604,7 +1617,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## a463d8986bc1cf96ea53 — prose-only
 
-Source: [skills/dataset-release/SKILL.md:292](../skills/dataset-release/SKILL.md#L292).
+Source: [skills/dataset-release/SKILL.md:301](../skills/dataset-release/SKILL.md#L301).
 
 > **Documents generated after publication must re-derive the managed navigation.** The pipeline writes a
 > navigation block (links to the dataset's page, the catalog, both destinations) into the repository
@@ -1620,7 +1633,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 9826ab1fc04219e2813c — prose-only
 
-Source: [skills/dataset-release/SKILL.md:302](../skills/dataset-release/SKILL.md#L302).
+Source: [skills/dataset-release/SKILL.md:311](../skills/dataset-release/SKILL.md#L311).
 
 > **State is derived from recorded evidence, never asserted in a generator.** Three defects of this
 > exact shape shipped at once: a card whose status was a string literal, a manifest whose
@@ -1633,7 +1646,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 37ac9aea576bf0c78e1f — prose-only
 
-Source: [skills/dataset-release/SKILL.md:309](../skills/dataset-release/SKILL.md#L309).
+Source: [skills/dataset-release/SKILL.md:318](../skills/dataset-release/SKILL.md#L318).
 
 > **Anything a human reads or runs must be executed once before it ships.** The card carried the
 > repository id as a doubled-brace placeholder inside an f-string, which renders to a single brace -
@@ -1645,7 +1658,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 234e7df121d6fa9f75f1 — prose-only
 
-Source: [skills/dataset-release/SKILL.md:317](../skills/dataset-release/SKILL.md#L317).
+Source: [skills/dataset-release/SKILL.md:326](../skills/dataset-release/SKILL.md#L326).
 
 > | Symptom | Cause | Action |
 > | --- | --- | --- |
@@ -1677,7 +1690,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 291c95b9c231da3b37e4 — prose-only
 
-Source: [skills/dataset-release/SKILL.md:343](../skills/dataset-release/SKILL.md#L343).
+Source: [skills/dataset-release/SKILL.md:352](../skills/dataset-release/SKILL.md#L352).
 
 > | A generated document still claims "private" after publication | The status was a literal in the generator, not derived from recorded state | Derive it from `DESTINATIONS.json`/the manifest; assert nothing about a state you can read |
 > | A printed command contains a placeholder | A doubled-brace placeholder inside an f-string renders to a single brace, so the replacement no-ops | Use an unambiguous token; execute the artifact you generate before shipping it |
@@ -1706,7 +1719,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 14067b213ea0adc693d3 — prose-only
 
-Source: [skills/dataset-release/SKILL.md:387](../skills/dataset-release/SKILL.md#L387).
+Source: [skills/dataset-release/SKILL.md:396](../skills/dataset-release/SKILL.md#L396).
 
 > For editorial corrections, increment `site_revision`, prepare and review the new
 > plan. Existing data identity is immutable. Website navigation updates default-branch
@@ -1717,7 +1730,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## f149c27867406c2af0ac — prose-only
 
-Source: [skills/dataset-release/SKILL.md:394](../skills/dataset-release/SKILL.md#L394).
+Source: [skills/dataset-release/SKILL.md:403](../skills/dataset-release/SKILL.md#L403).
 
 > - [ ] `check-package.py` reports no missing document and no manifest/hash mismatch.
 > - [ ] Every command in the reproduction instructions was executed on the published bytes, in a
@@ -1737,7 +1750,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## f85a6b4893841749862f — prose-only
 
-Source: [skills/dataset-release/SKILL.md:416](../skills/dataset-release/SKILL.md#L416).
+Source: [skills/dataset-release/SKILL.md:425](../skills/dataset-release/SKILL.md#L425).
 
 > Follow `docs/PREDICTION-CONTRACT.md` in the project before new construction or release.
 > Read observation time, actual feature availability, label availability and revision/vintage
@@ -1753,7 +1766,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 56e5489db42bceff9979 — prose-only
 
-Source: [skills/dataset-release/SKILL.md:426](../skills/dataset-release/SKILL.md#L426).
+Source: [skills/dataset-release/SKILL.md:435](../skills/dataset-release/SKILL.md#L435).
 
 > New artifacts require `quality.json.evaluation_contract` and the current gate. Older reports
 > remain historical evidence only. Never fill fields with invented evidence to obtain a pass.

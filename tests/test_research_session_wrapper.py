@@ -52,7 +52,7 @@ class ActionableWorkTests(unittest.TestCase):
                 json.dumps({"id": "x", "status": "qualified"}))
             self.assertEqual([("x", "package")], wrapper.actionable_work(root))
 
-    def test_a_packaged_candidate_is_release_work_but_one_awaiting_the_flip_is_not(self):
+    def test_an_unsupported_operator_wait_remains_actionable_until_audit_is_verified(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             for name, awaiting in (("ready", False), ("held", True)):
@@ -60,7 +60,9 @@ class ActionableWorkTests(unittest.TestCase):
                 folder.mkdir(parents=True)
                 (folder / "record.json").write_text(
                     json.dumps({"id": name, "status": "packaged", "awaiting_operator": awaiting}))
-            self.assertEqual([("ready", "release")], wrapper.actionable_work(root))
+            self.assertEqual([("held", "release"),("ready", "release")], wrapper.actionable_work(root))
+            with patch.object(wrapper,'queue_ready',side_effect=lambda root,record:record['id']=='held'):
+                self.assertEqual([("ready", "release")], wrapper.actionable_work(root))
 
     def test_parked_published_and_investigating_without_go_are_idle(self):
         with tempfile.TemporaryDirectory() as tmp:

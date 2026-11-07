@@ -19,6 +19,9 @@ import json
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from factory.audit_workflow import queue_ready
+
 # Stage vocabulary. `investigating` is where a record starts; `parked` and `dropped` are
 # terminal outcomes and are perfectly good places for a candidate to end up.
 STAGES = (
@@ -199,6 +202,8 @@ def report(root, candidate_id):
     except json.JSONDecodeError as exc:
         return None, [f"{record_path} is not valid JSON: {exc}"], []
     missing, warnings = check_record(record, notes_present=(folder / "notes.md").is_file())
+    if record.get('awaiting_operator') is True and not queue_ready(root, record):
+        missing.append('awaiting_operator: current model session and full staged-worker adversarial verdict are required')
     return record, missing, warnings
 
 

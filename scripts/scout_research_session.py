@@ -56,6 +56,7 @@ REPO = _resolve_repo()
 sys.path.insert(0, str(REPO))
 from factory.admission import hold_reason
 from factory.common import FactoryError
+from factory.audit_workflow import queue_ready
 BUDGET = REPO / "scripts" / "research-budget.py"
 PROMPT_TEMPLATE = REPO / "docs" / "research-session-prompt.md"
 HERMES_PYTHON = "/opt/hermes/.venv/bin/python3"
@@ -107,7 +108,7 @@ def actionable_work(root=REPO):
             continue
         status = record.get("status")
         if status == "packaged":
-            if not record.get("awaiting_operator"):
+            if not queue_ready(root, record):
                 work.append((record.get("id") or path.parent.name, "release"))
         elif status in ("ready", "qualified"):
             work.append((record.get("id") or path.parent.name, "build" if status == "ready" else "package"))

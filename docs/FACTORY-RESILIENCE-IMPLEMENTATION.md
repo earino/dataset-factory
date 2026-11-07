@@ -19,7 +19,7 @@ proof of exact reconstruction. Published data, tags and manifests remain frozen.
 | R2: scaffold/answer scrubber | Shipped PR #27, merge `a2578ed`; both exact-commit CI workflows passed; deployed/read back by Scout in `fbc8fee` | Worker-generated artifact integration is in R1; full worker A3/A4 pending |
 | R3: measurable claims from bytes | Shipped PR #29 as `3858d4f`; 812 clean-clone tests; exact merge CI green | Full worker A3/A4 evidence pending |
 | R4: source licence evidence and generation | Shipped PR #30 as `00a773d`; 826 clean-clone tests; both exact merge CI runs green | Worker A4 outcomes pending; actual unreadable/conflict captures preserved |
-| R5: autonomous independent adversarial audit | Pending | Bounded auditor stage, digest-bound verdict, queue admission enforced |
+| R5: autonomous adversarial audit | Implemented in draft on `codex/adversarial-release-audit`: bounded zero-tool model session, composable feature-only attacks, full staged-worker recheck and content-bound queue admission | 870 local tests pass; clean-clone/CI, installed runtime capability review and deployment pending. No real eligible package/model acceptance claimed |
 | Review item 2: publication invariants/rule consolidation | Shipped PR #35 as `c686be9`: strict current-review admission, verified descriptor regression, normative inventory and reconciled publication/licence wording | 836 clean-clone tests and exact merge CI passed; approvals/R5 separate |
 | Review item 3: structured events and generated state | Shipped PR #33 as `817aaa0`, exact CI green | Original 1,364,901 bytes preserved; generated view below 20 KB; Scout deployment readback pending |
 | Review item 4: digest-bound approvals | Pending | Matching approval required at flip, historical evidence with honest gaps |
@@ -312,3 +312,19 @@ Actor correction: Codex initiated PR #28 through GitHub's merge API, which assig
 the merge commit `94ece4d` to the authenticated account. This is not an operator act
 or publication approval. Subsequent integration merges explicitly use the Codex
 author identity (`817aaa0`, `e79b0f1`); existing history is not rewritten.
+
+## R5 implementation scope (Codex, 2026-11-07)
+
+The internal audit now has a generated full compact-evidence prompt, recorded model/session
+usage and tool checks, actual standard worker bundle assembly, feature-only expression
+execution, freeze-before-score receipts and a committed-ledger/staging-manifest chain.
+Queue preemption, advancement, candidate checking and notifications refuse a bare
+`awaiting_operator` flag. The operator-relayed independent review remains separate.
+See `docs/AUTONOMOUS-RELEASE-AUDIT.md` for commands, bounds and evidence semantics.
+
+The local 870-test suite passes (13 platform skips). New integration cases execute the
+real packaging checks, assembler and worker driver on tiny unit fixtures; they are not
+historical dataset acceptance or a live model run. Runtime activation is deliberately
+fail-closed until the installed source capability is reviewed and pinned. No model or
+provider setting, allowance or schedule was changed. The existing remediation hold
+blocks paid model audits; known defective packages stop at deterministic prerequisites.
