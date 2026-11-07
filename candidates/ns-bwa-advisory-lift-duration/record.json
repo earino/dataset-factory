@@ -500,6 +500,59 @@
  ],
  "artifacts": [
   {
+   "artifact_version": "49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144",
+   "gate_version": "1.5.0",
+   "built_by_job": "ns-bwa-002",
+   "register_sha256": "60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a",
+   "register_vintage": "2026-06-16 (eligibility cutoff 2026-05-17 = vintage minus 30 days)",
+   "built_at_pin": "2026-11-07T00:00:00Z",
+   "frame": "v2026.12 - 11 columns: issuance attributes + issue-date recency only; the eight outcome-derived history columns of v2026.10 are removed (P0 exact-recovery channel closed)",
+   "layout": "public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json",
+   "split_stats": {
+    "train": {
+     "rows": 1069,
+     "positives": 715,
+     "rate": 0.668849,
+     "distinct_sites": 585,
+     "positive_sites": 447,
+     "positive_issue_dates": 569
+    },
+    "eval": {
+     "rows": 372,
+     "positives": 225,
+     "rate": 0.604839,
+     "distinct_sites": 286,
+     "positive_sites": 183,
+     "positive_issue_dates": 176
+    },
+    "holdout": {
+     "rows": 884,
+     "positives": 514,
+     "rate": 0.581448,
+     "distinct_sites": 547,
+     "positive_sites": 343,
+     "positive_issue_dates": 367
+    }
+   },
+   "exclusions_measured": {
+    "censored_active_at_vintage": {
+     "train": 2,
+     "eval": 1,
+     "holdout": 10
+    },
+    "negative_duration_invalid": {
+     "holdout": 2,
+     "other": 1
+    },
+    "blank_issue_dates": 30,
+    "out_of_window_2025_2026": "279 (208 in 2025 + 71 in 2026, of which 15 after the eligibility cutoff)"
+   },
+   "qualification": "PASSED on the full artifact on the worker (gate 1.5.0, 44/44 checks, 0 failed); --accept ACCEPTED on the exact bytes and re-ACCEPTED by ns-bwa-baseline-002 before any score",
+   "url": "https://github.com/earino/ns-bwa-advisory-lift-duration",
+   "repo": "earino/ns-bwa-advisory-lift-duration",
+   "staging": "PENDING - v2026.12 is fully packaged and locally verified (check-package OK, suitability re-bound to 49bf4cfa) but private staging on both destinations is DEFERRED under the operator's 2026-11-07 factory-repair directive (fix the factory before more packages); no release id or tag exists yet for v2026.12"
+  },
+  {
    "artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
    "gate_version": "1.5.0",
    "built_by_job": "ns-bwa-001",
@@ -550,13 +603,17 @@
    "url": "https://github.com/earino/ns-bwa-advisory-lift-duration",
    "tag": "v2026.10",
    "repo": "earino/ns-bwa-advisory-lift-duration",
-   "release_id": 428463645
+   "release_id": 428463645,
+   "superseded": {
+    "by": "v2026.12 (artifact 49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144)",
+    "reason": "2026-11-01 independent audit recovered 196/372 eval and 286/884 holdout labels exactly from eight shipped outcome-derived history columns (count x rounded-rate arithmetic and subtraction); staged bytes stay private at tag v2026.10 and are never flipped; GitHub release 428463645 is renamed 'SUPERSEDED - DO NOT PUBLISH' during the v2026.12 staging step"
+   }
   }
  ],
  "rejection_reason": null,
  "review": null,
- "next_action": "REBUILD + BASELINE COMPLETE 2026-11-07: v2026.12 artifact 49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144 qualified on the worker (gate 1.5.0, 0 failed checks), --accept ACCEPTED on the exact bytes (build job ns-bwa-002, staging 437529809) and re-ACCEPTED on the baseline job's fetched bytes (ns-bwa-baseline-002, staging 437536802) before any scoring. Measured comparison on identical eval rows: stock runner 0.5068 vs persistence 0.6124 vs calendar 0.5075 vs reason 0.4307 vs majority accuracy 0.6048 - the model trails persistence by 0.1056; against the v2026.10 leak-carrying frame the same runner measured 0.5086, so the column removal cost -0.0018 AUC while closing the P0 channel. Both workers collected and destroyed with provider read-back. REMAINING (none of it started): package v2026.12 from release/ns-bwa-advisory-lift-duration (docs, card, dictionary, measurements, get_dataset.py EXPECTED, code/build.py both copies; manifest last via scripts/release-manifest.py) with check-package.py green and the honest model-trails-persistence comparison carried in the docs; private staging on both destinations (transfer job from staging 437529809 into a new draft release tagged v2026.12, tag LAST after the data lands and tag==main verified; then the hf_publish job + small-file upload); version-bound suitability re-bound to 49bf4cfa... with scripts/check-suitability.py green; then the fresh pre-flip audit prompt generated from templates/pre-flip-audit-prompt.md with digests filled programmatically, whose mandate re-runs the 2026-11-01 frozen subtraction attacks on the new bytes and hunts beyond them. The staged v2026.10 bytes stay private and are never flipped; the flip remains the operator's single act after the fresh audit passes.",
- "updated_at": "2026-11-07T12:06:37Z",
+ "next_action": "v2026.12 PACKAGE PREPARED AND LOCALLY VERIFIED 2026-11-07 (artifact 49bf4cfa427375c6..., gate 1.5.0 44/44, check-package OK, suitability re-bound, docs Class-B-clean) - PRIVATE STAGING ON BOTH DESTINATIONS IS DEFERRED under the operator's 2026-11-07 factory-repair directive (fix the factory before more packages). On the operator's go, or when the new R1-R4 gates pass acceptance (R6's own condition), one session executes the recorded staging sequence: (1) commit the v2026.12 package files to main of earino/ns-bwa-advisory-lift-duration (preserve the v2026.10 tag and release; rename release 428463645 'SUPERSEDED - DO NOT PUBLISH'); (2) create draft release v2026.12, run the transfer worker job from staging 437529809 (5 assets by digest-resolved id, never hand-copied), publish non-draft so tag v2026.12 == main, verify server-side digests, run get_dataset.py + gate --accept on the downloaded tree from the coordinator (the dataset is ~330 KB); (3) hf-publish.py --create --upload-small, the hf_publish worker job, --verify --worker-job, --tag LAST; (4) write both DESTINATIONS.json v2026.12 blocks with files_verified lists; (5) generate the fresh pre-flip audit prompt from templates/pre-flip-audit-prompt.md with digests filled programmatically, mandated to re-run the 2026-11-01 frozen subtraction attacks on the new bytes, hunt beyond them, and RULE ON the frozen quality.json known_event declaration (open_rulings); (6) set awaiting_operator true - the flip of both destinations remains the operator's single act after the auditor's verdict. The staged v2026.10 bytes stay private and are never flipped.",
+ "updated_at": "2026-11-07T14:55:00Z",
  "qualification": {
   "gate": "skills/dataset-qualification/scripts/qualify_dataset.py (canonical copy, sha256 4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1)",
   "gate_version": "1.5.0",
@@ -598,5 +655,15 @@
    "critical_finding": "P0 label recovery: multiplying resolved counts by the rounded lift-within-30-days rate recovers integer cumulative positive counts; where the fixed eligibility checks isolate one new advisory and one new resolution, subtraction reveals the label - 196/372 eval (all-features) and 286/884 holdout recovered with 0 errors, full-split AUC 0.8837/0.7672; stronger than the disclosed 56/217 exposure",
    "passed": "integrity, source reconstruction, references, licence, novelty"
   }
+ },
+ "package_prepared_2026_11_07": {
+  "prepared_at": "2026-11-07T14:55:00Z",
+  "what": "v2026.12 package assembled in release/ns-bwa-advisory-lift-duration from digest-verified recorded bytes only: byte-pinned meta.json (e362b42a...), quality.json (1930d86c...) and the gate report (76ffd8ee...) fetched from staging 437529809 against the worker-written manifest; code/build.py (2253fe59...), code/score.py (ab4d9fd5...), code/run.sh (ee73a468...) copied from the committed v2026.12 source (the exact bytes ns-bwa-002 executed); measurements.json regenerated by package/build_measurements_v2026_12_2026_11_07.py from the collected -002 evidence with reproduction asserts (all four reference figures equal v2026.10); get_dataset.py EXPECTED digests generated from the gate's artifact block (TAG v2026.12); README, RELEASE_NOTES, VERIFICATION, REPRODUCE, DATA_DICTIONARY and card.md rewritten for the 11-column frame with the honest model-trails-persistence comparison carried everywhere; MANIFEST.json + SHA256SUMS written last by scripts/release-manifest.py (artifact_version 49bf4cfa...); DESTINATIONS.json restructured (current identity v2026.12, zero staged destinations, v2026.10 evidence preserved verbatim under superseded).",
+  "checks": "check-package.py release/ns-bwa-advisory-lift-duration OK; check-suitability.py 22 OK (this record re-bound to 49bf4cfa...); gate report shipped in the package is the accepted one (76ffd8ee...); no fixture answer, salt, raw fixture id or named scored row appears in any regenerated document (operator 2026-11-07 briefing Class B applied).",
+  "staging_deferred": "The operator's 2026-11-07 directive (fix the factory before more packages; R6 holds new discovery collection and new package construction until the new gates pass acceptance) is read as covering the staging spend for a package built under the old gates. Preparation is complete, reversible and local; the two worker staging jobs (transfer from 437529809 + hf_publish), the repo commit, the release/tag creation, the DESTINATIONS blocks and the fresh pre-flip audit prompt are one session's work once the operator gives the go or the new gates land.",
+  "open_rulings": [
+   "STAGING GO: private staging of v2026.12 on both destinations - the operator's explicit go, or the factory fix's R1-R4 gates passing acceptance (R6's own condition), whichever comes first.",
+   "KNOWN_EVENT DECLARATION: the frozen quality.json (accepted artifact 49bf4cfa) carries the builder's v2026.10-era known_event block naming two register rows and their durations, including one scored holdout row. For this internal-threshold task the gate requires no such fixture (gate check units.known_event_fixture_recorded records 'no external threshold, so no known-event fixture is required') and does not verify it; it is inherited voluntary content inside bytes pinned by the artifact version - the same defect class (worked example naming a scored row) that the 2026-11-07 audit killed za-cct's README for, at one-row scale and in a gate-adjacent file. It cannot be edited without changing the artifact version. The fresh pre-flip audit must rule on it; if it must go, the fix is a fixture-to-train-row rebuild (a third build of this construction, which the factory-repair hold currently blocks and the operator would authorise). No package document repeats its contents."
+  ]
  }
 }

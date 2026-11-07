@@ -1,28 +1,29 @@
 {
   "dataset": "ns-bwa-advisory-lift-duration",
-  "release_version": "2026.10",
-  "release_tag": "v2026.10",
+  "release_version": "2026.12",
+  "release_tag": "v2026.12",
   "repository": "https://github.com/earino/ns-bwa-advisory-lift-duration",
   "visibility": "private (publication requires explicit authorisation)",
-  "artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
+  "artifact_version": "49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144",
   "package_digest": null,
-  "artifact_job": "ns-bwa-001",
-  "staging_release": 427616218,
-  "staging_release_tag": "job-ns-bwa-001",
+  "artifact_job": "ns-bwa-002",
+  "staging_release": 437529809,
+  "staging_release_tag": "job-ns-bwa-002",
   "staging_repo": "earino/dataset-factory-staging",
-  "construction_commit": "f8ba545",
+  "construction_commit": "0d36ffc",
   "gate_version": "1.5.0",
   "gate_command": "python3 code/qualify_dataset.py ./task",
   "measurements": {
     "name": "ns-bwa-advisory-lift-duration",
-    "built_at_utc": "2026-10-29T00:00:00Z",
+    "built_at_utc": "2026-11-07T00:00:00Z",
+    "frame_version": "v2026.12 - issuance attributes + issue-date recency only (11 columns); the eight outcome-derived history columns of v2026.10 (site/county prior-advisory counts, resolved counts, lift30 rates, active flags) are removed because the 2026-11-01 independent audit recovered 196/372 eval and 286/884 holdout labels exactly from them via cumulative-count x rounded-rate arithmetic and subtraction",
     "source": {
       "register": "Boil Water Advisories, Open Data Nova Scotia (Socrata 7t68-9xmm)",
       "vintage": "content current as of 2026-06-16 (dataset page; CSV Last-Modified Tue, 16 Jun 2026 13:58:42 GMT)",
       "register_sha256": "60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a",
       "register_bytes": 283987,
       "register_rows": 2649,
-      "fetched_by_job": "ns-bwa-001 (byte-identical re-fetch of the discovery vintage)"
+      "fetched_by_job": "ns-bwa-002 (byte-identical to the discovery vintage and to the v2026.10 build; the v2026.12 rebuild changes only the shipped frame, never the population)"
     },
     "grain": "one row per issued boil water advisory (labeled; censored and invalid-outcome rows excluded and counted)",
     "eligibility": "parseable issue date; issue date on or before the vintage minus 30 days (2026-05-17) so an unresolved advisory cannot masquerade as a negative; observed non-negative duration at the pinned vintage; three scored windows on issue year (train 2008-2017, eval 2018-2020, holdout 2021-2024)",
@@ -57,23 +58,24 @@
     },
     "hazards_measured": {
       "negative_duration_invalid_outcomes": 3,
+      "zero_duration_rows": 5,
       "blank_issue_dates": 30,
       "blank_county_rows": 113,
       "same_site_issue_date_pairs": "19 pairs + 1 triple; 16 pairs have two valid durations (identical features, label noise, counted)",
-      "duration_boundary": "16 rows at exactly 30 days (label 1), 6 at 31 (label 0), 5 zero-duration rows",
+      "duration_boundary": "16 rows at exactly 30 days (label 1), 6 at 31 (label 0), 14 at 29; 5 zero-duration rows",
       "reason_variant_merge": "e. coli present 135 = 83 'E. Coli Present' + 52 'E.Coli Present'",
       "length_column_agreement": "0 disagreements between the register Length column and the recomputed duration",
       "regime_shift": "mean advisory duration 47-65 days (2009-2018) vs 218 (2020), 143 (2021), 101 (2022), 64 (2023); the holdout window straddles the spike"
     },
     "references_eval_372_rows_225_positives": {
-      "scope": "identical eval rows (n=372), computed after gate PASS (46/46) and exact-byte --accept; holdout sealed",
+      "scope": "identical eval rows (n=372), computed after gate PASS (44/44) and exact-byte --accept; holdout sealed",
       "majority_class_accuracy": 0.6048,
       "persistence_site_prior": {
         "auc": 0.6124,
         "brier": 0.2819,
         "covered_rows": 231,
         "coverage": 0.621,
-        "definition": "the site's as-of lift30 rate over earlier same-site advisories resolved strictly before the instant (the shipped site_prior_lift30_rate feature); global train rate fallback"
+        "definition": "the site's as-of lift30 rate over earlier same-site advisories resolved strictly before the instant, RECOMPUTED REGISTER-SIDE post-acceptance (v2026.10 shipped this value as the site_prior_lift30_rate feature; v2026.12 removes that column and keeps the value as a reference only); the register fetch is asserted sha256-identical to the artifact's own vintage, so the reference reads no information the artifact's construction did not; global train rate fallback"
       },
       "calendar_county_month": {
         "auc": 0.5075,
@@ -89,148 +91,136 @@
         "auc": null,
         "brier": 0.2429,
         "definition": "train-estimated rate per facility type - constant scores on eval, no ranking information"
+      },
+      "paired_differences_bootstrap1000": {
+        "persistence_vs_calendar": {
+          "resamples": 1000,
+          "mean": 0.101394,
+          "ci95_low": 0.014429,
+          "ci95_high": 0.173883,
+          "note": "paired bootstrap on identical rows; an interval containing zero is inconclusive, not parity"
+        },
+        "calendar_vs_reason": {
+          "resamples": 1000,
+          "mean": 0.077946,
+          "ci95_low": 0.007156,
+          "ci95_high": 0.149222,
+          "note": "paired bootstrap on identical rows; an interval containing zero is inconclusive, not parity"
+        },
+        "persistence_vs_reason": {
+          "resamples": 1000,
+          "mean": 0.17934,
+          "ci95_low": 0.113629,
+          "ci95_high": 0.248222,
+          "note": "paired bootstrap on identical rows; an interval containing zero is inconclusive, not parity"
+        }
       }
     },
     "full_model_baseline": {
-      "job": "ns-bwa-baseline-001",
-      "definition": "the benchmark template XGBClassifier (n_estimators=30, max_depth=6, lr=0.1, seed 42) through the runner's own train.py + validate.sh, unmodified, on the accepted artifact",
-      "eval_auc": 0.5086,
-      "eval_brier": 0.3609,
+      "job": "ns-bwa-baseline-002",
+      "definition": "the benchmark template XGBClassifier through the runner's own train.py + validate.sh, unmodified, on the accepted v2026.12 artifact (re-accept of the fetched bytes BEFORE any score; holdout never copied into the workdir)",
+      "eval_auc": 0.5068,
+      "eval_brier": null,
+      "eval_brier_note": "not computed for v2026.12: the per-row diagnostic job of v2026.10 (ns-bwa-diag-001) was not repeated, and the runner contract prints AUC only",
       "dependencies": "python 3.13.18, pandas 2.3.3, numpy 2.5.4, xgboost 3.4.1, scikit-learn 1.9.1",
-      "replicated_by": "ns-bwa-diag-001: eval AUC 0.5086 (sklearn 0.508617 / midrank 0.508617 / train.py print 0.5086 / validate.py recompute 0.5086)"
-    },
-    "per_row_diagnostic_ns_bwa_diag_001": {
-      "purpose": "per-row model scores preserved, so the model-vs-reference comparison gets dependence-aware intervals (the aggregate-only runner contract could not carry them)",
-      "order": "gate --accept on the fetched bytes BEFORE any score; runner files verbatim (digests equal the benchmark clone's); holdout never copied into the workdir",
-      "observed_gaps": {
-        "model_minus_persistence": -0.103825,
-        "model_minus_calendar": 0.001119
-      },
-      "paired_differences_bootstrap1000_seed23": {
-        "model_vs_persistence_row": {
-          "mean": -0.103464,
-          "ci95": [
-            -0.169273,
-            -0.035679
-          ]
-        },
-        "model_vs_persistence_site_cluster": {
-          "mean": -0.102819,
-          "ci95": [
-            -0.170629,
-            -0.038288
-          ],
-          "note": "286 site clusters resampled; rows of a resampled site stay together"
-        },
-        "model_vs_calendar_row": {
-          "mean": -0.00207,
-          "ci95": [
-            -0.086631,
-            0.072312
-          ]
-        }
-      },
-      "replication_against_recorded": {
-        "persistence_auc": true,
-        "calendar_auc": true,
-        "reason_auc": true,
-        "majority_accuracy": true,
-        "model_auc": true,
-        "note": "a second implementation (pandas-based, independent of the construction score.py) recomputed every reference from the shipped bytes; all agree to 4 decimal places with the figures recorded by jobs ns-bwa-001 and ns-bwa-baseline-001"
-      }
+      "both_implementations_agree": true,
+      "v2026_10_comparison": "the same runner on the v2026.10 19-column leak-carrying frame measured 0.5086, so removing the eight outcome-derived columns cost -0.0018 AUC while closing the P0 label-recovery channel"
     },
     "per_issue_year_eval": {
       "2018": {
         "rows": 129,
         "positives": 96,
         "positive_rate": 0.7442,
-        "model_auc": 0.5554,
-        "model_brier": 0.2298,
         "persistence_auc": 0.6084,
         "persistence_brier": 0.2173,
-        "calendar_auc": 0.5402
+        "calendar_auc": 0.5402,
+        "reason_auc": 0.5642,
+        "model_auc": null,
+        "model_auc_note": "not recomputed for v2026.12 (no per-row diagnostic job ran on this frame)"
       },
       "2019": {
         "rows": 125,
         "positives": 80,
         "positive_rate": 0.64,
-        "model_auc": 0.5018,
-        "model_brier": 0.3479,
         "persistence_auc": 0.6203,
         "persistence_brier": 0.2748,
-        "calendar_auc": 0.4779
+        "calendar_auc": 0.4779,
+        "reason_auc": 0.4742,
+        "model_auc": null,
+        "model_auc_note": "not recomputed for v2026.12 (no per-row diagnostic job ran on this frame)"
       },
       "2020": {
         "rows": 118,
         "positives": 49,
         "positive_rate": 0.4153,
-        "model_auc": 0.4886,
-        "model_brier": 0.5178,
         "persistence_auc": 0.5991,
         "persistence_brier": 0.36,
-        "calendar_auc": 0.5114
+        "calendar_auc": 0.5114,
+        "reason_auc": 0.3114,
+        "model_auc": null,
+        "model_auc_note": "not recomputed for v2026.12 (no per-row diagnostic job ran on this frame)"
       }
     },
-    "prevalence_shift_note": "within-eval prevalence falls 0.7442 (2018) -> 0.64 (2019) -> 0.4153 (2020), the measured COVID-era duration regime shift; per-issue-year figures are mandatory reading beside the pooled AUC; the model's Brier degrades 0.23 -> 0.52 across the shift while persistence holds 0.22-0.36; prevalence drift does not by itself determine AUC",
-    "headroom_finding": "NO demonstrated headroom under this protocol. The runner-contract model (0.5086) trails the one-line site-persistence reference (0.6124) by 0.1038 AUC on identical rows; the paired row-level interval [-0.1693, -0.0357] and the site-clustered interval [-0.1706, -0.0383] both EXCLUDE ZERO, so the deficit is not a resampling artefact. The model sits at the calendar/identity control (model minus calendar +0.0011, interval contains zero). Per issue year the model never beats persistence (0.5554/0.5018/0.4886 vs 0.6084/0.6203/0.5991). Per dataset-qualification this is a recorded defect, not an encouraging result: no figure from this artifact may be quoted without this comparison beside it. It does not prove every competent model must lose - the persistence feature is shipped and agent-visible, so an agent that starts from it enters at ~0.61 - but the task's discriminative claim above simple references is not demonstrated by the runner's own baseline.",
+    "prevalence_shift_note": "within-eval prevalence falls 0.7442 (2018) -> 0.64 (2019) -> 0.4153 (2020), the measured COVID-era duration regime shift; per-issue-year figures are mandatory reading beside the pooled AUC; persistence holds Brier 0.22-0.36 across the shift; prevalence drift does not by itself determine AUC",
+    "headroom_finding": "NO demonstrated headroom under this protocol. The runner-contract model (0.5068) trails the register-side site-persistence reference (0.6124) by 0.1056 AUC on identical eval rows - the same honest expectation recorded before the rebuild, now a measured finding. No paired model-vs-persistence interval was recomputed for the v2026.12 frame; on these same eval rows the v2026.10 per-row diagnostic (ns-bwa-diag-001, 19-column frame, model 0.5086) measured the analogous deficit at -0.1038 with row-level interval [-0.1693, -0.0357] and site-clustered interval [-0.1706, -0.0383], both excluding zero, and the v2026.12 observed gap is larger. The model sits at the calendar/identity control level (0.5075). This is a recorded defect, not an encouraging result: no figure from this artifact may be quoted without this comparison beside it. It does not prove every competent model must lose; it says the runner's own baseline does not demonstrate the task's discriminative claim above simple references.",
     "measurement_commands": [
-      "worker job ns-bwa-001: construct from the pinned register -> qualify_dataset.py (gate 1.5.0, 46/46) on the full artifact -> --accept (artifact e8ed2a53eaf0453c...) -> code/score.py --data <extract> --accepted-report qualification.json --report references.json",
-      "worker job ns-bwa-baseline-001: fetch the five accepted assets from private staging -> qualify_dataset.py --accept -> materialize (public train+eval only) -> the benchmark's own train.py + validate.sh -> eval AUC 0.5086 (CONTRACT OK)",
-      "worker job ns-bwa-diag-001: same fetch and --accept -> validate.sh (CONTRACT OK, 0.5086) -> per-row predict_proba scores -> paired row and site-cluster bootstrap intervals (1000 resamples, seed 23) and per-issue-year AUC/Brier; every recorded reference figure replicated by a second implementation"
+      "worker job ns-bwa-002: construct from the pinned register (--built-at 2026-11-07T00:00:00Z) -> qualify_dataset.py (gate 1.5.0, 44/44 checks) on the full artifact -> --accept (artifact 49bf4cfa427375c6...) -> score.py --data <extract> --accepted-report qualification.json --report references.json (persistence recomputed register-side, register sha asserted equal to the artifact's vintage)",
+      "worker job ns-bwa-baseline-002: fetch the five accepted assets from private staging 437529809 -> qualify_dataset.py --accept (ACCEPTED, 49bf4cfa427375c6) BEFORE any score -> materialize (public train+eval only, holdout never copied) -> the benchmark's own train.py + validate.sh -> both eval AUC prints 0.5068 ([validate] CONTRACT OK)",
+      "coordinator: fetch_v2026_12_bytes_2026_11_07.py fetched the byte-pinned meta.json/quality.json/summary.json and copied the collected -002 reports, each digest-verified against the worker-written staging manifest"
     ]
   },
   "assets": {
     "meta.json": {
       "asset_name": "meta.json",
-      "bytes": 1555,
-      "sha256": "6b43e4eaf1020ba3436a91c1c2c926af7af0b03fd79104a01bd45d944737e260"
+      "bytes": 1360,
+      "sha256": "e362b42a46bc6ed3852372508f1784c9ad4fbc75670513ed18e32779656e3195"
     },
     "private/holdout.csv": {
       "asset_name": "private-holdout.csv",
-      "bytes": 121058,
-      "sha256": "78b62dd3bd5923f67c014010eede2e6f7c778bd0b79d4265c9f8ef4299328a37"
+      "bytes": 98821,
+      "sha256": "f0da86a8e455691efe3e93bfd8b93d1728c536699d65df955846b1371bb15f0d"
     },
     "public/eval.csv": {
       "asset_name": "public-eval.csv",
-      "bytes": 50575,
-      "sha256": "ec1f733558558d4c30c2c50bf93408817d0936df4517c126a6d7965f02c5c5c5"
+      "bytes": 41572,
+      "sha256": "8f52bcdf5cc2bec219cd3436210e114ef97f65a10f374afde72100e6988fd016"
     },
     "public/train.csv": {
       "asset_name": "public-train.csv",
-      "bytes": 133840,
-      "sha256": "beacb2292ca0a045610662bd02ba85d89fde18b652e43d4ff44276979a3babc5"
+      "bytes": 109659,
+      "sha256": "665b88a46979e199bf8924420408d2853dcb78db1ee4715fd9f586d1aac705fa"
     },
     "quality.json": {
       "asset_name": "quality.json",
-      "bytes": 21707,
-      "sha256": "7a61f6fa1bd17f01804428b939ab7cf620cacbf066c95837f6d9166d7a78258e"
+      "bytes": 18643,
+      "sha256": "1930d86cb15d473d527149091d808989fe7b7be80e5e6cc95104e66b8e7b2eae"
     }
   },
   "package_files": {
-    "DATA_DICTIONARY.md": "b0a3e7187435faf6e16f9fefe2d3a83af2d35da4e46fc07de446d954b2165332",
+    "DATA_DICTIONARY.md": "5651b5c63149ef823f7fa49e89ed61464e49355d77df38e199796d02914910f0",
     "LICENSE-CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
     "LICENSE-MIT.txt": "200f782f6b8bc23b926ea774cbacb4147826b3b2b59200917d8dc5ec68159535",
     "LICENSE.md": "78df6b2aa9cb290e10fe2d28e959f8e29819a74853d4a9187db45ba08aa9f527",
-    "README.md": "59da05f80a8c37689eb02e79fbe5d455ce2466c4ed509dfc829f3cf5f74d6906",
-    "RELEASE_NOTES.md": "df3947ec05cbad1dc7b9d9f57b9a9484ef8cd1209e9080052e111dbdc90cb584",
-    "REPRODUCE.md": "2f8eaa4a4f1abc43c00d6a15b0f29b1cb1be6b982fffc76daa134179ae5c6427",
-    "VERIFICATION.md": "5550c3bab34c304e4d883363abc3141c9edca9aaa9848508a4be348ec9fc2ee3",
+    "README.md": "7efa83335a9f3beb90127b93bee81b9f03ffc1db334f72055f2fa62fcea64061",
+    "RELEASE_NOTES.md": "9b976d05a1db1e328e163c7809c8437288f70acd1c9908f1f90f7d8b0944846e",
+    "REPRODUCE.md": "e3200b47f465513be4dca9eeef77a187960a448c02a2628bf1566a41ff11196b",
+    "SHA256SUMS": "5da5cfe505d7e9a12eb0477066dfa8883206b853ac80126141c2339970566d24",
+    "VERIFICATION.md": "6351961dd2019d02feb87adcba3bc860c5922696ba2b3056366e0dbdd6f5c2a8",
     "baseline/README.md": "38a442d1be869c0d14e93a59af2f7a406f4ea99545f0c08c283cf797a026f18b",
     "baseline/reproduce_baseline.sh": "32de96032ab1b55d19fdcd1e04e0f5a6b10a187633aa280e9ee76aee9f03c584",
     "baseline/train.py": "a3c6bcf13735bc85c52129ded68f839090dffdc266ebc3810dc61b2e6ea5e7e8",
     "baseline/validate.py": "b597e7f84fed614e64b4a86fbecbd6ec0145916a24d0d221a796586976418e7b",
     "baseline/validate.sh": "3f06ca48f11c2e05d331b4d8394284925de660c1d4b086d2f8243959e83b7e6d",
-    "code/build.py": "cd23315c7ee82cb20c87a2accb97ba98aeae3fd3a9d0469911c963d1d93466a2",
+    "code/build.py": "2253fe592196938fddcfe8af77cd37b4ba8b1ba581d12173047610ffc32c7121",
     "code/materialize.py": "0c345e1182b0dfd42b2043d2f88c5d4d892bb902b5fcc25e24a8418e0f9bfc2e",
     "code/qualify_dataset.py": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1",
-    "code/run.sh": "219f66bbc02b5bc37151a81c1c750efe3f047010a53de190894a508b98343f30",
-    "code/score.py": "b674f5b5cbc2d0e1378f7b26f6a54c620439ddb6fc60086a863ff29bba2c1f0b",
-    "get_dataset.py": "4fb99563e24144614e4fb1ea9954f96439abcd5cab995e859ecef670d95a8924",
-    "measurements.json": "131611fc018fcb0964611cb59c6b337e90d1d7cb0925829ee8a94f70a2a7db61",
-    "meta.json": "6b43e4eaf1020ba3436a91c1c2c926af7af0b03fd79104a01bd45d944737e260",
-    "qualification.json": "a6f0090dcb9746af417d00b7679588538831fb398b8ca66aa7823ae4bb9fd42f",
-    "quality.json": "7a61f6fa1bd17f01804428b939ab7cf620cacbf066c95837f6d9166d7a78258e",
-    "SHA256SUMS": "b293eee065ecd49b07992355c224b7678e842210b036d042a31ce5124fa87d0d"
+    "code/run.sh": "ee73a468a7b1dcd581754bac5efb37823de904a94622a30f0702bddaaf5f48de",
+    "code/score.py": "ab4d9fd505c470d485b3ed96058770d7053622be0c0b07829f54fbf6ef0ec633",
+    "get_dataset.py": "43e50d95c17ada8352b661dae16b3c51407c7dd6fe787c377e703af48365e331",
+    "measurements.json": "ce16a0192ca907d02294e4ee3ed551a2963f78d18fc1c9852ec375ae481a8542",
+    "meta.json": "e362b42a46bc6ed3852372508f1784c9ad4fbc75670513ed18e32779656e3195",
+    "qualification.json": "76ffd8eeec56123474018a8c4aeb21f3d1cad53b7739e25fba2e2fb7d6bf974e",
+    "quality.json": "1930d86cb15d473d527149091d808989fe7b7be80e5e6cc95104e66b8e7b2eae"
   },
   "baseline_command": "sh baseline/reproduce_baseline.sh ./task",
   "get_dataset_command": "python3 get_dataset.py --dest ./task",
@@ -255,25 +245,25 @@
     "quality.json": "quality.json"
   },
   "files": {
-    "public/train.csv": {
-      "bytes": 133840,
-      "sha256": "beacb2292ca0a045610662bd02ba85d89fde18b652e43d4ff44276979a3babc5"
-    },
-    "public/eval.csv": {
-      "bytes": 50575,
-      "sha256": "ec1f733558558d4c30c2c50bf93408817d0936df4517c126a6d7965f02c5c5c5"
+    "meta.json": {
+      "bytes": 1360,
+      "sha256": "e362b42a46bc6ed3852372508f1784c9ad4fbc75670513ed18e32779656e3195"
     },
     "private/holdout.csv": {
-      "bytes": 121058,
-      "sha256": "78b62dd3bd5923f67c014010eede2e6f7c778bd0b79d4265c9f8ef4299328a37"
+      "bytes": 98821,
+      "sha256": "f0da86a8e455691efe3e93bfd8b93d1728c536699d65df955846b1371bb15f0d"
     },
-    "meta.json": {
-      "bytes": 1555,
-      "sha256": "6b43e4eaf1020ba3436a91c1c2c926af7af0b03fd79104a01bd45d944737e260"
+    "public/eval.csv": {
+      "bytes": 41572,
+      "sha256": "8f52bcdf5cc2bec219cd3436210e114ef97f65a10f374afde72100e6988fd016"
+    },
+    "public/train.csv": {
+      "bytes": 109659,
+      "sha256": "665b88a46979e199bf8924420408d2853dcb78db1ee4715fd9f586d1aac705fa"
     },
     "quality.json": {
-      "bytes": 21707,
-      "sha256": "7a61f6fa1bd17f01804428b939ab7cf620cacbf066c95837f6d9166d7a78258e"
+      "bytes": 18643,
+      "sha256": "1930d86cb15d473d527149091d808989fe7b7be80e5e6cc95104e66b8e7b2eae"
     }
   },
   "splits": {
@@ -298,11 +288,11 @@
     "ok": true,
     "failed_checks": [],
     "result": "PASSED",
-    "artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
+    "artifact_version": "49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144",
     "report": "qualification.json"
   },
   "baseline": {
-    "job": "ns-bwa-baseline-001",
+    "job": "ns-bwa-baseline-002",
     "purpose": "one baseline through the runner's existing training and validation contract, on the accepted ns-bwa-advisory-lift-duration artifact",
     "artifact": {
       "name": "ns-bwa-advisory-lift-duration",
@@ -325,18 +315,18 @@
     },
     "qualification_report": {
       "bundled": "qualification.json",
-      "sha256": "a6f0090dcb9746af417d00b7679588538831fb398b8ca66aa7823ae4bb9fd42f",
+      "sha256": "76ffd8eeec56123474018a8c4aeb21f3d1cad53b7739e25fba2e2fb7d6bf974e",
       "gate_version": "1.5.0",
       "gate_ok": true,
       "gate_failed_checks": [],
       "accepted_before_scoring": true,
-      "accepted_artifact_version": "e8ed2a53eaf0453c",
-      "qualified_artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8"
+      "accepted_artifact_version": "49bf4cfa427375c6",
+      "qualified_artifact_version": "49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144"
     },
     "contract": {
       "contract_ok": true,
-      "eval_auc_from_train_py": 0.5086,
-      "eval_auc_from_validate_py": 0.5086
+      "eval_auc_from_train_py": 0.5068,
+      "eval_auc_from_validate_py": 0.5068
     },
     "runner_files": {
       "bundled_sha256": {
