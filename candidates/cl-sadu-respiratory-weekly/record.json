@@ -1,0 +1,43 @@
+{
+  "id": "cl-sadu-respiratory-weekly",
+  "status": "dropped",
+  "created_at": "2026-11-07T00:12:00+00:00",
+  "domain": "public-health surveillance - weekly respiratory emergency-department attendance surge prediction (Chile, MINSAL/DEIS SADU weekly panel, 2008-2024)",
+  "prediction_question": "At the close of epidemiological week t, predict for each servicio de salud / establecimiento whether respiratory-cause emergency-department consultas (SADU: IRA alta J00-J06, influenza J09-J11, neumonia J12-J18, bronquitis/bronquiolitis J20-J21) will exceed a seasonal alert threshold in week t+1/t+2 - the task DEIS's own SADU manual motivates for winter-campaign resource allocation ('asignacion estrategica de recursos'). NOT BUILT: closed on licence before any task probing beyond licence and coverage.",
+  "prediction_time": "Not probed past licence (planned instant: end of epidemiological week t, using SADU weekly aggregates published in DEIS's weekly report and the datos.gob.cl weekly panel).",
+  "target_definition": "Not probed past licence (planned: weekly respiratory-consulta exceedance vs a seasonal baseline threshold, per servicio de salud, from the weekly parquet).",
+  "sources": [
+    {
+      "name": "Atenciones de urgencias de causas respiratorias por semana epidemiologica (SADU weekly panel, Ministerio de Salud / DEIS)",
+      "url": "https://datos.gob.cl/dataset/atenciones-de-urgencia-causas-respiratorias",
+      "api": "CKAN package 'atenciones-de-urgencia-causas-respiratorias'; resources: at_urg_respiratorio_semanal.parquet (created 2024-02-28, last_modified 2026-11-04) + data dictionary xlsx; notes state 'totales de consultas y hospitalizaciones por causa respiratoria ... por establecimiento de salud, semana epidemiologica y grupo de edad', causes IRA alta (J00-J06), Influenza (J09-J11), Neumonia (J12-J18), Bronquitis/Bronquiolitis aguda (J20-J21); FAQ and dataset notes say the series covers 2008-2024. Read 2026-11-07 via the CKAN API: https://datos.gob.cl/api/3/action/package_search?q=atenciones+urgencias+respiratorias+semana",
+      "license": "Creative Commons Non-Commercial (Any) - license_id 'cc-nc' on the publisher's own CKAN record"
+    },
+    {
+      "name": "Atenciones de urgencia de la red publica de Salud (DAU annual aggregates, same publisher family)",
+      "url": "https://datos.gob.cl/dataset/atenciones-de-urgencia",
+      "api": "CKAN package 'atenciones-de-urgencia'; annual zips 2017-2024 at repositoriodeis.minsal.cl/SistemaAtencionesUrgencia/AtencionesUrgencia<YYYY>.zip; checked as the possible clean-terms alternative. Read 2026-11-07 via https://datos.gob.cl/api/3/action/package_show?id=atenciones-de-urgencia",
+      "license": "Creative Commons Non-Commercial (Any) - also cc-nc; the whole DEIS emergency-attendance family carries the same designation"
+    }
+  ],
+  "jurisdiction": {
+    "country": "CL",
+    "region": "Latin America",
+    "publisher": "Ministerio de Salud de Chile - Departamento de Estadisticas e Informacion de Salud (DEIS), catalogued on the national portal datos.gob.cl",
+    "recorded_at": "2026-11-07"
+  },
+  "licence_class": "D",
+  "licence_note": "The publisher's own catalog designation for both emergency-attendance packages is 'Creative Commons Non-Commercial (Any)'. NC is not ambiguous and not silent: it grants redistribution and derivatives but bars commercial use. The Dataset Factory's releases exist so that coding agents, including commercial ones, can be evaluated on real public data; an NC condition carried through to the release (as project policy requires upstream conditions to be preserved) makes every commercial evaluation use infringing. Under the standing rule that we only build on sources that are already clean, this licence is decisive against construction without any task-level probing. Recorded as class D (terms incompatible with the intended distribution/use), not class C (nothing is unresolved).",
+  "license_evidence": [
+    "CKAN package record read 2026-11-07 (curl https://datos.gob.cl/api/3/action/package_search?q=atenciones+urgencias+respiratorias+semana): package 'atenciones-de-urgencia-causas-respiratorias' (org ministerio_de_salud) carries '\"license_id\": \"cc-nc\", \"license_title\": \"Creative Commons Non-Commercial (Any)\"'.",
+    "CKAN package record read 2026-11-07 (curl https://datos.gob.cl/api/3/action/package_show?id=atenciones-de-urgencia): the DAU annual-aggregate package carries the same '\"license_id\": \"cc-nc\"' - so the alternative channel through the same publisher does not offer cleaner terms.",
+    "datos.gob.cl licence filter corroborates both packages appearing under the CC-NC facet on the portal's own listing pages."
+  ],
+  "measurements": {
+    "licence_probe_2026_11_07": "two CKAN API calls, both packages cc-nc; no file downloads, no task probes beyond licence and coverage",
+    "source_coverage": "weekly panel by establecimiento x epi-week x age group with cause groupings J00-J06/J09-J11/J12-J18/J20-J21, 2008-2024 per the publisher's FAQ and dataset notes; annual DAU zips 2017-2024"
+  },
+  "rejection_reason": "Licence is decisive and was the first thing probed: both DEIS emergency-attendance datasets (weekly SADU respiratory panel and DAU annual aggregates) are designated 'Creative Commons Non-Commercial (Any)' on the publisher's own catalog records (read 2026-11-07, quotes in license_evidence). NC carried through the release would bar commercial evaluation use, which is the project's primary purpose; project policy requires upstream conditions to be preserved, and the standing rule is to build only on already-clean sources. Closed before spending probes on schema, timing, splits or novelty. Would reopen if: (a) MINSAL/DEIS re-designates either package under CC-BY/CC0 or another commercial-use-permitting licence (re-check the CKAN license_id); or (b) the operator records a candidate-specific risk acceptance accepting NC terms for this source family. The sibling task shape (weekly respiratory surveillance surge from a national ED panel) remains worth pursuing in another jurisdiction whose national health-data licence permits any-purpose use.",
+  "next_action": "None (terminal). If reopened, resume at task design: prediction instant = end of epi week t, target = next-week respiratory-consulta exceedance vs seasonal baseline, per servicio de salud; first probe = parquet schema + per-year coverage + split counts by winter season.",
+  "verdict": "dropped on licence before any task probing"
+}

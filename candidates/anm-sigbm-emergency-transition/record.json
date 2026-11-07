@@ -1,0 +1,186 @@
+{
+  "id": "anm-sigbm-emergency-transition",
+  "status": "investigating",
+  "created_at": "2026-11-07T00:10:00+00:00",
+  "domain": "mining dam safety regulation - tailings-dam emergency-status transition prediction (Brazil, ANM SIGBM registry + monthly safety bulletins, dam-month panel 2021-2026)",
+  "prediction_question": "At the publication instant of ANM's monthly dam-safety bulletin for month M (published in the first days of month M+1, reporting every registered dam's Nivel de Emergencia as of 01/(M+1)), predict for each dam enrolled in the PNSB whether its emergency status (Nivel de Alerta / Emergencia 1-3 vs Sem emergencia) will CHANGE during calendar month M+2, using registry attributes (construction method incl. upstream a montante, material, height, volume, mineral, UF, population downstream), the dam's own published level history from prior bulletins, and current CRI/DPA classification. A useful prediction supports ANM's remote-inspection prioritization (fiscalizacao remota, the bulletin's own producing unit) and civil-defence readiness before a dam's emergency declaration changes, the moment agency resources get reallocated.",
+  "prediction_time": "Publication of the monthly Boletim Mensal de Seguranca de Barragens de Mineracao for reference month M. Each bulletin states its reference window explicitly ('Os dados analisados neste boletim referem-se as atualizacoes ocorridas entre 01/10/2026 e 01/11/2026') and is published 4-7 days after the window closes (archive page: Outubro 2026 published 05/11/2026 12h45; Setembro 2026 published 06/10/2026). At the instant the predictor knows: the full per-dam level lists as of 01/(M+1) (bulletin tables 5-8), the month-M transition table (bulletin table 4: dams with level changed during M, previous -> current, no per-dam event dates), and registry attributes. The target month M+2 opens at 01/(M+2), strictly after the instant; the M+1 intermediate month is skipped because its transition table is not yet published and its table cannot be split into before/after-instant events (no dated events) - see notes.md 'timing' for the dated example. Timezone: America/Sao_Paulo (federal publications carry no timezone; declared Brazilia time).",
+  "target_definition": "Binary, per dam: the dam's emergency status in bulletin M+2's per-dam level lists (state as of 01/(M+3)) differs from its state at 01/(M+2) as recorded in bulletin M+1 - i.e. any change (entry into Alerta/Emergencia, escalation, or exit) during calendar month M+2. Variants to measure at construction: entry-or-escalation only; Alerta-or-Emergencia entry from Sem emergencia only. Label sources are the bulletin level lists and the bulletin 'Barragens com situacao de alerta ou emergencia alterada' transition tables; both are excludable from the shipped features. Population: dams enrolled in the PNSB (461 of 908 in the current registry; all 77 dams currently in Alerta/Emergencia are PNSB dams - measured).",
+  "sources": [
+    {
+      "name": "Barragens de Mineracao (SIGBM open registry snapshot, updated daily)",
+      "url": "https://dadosabertos.anm.gov.br/SIGBM/Barragens.csv",
+      "api": "Anonymous HTTPS direct download (3,386,460 bytes at 2026-11-07, sha256 598a85b42d437a4f29bf8ba4539d8eb21ea91c6ad1b5ca91c0a297f26752ca49, latin-1 encoded, 908 dams x 124 columns). Catalogued at https://dados.gov.br/dados/conjuntos-dados/barragens-de-mineracao (CKAN package id 21b132ed-db3a-4dd6-82ef-b01fc981ab12). Access caveats measured 2026-11-07: (1) server omits its TLS intermediate (Sectigo) - plain curl fails 'unable to get local issuer certificate'; the AIA intermediate from http://crt.sectigo.com/SectigoPublicServerAuthenticationCAOVR36.crt must be passed via --cacert; (2) WAF: default curl UA gets HTTP 403 'Web Application Firewall' page; a full Chrome UA gets HTTP 200. dados.gov.br API (/api/3/action) is CloudFront-blocked for plain clients; the portal's own /api/publico/conjuntos-dados/barragens-de-mineracao endpoint works from a real browser.",
+      "license": "Creative Commons Attribution (cc-by), per the dados.gov.br package record"
+    },
+    {
+      "name": "Boletim Mensal de Seguranca de Barragens de Mineracao (monthly per-dam emergency-level snapshots and transition tables, Janeiro 2021 - Outubro 2026)",
+      "url": "https://www.gov.br/anm/pt-br/assuntos/barragens/boletim-de-barragens-de-mineracao/boletim-mensal",
+      "api": "Static PDFs behind a 3-page Plone listing (b_start:int=0/30/60); ~64 issues measured 2026-11-07: 12/12 months of 2021, 6/12 of 2022 (Jun-Nov 2022 absent from the listing), 12/12 each of 2023-2025, 10 through Outubro 2026. Each issue: state as of 01/(M+1) with full per-dam lists per level (Tabelas 5-8 in the current format), the month's level-transition table (Tabela 4: name, entrepreneur, UF, municipio, Nivel Anterior, Nivel Atual - no per-dam event dates), CRI-change table, and 12-month series. Format varies by era (2021 issues have no 'Nivel de Alerta' category - introduced with Resolucao ANM 95/2022) but per-dam level lists exist in every sampled era (Janeiro 2021, Junho 2023, Outubro 2026).",
+      "license": "Per-PDF statement: 'Todos os direitos reservados. E permitida a reproducao de dados e de informacoes contidos nesta publicacao, desde que citada a fonte.' (present verbatim in all three sampled issues)"
+    },
+    {
+      "name": "ANM Bases de Dados index page (publisher's own description of the SIGBM dataset)",
+      "url": "https://www.gov.br/anm/pt-br/acesso-a-informacao/dados-abertos/bases-de-dados",
+      "api": "Static HTML; confirms the SIGBM dataset description and daily real-time update; lists the dados.gov.br catalog entry",
+      "license": "dataset terms governed by the dados.gov.br record (cc-by)"
+    },
+    {
+      "name": "SIGBM Publico interactive app (per-dam historical panels - UNREACHED)",
+      "url": "https://app.anm.gov.br/SIGBM/Publico",
+      "api": "NOT probed beyond navigation: the host closes connections from this environment (browser ERR_CONNECTION_CLOSED, 2026-11-07, one changed retry). The gov.br SIGBM page says the public app shows 'historicos das informacoes classificatorias' in Power BI panels - if those carry per-dam dated level history, exact event dates would replace the month-diffing design. Open question, not a blocker: the bulletin series supports the task without the app.",
+      "license": "not read (page unreachable)"
+    }
+  ],
+  "jurisdiction": {
+    "country": "BR",
+    "region": "Latin America",
+    "publisher": "Agencia Nacional de Mineracao (ANM), Brazilian federal mining regulator; dataset catalogued on the national open-data portal dados.gov.br by CGU (Controladoria-Geral da Uniao)",
+    "recorded_at": "2026-11-07"
+  },
+  "licence_class": "A",
+  "licence_note": "CC-BY (Creative Commons Attribution) on the publisher's own catalog record for the registry data, plus an explicit per-document reproduction grant in every sampled bulletin ('reproducao de dados ... permitida desde que citada a fonte'). Binding condition: attribution of ANM as source. The bulletins additionally carry 'Todos os direitos reservados' over the document itself - so bulletins must be cited/quoted, not re-hosted; only extracted data ships, which the reproduction sentence permits. No share-alike, no NC restriction, no third-party rights (the registry and bulletins are ANM's own operational compilations).",
+  "license_evidence": [
+    "dados.gov.br package record read 2026-11-07 via the portal's own API (https://dados.gov.br/api/publico/conjuntos-dados/barragens-de-mineracao, fetched through the supported browser because the /api/3/action CKAN endpoint is CloudFront-blocked for plain HTTP clients): '\"license_id\": \"cc-by\", \"license_title\": \"Creative Commons Attribution\"'. The public dataset page (https://dados.gov.br/dados/conjuntos-dados/barragens-de-mineracao) states 'Licenca: Creative Commons Attribution'.",
+    "Boletim Mensal Outubro 2026 PDF (https://www.gov.br/anm/pt-br/assuntos/barragens/boletim-de-barragens-de-mineracao/boletim-mensal-outubro-2026.pdf, read 2026-11-07): 'Todos os direitos reservados. E permitida a reproducao de dados e de informacoes contidos nesta publicacao, desde que citada a fonte.' Identical sentence present in the Janeiro 2021 issue ('...desde que citada a fonte') and the Junho 2023 issue (as a standalone heading 'E permitida a reproducao de dados e de informacoes contidas nesta publicacao, desde que citada a fonte').",
+    "No personal data in the shipped features: the registry identifies dams and corporate entrepreneurs (CPF_CNPJ of companies), not natural persons; dam names, companies, municipalities and technical attributes only. CNPJ is a public company identifier; CPF entries are sole-proprietor business IDs published by the regulator itself."
+  ],
+  "novelty_check": {
+    "checked_at": "2026-11-07T00:13:01+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "tailings dam emergency level prediction",
+      "barragens de mineracao nivel de emergencia",
+      "BrazilDAM tailings dam benchmark"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "tailings dam emergency level prediction",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "barragens de mineracao nivel de emergencia",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "BrazilDAM tailings dam benchmark",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "tailings dam emergency level prediction",
+          "hits": 393065,
+          "top": [
+            "The dry closure of the Almagrera tailings dam: detailed modelling, monitoring results and environmental aspects",
+            "Decision Support System for Monitoring and Stability Assessment of The Tailings Storage Facility",
+            "MECHANICAL DISPLACEMENT PROTOTYPE FOR MULTI\u2011LEVEL SENSOR POSITIONING IN HYDRO\u2011MECHANICAL TESTING OF MINE TAILINGS",
+            "FIGURE 1 in Stoneflies left over from a mining disaster: new species and records of Perlidae (Plecoptera) from the Doce River basin, southeastern Brazil",
+            "Modelling Hazard for Tailings Dam Failures at Copper Mines in Supply Chains of Final Consumption"
+          ]
+        },
+        {
+          "query": "barragens de mineracao nivel de emergencia",
+          "hits": 1261139,
+          "top": [
+            "Planificaci\u00f3n local de emergencias en Espa\u00f1a",
+            "Intelig\u00eancia artificial na minera\u00e7\u00e3o: Principais aplica\u00e7\u00f5es",
+            "EXPERIENCIA EN EL MANEJO DE COVID-19 EN LA SALA DE EMERGENCIA DEL HOSPITAL DR. ABEL GILBERT PONT\u00d3N",
+            "QUEST\u00d5ES HIST\u00d3RICAS E T\u00c9CNICAS DAS BARRAGENS DE REJEITO DE MINERA\u00c7\u00c3O: PASSIVOS AMBIENTAIS DE LONGO PRAZO",
+            "Controv\u00e9rsias sociocient\u00edficas de forte impacto local: o caso da (in)seguran\u00e7a de barragens de rejeitos de minera\u00e7\u00e3o"
+          ]
+        },
+        {
+          "query": "BrazilDAM tailings dam benchmark",
+          "hits": 60932,
+          "top": [
+            "The dry closure of the Almagrera tailings dam: detailed modelling, monitoring results and environmental aspects",
+            "MECHANICAL DISPLACEMENT PROTOTYPE FOR MULTI\u2011LEVEL SENSOR POSITIONING IN HYDRO\u2011MECHANICAL TESTING OF MINE TAILINGS",
+            "FIGURE 1 in Stoneflies left over from a mining disaster: new species and records of Perlidae (Plecoptera) from the Doce River basin, southeastern Brazil",
+            "Modelling Hazard for Tailings Dam Failures at Copper Mines in Supply Chains of Final Consumption",
+            "Modelling Slope Stability of Slurry Dams using Cone Penetration Method"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "tailings dam emergency level prediction",
+          "hits": 5,
+          "top": [
+            "Maximal dissipation and shallow water flow -- the dam-break problem",
+            "A hybrid Finite Element and Material Point Method for modeling liquefaction-induced tailings dam failures",
+            "BrazilDAM: A Benchmark dataset for Tailings Dam Detection",
+            "Modeling liquefaction-induced runout of a tailings dam using a hybrid finite element and material point method approach",
+            "Metamodel-based methodology for uncertainty propagation and global sensitivity analysis of tailings dam-breach flows"
+          ]
+        },
+        {
+          "query": "barragens de mineracao nivel de emergencia",
+          "hits": 5,
+          "top": [
+            "CTA contributions to the 33rd International Cosmic Ray Conference (ICRC2013)",
+            "The Pierre Auger Observatory: Contributions to the 33rd International Cosmic Ray Conference (ICRC 2013)",
+            "Pierre Auger Observatory and Telescope Array: Joint Contributions to the 33rd International Cosmic Ray Conference (ICRC ",
+            "Sistemas C-ortoc\u00e9ntricos, bisectrices y euclidianidad en planos de Minkowski",
+            "The track-length extension fitting algorithm for energy measurement of interacting particles in liquid argon TPCs and it"
+          ]
+        },
+        {
+          "query": "BrazilDAM tailings dam benchmark",
+          "hits": 5,
+          "top": [
+            "BrazilDAM: A Benchmark dataset for Tailings Dam Detection",
+            "Maximal dissipation and shallow water flow -- the dam-break problem",
+            "A hybrid Finite Element and Material Point Method for modeling liquefaction-induced tailings dam failures",
+            "Stability assessment of a tailings storage facility using a non-local constitutive model accounting for anisotropic stra",
+            "Modeling liquefaction-induced runout of a tailings dam using a hybrid finite element and material point method approach"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'tailings dam emergency level prediction': 0 hit(s) - nothing notable\n- huggingface_datasets / 'barragens de mineracao nivel de emergencia': 0 hit(s) - nothing notable\n- huggingface_datasets / 'BrazilDAM tailings dam benchmark': 0 hit(s) - nothing notable\n- zenodo_records / 'tailings dam emergency level prediction': 393065 hit(s) - The dry closure of the Almagrera tailings dam: detailed modelling, monitoring results and environmental aspects, Decision Support System for Monitoring and Stability Assessment of The Tailings Storage Facility, MECHANICAL DISPLACEMENT PROTOTYPE FOR MULTI\u2011LEVEL SENSOR POSITIONING IN HYDRO\u2011MECHANICAL TESTING OF MINE TAILINGS, FIGURE 1 in Stoneflies left over from a mining disaster: new species and records of Perlidae (Plecoptera) from the Doce River basin, southeastern Brazil, Modelling Hazard for Tailings Dam Failures at Copper Mines in Supply Chains of Final Consumption\n- zenodo_records / 'barragens de mineracao nivel de emergencia': 1261139 hit(s) - Planificaci\u00f3n local de emergencias en Espa\u00f1a, Intelig\u00eancia artificial na minera\u00e7\u00e3o: Principais aplica\u00e7\u00f5es, EXPERIENCIA EN EL MANEJO DE COVID-19 EN LA SALA DE EMERGENCIA DEL HOSPITAL DR. ABEL GILBERT PONT\u00d3N, QUEST\u00d5ES HIST\u00d3RICAS E T\u00c9CNICAS DAS BARRAGENS DE REJEITO DE MINERA\u00c7\u00c3O: PASSIVOS AMBIENTAIS DE LONGO PRAZO, Controv\u00e9rsias sociocient\u00edficas de forte impacto local: o caso da (in)seguran\u00e7a de barragens de rejeitos de minera\u00e7\u00e3o\n- zenodo_records / 'BrazilDAM tailings dam benchmark': 60932 hit(s) - The dry closure of the Almagrera tailings dam: detailed modelling, monitoring results and environmental aspects, MECHANICAL DISPLACEMENT PROTOTYPE FOR MULTI\u2011LEVEL SENSOR POSITIONING IN HYDRO\u2011MECHANICAL TESTING OF MINE TAILINGS, FIGURE 1 in Stoneflies left over from a mining disaster: new species and records of Perlidae (Plecoptera) from the Doce River basin, southeastern Brazil, Modelling Hazard for Tailings Dam Failures at Copper Mines in Supply Chains of Final Consumption, Modelling Slope Stability of Slurry Dams using Cone Penetration Method\n- arxiv_preprints / 'tailings dam emergency level prediction': 5 hit(s) - Maximal dissipation and shallow water flow -- the dam-break problem, A hybrid Finite Element and Material Point Method for modeling liquefaction-induced tailings dam failures, BrazilDAM: A Benchmark dataset for Tailings Dam Detection, Modeling liquefaction-induced runout of a tailings dam using a hybrid finite element and material point method approach, Metamodel-based methodology for uncertainty propagation and global sensitivity analysis of tailings dam-breach flows\n- arxiv_preprints / 'barragens de mineracao nivel de emergencia': 5 hit(s) - CTA contributions to the 33rd International Cosmic Ray Conference (ICRC2013), The Pierre Auger Observatory: Contributions to the 33rd International Cosmic Ray Conference (ICRC 2013), Pierre Auger Observatory and Telescope Array: Joint Contributions to the 33rd International Cosmic Ray Conference (ICRC , Sistemas C-ortoc\u00e9ntricos, bisectrices y euclidianidad en planos de Minkowski, The track-length extension fitting algorithm for energy measurement of interacting particles in liquid argon TPCs and it\n- arxiv_preprints / 'BrazilDAM tailings dam benchmark': 5 hit(s) - BrazilDAM: A Benchmark dataset for Tailings Dam Detection, Maximal dissipation and shallow water flow -- the dam-break problem, A hybrid Finite Element and Material Point Method for modeling liquefaction-induced tailings dam failures, Stability assessment of a tailings storage facility using a non-local constitutive model accounting for anisotropic stra, Modeling liquefaction-induced runout of a tailings dam using a hybrid finite element and material point method approach",
+    "prior_art": [
+      "BrazilDAM, ISPRS Archives XLII-3-W12-2020, 343-350 (satellite-image static classification over the same registry)"
+    ],
+    "theirs": "ANM publishes the raw daily registry CSV, monthly PDF bulletins and the SIGBM Publico dashboard - no scored ML-ready task; BrazilDAM (ISPRS 2020) ships satellite images for STATIC attribute classification (no time dimension, no emergency-status target, cross-validation not temporal splits); monitoring literature covers individual-facility instability, not registry-level regulatory outcome prediction",
+    "ours": "first public temporally-split prediction task over a national tailings-dam emergency-status event ledger: dam-month panel from ANM's monthly per-dam level lists 2021-2026, prediction at bulletin publication with strictly-later target month, registry-attribute features (construction method incl. upstream, height, volume, material), regulator's own monthly monitoring cycle as operational frame",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "measurements": {
+    "registry_snapshot_2026_11_07": {
+      "url": "https://dadosabertos.anm.gov.br/SIGBM/Barragens.csv",
+      "sha256": "6aa5f152db495348d9e22abbc0bcdc4cba17fc6f4070772b279f445b18ee574a",
+      "bytes": 3386460,
+      "digest_note": "live-updating registry ('Atualizacao: Diaria'): the digest pins a fetch instant, not the resource. Two fetches 8 minutes apart (2026-11-07T00:04Z and 00:12Z) hashed identical; construction must fetch once, record that fetch's digest, and assert it in-build.",
+      "rows_dams": 908,
+      "columns": 124,
+      "level_mix": "Sem emergencia 831 / Emergencia Nivel 1 59 / Nivel de Alerta 11 / Emergencia Nivel 2 6 / Emergencia Nivel 3 1",
+      "all_current_alerta_emergencia_are_pnsb": "77/77 dams in Alerta or Emergencia have Inserido na PNSB=Sim and Necessita de PAEBM=Sim (measured crosstab); all 447 non-PNSB dams are Sem emergencia - the eligible population is the 461 PNSB dams",
+      "cri_mix": "Baixa 546 / Media 296 / Alta 66",
+      "dpa_mix": "Baixa 504 / Alta 243 / Media 161",
+      "construction_method_mix": "Etapa unica 484 / Alteamento a jusante 225 / Linha de centro 113 / A montante (upstream) 38 / '-' 21 / blank 20 / Desconhecido 7",
+      "uf_top": "MG 318 / MT 187 / PA 120 / BA 83 / SP 58",
+      "feature_richness": "height (max project + current), crest length, reservoir area/volume, dam material (19 categories), foundation, design-flood return period, internal drainage status, instrumentation status, downstream population, minerals (52), beneficiamento processes (73), chemicals (90) - 124 columns enumerated in notes.md"
+    },
+    "bulletin_archive_coverage_2026_11_07": {
+      "listing_pages": "https://www.gov.br/anm/pt-br/assuntos/barragens/boletim-de-barragens-de-mineracao/boletim-mensal with b_start:int=0/30/60",
+      "issues_by_year": "2021: 12/12 (Jan-Dec); 2022: 6/12 (Jan,Fev,Mar,Abr,Mai,Dez; Jun-Nov absent from the listing); 2023: 12/12; 2024: 12/12; 2025: 12/12; 2026: 10 (Jan-Out); total ~64 issues",
+      "note": "the 2021 Janeiro issue's CRI-evolution chart shows monthly values back to fev/2020, so earlier reports may exist under another listing; enumeration at construction must confirm the first issue and the exact 2022 gaps"
+    },
+    "bulletin_content_samples_2026_11_07": {
+      "outubro_2026": "909 dams, 462 PNSB; 77 in Alerta/Emergencia (Alerta 10, N1 60, N2 6, N3 1 per the 12-month series at 11/2026); Tabela 4 lists 11 dams with level changed during Outubro (previous -> current), e.g. 'Barragem B5 DDZ MINERACAO LTDA PA ITAITUBA Nivel de Emergencia 1 -> Nivel de Emergencia 2', 'Sul Inferior VALE S.A. MG BARAO DE COCAIS Nivel de Alerta -> Nivel de Emergencia 1'; 12-month series of state counts 77-95 dams; reference window 01/10/2026-01/11/2026; published 05/11/2026 12h45",
+      "junho_2023": "924 dams, 461 PNSB; Alerta category present in per-dam lists; 2 CRI changes in the month; reference window 01/06/2023-01/07/2023",
+      "janeiro_2021": "877 dams, 436 PNSB; 45 dams in emergency (N1/N2/N3, no Alerta category yet); per-dam lists per level present; 1 CRI change in the month; reference window 04/01/2021-01/02/2021"
+    },
+    "identity_resolution_probe_2026_11_07": "Matching bulletin rows to registry rows on normalized (Nome, UF, Municipio): 13/15 sampled dams (11 Tabela-4 transition dams from Outubro 2026 + 4 level-list dams incl. small garimpo dams in RO/AP/RS) matched a UNIQUE registry row; 2 misses are name variants ('Portal' VALE/MG/Itabira - Vale has multiple dams in Itabira; bulletin 'Barragem Serra Azul' vs registry name variant for the ArcelorMittal Itatiaiuco dam). Probe: candidates/anm-sigbm-emergency-transition/probe_registry_mix.py --identity. Conclusion: key join works with exact normalization for most dams; construction needs a documented fallback (fuzzy + entrepreneur + manual disambiguation) and must measure residual unmatched rates per year.",
+    "extraction_cost_measured": "one 3.4 MB CSV (2 HTTP requests incl. one WAF-rejected, ~1.6 s each on the coordinator container) + per-bulletin PDFs of 300-700 KB text-extractable via the standard web extraction path (3 sampled: all fully text-extractable, tables and per-dam lists intact); ~64 bulletins ~ 20-40 MB total for the full ledger - a worker job, but small"
+  },
+  "split_strategy": "PLANNED (not yet computed - this is the open item blocking 'ready'): temporal by calendar month of the target window over the dam-month panel 2021-2026, e.g. train 2021-2023, eval 2024, holdout 2025-Out/2026; both classes must be present in every window with counts computed from the actual ledger. Clustering is expected and must be reported: dams cluster by entrepreneur (Vale alone accounts for many transitions) and municipality (e.g. the Itabira/Mariana/Brumadinho clusters; Nova Lima and Nossa Senhora do Livramento have multi-dam entrepreneurs), so cluster-robust intervals at entrepreneur level are required. The 2022 Jun-Nov archive gap censors those transitions: consecutive-month diffs are only usable where both bulletins exist.",
+  "next_action": "Worker ledger job (no new source access needed; all inputs are the pinned CSV + the ~64 enumerated bulletin PDFs): (1) enumerate the three archive pages, verify the first issue and the exact 2022 gaps; (2) parse per-dam level lists per bulletin (every era sampled has them) and the transition tables where present; (3) build dam x month state panel by differencing consecutive issues, join registry rows on normalized (Nome, UF, Municipio) with the documented fallbacks, measure unmatched rates; (4) compute the split windows' positive/negative counts for the primary label and the entry-only variant, with entrepreneur-clustered counts; (5) record those counts in split_strategy and, if all five contracts stand, advance the record to 'ready' before construction. Also opportunistic: re-probe https://app.anm.gov.br/SIGBM/Publico from the worker (coordinator connections are closed) to check the Power BI 'historicos' panels for per-dam dated level history - if dated events exist, the M+1 skip-buffer can be replaced by exact event-date timing.",
+  "verdict": "promising - one measured prerequisite (ledger split counts) stands between this record and 'ready'"
+}

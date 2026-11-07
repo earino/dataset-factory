@@ -1,3 +1,61 @@
+## 2026-11-07 (00:20Z) - scheduled discovery (LatAm tick): anm-sigbm-emergency-transition OPENED (investigating, one measured prerequisite short of ready) - Brazilian tailings-dam emergency-status transition panel; cl-sadu-respiratory-weekly DROPPED on licence (CC-NC, both DEIS emergency-attendance packages) before any task probing
+
+Discovery only; no construction, qualification or release work. Region
+covered: Brazil deep-dive (new lead), Chile licence-first (closed), and the
+region's existing 12 candidates were checked first to avoid duplicates
+(BR 5->6, CL 2->3, LatAm 12->14; non-US share 51/57 live).
+
+- ANM SIGBM EMERGENCY-TRANSITION (candidates/anm-sigbm-emergency-transition,
+  status investigating, licence class A, novelty differentiated): task =
+  at the monthly bulletin publication instant, predict whether each PNSB
+  tailings dam's emergency status (Alerta/Emergencia 1-3 vs Sem emergencia)
+  changes during a strictly-later target month. All five contracts have
+  recorded evidence EXCEPT split counts, which need the ~64-bulletin ledger
+  build (worker). Measured: registry snapshot 908 dams x 124 columns, 3.4 MB
+  (sha256 6aa5f152..., two fetches 8 min apart identical; live-updating,
+  construction pins its own fetch instant); all 77 current Alerta/Emergencia
+  dams are PNSB=Sim (eligible population 461); construction-method mix incl.
+  38 upstream (a montante); monthly bulletins Janeiro 2021 - Outubro 2026
+  (~64 issues: 12/12 in 2021, 6/12 in 2022 with Jun-Nov absent, 12/12
+  2023-2025, 10 in 2026) with full per-dam level lists in every sampled era
+  (Jan 2021, Jun 2023, Out 2026) and a monthly transition table (11 level
+  changes in Outubro 2026); identity join (Nome, UF, Municipio) unique for
+  13/15 sampled dams. Licence: cc-by on the publisher's dados.gov.br record
+  + per-bulletin data-reproduction grant with citation (both quoted
+  verbatim). Access caveats recorded: dadosabertos.anm.gov.br omits its TLS
+  intermediate (AIA chain needed) and its WAF 403s non-browser UAs;
+  dados.gov.br CKAN API is CloudFront-blocked for plain clients (the portal's
+  /api/publico endpoint works from the browser); app.anm.gov.br closes
+  connections from this host (SIGBM Publico dated-history panels stay
+  unprobed - worker re-probe named in next_action). Timing design: the
+  transition tables carry no per-dam event dates, so the month between the
+  instant and the target month is skipped (target wholly future) - dated
+  example in notes.md. One self-correction recorded in notes.md: an
+  unmeasured sha256 in the first draft was refused by the probe script's own
+  assertion and replaced with the measured digest. Novelty: mechanical
+  HF/Zenodo/arXiv search 0 relevant hits beyond BrazilDAM (ISPRS 2020,
+  static satellite-image classification of the same registry, no time
+  dimension) - check-novelty verdict differentiated. check-candidate OK.
+- CHILE SADU RESPIRATORY WEEKLY (candidates/cl-sadu-respiratory-weekly,
+  status dropped, class D): DEIS's weekly respiratory ED panel (SADU,
+  2008-2024, establecimiento x epi-week x age group) would have carried a
+  clean winter-surge task, but the publisher's own CKAN records designate
+  BOTH emergency-attendance packages (weekly SADU and the DAU annual
+  aggregates) 'Creative Commons Non-Commercial (Any)' - read 2026-11-07 via
+  two API calls, quotes in license_evidence. NC carried through the release
+  would bar commercial evaluation use (the project's primary purpose);
+  closed at step 1 of the discovery order with 2 API calls spent. Reopen:
+  publisher relicensing or a candidate-specific operator acceptance.
+- Checks: check-candidate --all rc=0 (143), discovery-coverage rc=0.
+  Next action (record.next_action): the anm ledger build on a worker
+  (enumerate archive pages incl. exact 2022 gaps and the first issue, parse
+  per-dam level lists + transition tables, diff consecutive months, join
+  registry with documented fallbacks, compute split-window counts with
+  entrepreneur clustering) -> then advance to ready if the counts carry
+  both classes in three windows. Advancement work; nothing public.
+
+
+
 ## 2026-11-06 (23:54Z) - follow-up (worker-status runner): abwildfire-baseline-002 + abwildfire-publish-001 SUCCEEDED - both outcomes already recorded (07521ee / 0934d5f), re-verified from committed evidence; cleanup provider-reconfirmed (both servers 404; 0 servers; 0 primary IPs); both marked handled
 
 Watcher event: baseline job green (exit 0, 264.6 s, 12 assets, staging
