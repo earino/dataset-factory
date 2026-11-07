@@ -90,7 +90,10 @@ def text_claims(text, facts=None):
                     continue
                 actual = set(info['values'])
                 actual_bins = {v for v in actual if re.fullmatch(r'\d+-\d+|\d+\+',v)}
-                if actual_bins and actual_bins != bins:
+                # A declared category need not occur in every temporal split.
+                # Observed bins outside the documented vocabulary are a defect;
+                # exact observed-domain claims are checked by claim_contract.
+                if actual_bins - bins:
                     findings.append({'rule':'dictionary_bins','column':column,'split':split,
                                      'claimed':sorted(bins),'observed':sorted(actual)})
     return findings
