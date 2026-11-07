@@ -97,6 +97,33 @@ Validation at `6b0faf9`: 103 targeted tests passed; a fresh clone ran the comple
 745-test suite successfully (13 platform-specific skips). Runtime source inventory
 passed. Exact-commit remote CI remains required after pushing.
 
+## R2 answer-artifact scrubber deployment read-back (Scout, 2026-11-07 ~19:2xZ)
+
+Deployed merge `a2578ed5bc5515ef4312e781880d0c7a2f28a7c0` (PR #27) by clean
+fast-forward (working tree clean; concurrent work already committed). CI on the
+exact SHA: check success, preview success (read back via the GitHub API).
+
+Read-only verification on the deployed tree:
+- `tests.test_artifact_scrub` + `tests.test_assembly_safety`: 26 tests, OK.
+- `check-package.py` (now scanning every file) against the four blocked
+  packages REFUSES each (exit 1) and reproduces the 2026-11-07 audit findings:
+  ab-wildfire (MANIFEST fixture answer data + raw fixture IDs + @@TOTAL@@,
+  builder FIXTURES table), cqc (embedded pseudonym salt, answer lookup,
+  builder fixtures, scored-window example), za-cct (scored-window worked
+  example in README + builder, raw fixture station IDs), cpcb (fixture
+  answer data, raw fixture IDs, and unresolved placeholders @@THIN@@ and
+  @@GAPFULL@@ - the latter two beyond what the audit listed).
+- Historical-warning split verified: published ec-merger package passes
+  (exit 0) with 7 historical-warning lines for exact pinned old files.
+- Website previews: `site-preview-all.py` refuses cqc (salt/answer lookup)
+  and unhcr (fixture answers in MANIFEST/measurements/quality) offline; all
+  published packages prepare.
+- Hold unchanged: config/admission.json hold=true, empty allowlist; platform
+  schedules and cleanup untouched; no worker launched; the four blocked
+  artifacts untouched and private. R2 evidence is
+  audits/resilience/2026-11-07-answer-scrub.json plus this local read-back -
+  static, not full qualification.
+
 ## Next action
 
 Ship R2 after clean-clone and exact-commit CI. Implement R1 with the generated-artifact
