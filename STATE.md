@@ -1,3 +1,59 @@
+## 2026-11-07 (09:58Z) - advancement follow-up (same session): dvsa-mot-build-003 FAILED at 2018 on a NEW, smaller defect - the Deflate64 repair itself is PROVEN on the real 2017 DfT zip (38,056,161 rows parsed; 2015/2016 receipts reproduced EXACTLY, ABRVE 242/27); the 2018 zip carries macOS __MACOSX/ AppleDouble junk members; skip repair dry-run green (RED-M/GREEN-M) and dvsa-mot-build-004 LAUNCHED (worker 174959633)
+
+- OUTCOME (dvsa-mot-build-003, server 174954439, exit 1, collected
+  09:45:23Z, staging 437475493, destroyed with provider read-back 09:46:06Z:
+  GET /servers/174954439 -> 404, provider-inventory 0 servers / 0 IPs):
+  2005-2016 receipts reproduce the recorded chain EXACTLY (2005-2014 ==
+  build-001's log 10/10; 2015 ABRVE=242; 2016 ABRVE=27 == build-002's log)
+  AND the 2017 Deflate64 zip - the exact member class that raised
+  NotImplementedError and killed build-002 - parsed cleanly through the
+  local-header + inflate64 route: 38,056,161 rows / 35,983,938 class-4 /
+  35,975 sampled, with ABRVE=28 (the first zip-era year ever parsed; new
+  evidence). Mid-run pace measured: ~141 s/year txt.gz era, 2005-2015
+  complete in ~34 min - the 100-minute timeout was never the constraint.
+- NEW DEFECT AT 2018, distinct from the one the rebuild was spent on: the
+  2018 zip's first member is
+  __MACOSX/._dft_test_result-from-2018-01-01_00-00-01-to-2018-04-01_00-00-01.csv,
+  a macOS AppleDouble resource fork (its bytes shown verbatim in the
+  failure; carries com.apple.quarantine and an S3 opsteam-3613 temp-bucket
+  URL) that cannot map to the CSV schema - the build fails loudly exactly
+  as designed for unmappable members. Measured source property: real 2018
+  members are quarterly-range named, unlike 2017's monthly names. No
+  extract, no gate, no acceptance, no score exists for 003.
+- REPAIR (one construction change, before any score has ever existed):
+  open_text_lines skips __MACOSX/ and ._-prefixed members before any
+  decode; every other unexpected member still fails loudly at schema
+  mapping. Dry run extended with committed RED-M/GREEN-M legs: RED-M -
+  the build-003 source (git 2efdf50) exits 1 on a junk-carrying fixture
+  with the exact 'cannot map columns' failure; GREEN-M - the patched build
+  exits 0 on the same tree and reproduces the stdlib extract byte-for-byte
+  (junk contributes nothing); all earlier legs (RED-A, RED-D, GREEN-D,
+  GREEN-S, GREEN-FULL, gate 1.5.0 + exact-byte accept + triad on both
+  extracts) remain green in the same run.
+- LAUNCH: dvsa-mot-build-004 (assemble-job verified the bundle carries the
+  patched build.py at 275b8729... plus the Deflate64 run.sh, score.py, gate
+  1.5.0), server 174959633 (cpx32, hel1), launched 2026-11-07T09:49:48Z,
+  reservation 0.32 EUR, budget month 2026-11.
+- Budget note: two worker reservations this session (0.32 + 0.32 EUR) plus
+  the build-003 actual run (~44 min at 0.0692 EUR/h); both within the
+  2026-11 month.
+- Checks: check-candidate --all rc=0 (147), suite 723 OK (32.8 s). Record
+  carries the failure measurement (build_failure_2018_macosx_2026_11_07),
+  the extended dry-run measurement, the 003 failure receipt and the 004
+  launch receipt; next_action is the full standing order for collection.
+
+Next action (record.next_action): worker runs construct -> qualify ->
+accept exact bytes -> pre-registered triad; on completion collect, adjust
+the pre-staged fetch/crosscheck probes to the build-004 job directory,
+require the 2005-2017 EXACT chain (001/002/003 receipts) plus the new
+2018-2024 inventories, gate 1.5.0 PASSED + exact-byte --accept BEFORE any
+figure, record the post-acceptance triad (eval only, holdout sealed),
+destroy with provider read-back, then the dvsa-mot-baseline bundle with
+re-accept before any score. A build-004 failure at 2018's junk-member
+stage means the skip rule is wrong - diagnose the collected container.log;
+a failure at a later year is a new source-shape finding, and the
+qualification budget rule (one rebuild per structural defect) applies.
+
 ## 2026-11-07 (09:10Z) - scheduled advancement: dvsa-mot Deflate64 repair executed and LAUNCHED as dvsa-mot-build-003 (worker 174954439 running; dry run green on REAL Deflate64 bytes, cross-implementation; 2005 receipt reproduces build-001/002 EXACTLY mid-run)
 
 Construction work only (no packaged candidate is actionable: all five packaged

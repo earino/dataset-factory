@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""DVSA/DfT anonymised MOT next-test-outcome construction (job dvsa-mot-build-003).
+"""DVSA/DfT anonymised MOT next-test-outcome construction (job dvsa-mot-build-004).
 
 Candidate: dvsa-mot-next-test-outcome. This script ONLY constructs the runner-layout
 artifact plus the diagnostics the qualification gate recomputes. NO performance
@@ -25,7 +25,10 @@ Source (measured, anonymous, OGL v3.0 - see the candidate record):
   open_text_lines decodes each through the local-header + inflate64 route
   verified in-container (run.sh pins inflate64==1.0.4; the coordinator dry
   run exercises the same code shape on real Deflate64 bytes via
-  probe/dryrun_deflate64_2026_11_07.py).
+  probe/dryrun_deflate64_2026_11_07.py). The 2018+ zips additionally carry
+  macOS __MACOSX/ and ._-prefixed resource-fork members (measured
+  2026-11-07, build-003): those are skipped as artifacts before any decode;
+  real members are pipe-delimited CSV with headers RowParser maps.
   The 2024 zip is pinned byte-exactly to the 2026-10-19 measurement
   (1,531,265,132 bytes, 12 members test_result_202401..202412.csv); a different
   vintage refuses the build. Older files were never fetched before, so the build
@@ -372,6 +375,17 @@ def open_text_lines(path: Path, year: int):
     with zipfile.ZipFile(path) as archive:
         for info in archive.infolist():
             if info.is_dir():
+                continue
+            if info.filename.startswith("__MACOSX/") or \
+                    Path(info.filename).name.startswith("._"):
+                # macOS zip artifacts, never data: the 2018 DfT zip carries
+                # __MACOSX/._<member> AppleDouble resource forks beside its
+                # real quarterly members (measured 2026-11-07, build-003:
+                # the first member reached was
+                # __MACOSX/._dft_test_result-from-2018-01-01...csv and its
+                # AppleDouble bytes cannot map to the CSV schema). Skipped
+                # before any decode; every other unexpected member still
+                # fails loudly at schema mapping.
                 continue
             if info.compress_type == DEFLATE64:
                 yield from _deflate64_member_lines(path, info)
@@ -1095,7 +1109,7 @@ def main() -> int:
         per_split_per_year[key] = table
 
     summary = {
-        "job": "dvsa-mot-build-003",
+        "job": "dvsa-mot-build-004",
         "name": NAME,
         "source_vintage": {
             "files": len(receipts),

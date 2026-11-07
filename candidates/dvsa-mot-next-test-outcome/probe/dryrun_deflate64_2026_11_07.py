@@ -78,6 +78,7 @@ BUILD = CAND.parent / "source" / "build.py"
 SCORE = CAND.parent / "source" / "score.py"
 COMMIT_BUILD001 = "be68bfd"   # pre-ABRVE-repair: fails loudly on 'ABRVE'
 COMMIT_BUILD002 = "5dc4b61"  # ABRVE-repaired, pre-Deflate64: type-9 refuses
+COMMIT_BUILD003 = "2efdf50"  # Deflate64-repaired, pre-MACOSX: junk members hit RowParser
 INFLATE64_PIN = "1.0.4"
 
 # The measured anomaly, verbatim from record measurements.build_failure_2015_
@@ -385,6 +386,58 @@ def main() -> int:
     print("GREEN-FULL files identical:", json.dumps(identical))
     print("GREEN-FULL per-year counters + pairs equal:", counters_equal)
 
+    # 9b. RED-M / GREEN-M: the 2018 macOS junk-member defect (measured on
+    #     the real 2018 DfT zip by dvsa-mot-build-003: its FIRST member is
+    #     __MACOSX/._dft_test_result-from-2018-...-csv, AppleDouble bytes).
+    #     RED-M - the build-003 source fails on a fixture zip carrying a
+    #     __MACOSX member exactly like the real one; GREEN-M - the patched
+    #     build skips the junk and reproduces the stdlib extract
+    #     byte-for-byte from a source tree whose 2018 zip carries the junk.
+    JUNK_SOURCES = SCRATCH / "sources-junk"
+    if JUNK_SOURCES.exists():
+        shutil.rmtree(JUNK_SOURCES)
+    shutil.copytree(TYPE9_SOURCES, JUNK_SOURCES)
+    junk_payload = (b"\x00\x05\x16\x07\x00\x02\x00\x00Mac OS X"
+                    b"\x00\x02\x00\x00\x00\t\x00\x00\x002\x00\x00\x07")
+    # the real member's content comes from the ORIGINAL stdlib fixture
+    # (stdlib cannot read the type-9 re-encoded copy - that is the defect)
+    with zipfile.ZipFile(SOURCES / "source_2018.zip") as archive:
+        info = archive.infolist()[0]
+        content = archive.read(info)
+    write_deflate64_zip(JUNK_SOURCES / "source_2018.zip",
+                        [(f"__MACOSX/._{info.filename}", junk_payload),
+                         (info.filename, content)])
+    with zipfile.ZipFile(JUNK_SOURCES / "source_2018.zip") as archive:
+        names = [i.filename for i in archive.infolist()]
+    assert len(names) == 2 and names[0].startswith("__MACOSX/"), names
+    build003 = git_build(COMMIT_BUILD003)
+    red_m = sh([sys.executable, "-u", str(build003), "--out",
+                str(SCRATCH / "extract-red-m"), "--work-dir",
+                str(SCRATCH / "w-red-m"), "--source-dir", str(JUNK_SOURCES)])
+    (SCRATCH / "red-m.log").write_text(red_m.stdout + "\n--stderr--\n" + red_m.stderr)
+    red_m_ok = red_m.returncode != 0 and "cannot map columns" in red_m.stderr
+    VERDICT["red_m_build003_fails_on_macosx_junk"] = red_m_ok
+    print("RED-M (build-003 on __MACOSX member): exit", red_m.returncode,
+          "-> FAILED AS DESIGNED" if red_m_ok else "UNEXPECTED", flush=True)
+
+    green_m = sh([sys.executable, "-u", str(BUILD), "--out",
+                  str(SCRATCH / "extract-junk"), "--work-dir",
+                  str(SCRATCH / "w-junk"), "--source-dir", str(JUNK_SOURCES)])
+    (SCRATCH / "green-junk.log").write_text(green_m.stdout + "\n--stderr--\n"
+                                            + green_m.stderr)
+    print("GREEN-M (patched build, junk-carrying tree): exit", green_m.returncode,
+          flush=True)
+    junk_identical = {}
+    if green_m.returncode == 0:
+        for relative in ("public/train.csv", "public/eval.csv",
+                         "private/holdout.csv", "meta.json", "quality.json"):
+            left = (SCRATCH / "extract-stdlib" / relative).read_bytes()
+            right = (SCRATCH / "extract-junk" / relative).read_bytes()
+            junk_identical[relative] = left == right
+    VERDICT["green_m_files_identical"] = junk_identical
+    print("GREEN-M files identical vs stdlib extract:",
+          json.dumps(junk_identical))
+
     # 10. GATE + exact-byte accept + triad on both extracts (run.sh order).
     overall = {}
     for label, extract in (("stdlib", SCRATCH / "extract-stdlib"),
@@ -419,7 +472,8 @@ def main() -> int:
                        "only; numbers are not findings")
     (SCRATCH / "verdict.json").write_text(json.dumps(VERDICT, indent=1) + "\n")
     mandatory = [red_a_ok, all(checks.values()), red_d_ok, green_d_ok,
-                 all(identical.values()), counters_equal]
+                 all(identical.values()), counters_equal, red_m_ok,
+                 green_m.returncode == 0 and all(junk_identical.values())]
     for label in ("stdlib", "type9"):
         leg = overall[label]
         mandatory.append(leg["gate"] == 0 and leg["accept"] == 0
