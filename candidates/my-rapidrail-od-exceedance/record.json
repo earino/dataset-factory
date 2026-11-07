@@ -1,0 +1,171 @@
+{
+  "id": "my-rapidrail-od-exceedance",
+  "status": "ready",
+  "verdict": "go",
+  "created_at": "2026-11-07T08:40:00+00:00",
+  "domain": "urban transit operations - next-day station-pair rail ridership exceedance for the Klang Valley Rapid Rail network (LRT Kelana Jaya, LRT Ampang/Sri Petaling, Monorail, MRT Kajang, MRT Putrajaya), from anonymous tap-in/tap-out gate transactions published daily by the Malaysian national open-data platform",
+  "jurisdiction": {
+    "country": "MY",
+    "region": "South & South-East Asia",
+    "publisher": "data.gov.my (Jabatan Digital Negara / Ministry of Digital platform); data supplied by Prasarana Malaysia Berhad (Rapid Rail) via the Ministry of Transport",
+    "recorded_at": "2026-11-07"
+  },
+  "prediction_question": "At 07:00 Asia/Kuala_Lumpur on operating day T, using only the published origin-destination ridership history dated T-2 and earlier (the publication lag is one day, so day T-1's rows are not yet available at the instant - measured, see prediction_time), predict whether a given station-pair's ridership on day T (00:00-23:59 local) will exceed a fixed reference threshold for that pair. A useful prediction supports Rapid Rail's operational planning at the day-ahead horizon: train frequency, staff/crowd-control deployment at interchange stations, and event-day capacity decisions for the ~1M daily trips on the network.",
+  "prediction_time": "07:00 Asia/Kuala_Lumpur on target day T, before the operating day begins. Every feature is a ridership row dated <= T-2, taken from the frozen annual edition (completed years) or the pinned current-year snapshot; all four source columns (origin, destination, date, ridership) are individually documented by the publisher (dataset page 'fields' metadata, measured 2026-11-07), and no undocumented column is used. Publication calendar is the publisher's own: the dataset page carries data_as_of 2026-11-06 23:59, last_updated 2026-11-07 16:03, next_update 2026-11-08 22:00, and the storage file rapidrail_2026_daily.csv (Content-Length 318,772,855) was last modified 2026-11-07 08:03:16 GMT with its last data row dated 2026-11-06 - a measured one-day publication lag. Frozen annual editions 2023 (374,488,341 B, Last-Modified 2026-09-21), 2024 (375,944,306 B, 2026-09-23), 2025 (309,579,953 B, 2026-04-02) pin the completed years; the 2026 edition updates daily and must be digest-pinned at build. Calendar features (day-of-week, month, elapsed-day) are available at any instant. This is a current-compilation retrospective: per-row historical vintages are not published, and no operational point-in-time reproducibility of past values is claimed - the same posture as ab-wildfire-ia-escape, to be stated in quality.json.evaluation_contract.",
+  "target_definition": "Binary label per (origin, destination, day T): pair ridership on day T >= a fixed pair-specific reference threshold (construction selects: per-pair training-window percentile, e.g. p90, or a small set of absolute thresholds; candidate thresholds recorded from measured pair-year series in probe/pair_blocks_2024.json). Source column: 'ridership' (integer trips, publisher-documented as trips not necessarily passengers); it is the label source and is excludable from shipped features (shipped features are the SAME column's values at dates <= T-2 plus calendar - the label is its day-T value, which postdates the instant). Population: all ordered station pairs on the network with an active block in the source, excluding (a) rows with origin or destination 'A0: All Stations' (pseudo-station aggregate/censored rows, measured station-scale magnitudes ~4.4k/day, semantics to be verified against pair sums at construction), and (b) pairs whose destination is a Putrajaya Line station other than PYL03/PYL04 (32/34 PYL station codes never appear as destinations - confirmed by my own 2024-edition sampling AND by a public data-request thread id 216 dated 2026-10-24; censoring, not zero demand). Zero-ridership days are published as rows with value 0 (29.3% of pair rows on a sampled Saturday), so observed absence is distinguishable from missing data.",
+  "sources": [
+    {
+      "name": "Daily Origin-Destination Ridership: Rapid Rail (KV) - dataset page (fields, methodology, publication calendar, editions)",
+      "url": "https://data.gov.my/data-catalogue/ridership_od_rapidrail_daily",
+      "api": "Anonymous HTTPS. Page is server-rendered Next.js; __NEXT_DATA__ JSON carries all metadata (fields, data_as_of, last_updated, next_update, link_editions, methodology). The OpenAPI (api.data.gov.my/data-catalogue?id=...) does NOT serve this dataset (measured 404 'The data catalogue requested does not exist' - page metadata 'exclude_openapi': true); bulk files are the documented channel.",
+      "access": "open",
+      "license": "CC BY 4.0 (page-embedded licence metadata, read 2026-11-07)"
+    },
+    {
+      "name": "Annual edition files (CSV + Parquet), frozen per year",
+      "url": "https://storage.data.gov.my/transportation/rail/rapidrail_YYYY_daily.csv and .parquet",
+      "api": "Anonymous HTTPS, no auth. Measured 2026-11-07 via HEAD: 2023 csv 374,488,341 B / parquet 5,719,014 B (Last-Modified 2026-09-21); 2024 csv 375,944,306 B / parquet 6,099,463 B (2026-09-23); 2025 csv 309,579,953 B / parquet 5,491,753 B (2026-04-02); 2026 csv 318,772,855 B / parquet 5,370,277 B (2026-11-07 08:03, updates daily). Columns: origin,destination,date,ridership; file sorted (origin, destination, date) - measured. Date format drifts between editions ('2024-01-01 00:00:00' in 2023/2024 vs '2025-01-01' in 2025/2026) - normalize at construction.",
+      "access": "open",
+      "license": "CC BY 4.0"
+    },
+    {
+      "name": "data.gov.my developer portal (Open API licence + platform documentation)",
+      "url": "https://developer.data.gov.my/",
+      "api": "Anonymous HTTPS. Footer states 'License: CC BY 4.0' linking creativecommons.org/licenses/by/4.0/. Platform code is open source (github.com/data-gov-my/datagovmy-front, datagovmy-back).",
+      "access": "open",
+      "license": "CC BY 4.0"
+    },
+    {
+      "name": "Public data-request thread documenting the Putrajaya Line destination gap",
+      "url": "https://data.gov.my/data-request",
+      "api": "Anonymous HTTPS. Request id 216 (2026-10-24, Phd candidate, Universiti Malaya): 32/34 Putrajaya Line station codes (PYL05-PYL41) appear as origins but never as destinations in the 2025 and 2026 releases; only PYL03 (Kampung Selamat) and PYL04 (Sungai Buloh) appear as destinations. Independently confirmed on the frozen 2024 edition by my own sampling (probe/extract_pair_blocks_2026_11_07.py window and the 2024-06-15 date-slice).",
+      "access": "open",
+      "license": "CC BY 4.0 (site content)"
+    }
+  ],
+  "license_evidence": [
+    "Dataset page embedded licence metadata (read 2026-11-07 from https://data.gov.my/data-catalogue/ridership_od_rapidrail_daily __NEXT_DATA__, i18n key catalogue.license_text): 'This data is made open under the Creative Commons Attribution 4.0 International License (CC BY 4.0). A copy of the license is available Here'. Identical instrument to the already-published PriceCatcher candidate from the same platform (measured 2026-10-21, candidates/my-pricecatcher-weekly-increase/license.json).",
+    "Developer portal (https://developer.data.gov.my/, read 2026-11-07): footer 'License: CC BY 4.0' with link to https://creativecommons.org/licenses/by/4.0/. CC BY 4.0 permits copying, redistribution and adaptation for any purpose, including commercial, with attribution; no share-alike, no NC restriction.",
+    "Storage host (storage.data.gov.my, read 2026-11-07 via anonymous HEAD/Range): bulk files served with no auth and no additional terms; no cookie/consent wall."
+  ],
+  "licence_class": "A",
+  "licence_note": "CC BY 4.0 permits redistribution and derivatives with attribution; the attribution sentence (Prasarana/MOT via data.gov.my, CC BY 4.0) carries verbatim into LICENSE.md at packaging. Derived-work labelling required (never presented as Prasarana's or the Government of Malaysia's official product). No personal information in the shipped columns: rows are aggregate station-pair-day trip counts derived from 'anonymous transactional data' (publisher methodology statement); no passenger identifiers exist in the table.",
+  "measurements": {
+    "probe_scripts": "candidates/my-rapidrail-od-exceedance/probe/: edition_head_inventory_2026_11_07.py (HEAD all editions - sizes, Last-Modified), edition_head_tail_2026_11_07.py (header + head/tail rows per edition), range_sample_2026_11_07.py (bounded ~1.5 MB Range samples per CSV), extract_pair_blocks_2026_11_07.py (complete pair-year series via block binary search; output pair_blocks_2024.json), dump_catalogue_2026_11_07.py (full platform catalogue enumeration; inventory in references/catalogue_inventory_2026-11-07.txt). All commands and outputs are reproduced in notes.md.",
+    "platform_catalogue": "data.gov.my is a Next.js platform (not CKAN): /api/3/action 404; the documented Open API is api.data.gov.my (developer.data.gov.my). Catalogue enumeration via the data-catalogue page's __NEXT_DATA__: 355 dataset slugs on the catalogue page; full inventory retained in references/catalogue_inventory_2026-11-07.txt. The platform is overwhelmingly DOSM aggregate time series; the event-derived panels are the ridership OD sets (rapidrail daily, komuter hourly, ktmb services, brt), PriceCatcher (already published), a COVID-19 death line-list (closed coverage, saturated literature) and NPRA product registers (snapshots, no history).",
+    "panel_structure": "Columns: origin,destination,date,ridership (2024 CSV header measured). File sorted (origin, destination, date) - measured: a 1.7 MB window at offset ~50.3 MB contains 27,821 rows spanning exactly one origin's block boundary (12,621 rows of dates 2024-01-01..06-14 for the preceding origin + 76 rows dated 2024-06-15 + 15,124 rows of dates 2024-06-16..12-31), i.e. contiguous pair blocks each carrying a full year of rows. Station codes are line-specific and self-describing (e.g. 'KG16: Pasar Seni', 'KJ14: Pasar Seni' are the same physical interchange station on different lines; line prefix: AG Ampang, KG Sri Petaling, KJ Kelana Jaya, MR Monorail, SP MRT Kajang, PYL MRT Putrajaya).",
+    "pair_year_series_2024": "Five complete pair-year series extracted (366/366 days, 0 missing dates, 0 zero-days for these active pairs): A0->AG01 (pseudo-station row, p50 4,374, weekday ~4,400 vs Sat 3,032/Sun 2,653, Eid 2024-04-10/11 dip to 1,854/2,013); KG16->KJ14 CBD interchange (p50 90, weekend INVERTED: Sat 120 vs Mon 76); KJ14->KG16 (p50 95, similar inversion); SP31->SP31 self-pair (p50 104, flat weekdays, 2024-05-23 spike 332); PYL33->KG16 low-demand pair (p50 13, flat). Full series in probe/pair_blocks_2024.json. Shows strong pair-type heterogeneity (commuter vs leisure vs low-demand), holiday signal (Eid al-Fitr), and weekday/weekend structure a solution must capture; pair-relative thresholds avoid collapsing this heterogeneity into one absolute scale.",
+    "provenance_mix": "'A0: All Stations' pseudo-station rows appear as BOTH origin (file head: 'A0: All Stations,AG01: Sentul Timur,...') and destination ('KG06: Kota Damansara,A0: All Stations,2024-06-15,2702'), at station-scale magnitudes (not pair-scale). They must be excluded from the pair panel; whether they are aggregate totals or unknown-tap censored rows is a construction-time verification against station sums (recorded as an open check, not an assumption). PYL05+ destinations are censored (see target_definition); PYL origins are present.",
+    "coverage_and_editions": "Editions 2023-2026 exist; 2023/2024/2025 frozen (Last-Modified 2026-09-21 / 2026-09-23 / 2026-04-02), 2026 current-year updated daily (2026-11-07 08:03, data through 2026-11-06). The 2023/2024/2025 editions were (re)generated in 2026 - they are the publisher's current published form of completed years, not archival vintages; the task claims no operational historical availability (current-compilation retrospective). 2024 contains all 366 dates (sampled); the 2026 tail extends through 2026-11-06.",
+    "extraction_cost_measured": "Storage HEAD/Range probes from the coordinator vantage (2026-11-07): complete pair-year series for 5 pairs = 150 HTTP requests, 744,161 bytes fetched, 86.0 s wall (Python 3.14 stdlib, urllib); bounded 6-chunk Range samples = 1.5 MB per file. Construction inputs are the four parquet editions (5.37-6.10 MB each, ~22.7 MB total) - a trivial worker download; CSVs (310-376 MB/year) are unnecessary when parquet is used. No auth, no rate-limit hit, no bulk transfer through the coordinator.",
+    "novelty_search_scope": "Web searches 2026-11-07: 'Klang Valley Rapid Rail origin-destination ridership dataset machine learning benchmark prediction' and 'metro origin-destination passenger flow prediction benchmark dataset public transit exceedance classification'. Found: SHMetro/HZMetro and SHMOD/HZMOD benchmarks (Shanghai/Hangzhou, 15-minute inflow/OD regression, researcher-hosted, 2016/2019 snapshots), MTA Subway OD Ridership (monthly-average hourly OD, data.ny.gov), Nanjing/Beijing/Guangzhou/Shenzhen literature datasets (private or per-paper). No public ML-ready benchmark or scored task for any Klang Valley rail dataset; a UNITEN thesis used SNA on a 120-node/5,567-edge travel-history dataset (not public, not a prediction benchmark)."
+  },
+  "split_strategy": "Temporal, disjoint by calendar year of the TARGET day (Asia/Kuala_Lumpur): train 2023-01-01..2024-12-31 (frozen editions), eval 2025-01-01..2025-12-31 (frozen edition), holdout 2026-01-01..build-date (current-year file digest-pinned at build; the publisher's own frozen 2026 edition, due ~early 2027 by the observed 2025 pattern, is the durable re-verification target). Panel scale (measured, not full-counted): ~5.4M pair-day rows per year (2024 CSV 375,944,306 B at ~70 B/row; ~14-17k pair-rows per day sampled), so each window carries orders of magnitude more rows and positives than the bench needs at any candidate threshold. Full split counts (rows, pairs, positives at the chosen thresholds, day-clustered positive counts) are the FIRST construction step on the worker - sampled counts are never presented as full counts (same convention as datasus-sinasc-cesarean-share-decline). Positives cluster by day (network-wide events lift many pairs); clustered counts must be computed and recorded before any score is interpreted.",
+  "novelty_check": {
+    "checked_at": "2026-11-07T08:36:07+00:00",
+    "method": "public catalogue search (Hugging Face datasets, Zenodo, arXiv) plus web search for an existing ML-ready formulation of this exact task",
+    "queries": [
+      "Klang Valley Rapid Rail origin-destination ridership prediction benchmark",
+      "metro OD passenger flow prediction dataset SHMetro HZMetro public",
+      "Malaysia rail ridership machine learning dataset open data"
+    ],
+    "evidence": {
+      "huggingface_datasets": [
+        {
+          "query": "Klang Valley Rapid Rail origin-destination ridership prediction benchmark",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "metro OD passenger flow prediction dataset SHMetro HZMetro public",
+          "hits": 0,
+          "top": []
+        },
+        {
+          "query": "Malaysia rail ridership machine learning dataset open data",
+          "hits": 0,
+          "top": []
+        }
+      ],
+      "zenodo_records": [
+        {
+          "query": "Klang Valley Rapid Rail origin-destination ridership prediction benchmark",
+          "hits": 292242,
+          "top": [
+            "A machine learning approach in Python is used to forecast the  number of train passengers using a fuzzy time series model",
+            "Transportation Engineering Research",
+            "Ozone prediction based on support vector machine",
+            "Machine Learning for Near-Real Time Bus Ridership Prediction During \"Extreme\" Weather",
+            "Rails to Resilience: Evaluating New Orleans and Baton Rouge Rail Terminals and Transit Links"
+          ]
+        },
+        {
+          "query": "metro OD passenger flow prediction dataset SHMetro HZMetro public",
+          "hits": 709559,
+          "top": [
+            "THEORETICAL FOUNDATIONS AND IMPLEMENTATION  OPPORTUNITIES OF ARTIFICIAL INTELLIGENCE AND COMPUTER  VISION TECHNOLOGIES IN AUTOMATING METROPOLITAN  ESCALATORS.",
+            "Passenger Flow Prediction Method based on Hybrid Algorithm: Intelligent Transportation System",
+            "THEORETICAL FOUNDATIONS AND IMPLEMENTATION OPPORTUNITIES OF  ARTIFICIAL INTELLIGENCE AND COMPUTER VISION TECHNOLOGIES IN  AUTOMATING METROPOLITAN ESCALATORS.",
+            "MetroFlowNet: Adaptive Multi-Feature Fusion for Metro Passenger Movement Prediction",
+            "Introducing AI models in Metro Systems: Service Optimization and Energy Waste Management"
+          ]
+        },
+        {
+          "query": "Malaysia rail ridership machine learning dataset open data",
+          "hits": 1731100,
+          "top": [
+            "Reproducibility package for station-level short-term passenger demand forecasting with lightweight machine-learning models",
+            "Sensor Position Comparison Dataset",
+            "mmRadPose",
+            "us ridership lost around new rail stations: stop-level evidence for bus network review and rail appraisal in Seoul - data and code",
+            "Comparative Evaluation of Machine Learning Classifiers for Predictive Modelling of Datasets"
+          ]
+        }
+      ],
+      "arxiv_preprints": [
+        {
+          "query": "Klang Valley Rapid Rail origin-destination ridership prediction benchmark",
+          "hits": 5,
+          "top": [
+            "RAIL: Rethinking Auditory Intelligence in Large Audio-Language Models with a CHC-Grounded Benchmark",
+            "Trace methods for equivariant algebraic K-theory",
+            "Mining Public Transit Ridership Flow and Origin-Destination Information from Wi-Fi and Bluetooth Sensing Data",
+            "Online Metro Origin-Destination Prediction via Heterogeneous Information Aggregation",
+            "Redshift Assessment Infrastructure Layers (RAIL): Rubin-era photometric redshift stress-testing and at-scale production"
+          ]
+        },
+        {
+          "query": "metro OD passenger flow prediction dataset SHMetro HZMetro public",
+          "hits": 5,
+          "top": [
+            "IPF-HMGNN: A novel integrative prediction framework for metro passenger flow",
+            "CSP-AIT-Net: A contrastive learning-enhanced spatiotemporal graph attention framework for short-term metro OD flow predi",
+            "Parallel Multi-Graph Convolution Network For Metro Passenger Volume Prediction",
+            "METcross: A framework for short-term forecasting of cross-city metro passenger flow",
+            "Crowding Prediction of In-Situ Metro Passengers Using Smart Card Data"
+          ]
+        },
+        {
+          "query": "Malaysia rail ridership machine learning dataset open data",
+          "hits": 5,
+          "top": [
+            "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+            "DOME: Recommendations for supervised machine learning validation in biology",
+            "Active learning for data streams: a survey",
+            "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+            "Privacy-preserving machine learning for healthcare: open challenges and future perspectives"
+          ]
+        }
+      ]
+    },
+    "evidence_summary": "- huggingface_datasets / 'Klang Valley Rapid Rail origin-destination ridership prediction benchmark': 0 hit(s) - nothing notable\n- huggingface_datasets / 'metro OD passenger flow prediction dataset SHMetro HZMetro public': 0 hit(s) - nothing notable\n- huggingface_datasets / 'Malaysia rail ridership machine learning dataset open data': 0 hit(s) - nothing notable\n- zenodo_records / 'Klang Valley Rapid Rail origin-destination ridership prediction benchmark': 292242 hit(s) - A machine learning approach in Python is used to forecast the  number of train passengers using a fuzzy time series model, Transportation Engineering Research, Ozone prediction based on support vector machine, Machine Learning for Near-Real Time Bus Ridership Prediction During \"Extreme\" Weather, Rails to Resilience: Evaluating New Orleans and Baton Rouge Rail Terminals and Transit Links\n- zenodo_records / 'metro OD passenger flow prediction dataset SHMetro HZMetro public': 709559 hit(s) - THEORETICAL FOUNDATIONS AND IMPLEMENTATION  OPPORTUNITIES OF ARTIFICIAL INTELLIGENCE AND COMPUTER  VISION TECHNOLOGIES IN AUTOMATING METROPOLITAN  ESCALATORS., Passenger Flow Prediction Method based on Hybrid Algorithm: Intelligent Transportation System, THEORETICAL FOUNDATIONS AND IMPLEMENTATION OPPORTUNITIES OF  ARTIFICIAL INTELLIGENCE AND COMPUTER VISION TECHNOLOGIES IN  AUTOMATING METROPOLITAN ESCALATORS., MetroFlowNet: Adaptive Multi-Feature Fusion for Metro Passenger Movement Prediction, Introducing AI models in Metro Systems: Service Optimization and Energy Waste Management\n- zenodo_records / 'Malaysia rail ridership machine learning dataset open data': 1731100 hit(s) - Reproducibility package for station-level short-term passenger demand forecasting with lightweight machine-learning models, Sensor Position Comparison Dataset, mmRadPose, us ridership lost around new rail stations: stop-level evidence for bus network review and rail appraisal in Seoul - data and code, Comparative Evaluation of Machine Learning Classifiers for Predictive Modelling of Datasets\n- arxiv_preprints / 'Klang Valley Rapid Rail origin-destination ridership prediction benchmark': 5 hit(s) - RAIL: Rethinking Auditory Intelligence in Large Audio-Language Models with a CHC-Grounded Benchmark, Trace methods for equivariant algebraic K-theory, Mining Public Transit Ridership Flow and Origin-Destination Information from Wi-Fi and Bluetooth Sensing Data, Online Metro Origin-Destination Prediction via Heterogeneous Information Aggregation, Redshift Assessment Infrastructure Layers (RAIL): Rubin-era photometric redshift stress-testing and at-scale production\n- arxiv_preprints / 'metro OD passenger flow prediction dataset SHMetro HZMetro public': 5 hit(s) - IPF-HMGNN: A novel integrative prediction framework for metro passenger flow, CSP-AIT-Net: A contrastive learning-enhanced spatiotemporal graph attention framework for short-term metro OD flow predi, Parallel Multi-Graph Convolution Network For Metro Passenger Volume Prediction, METcross: A framework for short-term forecasting of cross-city metro passenger flow, Crowding Prediction of In-Situ Metro Passengers Using Smart Card Data\n- arxiv_preprints / 'Malaysia rail ridership machine learning dataset open data': 5 hit(s) - Changing Data Sources in the Age of Machine Learning for Official Statistics, DOME: Recommendations for supervised machine learning validation in biology, Active learning for data streams: a survey, Learning Curves for Decision Making in Supervised Machine Learning: A Survey, Privacy-preserving machine learning for healthcare: open challenges and future perspectives",
+    "prior_art": [
+      "Liu et al. PVCGN, AAAI 2020 (SHMetro/HZMetro); HIAM TPAMI 2022 (SHMOD/HZMOD); NY MTA Subway OD Ridership (data.ny.gov)"
+    ],
+    "theirs": "Metro-flow literature benchmarks cover other cities and contracts: SHMetro/HZMetro (Shanghai/Hangzhou 15-minute station inflow regression, researcher-hosted 2016/2019 snapshots), SHMOD/HZMOD (online OD regression), MTA Subway OD Ridership (monthly-average hourly OD, not a scored task), per-paper private datasets (Nanjing, Beijing, Guangzhou, Shenzhen, Chongqing). A UNITEN thesis applied SNA to a non-public 120-node Klang Valley travel-history extract. None publishes a Klang Valley pair-level day-ahead exceedance task with splits and a scored contract.",
+    "ours": "First public ML-ready benchmark task for Klang Valley rail: day-ahead station-pair ridership exceedance (binary, temporal splits, evaluation contract) built from Prasarana tap-in/tap-out OD panels on the maintained national open-data platform; new task family for the bench (urban transit demand) and new geography; publication cadence, frozen annual editions and censoring handled by a stated contract.",
+    "verdict": "differentiated",
+    "rule": "A dataset that already exists in ML-ready form is not published. Mirroring is a failure mode, not a contribution."
+  },
+  "next_action": "READY -> hand to advancement/construction (NOT this discovery session): (1) worker downloads the four parquet editions, records sha256 per file + the dataset-page stamps read at build; (2) assemble the pair-day panel: exclude A0 rows both directions, exclude PYL05+ destinations, normalize the date-format drift, verify the A0-row semantics against station sums (record whether aggregate or censored); (3) compute full split counts (rows/pairs/positives at candidate pair-relative thresholds p90/p95 and absolute variants, day-clustered positive counts) and publish them in the record; (4) freeze thresholds BEFORE any model or baseline runs, then the ordered handoff: construction -> full-artifact qualification (gate) -> exact-byte acceptance -> pre-registered reference triad (majority, pair persistence at lag-2, calendar-only, full-feature logistic) on eval only -> holdout stays sealed. Persistence at lag-2 will be strong on commuter pairs - the triad must measure headroom over it honestly (ab-wildfire-ia-escape precedent: full model did NOT beat persistence under day-cluster bootstrap). No construction in the discovery session that opened this record; no remediation hold is active per STATE.md."
+}

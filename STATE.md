@@ -1,3 +1,57 @@
+## 2026-11-07 (08:40Z) - discovery (South & Southeast Asia tick): NEW READY CANDIDATE my-rapidrail-od-exceedance (Klang Valley Rapid Rail day-ahead station-pair ridership exceedance, data.gov.my CC BY 4.0, all five contracts evidenced); PH/TH enumerated only to bounded coverage
+
+Regional focus: India, Indonesia, Philippines, Thailand, Vietnam, Malaysia. The
+region's named institutions all have recorded verdicts, so the session opened new
+ground: Malaysia's relaunched national open-data platform (data.gov.my, JDN - the
+same platform as published my-pricecatcher-weekly-increase), enumerated in full
+(355 catalogue slugs; inventory retained in the candidate). Licence-first
+throughout; no construction, no worker, no bulk download through the coordinator,
+nothing scored.
+
+- NEW LEAD -> READY: my-rapidrail-od-exceedance. Task: at 07:00 Asia/Kuala_Lumpur
+  on day T, using OD ridership history dated <= T-2 (the one-day publication lag
+  is MEASURED: the 2026 edition file written 2026-11-07 08:03Z carries data
+  through 2026-11-06), predict whether a station pair's day-T ridership exceeds
+  a pair-relative threshold. Source: Prasarana tap-in/tap-out OD panels, frozen
+  annual editions 2023-2025 + daily-updated 2026 (parquet 5.4-6.1 MB/edition).
+  Licence class A: per-dataset CC BY 4.0 (page-embedded, same instrument as
+  PriceCatcher) + developer portal. Novelty: differentiated (no public Klang
+  Valley rail benchmark; SHMetro/HZMOD/MTA cover other cities, finer grids,
+  regression targets). check-candidate OK, status ready.
+- Measured before the verdict (all bounded, stdlib, no complete-file download):
+  file sorted (origin,destination,date) with contiguous full-year pair blocks;
+  5 complete pair-year series extracted (366/366 days, 0 gaps; commuter vs CBD
+  leisure vs low-demand dynamics; Eid dip 2024-04-10/11); zeros published as
+  rows (29.3% of a Saturday slice); A0 'All Stations' pseudo-station rows both
+  directions at station scale (~4.4k/day) - excluded, semantics = open
+  construction check; Putrajaya Line destination censoring (32/34 PYL codes
+  never destinations) confirmed independently AND by public data-request #216
+  (2026-10-24); edition date-format drift 2023/24 vs 2025/26; extraction cost
+  measured (150 req / 744 KB / 86 s for 5 pair-years).
+- Komuter hourly variant REJECTED on measurement: pair-hour counts p50=2, p90=9
+  - noise-dominated labels; 2020-2022 editions listed but 404.
+- PH/TH coverage this tick (bounded, no new candidates): data.gov.ph relaunched
+  (Angular SPA; CKBox-based; no anonymous catalogue API found from the
+  coordinator vantage in this session's bounded attempt - main bundle references
+  PSA OpenSTAT/econ portals already dropped/parked; no candidate opened);
+  data.go.th 403 to plain HTTP clients (blocked page = inaccessible evidence,
+  not absent terms; supported-browser check left as the named reopening step,
+  and Thailand's air-quality lead already parks on PCD licence). India
+  (data.gov.in unreachable from all our vantages, IMD paid, CPCB packaged),
+  Indonesia (BPS aggregate-only dropped), Vietnam (no machine-readable channel,
+  parked) unchanged this tick.
+- Region now: 14 candidates (MY 3), live non-US 52/58 (90%).
+
+Next action (record.next_action carries the full construction handoff): worker
+downloads the 4 parquet editions + digest pin; assemble pair-day panel (exclude
+A0 both directions, exclude PYL05+ destinations, normalize date drift); compute
+FULL split counts incl. day-clustered positives (first worker step, never
+presented as already computed); verify A0 semantics against station sums;
+freeze thresholds BEFORE baselines; then the ordered handoff construction ->
+full-artifact qualification -> exact-byte acceptance -> pre-registered triad
+(lag-2 persistence will be strong on commuter pairs - measure headroom over it
+honestly, ab-wildfire precedent). No remediation hold is active.
+
 ## 2026-11-07 (06:15Z) - scheduled advancement: dvsa-mot-next-test-outcome repair dvsa-mot-build-002 EXECUTED AND FAILED AT A NEW DEFECT (2017 DfT zip is Deflate64; ABRVE repair PROVEN on real data with 10/10 receipts EXACT; repair verified in-container, next session launches dvsa-mot-build-003)
 
 Construction work only (no packaged candidate is actionable: all five packaged
