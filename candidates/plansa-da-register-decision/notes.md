@@ -249,3 +249,148 @@ nz-ea-wholesale-price-exceedance) remain with their owners.
 
 Verdict: **investigating** — a strong lead with licence, access, volume and
 utility evidenced; three named measurements stand between it and `ready`.
+
+## 6. Endpoint layer + label channel measured (2026-11-07, Oceania discovery session)
+
+All probes read-only, in the supported browser session (plan.sa.gov.au and its
+data CDN both 403 to plain curl; the browser fetches below run from page
+context, `about:blank` works because the CDN answers cross-origin). No bulk
+data landed on the coordinator; every number below is an aggregate printed
+from in-page computations. Register grew during the session: 300,032
+applications (was 299,858 on 2026-11-06); decided all-time 260,311.
+
+### 6.1 The three machine endpoints (recipes, verified 2026-11-07)
+
+The register is NOT just the slow HTML search. Three plain-HTTP JSON/CSV
+channels exist, all driven by base64 payloads exactly as the page's own JS
+builds them (`public-register.min.js` v0.15.5, `getSearchtoCSV` /
+`getSearchResults` / `getSingleResult`):
+
+1. CSV export - GET
+   `https://plan.sa.gov.au/development_application_register/assets/daregisterCSV?payload=<btoa>`
+   with payload `{"ActionType":"csv","Config":"public_register","DataObject":
+   "PublicRegisterCSV","Params":[{name,value},...],"SortExpression":"LodgedNew",
+   "RecordNumber":0}`. Columns: Unique ID, Development No, Application Status
+   (coarse only), Address, Description, Lodged (m/d/yyyy), Register Code.
+   NO decision date, NO Granted/Refused outcome.
+2. Search - POST `https://cdn.plan.sa.gov.au/prs/fFGE56_reg8R` with
+   `payload=<btoa>` body,
+   `{"ActionType":"select","Config":"public_register","DataObject":
+   "PublicRegisterSearch","Params":[filters,Page,PageSize],"MaxRecords":N}`.
+   The response's own `Count` is UNRELIABLE (0 with rows present); the
+   authoritative total is read from the row's `TotalRecords` column (field
+   index resolved via `Fields.Fields[].FieldCode=="TotalRecords"`).
+3. Per-application detail - POST to the same endpoint with
+   `DataObject` per register code (DAP->DAPRegisterDetail, LUA/LUC->
+   LandUseRegisterDetail, LDE->LandDivisionRegisterDetail, MD->
+   MajorDevelopmentRegisterDetail), `Params:[{AppId},{Base:<code>}]`. The
+   response has 9 named children; `DecisionDetails` carries per-consent
+   rows `[CT=Decision type, DRT=Decision, DD=Decision date]`.
+
+Date semantics: the CSV endpoint parses Lodged dates as m/d/yyyy (a
+21/06/2021-21/06/2021 window returns 0 bytes; 04/01/2021-10/01/2021 returns
+April-October rows). The HTML form displays dd/mm/yyyy. Construction MUST
+send m/d/yyyy to the CSV endpoint and verify windows by echo.
+
+### 6.2 THE LABEL CHANNEL EXISTS (probe A answered: both candidate A and B constructible)
+
+Detail fetch for 6154 (LUA, 10 Milsteads Road Port Macdonnell, heritage
+cottage repairs, lodged 1 Apr 2021): DecisionDetails = one consent row
+"Development Approval / Granted / 30 Apr 2021". Decision dates and per-consent
+outcomes ARE published per application, in machine-readable form, separate
+from every lodgement-time feature field. Candidate A (statutory-timeframe
+latency, lodgement->DD in days) and candidate B (refusal, DRT) are both
+derivable; label sources are excludable (separate JSON child).
+
+### 6.3 BUT the label channel degrades under sustained querying (measured)
+
+After ~100 detail POSTs across the session (bursts of 3-7, then 16), the
+SAME query that returned full DecisionDetails for 6154 began returning
+hollow children (children present, FieldValues empty), and even a 30 s pause
+did not restore it in-session. Early-session reads were complete and
+consistent; late-session identical queries came back hollow. Trigger
+undetermined (burst pacing vs backend load vs time-of-day - unmeasured).
+CONSEQUENCE: the extraction must pace requests, validate every row
+(re-fetch on hollow DecisionDetails), and never treat an empty read as
+"no decision". Refusal prevalence therefore stayed UNMEASURED this
+session: a 42-app sample across all seven years returned hollow responses
+after the degradation began (batch scripts retained). This is the ONE
+measurement now gating the ready verdict (see 6.6).
+
+### 6.4 CSV export is NON-DETERMINISTIC above ~789 KB (measured, decisive for construction)
+
+Dual-fetch of the same full-year-2020 decided window, one call, hashed
+in-page: bytes1 == bytes2 == 789,151 BUT hash1 != hash2 and `t1===t2` false -
+the server returns a DIFFERENT ~789,151-byte subset of the window on every
+call. My parser is proven deterministic (double-parse of one response gives
+identical counts: 2,287 both times). Full-year 2020 decided fetches parsed
+2,287 / 3,022 / 3,052 / 4,188 / 4,349 rows across five identical calls - all
+far below the backend's own count. Sub-cap windows ARE complete: Sep-2020
+month (696 rows / 102 KB), Q4-2020 (1,266 rows / 299 KB), and half-month
+windows 2021-2026 (478-1,944 rows / 72-294 KB) returned coherent row sets.
+CONSTRUCTION RULE: enumerate via the CSV only in windows kept under ~780 KB
+(month-scale), reconcile per-window counts against the search TotalRecords,
+and never trust a window whose response is near the 789,151-byte signature.
+Also: descriptions contain UNQUOTED newlines (e.g. 5584's summary, the
+" conference" dirty keys, a 2025-09 window of 250,490 bytes with only 80
+parseable rows) - CSV parsing must be quote-aware AND row-validated.
+
+### 6.5 Population: TWO ERAS, measured from the publisher's own backend
+
+Status-only search POSTs (TotalRecords, 2026-11-07): Act=DEV 73,464 rows;
+Act=PDI 226,568 (sum 300,032 = register total). Decided rows lodged
+2000-2009: 26,532; lodged 2010-2019: 36,067. So the register ingests the old
+Development Act register back to at least 2000 - a DIFFERENT population
+(state-referred/major development under DEV authorities), not the all-council
+PDI population. The clean task frame is the PDI era (lodged >= 31 Jul 2020).
+Per-year PDI-era counts (search TotalRecords, m/d/yyyy windows):
+
+| Lodgement year | ALL | Decision Made | Under Assessment |
+| --- | --- | --- | --- |
+| 2020 | 5,761 | 5,235 | 252 |
+| 2021 | 38,448 | 34,482 | 1,613 |
+| 2022 | 40,485 | 35,782 | 2,428 |
+| 2023 | 35,563 | 31,356 | 2,403 |
+| 2024 | 38,982 | 34,549 | 2,862 |
+| 2025 | 38,102 | 33,280 | 3,867 |
+| 2026 (to date) | 34,531 | 23,028 | 11,101 |
+
+Sum decided 2020-2026 = 198,312; the remaining ~62k decided rows are DEV-era
+(62,599 measured as 26,532 + 36,067, boundary overlaps account for the ~600
+difference). Register-code mix (CSV samples): 2020 LUA 736/LDE 2,649/DAP 803
+in the whole-year fetch; DAP dominates 2021+ (~99%); LUC appears from 2026.
+DEV-era rows would need their own DataObject/provenance treatment if ever
+included; the PDI-era frame avoids it.
+
+Status-filter validation: Status="Refused"/"Granted"/"Approved"/"Rejected"
+POSTs return no TotalRecords and no rows while Status="Decision Made" returns
+260,311 + rows - the coarse-status design is backend-enforced, negative
+validated by a working positive control. No enumeration of refusals exists
+without per-application details.
+
+### 6.6 What still gates `ready` (reconciled five contracts)
+
+1. Redistribution: SUPPORTED (CC BY 3.0 Australia, re-verified live on the
+   register footer 2026-11-07; attribution carried verbatim at packaging).
+2. Prediction timing: SUPPORTED for a current-compilation retrospective
+   (lodgement instant; pathway/elements/applicants/council/description all
+   documented at that instant; decision fields post-instant and excludable;
+   statutory-timeframe target definition documented from PlanSA's own
+   "Stages and timeframes" page: 5-95 business days by pathway, 5-day
+   verification + 2-day issue, and a documented clock-SUSPENSION confounder
+   for info requests - a latency label must declare it; single live
+   compilation, no historical vintages claimed).
+3. Target: DERIVABLE (6.2) but label-row AVAILABILITY RATE under paced
+   extraction unmeasured (6.3) and refusal prevalence per window unmeasured.
+4. Split capacity: rows per window measured (6.5); positives (refusals) per
+   window UNMEASURED - unresolved until the paced detail pass.
+5. Not a mirror: prior art unchanged (notes s3); no ML-ready per-application
+   SA first-instance decision/latency benchmark found; formal verdict stays
+   deferred until the label family is confirmed by the paced pass.
+
+Next probe (discovery-owned, one session): paced detail pass (>= 1.5 s
+spacing, hollow-read re-fetch, ~30 apps/window x 3 windows drawn from
+month-scale CSV windows) measuring refusal prevalence + DD availability per
+window; if refusals appear in all three windows, record the novelty verdict
+and set ready with exact-row counts + sample-measured positives, naming the
+full 260k-detail sweep as construction's first worker step.

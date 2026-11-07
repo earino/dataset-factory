@@ -6,76 +6,81 @@ is recorded in `measurements.json` (`measurement_commands`).
 
 ## The artifact
 
-The five shipped files are worker job **ns-bwa-001**'s output, constructed
+The five shipped files are worker job **ns-bwa-002**'s output, constructed
 from the pinned NS register (sha256 `60f77ac4...`, content current as of
-2026-06-16, byte-identical to the discovery fetch). The construction code is
-factory commit `f8ba545`: `code/build.py` (sha256 `cd23315c...`) and
-`code/run.sh` (sha256 `219f66bb...`) are the exact bytes the worker executed.
-The worker executed `score.py` at sha256 `e6f0e953...`; the shipped
-`code/score.py` (sha256 `b674f5b5...`) is the same computation with one
-corrected report-field echo (`report.artifact.version` ->
-`report.artifact.artifact_version.digest`) - the earlier run printed
-`artifact_version: null` in its references JSON; every number is unaffected.
-Both digests are recorded here so the difference is visible, not hidden.
+2026-06-16, byte-identical to the discovery fetch and to the v2026.10 build;
+the rebuild changes the shipped frame, never the population). The
+construction code is factory commit `0d36ffc`: `code/build.py` (sha256
+`2253fe59...`), `code/run.sh` (sha256 `ee73a468...`) and `code/score.py`
+(sha256 `ab4d9fd5...`) are the exact bytes the worker executed, per its
+bundle-owner record. The gate shipped as `code/qualify_dataset.py` (sha256
+`4fab8a34...`, version 1.5.0) is the repository's current gate, unchanged
+from the v2026.10 package.
 
 ## What was verified, in order
 
-1. **Qualification (full artifact, on the worker, before any figure existed).**
-   Gate 1.5.0 (`skills/dataset-qualification/scripts/qualify_dataset.py`, the
-   same file shipped as `code/qualify_dataset.py`): **46/46 checks, 0 failed**,
-   including the timing block, the evaluation contract with both declared
-   cross-row probes (site-level reverse-history covers 369/56/217
-   train/eval/holdout rows), split windows, both-classes minimums, and the two
-   in-file known-event fixtures (Maple Meadows Campground Inc, issued
-   2024-08-31, lifted after 307 days -> holdout row with lift30 = 0; Canning
-   1-day advisory -> lift30 = 1). Gate `--selftest` passed before the launch.
-2. **Exact-byte acceptance.** `qualify_dataset.py --accept` against the
-   collected report: **ACCEPTED for artifact
-   `e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8`** on the
-   worker, and re-ACCEPTED in both later jobs (ns-bwa-baseline-001,
-   ns-bwa-diag-001) against the fetched bytes. The report ships as
-   `qualification.json`.
-3. **References (post-acceptance, identical eval rows).** Job ns-bwa-001's
-   `score.py`: persistence 0.6124 (Brier 0.2819), calendar 0.5075 (0.3101),
-   reason 0.4307 (0.2440), facility constant (0.2429), majority accuracy
-   0.6048; paired bootstrap (1000, seed 23): persistence - calendar +0.1014
-   [0.0144, 0.1739], calendar - reason +0.0779 [0.0072, 0.1492], persistence -
-   reason +0.1793 [0.1136, 0.2482]. Per-issue-year persistence AUC 0.6084 /
-   0.6203 / 0.5991 against prevalence 0.7442 / 0.6400 / 0.4153.
-4. **Runner-contract baseline.** Job ns-bwa-baseline-001: the benchmark's own
-   `train.py` + `validate.sh`, bundled verbatim (digests equal the read-only
-   clone's: train.py `a3c6bcf1...`, validate.py `b597e7f8...`, validate.sh
-   `3f06ca48...`), exit 0, `[validate] CONTRACT OK`; both eval AUC prints agree
-   at **0.5086**. The holdout was never copied into any workdir
-   (materialize.log in the job's evidence).
-5. **Per-row diagnostic.** Job ns-bwa-diag-001 (gate `--accept` re-run first,
-   then validate.sh re-checked CONTRACT OK at 0.5086, then per-row
-   `predict_proba` scores preserved): model - persistence -0.1038 with
-   row-bootstrap interval [-0.1693, -0.0357] and site-clustered interval
-   [-0.1706, -0.0383] (286 clusters), both **excluding zero**; model - calendar
-   +0.0011 [-0.0866, +0.0723]; per-issue-year model AUC 0.5554 / 0.5018 /
-   0.4886 and Brier 0.2298 / 0.3479 / 0.5178. Every reference figure recorded
-   by ns-bwa-001 and the baseline's 0.5086 were **replicated by this second,
-   independent implementation** to 4 decimal places on the same bytes
-   (dependencies pinned in both jobs: python 3.13.18, pandas 2.3.3, numpy
-   2.5.4, xgboost 3.4.1, scikit-learn 1.9.1).
+1. **Pre-launch smoke on the coordinator** (before any worker spend): a
+   synthetic 162-row register exercising both mandatory build fixtures; as-of
+   recency semantics asserted (strictly-earlier only; same-(site, issue date)
+   rows never see each other; blank-county sentinel; county recency
+   recomputed independently); gate 1.5.0 two-phase PASSED plus exact-byte
+   `--accept` ACCEPTED on the synthetic artifact; no synthetic column
+   separates the label (pre-checked with the gate's own scorer); the
+   register-side persistence helper unit-checked with a monkeypatched
+   register; gate `--selftest` PASSED.
+2. **Qualification (full artifact, on the worker, before any figure
+   existed).** Gate 1.5.0: **44/44 checks, 0 failed**, including the timing
+   block (event-time instant, administrative record), the evaluation contract,
+   split windows, both-classes minimums, leakage scoring over every shipped
+   column, and the assertion that the label source columns
+   (`date_advisory_removed`, `length_of_advisory_in_days`, `lift14`) are
+   absent from all shipped files.
+3. **Exact-byte acceptance.** `qualify_dataset.py --accept`: **ACCEPTED for
+   artifact `49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144`**
+   on the worker (job ns-bwa-002), and re-ACCEPTED on the baseline job's
+   fetched bytes (ns-bwa-baseline-002) **before any score was computed**. The
+   report ships as `qualification.json`.
+4. **References (post-acceptance, identical eval rows).** Job ns-bwa-002's
+   `score.py`: persistence 0.6124 (Brier 0.2819, covered 231/372, register
+   recomputation asserted sha256-identical to the artifact's own vintage),
+   calendar 0.5075 (0.3101), reason 0.4307 (0.2440), facility constant
+   (0.2429), majority accuracy 0.6048; paired bootstrap (1000 resamples):
+   persistence - calendar +0.1014 [0.0144, 0.1739], calendar - reason
+   +0.0779 [0.0072, 0.1492], persistence - reason +0.1793 [0.1136, 0.2482].
+   Per-issue-year persistence AUC 0.6084 / 0.6203 / 0.5991 against prevalence
+   0.7442 / 0.6400 / 0.4153. All four reference figures are equal to the
+   v2026.10 measurements - the register-side reimplementation of the
+   persistence reference is validated by reproduction.
+5. **Runner-contract baseline.** Job ns-bwa-baseline-002: re-accept of the
+   five fetched assets against the gate's collected report BEFORE any score;
+   the benchmark's own `train.py` + `validate.sh`, bundled verbatim (digests
+   equal the read-only clone's: train.py `a3c6bcf1...`, validate.py
+   `b597e7f8...`, validate.sh `3f06ca48...`), exit 0, `[validate] CONTRACT
+   OK`; both eval AUC prints agree at **0.5068**. The holdout was never
+   copied into any workdir (materialize.log in the job's evidence). The
+   same runner measured 0.5086 on the superseded v2026.10 frame, so the
+   integrity repair cost -0.0018 AUC.
+6. **Coordinator-side byte pinning (this packaging).** The byte-pinned
+   `meta.json`, `quality.json` and the gate report were fetched from private
+   staging release 437529809 and verified against the worker-written staging
+   manifest before being placed in this package; `get_dataset.py`'s EXPECTED
+   digests are generated from the gate's artifact block.
 
-## Suitability notice (version-bound, applies to v2026.10 / this artifact)
+## Suitability notice (version-bound, applies to v2026.12 / this artifact)
 
 Retained for **retrospective model-development research** under an
-**isolated-rows** protocol that is stated as a requirement, not enforced by the
-shipped runner (the illustrative runner contract passes the whole eval feature
-table to the predictor; the gate measured the same-site label recovery the
-declared probes describe). The register is revised in place and publishes no
-historical vintages, so training-label timing and full-row historical
-availability are **unverified**; the vintage is the **current snapshot**
-(2026-06-16 content); selection is at prediction time (eligibility is decidable
-from the issue date and the vintage, never from the outcome). Supported:
-retrospective research, method comparison, agent evaluation under the enforced
-isolated-rows protocol. Not supported: operational/real-time forecasting
-claims, point-in-time historical reconstruction, unrestricted-access scoring.
-Structural qualification and baseline scores do not certify operational
-forecasting validity.
+**isolated-rows** protocol that is stated as a requirement, not enforced by
+the shipped runner (the illustrative runner contract passes the whole eval
+feature table to the predictor). The register is revised in place and
+publishes no historical vintages, so training-label timing and full-row
+historical availability are **unverified**; the vintage is the **current
+snapshot** (2026-06-16 content); selection is at prediction time (eligibility
+is decidable from the issue date and the vintage, never from the outcome).
+Supported: retrospective research, method comparison, agent evaluation under
+an enforced isolated-rows protocol. Not supported: operational/real-time
+forecasting claims, point-in-time historical reconstruction,
+unrestricted-access scoring. Structural qualification and baseline scores do
+not certify operational forecasting validity.
 
 ## What this does NOT cover
 
@@ -87,8 +92,24 @@ forecasting validity.
   anywhere in this package.
 - **No historical-vintage claim.** The publisher revises in place; a future
   re-fetch measures churn, not what was knowable earlier.
-- **No headroom claim.** The stock baseline trails the persistence reference
-  with intervals excluding zero; nothing here demonstrates (or refutes) that a
-  better model could beat it - see `RELEASE_NOTES.md` for the exact comparison.
-- The baseline scope is eval-split only; per-year and Brier figures for the
-  model come from the diagnostic job's per-row scores.
+- **No headroom claim.** The stock baseline trails the register-side
+  persistence reference by 0.1056 on identical rows; nothing here demonstrates
+  (or refutes) that a better model could beat it - see `RELEASE_NOTES.md` for
+  the exact comparison.
+- **No per-row diagnostic on this frame.** The v2026.10 diagnostic job
+  (ns-bwa-diag-001) was not repeated for v2026.12, so this package carries no
+  model Brier, no per-issue-year model figures, and no recomputed
+  model-vs-persistence interval; the interval figures quoted in the notes
+  belong to the superseded v2026.10 frame on the same eval rows and are
+  labelled as such.
+- **The frozen `quality.json` carries a v2026.10-era `known_event`
+  declaration** naming two register rows and their durations, including one
+  scored holdout row. For this internal-threshold task the gate requires no
+  known-event fixture (it records "no external threshold, so no known-event
+  fixture is required") and does not verify that block; the declaration is
+  builder content inherited from v2026.10 inside bytes that are pinned by the
+  accepted artifact version. No package document repeats its contents. The
+  fresh adversarial pre-flip audit is mandated to rule on whether that
+  declaration is acceptable as shipped or requires a fixture-to-train-row
+  rebuild; a rebuild changes the artifact version and would be a new reviewed
+  release.

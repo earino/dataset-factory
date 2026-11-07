@@ -5,31 +5,31 @@
  "artifact": {
   "train": {
    "file": "public/train.csv",
-   "sha256": "beacb2292ca0a045610662bd02ba85d89fde18b652e43d4ff44276979a3babc5",
-   "bytes": 133840
+   "sha256": "665b88a46979e199bf8924420408d2853dcb78db1ee4715fd9f586d1aac705fa",
+   "bytes": 109659
   },
   "eval": {
    "file": "public/eval.csv",
-   "sha256": "ec1f733558558d4c30c2c50bf93408817d0936df4517c126a6d7965f02c5c5c5",
-   "bytes": 50575
+   "sha256": "8f52bcdf5cc2bec219cd3436210e114ef97f65a10f374afde72100e6988fd016",
+   "bytes": 41572
   },
   "holdout": {
    "file": "private/holdout.csv",
-   "sha256": "78b62dd3bd5923f67c014010eede2e6f7c778bd0b79d4265c9f8ef4299328a37",
-   "bytes": 121058
+   "sha256": "f0da86a8e455691efe3e93bfd8b93d1728c536699d65df955846b1371bb15f0d",
+   "bytes": 98821
   },
   "meta.json": {
    "file": "meta.json",
-   "sha256": "6b43e4eaf1020ba3436a91c1c2c926af7af0b03fd79104a01bd45d944737e260",
-   "bytes": 1555
+   "sha256": "e362b42a46bc6ed3852372508f1784c9ad4fbc75670513ed18e32779656e3195",
+   "bytes": 1360
   },
   "quality.json": {
    "file": "quality.json",
-   "sha256": "7a61f6fa1bd17f01804428b939ab7cf620cacbf066c95837f6d9166d7a78258e",
-   "bytes": 21707
+   "sha256": "1930d86cb15d473d527149091d808989fe7b7be80e5e6cc95104e66b8e7b2eae",
+   "bytes": 18643
   },
   "artifact_version": {
-   "digest": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
+   "digest": "49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144",
    "components": [
     "eval",
     "holdout",
@@ -75,56 +75,6 @@
    "ok": true,
    "detail": "Document applicable cross-row probes and every solver-visible auxiliary file",
    "evidence": {}
-  },
-  {
-   "check": "contract.cross_row_probe_0",
-   "ok": true,
-   "detail": "Outcome-bearing later-row exposure requires restricted evaluation access; mismatches are reported",
-   "evidence": {
-    "train": {
-     "rows": 1069,
-     "covered": 369,
-     "mismatches": 1,
-     "ambiguous_or_conflicting": 4
-    },
-    "eval": {
-     "rows": 372,
-     "covered": 56,
-     "mismatches": 0,
-     "ambiguous_or_conflicting": 0
-    },
-    "holdout": {
-     "rows": 884,
-     "covered": 217,
-     "mismatches": 6,
-     "ambiguous_or_conflicting": 0
-    }
-   }
-  },
-  {
-   "check": "contract.cross_row_probe_1",
-   "ok": true,
-   "detail": "Outcome-bearing later-row exposure requires restricted evaluation access; mismatches are reported",
-   "evidence": {
-    "train": {
-     "rows": 1069,
-     "covered": 109,
-     "mismatches": 18,
-     "ambiguous_or_conflicting": 10
-    },
-    "eval": {
-     "rows": 372,
-     "covered": 18,
-     "mismatches": 2,
-     "ambiguous_or_conflicting": 2
-    },
-    "holdout": {
-     "rows": 884,
-     "covered": 3,
-     "mismatches": 1,
-     "ambiguous_or_conflicting": 0
-    }
-   }
   },
   {
    "check": "contract.label_availability",
@@ -275,7 +225,7 @@
   {
    "check": "units.measured_columns_declare_unit_and_frame",
    "ok": true,
-   "detail": "19 measured column(s) declare unit and frame",
+   "detail": "11 measured column(s) declare unit and frame",
    "evidence": {
     "measurements": [
      {
@@ -319,54 +269,14 @@
       "frame": "the weekday of the instant"
      },
      {
-      "column": "site_prior_advisories",
-      "unit": "count of advisories",
-      "frame": "distinct earlier issue dates at the same normalised site, strictly before the instant"
-     },
-     {
       "column": "site_days_since_last",
       "unit": "days (integer)",
-      "frame": "instant minus the most recent earlier same-site issue date; -1 when the site has no earlier advisory"
-     },
-     {
-      "column": "site_prior_resolved",
-      "unit": "count of advisories",
-      "frame": "earlier same-site advisories whose removal date is strictly before the instant and whose duration is non-negative"
-     },
-     {
-      "column": "site_prior_lift30_rate",
-      "unit": "mean binary label in [0,1]",
-      "frame": "lift30 rate over those resolved priors; -1 when site_prior_resolved is 0"
-     },
-     {
-      "column": "site_active_prior",
-      "unit": "binary 0/1",
-      "frame": "1 iff an earlier same-site advisory was still in effect at the instant (blank removal at the vintage, or removal on/after the instant)"
-     },
-     {
-      "column": "county_prior_advisories",
-      "unit": "count of advisories",
-      "frame": "distinct earlier issue dates in the same county, strictly before the instant; 0 for rows with blank county (never pooled)"
+      "frame": "instant minus the most recent earlier same-site issue date; -1 when the site has no earlier advisory (an interval over issue dates only - v2026.12: no shipped column reads a removal date)"
      },
      {
       "column": "county_days_since_last",
       "unit": "days (integer)",
-      "frame": "instant minus the most recent earlier same-county issue date; -1 when none"
-     },
-     {
-      "column": "county_prior_resolved",
-      "unit": "count of advisories",
-      "frame": "earlier same-county advisories resolved strictly before the instant"
-     },
-     {
-      "column": "county_prior_lift30_rate",
-      "unit": "mean binary label in [0,1]",
-      "frame": "lift30 rate over those resolved priors; -1 when none"
-     },
-     {
-      "column": "county_active_prior",
-      "unit": "binary 0/1",
-      "frame": "1 iff an earlier same-county advisory was still in effect at the instant; 0 for blank-county rows"
+      "frame": "instant minus the most recent earlier same-county issue date; -1 when none, and -1 for rows with blank county (never pooled); an interval over issue dates only"
      },
      {
       "column": "lift30",

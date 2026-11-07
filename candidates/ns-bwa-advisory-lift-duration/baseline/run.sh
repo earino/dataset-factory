@@ -3,7 +3,8 @@
 #
 # Order is fixed and each stage stops the next:
 #   1. re-accept the FETCHED artifact against the gate's own collected report, so the
-#      scored bytes are proved to be the qualified bytes (artifact e8ed2a53eaf0453c...)
+#      scored bytes are proved to be the qualified bytes (artifact 49bf4cfa427375c6...,
+#      the v2026.12 11-column frame with every outcome-derived history column removed)
 #      before any performance number exists;
 #   2. materialize the runner task directory the way bench/workdir.py does - public
 #      train+eval only, the private holdout is never copied into a workdir;
@@ -12,7 +13,8 @@
 # No number here is computed before step 1 succeeds.
 #
 # Construction-time references already measured on the same eval rows (job
-# ns-bwa-001, post-acceptance): persistence_site_prior 0.6124, calendar_county_month
+# ns-bwa-002, post-acceptance): persistence_site_prior 0.6124 (recomputed
+# register-side, sha-verified to the artifact's own vintage), calendar_county_month
 # 0.5075, reason_prior 0.4307, majority-class accuracy 0.6048. The comparison
 # against those references is made after this job returns, never inside it.
 set -u

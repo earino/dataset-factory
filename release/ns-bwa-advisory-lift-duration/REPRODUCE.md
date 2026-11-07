@@ -28,11 +28,11 @@ python3 code/qualify_dataset.py ./task
 ```
 
 This is the same gate (shipped verbatim in `code/qualify_dataset.py`) that passed
-46/46 checks on the full artifact on the build worker (job ns-bwa-001, gate 1.5.0,
-artifact version `e8ed2a53eaf0453c...`). It re-checks leakage (every shipped column
+44/44 checks on the full artifact on the build worker (job ns-bwa-002, gate 1.5.0,
+artifact version `49bf4cfa...`). It re-checks leakage (every shipped column
 scored against the target), prediction timing, the evaluation contract, split
 integrity (disjoint windows, both classes, clustered positive events) and the runner
-contract (meta counts), and executes the declared cross-row probes. Expect: `OK`.
+contract (meta counts). Expect: `OK`.
 
 ## 3. Re-run the runner-contract baseline
 
@@ -44,11 +44,11 @@ sh baseline/reproduce_baseline.sh ./task
 Materializes a workdir the way the benchmark's `bench/workdir.py` does (`task.json`
 from `meta.json`, public train+eval only - the private holdout is never copied into a
 workdir), then runs the benchmark's own `train.py` and `validate.sh`, unmodified.
-Expect both to print **Eval AUC: 0.5086** on the 372 eval rows. The measured
-figures on these bytes - including the site-persistence reference 0.6124 that
-outscores the stock model - are in `VERIFICATION.md`, `measurements.json` and
-`RELEASE_NOTES.md`; a materially different number means the bytes or the runner were
-changed.
+Expect both to print **Eval AUC: 0.5068** on the 372 eval rows. The measured
+figures on these bytes - including the register-side site-persistence reference
+0.6124 that outscores the stock model - are in `VERIFICATION.md`,
+`measurements.json` and `RELEASE_NOTES.md`; a materially different number means the
+bytes or the runner were changed.
 
 ## 4. Rebuild from source (optional)
 
@@ -60,7 +60,7 @@ except for publisher revisions. A local CSV copy can be supplied with
 `--source <path>`:
 
 ```bash
-python3 code/build.py --out ./rebuilt --work-dir /tmp/nsbwa --built-at 2026-10-29T00:00:00Z
+python3 code/build.py --out ./rebuilt --work-dir /tmp/nsbwa --built-at 2026-11-07T00:00:00Z
 python3 code/qualify_dataset.py ./rebuilt
 ```
 
@@ -74,15 +74,21 @@ bytes -> references, each stage stopping the next.
 
 `code/score.py` is the reference implementation the release's figures come from. It
 refuses to run unless the accepted report passed, fits its priors on train only, and
-evaluates on the eval split's own labels. The gate's own collected report ships with
-this package as `qualification.json`:
+evaluates on the eval split's own labels. The site-persistence reference is
+recomputed **register-side** in v2026.12 (the v2026.10 shipped feature was removed
+after the independent audit recovered labels from it); the register fetch is
+asserted sha256-identical to the artifact's own vintage. The gate's collected
+report ships with this package as `qualification.json`:
 
 ```bash
 python3 code/score.py --data ./task --accepted-report qualification.json --report refs.json
 ```
 
-Expect the eval references in `refs.json` to match `RELEASE_NOTES.md`:
-site persistence 0.6124 (Brier 0.2819), calendar/identity (county x month) 0.5075
+Expect the eval references in `refs.json` to match `RELEASE_NOTES.md`: site
+persistence 0.6124 (Brier 0.2819), calendar/identity (county x month) 0.5075
 (0.3101), reason prior 0.4307 (0.2440), facility prior constant scores (no ranking
-information), majority-class accuracy 0.6048. Every one of these figures was also
-replicated by a second, independent implementation (worker job ns-bwa-diag-001).
+information), majority-class accuracy 0.6048. All four figures are equal to the
+v2026.10 measurements: the register-side reimplementation is validated by
+reproduction. The full model is a separate job (`baseline/`), and its 0.5068 is
+reproduced by both implementations inside that job's contract
+(`train.py`'s print and `validate.py`'s independent recompute).

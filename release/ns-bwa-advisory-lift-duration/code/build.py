@@ -5,8 +5,9 @@ One row per issued boil water advisory in the Nova Scotia advisory register.
 The question: at the moment a boil water advisory is issued for a public
 registered or municipal drinking water supply in Nova Scotia - known then:
 site name, county, facility type, reason for the report, calendar season, and
-the prior advisory history of the same site/county computed only from earlier
-advisories - will the advisory be lifted within 30 days?
+how recently the same site/county last had an advisory (computed only from
+earlier advisories' ISSUE dates) - will the advisory be lifted within
+30 days?
 
 This file ONLY constructs the artifact and its gate diagnostics:
 public/train.csv, public/eval.csv, private/holdout.csv, meta.json,
@@ -36,14 +37,21 @@ Design frozen per the candidate record (construction_handoff):
     are asserted by site and issue date when the vintage is unchanged;
   * features: issuance attributes (site, county, facility type, reason with
     variant normalisation, calendar month/day-of-week) plus as-of site and
-    county history computed ONLY from register rows with a strictly earlier
-    issue date; a prior advisory's lift30 outcome enters a history rate only
-    when its removal date is also strictly earlier than the scored row's
-    issue date (resolved before the instant);
+    county RECENCY computed ONLY from register rows with a strictly earlier
+    issue date. v2026.12 design (operator-accepted 2026-11-02, after the
+    2026-11-01 independent queue audit recovered 196/372 eval and 286/884
+    holdout labels from v2026.10's history columns by count x rounded-rate
+    arithmetic and subtraction): every outcome-derived history column is
+    dropped - site_prior_advisories, site_prior_resolved,
+    site_prior_lift30_rate, site_active_prior, county_prior_advisories,
+    county_prior_resolved, county_prior_lift30_rate, county_active_prior.
+    No shipped column reads any advisory's removal date; the only cross-row
+    derived values are site_days_since_last and county_days_since_last,
+    intervals over strictly-earlier ISSUE dates, which carry no outcome;
   * messy identity: site/county keys are lowercased with collapsed
-    whitespace; history events are de-duplicated per (key, issue date) with
-    a stated representative rule; blank-county rows never enter any county
-    history and carry sentinel history features.
+    whitespace; recency events are de-duplicated per (key, issue date) - a
+    value-identical no-op since only the date enters the arithmetic;
+    blank-county rows never enter any county recency and carry the sentinel.
 
 Licence: Open Government Licence - Nova Scotia v1.1 (class A in the
 candidate record). The OGL-NS attribution statement carries to any release.
@@ -78,6 +86,9 @@ SENTINEL = -1
 
 ID_COLUMNS = ["advisory_id"]
 CARRY_COLUMNS = ["issue_date"]
+# v2026.12: the eight outcome-derived history columns are gone (see the
+# design note above). The only cross-row derived features left are the two
+# recency intervals, computed from strictly-earlier ISSUE dates only.
 FEATURES = [
     "site_name",
     "county",
@@ -85,16 +96,8 @@ FEATURES = [
     "reason",
     "issue_month",
     "issue_dow",
-    "site_prior_advisories",
     "site_days_since_last",
-    "site_prior_resolved",
-    "site_prior_lift30_rate",
-    "site_active_prior",
-    "county_prior_advisories",
     "county_days_since_last",
-    "county_prior_resolved",
-    "county_prior_lift30_rate",
-    "county_active_prior",
 ]
 HIGH_CARDINALITY = ["site_name", "issue_date"]
 COLUMNS = ID_COLUMNS + CARRY_COLUMNS + FEATURES + [TARGET]
@@ -405,35 +408,27 @@ def window_of(issue: date) -> str | None:
 
 
 def build_rows_v2(rows: list[dict], eligibility_cutoff: date):
-    """Scored rows with as-of history features, plus full exclusion counts.
+    """Scored rows with as-of RECENCY features, plus full exclusion counts.
 
-    History pools are keyed by site and by county separately: one event per
-    (pool key, issue date), representative row chosen by the stated rule.
+    v2026.12: the only cross-row derived values are recency intervals over
+    strictly-earlier issue dates; nothing reads any removal date. Recency
+    pools are keyed by site and by county separately and hold one issue date
+    per (pool key, day) - value-identical to per-row events, since only the
+    date enters the arithmetic. The register-level same-date diagnostics are
+    still measured and shipped in summary.json.
     """
     dated = [row for row in rows if row["issue"] is not None]
     dated.sort(key=lambda row: (row["issue"], row["advisory_id"]))
 
-    def representative(group: list[dict]) -> dict:
-        chosen = next((row for row in group
-                       if row["removal"] is not None and row["duration"] >= 0),
-                      None)
-        if chosen is None:
-            chosen = next((row for row in group if row["removal_blank"]),
-                          group[0])
-        return chosen
-
     by_site_date: dict[tuple, list[dict]] = defaultdict(list)
-    by_county_date: dict[tuple, list[dict]] = defaultdict(list)
     same_date_groups = Counter()
     for row in dated:
         by_site_date[(row["site"], row["issue"])].append(row)
-        if row["county"]:
-            by_county_date[(row["county"], row["issue"])].append(row)
     for group in by_site_date.values():
         same_date_groups[len(group)] += 1
 
-    site_events: dict[str, list[dict]] = defaultdict(list)
-    county_events: dict[str, list[dict]] = defaultdict(list)
+    site_events: dict[str, list[date]] = defaultdict(list)
+    county_events: dict[str, list[date]] = defaultdict(list)
     exclusions = {split: Counter() for split in list(WINDOWS) + ["other"]}
     out_rows: dict[str, list[dict]] = {split: [] for split in WINDOWS}
     per_year_scored: dict[str, Counter] = {split: Counter()
@@ -447,24 +442,10 @@ def build_rows_v2(rows: list[dict], eligibility_cutoff: date):
         if len(valid) > 1:
             valid_valid_pairs += 1
 
-    def history(events: list[dict], instant: date) -> dict:
-        n_events = len(events)
-        days_since = (instant - events[-1]["issue"]).days if events else SENTINEL
-        resolved = [event for event in events
-                    if event["removal"] is not None
-                    and event["removal"] < instant
-                    and event["duration"] >= 0]
-        active = any(event["removal"] is None or event["removal"] >= instant
-                     for event in events)
-        rate = (sum(1 for event in resolved
-                    if event["duration"] <= THRESHOLD_DAYS) / len(resolved)
-                if resolved else SENTINEL)
-        return {"n": n_events, "days": days_since,
-                "resolved": len(resolved), "rate": round(rate, 4),
-                "active": int(active)}
+    def days_since(events: list[date], instant: date) -> int:
+        return (instant - events[-1]).days if events else SENTINEL
 
-    EMPTY = {"n": 0, "days": SENTINEL, "resolved": 0, "rate": SENTINEL,
-             "active": 0}
+    EMPTY_DAYS = SENTINEL
     buckets: dict[date, list[dict]] = defaultdict(list)
     for row in dated:
         buckets[row["issue"]].append(row)
@@ -490,9 +471,10 @@ def build_rows_v2(rows: list[dict], eligibility_cutoff: date):
             if row["duration"] < 0:
                 exclusions[split]["negative_duration_invalid"] += 1
                 continue
-            site_hist = history(site_events.get(row["site"], []), day)
-            county_hist = (history(county_events.get(row["county"], []), day)
-                           if row["county"] else dict(EMPTY))
+            site_hist_days = days_since(site_events.get(row["site"], []), day)
+            county_hist_days = (days_since(county_events.get(row["county"], []),
+                                           day)
+                                if row["county"] else EMPTY_DAYS)
             out_rows[split].append({
                 "advisory_id": row["advisory_id"],
                 "issue_date": day.isoformat(),
@@ -502,34 +484,25 @@ def build_rows_v2(rows: list[dict], eligibility_cutoff: date):
                 "reason": row["reason"],
                 "issue_month": day.month,
                 "issue_dow": day.weekday(),
-                "site_prior_advisories": site_hist["n"],
-                "site_days_since_last": site_hist["days"],
-                "site_prior_resolved": site_hist["resolved"],
-                "site_prior_lift30_rate": site_hist["rate"],
-                "site_active_prior": site_hist["active"],
-                "county_prior_advisories": county_hist["n"],
-                "county_days_since_last": county_hist["days"],
-                "county_prior_resolved": county_hist["resolved"],
-                "county_prior_lift30_rate": county_hist["rate"],
-                "county_active_prior": county_hist["active"],
+                "site_days_since_last": site_hist_days,
+                "county_days_since_last": county_hist_days,
                 TARGET: int(row["duration"] <= THRESHOLD_DAYS),
             })
             per_year_scored[split][day.year] += 1
             if row["duration"] in (THRESHOLD_DAYS - 1, THRESHOLD_DAYS,
                                    THRESHOLD_DAYS + 1):
                 boundary[row["duration"]] += 1
-        # One event per (key, date) enters the pools after the date is
-        # scored, so rows sharing an issue date never see each other.
+        # One issue date per (key, day) enters the pools after the day is
+        # scored, so rows sharing an issue date never see each other; the
+        # pools hold dates only, so no value here can carry an outcome.
         seen_keys: set[tuple] = set()
         for row in buckets[day]:
             if (row["site"], day) not in seen_keys:
                 seen_keys.add((row["site"], day))
-                site_events[row["site"]].append(representative(
-                    by_site_date[(row["site"], day)]))
+                site_events[row["site"]].append(day)
             if row["county"] and (row["county"], day) not in seen_keys:
                 seen_keys.add((row["county"], day))
-                county_events[row["county"]].append(representative(
-                    by_county_date[(row["county"], day)]))
+                county_events[row["county"]].append(day)
     diag = {"exclusions": exclusions, "out_of_window_per_year": out_of_window,
             "boundary_durations": dict(boundary),
             "same_date_row_groups": dict(same_date_groups),
@@ -587,21 +560,23 @@ PREDICTION_QUESTION = (
     "At the moment a boil water advisory is issued for a public registered "
     "or municipal drinking water supply in Nova Scotia - known then: site "
     "name, county, facility type, reason for the report, calendar season, "
-    "and the prior advisory history of the same site/county computed only "
-    "from earlier advisories - will the advisory be lifted within 30 days?")
+    "and how recently the same site/county last had an advisory (computed "
+    "only from earlier advisories' issue dates) - will the advisory be "
+    "lifted within 30 days?")
 PREDICTION_TIME = (
     "The advisory issue date (register column 'Date Advisory Issued', a "
     "calendar day in the America/Halifax nominal local calendar; the "
     "register stores dates without times). Every shipped feature is a value "
     "fixed at or before that day: the issuing row's own site name, county, "
     "facility type, reason for the report, and derived calendar features; "
-    "site/county history features read only register rows with a strictly "
-    "earlier issue date, and a prior advisory's lift30 outcome enters a "
-    "history rate only when its removal date is also strictly earlier than "
-    "the scored row's issue date. The label window is the 30 days that "
-    "follow the issue date; no part of the target window precedes the "
-    "instant. The register is a single current vintage (full refresh), so "
-    "all feature values are construction-time vintage values of "
+    "the two recency features (site_days_since_last, "
+    "county_days_since_last) read only register rows with a strictly "
+    "earlier issue date, and are intervals over those ISSUE dates - no "
+    "shipped value reads any advisory's removal date, so no row's outcome "
+    "can reach another row's features. The label window is the 30 days "
+    "that follow the issue date; no part of the target window precedes "
+    "the instant. The register is a single current vintage (full refresh), "
+    "so all feature values are construction-time vintage values of "
     "issuance-time attributes - the same documented posture as "
     "wb-loan-disbursement-completion; no historical point-in-time "
     "availability is claimed.")
@@ -640,33 +615,39 @@ def quality_document(out: Path, stats: dict, fetch_info: dict, diag: dict,
             "issuing advisory (normalised: lowercase, collapsed whitespace, "
             "'E.Coli Present' merged into 'e. coli present', blanks become "
             "the explicit 'unknown' level); issue_month and issue_dow are "
-            "calendar arithmetic on the instant; the ten history features "
+            "calendar arithmetic on the instant; the two recency features "
             "read only register rows with a strictly earlier issue date - "
-            "counts and recurrences per normalised site/county key with "
-            "events de-duplicated per (key, issue date), and lift30 rates "
-            "over prior advisories whose removal date is also strictly "
-            "earlier than the scored row's issue date, so no history value "
-            "reads an outcome that was unresolved at the instant. Not "
-            "shipped, with reasons: 'Date Advisory Removed' and 'Length of "
-            "Advisory in Days' (the label source and its publisher "
-            "derivation); lift14 (a second label derived from the same "
-            "removal date; its discovery-measured base rates are recorded "
-            "in summary.json as an alternative that is not shipped)"),
+            "site_days_since_last and county_days_since_last are intervals "
+            "from the instant back to the most recent earlier same-key "
+            "issue date, with events de-duplicated per (key, issue date) "
+            "and blank-county rows never pooled (sentinel -1). v2026.12 "
+            "removed the eight outcome-derived history columns "
+            "(site/county prior advisory counts, resolved counts, lift30 "
+            "rates and active flags) that v2026.10 shipped: an independent "
+            "2026-11-01 audit recovered eval/holdout labels from them by "
+            "count x rounded-rate arithmetic and subtraction across "
+            "consecutive same-site rows, so no shipped column may read any "
+            "advisory's removal date. Not shipped, with reasons: 'Date "
+            "Advisory Removed' and 'Length of Advisory in Days' (the label "
+            "source and its publisher derivation); lift14 (a second label "
+            "derived from the same removal date; its discovery-measured "
+            "base rates are recorded in summary.json as an alternative "
+            "that is not shipped)"),
         "carry_columns": CARRY_COLUMNS,
         "id_columns": ID_COLUMNS,
         "high_cardinality_columns": HIGH_CARDINALITY,
         "high_cardinality_note": (
             "site_name has ~1.1k levels over ~2.3k scored rows (the source "
             "grain: many sites advise once or twice; repeat sites are the "
-            "point of the history features); issue_date is a free event "
+            "point of the recency features); issue_date is a free event "
             "date with mostly <5 rows per level. Both are declared rather "
             "than scored by the single-column AUC check. The runner's "
             "id_columns exclude advisory_id from default model input; "
-            "site_name stays a model input by design - site identity and "
-            "its repeat structure are genuine issuance-time signal, and no "
-            "cross-split site join can recover another row's label because "
-            "each row's label is its own advisory's removal, never repeated "
-            "in any other row's shipped columns"),
+            "site_name stays a model input by design - site identity is "
+            "genuine issuance-time signal, and no cross-split site join "
+            "can recover another row's label because each row's label is "
+            "its own advisory's removal, never repeated in any other "
+            "row's shipped columns"),
         "label_source_columns": LABEL_SOURCE_COLUMNS,
         "post_hoc_columns": POST_HOC_COLUMNS,
         "measurements": [
@@ -697,42 +678,16 @@ def quality_document(out: Path, stats: dict, fetch_info: dict, diag: dict,
              "frame": "the month of the instant"},
             {"column": "issue_dow", "unit": "day of week 0=Monday..6=Sunday",
              "frame": "the weekday of the instant"},
-            {"column": "site_prior_advisories", "unit": "count of advisories",
-             "frame": "distinct earlier issue dates at the same normalised "
-                      "site, strictly before the instant"},
             {"column": "site_days_since_last", "unit": "days (integer)",
              "frame": "instant minus the most recent earlier same-site "
                       "issue date; -1 when the site has no earlier "
-                      "advisory"},
-            {"column": "site_prior_resolved", "unit": "count of advisories",
-             "frame": "earlier same-site advisories whose removal date is "
-                      "strictly before the instant and whose duration is "
-                      "non-negative"},
-            {"column": "site_prior_lift30_rate", "unit": "mean binary label "
-              "in [0,1]",
-             "frame": "lift30 rate over those resolved priors; -1 when "
-                      "site_prior_resolved is 0"},
-            {"column": "site_active_prior", "unit": "binary 0/1",
-             "frame": "1 iff an earlier same-site advisory was still in "
-                      "effect at the instant (blank removal at the vintage, "
-                      "or removal on/after the instant)"},
-            {"column": "county_prior_advisories", "unit": "count of advisories",
-             "frame": "distinct earlier issue dates in the same county, "
-                      "strictly before the instant; 0 for rows with blank "
-                      "county (never pooled)"},
+                      "advisory (an interval over issue dates only - "
+                      "v2026.12: no shipped column reads a removal date)"},
             {"column": "county_days_since_last", "unit": "days (integer)",
              "frame": "instant minus the most recent earlier same-county "
-                      "issue date; -1 when none"},
-            {"column": "county_prior_resolved", "unit": "count of advisories",
-             "frame": "earlier same-county advisories resolved strictly "
-                      "before the instant"},
-            {"column": "county_prior_lift30_rate", "unit": "mean binary label "
-              "in [0,1]",
-             "frame": "lift30 rate over those resolved priors; -1 when "
-                      "none"},
-            {"column": "county_active_prior", "unit": "binary 0/1",
-             "frame": "1 iff an earlier same-county advisory was still in "
-                      "effect at the instant; 0 for blank-county rows"},
+                      "issue date; -1 when none, and -1 for rows with "
+                      "blank county (never pooled); an interval over "
+                      "issue dates only"},
             {"column": TARGET, "unit": "binary 0/1",
              "frame": f"1 iff (removal date - issue date) <= "
                       f"{THRESHOLD_DAYS} days, inclusive, recomputed from "
@@ -844,7 +799,10 @@ def quality_document(out: Path, stats: dict, fetch_info: dict, diag: dict,
             "scope_note": (
                 "each row is one issued advisory whose features are "
                 "issuance-time register attributes plus strictly-earlier "
-                "site/county history; the intended protocol predicts "
+                "issue-date recency (site/county days-since-last); the "
+                "v2026.12 frame ships no outcome-derived column, so no "
+                "row's features can read another row's removal date. The "
+                "intended protocol predicts "
                 "row-wise from the shipped columns (the shipped benchmark "
                 "validator passes the whole table to the predictor, so "
                 "isolated_rows is the design intent of this artifact's "
@@ -906,83 +864,16 @@ def quality_document(out: Path, stats: dict, fetch_info: dict, diag: dict,
                               "(0=Monday)",
                     "availability": "determined by the instant",
                     "status": "verified"},
-                "site_prior_advisories": {
-                    "source": "count of register rows at the same normalised "
-                              "site with strictly earlier issue dates, "
-                              "de-duplicated per issue date",
-                    "availability": "advisory issue events dated before "
-                                    "the instant",
-                    "status": "assumed",
-                    "assumption": "computed from current-vintage register "
-                                  "rows; the event ordering is enforced "
-                                  "as-of, the values are single-vintage"},
                 "site_days_since_last": {
                     "source": "instant minus the most recent earlier "
                               "same-site issue date",
                     "availability": "date arithmetic on earlier events",
                     "status": "assumed",
                     "assumption": "single-vintage register values"},
-                "site_prior_resolved": {
-                    "source": "count of earlier same-site advisories with "
-                              "removal strictly before the instant and "
-                              "non-negative duration",
-                    "availability": "removal events dated before the "
-                                    "instant",
-                    "status": "assumed",
-                    "assumption": "single-vintage register values; the "
-                                  "strict as-of rule keeps unresolved "
-                                  "priors out"},
-                "site_prior_lift30_rate": {
-                    "source": "mean lift30 over those resolved priors; -1 "
-                              "when none",
-                    "availability": "prior outcomes fully observed before "
-                                    "the instant",
-                    "status": "assumed",
-                    "assumption": "single-vintage register values"},
-                "site_active_prior": {
-                    "source": "1 iff an earlier same-site advisory is "
-                              "unresolved at the instant (blank removal or "
-                              "removal on/after the instant)",
-                    "availability": "state of earlier advisories at the "
-                                    "instant",
-                    "status": "assumed",
-                    "assumption": "blank removal at the vintage implies in "
-                                  "effect at every earlier instant; "
-                                  "single-vintage register values"},
-                "county_prior_advisories": {
-                    "source": "count of register rows in the same county "
-                              "with strictly earlier issue dates, "
-                              "de-duplicated per issue date; blank-county "
-                              "rows never pool (sentinel 0)",
-                    "availability": "advisory issue events dated before "
-                                    "the instant",
-                    "status": "assumed",
-                    "assumption": "single-vintage register values"},
                 "county_days_since_last": {
                     "source": "instant minus the most recent earlier "
                               "same-county issue date",
                     "availability": "date arithmetic on earlier events",
-                    "status": "assumed",
-                    "assumption": "single-vintage register values"},
-                "county_prior_resolved": {
-                    "source": "count of earlier same-county advisories "
-                              "resolved strictly before the instant",
-                    "availability": "removal events dated before the "
-                                    "instant",
-                    "status": "assumed",
-                    "assumption": "single-vintage register values"},
-                "county_prior_lift30_rate": {
-                    "source": "mean lift30 over those resolved priors; -1 "
-                              "when none",
-                    "availability": "prior outcomes fully observed before "
-                                    "the instant",
-                    "status": "assumed",
-                    "assumption": "single-vintage register values"},
-                "county_active_prior": {
-                    "source": "1 iff an earlier same-county advisory is "
-                              "unresolved at the instant",
-                    "availability": "state of earlier advisories at the "
-                                    "instant",
                     "status": "assumed",
                     "assumption": "single-vintage register values"},
             },
@@ -1019,6 +910,14 @@ def quality_document(out: Path, stats: dict, fetch_info: dict, diag: dict,
             "limitations": [
                 "single current vintage; no historical as-of reconstruction "
                 "of any feature value; retrospective research only",
+                "v2026.12 (2026-11-07 rebuild): the eight outcome-derived "
+                "history columns of v2026.10 were removed after an "
+                "independent audit recovered eval and holdout labels from "
+                "them by count x rounded-rate arithmetic and subtraction; "
+                "the frame is issuance attributes plus issue-date recency "
+                "only, which removes real signal (the site's own outcome "
+                "history) that the persistence reference still measures "
+                "register-side",
                 "the register's own 'Length of Advisory in Days' disagrees "
                 "with the recomputed duration on a counted subset of rows "
                 "(measured in summary.json); the label always uses the two "
@@ -1036,31 +935,31 @@ def quality_document(out: Path, stats: dict, fetch_info: dict, diag: dict,
                 "uncertainty intervals are correspondingly wide",
             ],
             "cross_row_audit": {
-                "probes": [
-                    {"entity_columns": ["site_name"],
-                     "time_column": "issue_date",
-                     "lag_days_column": "site_days_since_last",
-                     "left": "site_prior_lift30_rate",
-                     "operation": "copy"},
-                    {"entity_columns": ["county"],
-                     "time_column": "issue_date",
-                     "lag_days_column": "county_days_since_last",
-                     "left": "county_prior_lift30_rate",
-                     "operation": "copy"},
-                ],
+                "probes": [],
                 "rationale": (
-                    "the plausible cross-row exposure is reverse-history: a "
-                    "later advisory at the same site/county carries the "
-                    "prior advisory's lift30 outcome inside its history "
-                    "rate, exact when that prior is its only resolved "
-                    "prior. The two probes measure that exposure on the "
-                    "full artifact (donor = a later row whose "
-                    "days_since_last points exactly back to the earlier "
-                    "row's issue date, voting its prior lift30 rate); "
-                    "covered rows require the isolated_rows access this "
-                    "descriptor declares. The forward direction is closed "
-                    "by construction: no shipped column reads any row "
-                    "issued on or after the scored row's issue date"),
+                    "v2026.12 ships no outcome-derived column, so the "
+                    "reverse-history exposure the v2026.10 probes measured "
+                    "is closed structurally, not by protocol: a later "
+                    "advisory's shipped columns can no longer carry an "
+                    "earlier advisory's lift30 outcome, because the only "
+                    "cross-row derived values (site_days_since_last, "
+                    "county_days_since_last) are intervals over earlier "
+                    "ISSUE dates and no shipped value reads any removal "
+                    "date. The two v2026.10 probes (donor = a later row "
+                    "whose days_since_last points exactly back to the "
+                    "earlier row's issue date, voting its prior lift30 "
+                    "rate) cannot even be expressed on this frame - their "
+                    "'left' column no longer exists - and the stronger "
+                    "count x rounded-rate subtraction attack the "
+                    "independent 2026-11-01 audit used to recover "
+                    "196/372 eval and 286/884 holdout labels has no "
+                    "count, resolved-count, rate or active-count column "
+                    "to operate on. The forward direction is closed by "
+                    "construction: no shipped column reads any row "
+                    "issued on or after the scored row's issue date. An "
+                    "independent auditor is still expected to re-run the "
+                    "frozen subtraction attacks on these bytes and hunt "
+                    "beyond them"),
                 "auxiliary_files_review": (
                     "the artifact ships public/train.csv, public/eval.csv, "
                     "private/holdout.csv, meta.json, quality.json and "
@@ -1132,7 +1031,7 @@ def main(argv=None) -> int:
     log(f"vintage={vintage.isoformat()} "
         f"eligibility_cutoff={eligibility_cutoff.isoformat()}")
 
-    log("== build scored rows with as-of history features ==")
+    log("== build scored rows with as-of recency features ==")
     out_rows, diag = build_rows_v2(rows, eligibility_cutoff)
     for split in ("train", "eval", "holdout"):
         excluded = sum(diag["exclusions"][split].values())

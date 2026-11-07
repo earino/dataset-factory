@@ -12,6 +12,325 @@ no active workers, reconciled ledger, and concurrent ns-bwa edits from a schedul
 preserve those edits. Codex prepares acceptance bundles and Scout owns worker launches.
 Next: clean-clone suite + exact-commit CI, deploy/read back the hold, then R1/R2.
 
+## 2026-11-07 (17:04Z) - scheduled discovery (Oceania tick): planSA LABEL CHANNEL MEASURED (decision dates + per-consent outcomes ARE published per application; both label families constructible) but the detail endpoint degrades to hollow responses under sustained load - refusal prevalence UNMEASURED, candidate stays investigating with a one-session paced-pass gate; PDI-era per-year population measured from the register's own backend; CSV export measured non-deterministically truncated above ~789 KB; GEN star-ratings extract probe BLOCKED on fetch channel
+
+Discovery-only session; regional focus Oceania; no construction, no
+qualification, no advancement, no worker launched (EUR 0), no bulk data on
+the coordinator; every planSA number is an aggregate printed from in-page
+browser computations.
+
+- PLANSA (SA state register - the region's own recorded next action): the
+  2026-11-02 session's open question "are decision dates displayed at all?"
+  is ANSWERED at the endpoint layer. Three machine endpoints
+  reverse-engineered from the page's own bundle and verified (recipes
+  retained at probe/plansa_endpoint_recipes_2026_11_07.py, full detail in
+  notes.md s6): CSV export (7 columns, coarse status only, m/d/yyyy),
+  search (authoritative TotalRecords column; response Count unreliable),
+  per-application detail POST with a DecisionDetails child carrying
+  per-consent [decision type, decision, DECISION DATE]. Verified example:
+  app 6154 -> "Development Approval / Granted / 30 Apr 2021" (lodged
+  1 Apr 2021). So BOTH recorded candidate labels are constructible:
+  statutory-timeframe latency (pathway rules documented from the
+  publisher's own pages: 5-95 business days + 5bd verification + 2bd issue
+  + a declared clock-SUSPENSION confounder) and refusal (DRT). Record
+  updated: prediction_question/target_definition FIXED family,
+  split_strategy now carries measured per-year PDI-era decided counts
+  (2020-2026: 5,235/34,482/35,782/31,356/34,549/33,280/23,028; sum
+  198,312; all-status and under-assessment per year recorded), and the
+  population is measured TWO-ERA: DEV-act rows 73,464 (decided back to at
+  least 2000: 26,532 in 2000-2009 + 36,067 in 2010-2019) vs PDI 226,568
+  (sum 300,032 = register total) - DEV-era rows are a different
+  state-referred population and are excluded from the frame.
+- TWO MEASURED SOURCE HAZARDS that would have bitten construction:
+  (1) the CSV export returns a NON-DETERMINISTIC ~789,151-byte subset when
+  a window exceeds that size (dual-fetch: equal bytes, different content,
+  in-page hash; five identical calls parsed 2,287-4,349 rows vs the
+  backend's 5,235; parser determinism proven by double-parse) -
+  construction must enumerate month-scale windows and reconcile against
+  TotalRecords; (2) the detail endpoint DEGRADED to hollow children after
+  ~100 POSTs (bursts), including for previously-verified IDs, and a 30 s
+  pause did not restore it in-session; trigger undetermined. Because of
+  (2) the 42-app refusal-prevalence sample could not run: refusal
+  prevalence per split window is the ONE measurement gating the ready
+  verdict (record.next_action names the paced pass: >= 1.5 s spacing,
+  hollow-read re-fetch, ~30 apps/window via month-scale CSV windows).
+  Status stays investigating; check-candidate OK.
+- LICENCE: the register footer's CC BY 3.0 Australia line re-verified
+  live this session (class A unchanged). The status filter is measured
+  backend-enforced to the five coarse statuses (Refused/Granted search
+  POSTs return no rows; positive control Decision Made returns 260,311) -
+  there is no refusal-enumeration channel other than per-app details.
+- GEN STAR RATINGS (federal AU, the other recorded next action): series
+  verified on gen-agedcaredata.gov.au (15 quarterly extracts May 2023 ->
+  13 Oct 2026, service-level 1-5 stars + 4 sub-categories, Dept of Health;
+  site licence CC BY 4.0 recorded 2026-10-31), but the extract itself
+  (XLSX ~2 MB hosted on health.gov.au) is UNREACHABLE from this host:
+  curl gets HTTP/2 stream error rc=92 then hangs to timeout (two
+  attempts), and the browser download channel does not deliver files in
+  this environment. No candidate opened; the one-extract probe stays
+  recorded and blocked on a working fetch channel (worker fetch or
+  operator network) - measured in the planSA record's measurements for
+  provenance.
+- REGION COVERAGE, honestly: this tick spent its depth on the SA state
+  register (the region's strongest lead). VIC/NSW/QLD state-portal
+  licence triage named by earlier ticks was NOT reached and remains the
+  next Oceania item; NZ leads (fenz, nz-ea) untouched and unchanged; NZ
+  Charities Register stays licence-cleared-but-unopened (charity family
+  already carried by acnc ready + cra-charity ready).
+- Checks: check-candidate plansa OK; --all rc=0 (149 records); suite
+  723/723 OK (33.3 s).
+
+Next action: the paced detail pass in record.next_action (one quiet-window
+session, no worker money) decides ready vs parked for plansa; VIC or NSW
+portal licence triage is the following Oceania tick's queue item.
+
+## 2026-11-07 (15:05Z) - scheduled advancement: ns-bwa v2026.12 PACKAGE FULLY PREPARED AND LOCALLY VERIFIED (artifact 49bf4cfa, check-package OK, suitability re-bound, docs regenerated Class-B-clean) - private staging DEFERRED under the operator's factory-repair directive, not cancelled; one inherited defect found and recorded for the auditor (frozen quality.json known_event declaration names one holdout row)
+
+Release work first. Triage of the brief's five release items against the
+recorded decisions: ab-wildfire, cpcb, cqc, za-cct are the four DO-NOT-PUBLISH
+packages whose corrections follow A4 (re-run through the new pipeline, then the
+operator decides per package); cpcb additionally carries the recorded DROP
+recommendation and cqc the successor-linkage operator decision; dvsa-mot
+next_action remains the operator's a/b/c choice. ns-bwa-advisory-lift-duration
+is the one packaged candidate with an executable recorded next_action (the
+operator-accepted 2026-11-02 remediation's tail: package v2026.12, stage,
+suitability re-bind, fresh audit prompt) - this session executed the local
+part and deferred the staging part.
+
+- PACKAGE (all from digest-verified recorded bytes; nothing hand-copied):
+  byte-pinned meta.json (e362b42a), quality.json (1930d86c) + gate report
+  (76ffd8ee) fetched from staging 437529809 against the worker-written
+  manifest (probe/fetch_v2026_12_bytes_2026_11_07.py, committed); the
+  baseline_result.json lag fixed (it still described ns-bwa-baseline-001;
+  now the collected -002 result 5d6641f2, digest-verified - release-manifest
+  reads it); code/build.py 2253fe59, code/score.py ab4d9fd5, code/run.sh
+  ee73a468 copied from the committed v2026.12 source (the exact bytes
+  ns-bwa-002 executed; baseline runner files verified equal to the -002
+  bundle digests); measurements.json regenerated by
+  package/build_measurements_v2026_12_2026_11_07.py from the collected -002
+  evidence WITH reproduction asserts (persistence 0.6124 / calendar 0.5075 /
+  reason 0.4307 / majority 0.6048 all equal v2026.10 exactly - the
+  register-side persistence reimplementation is validated by reproduction);
+  get_dataset.py EXPECTED generated from the gate's artifact block, TAG
+  v2026.12; README / RELEASE_NOTES / VERIFICATION / REPRODUCE /
+  DATA_DICTIONARY / card.md rewritten for the 11-column frame with the honest
+  comparison carried everywhere (model 0.5068 trails register-side
+  persistence 0.6124 by 0.1056; the v2026.10 intervals are quoted only with
+  their superseded-frame provenance labelled; the -0.0018 integrity cost is
+  stated); MANIFEST.json + SHA256SUMS written last by release-manifest.py;
+  DESTINATIONS.json restructured (current identity v2026.12, zero staged
+  destinations, v2026.10 destination evidence preserved verbatim under
+  superseded with the DO-NOT-PUBLISH disposition).
+- CLASS B APPLIED TO THE DOCS: no fixture answer, salt, raw fixture id or
+  named scored row appears in any regenerated document (the v2026.10
+  VERIFICATION/card fixture sentences are gone); scans for Maple/Canning/
+  307/@@PLACEHOLDER@@ over the package come back clean. The card keeps its
+  generator placeholders.
+- DEFECT FOUND AND RECORDED, not fixed: the frozen quality.json (accepted
+  artifact 49bf4cfa) carries the builder's v2026.10-era known_event
+  declaration naming two register rows and their durations, including ONE
+  SCORED HOLDOUT ROW. For this internal-threshold task the gate requires no
+  such fixture (check units.known_event_fixture_recorded records "no
+  external threshold, so no known-event fixture is required") and does not
+  verify the block - it is inherited voluntary content inside bytes pinned
+  by the artifact version, at one-row scale the same class the 2026-11-07
+  audit killed za-cct's README for. It cannot be edited without a new
+  artifact version. Recorded in the record's open_rulings, the suitability
+  limitations and VERIFICATION.md; the fresh pre-flip audit is mandated to
+  rule on it; a fixture-to-train-row fix would be a third build (blocked by
+  the factory-repair hold and the operator's to authorise).
+- STAGING DEFERRED, deliberately: the operator's 2026-11-07 directive ("fix
+  the factory before more packages"; R6 holds new package construction until
+  the new gates pass acceptance) is read as covering the staging spend for a
+  package built under the old gates - the exact spend that died at audits
+  six times. Preparation is local, reversible and complete, so the deferral
+  costs a cycle, not work: the staging sequence (repo commit preserving the
+  v2026.10 tag, release 428463645 rename to SUPERSEDED - DO NOT PUBLISH,
+  transfer job from 437529809, tag LAST, Hub --create/--upload-small +
+  hf_publish job + --verify + --tag, both DESTINATIONS blocks, fresh pre-flip
+  audit prompt, awaiting_operator) is recorded step by step in
+  record.next_action and runs in one session on the operator's go or when
+  R1-R4 pass acceptance. No worker was launched (EUR 0); no destination was
+  written; nothing public; the v2026.10 staged bytes stay private.
+- Checks: check-package release/ns-bwa-advisory-lift-duration OK;
+  check-suitability 22 OK (this artifact re-bound to 49bf4cfa);
+  check-candidate ns-bwa OK + --all rc=0; suite 723/723 OK (33.1 s).
+
+Next action (record.next_action): the recorded staging sequence above, gated
+on the operator's go or the new gates' acceptance; the fresh pre-flip audit
+prompt (which must also rule on the known_event declaration) is generated at
+staging time from the frozen manifest.
+
+## 2026-11-07 (12:47Z) - scheduled discovery (East Asia tick): Seoul catalog sweep gate ANSWERED NEGATIVE (Korea option (b) closed by measurement); NEW CANDIDATE jp-meti-recall-expansion opened (Japan, consumer-product recall lifecycle-update prediction; investigating, buffer-only under the factory-repair directive)
+
+Discovery-only session; regional focus East Asia; no build, qualification,
+packaging, publication or advancement; no worker spend; no bulk data on the
+coordinator.
+
+- KOREA (kr-kosis-kma-access, stays parked): the recorded Seoul-catalog gate
+  ("enumerate for an event-grain register OUTSIDE the bench's existing families")
+  is now answered. 25 family keywords POSTed to the portal's server-rendered
+  search (recipe probe_kr_seoul_sweep_2026_11_07.py, committed): every hit is an
+  aggregate statistical table (traffic accidents, fire, EMS use, complaints,
+  leaks, enforcement counts - all by-district/by-month); zero hits for
+  recall/defect/elevator-safety/power-incident/construction-delay families; all
+  33 public-data '사고' cards read - all aggregates. The Seoul gate collapses to
+  the single recorded operator decision on OA-23122 (food dispositions,
+  enforcement family). KOSIS/KMA park unchanged (operator credential).
+- JAPAN (NEW candidate jp-meti-recall-expansion, investigating): consumer-product
+  recall lifecycle-update prediction on METI's 製品安全ガイド リコール情報 register
+  (per-recall rows since 2007-05-14; a genuinely new bench family). Licence
+  triaged first: NITE channel CLASS D (site terms: reproduction needs NITE
+  permission - quoted in record); CAA major-notice channel volume-rejected (265
+  records/~18y); METI channel CLASS B under the government-standard PDL 1.0
+  (利用規約 quote recorded; attribution + no-official-endorsement + third-party
+  images never shipped). Grain + later-resolving target measured: register rows
+  carry two-date update markers (対象追加/型番追加/品番追加・対象期間拡大/対策内容更新
+  = label classes, sample base rate ~3-4% on the highest-volume sub-page; cosmetic
+  update classes excluded); measured lags span 42 days to ~4.9 years; detail-page
+  schema verified on one modern page (EAN/batch codes, 販売期間, 対象台数, remedy,
+  reason, 法人番号, 最終更新日); AS-OF FINDING: updated rows link to the CURRENT
+  detail-page revision, so per-row publication-day features need Wayback vintages
+  - recorded as the as-of uncertainty (current-compilation retrospective unless
+  bounded). Prior art searched (RECALL-MM US-CPSC hazard classification,
+  SemEval-2025 Task 9, NHTSA complaints): no ML-ready per-recall
+  scope-expansion task found; formal check-novelty.py at ready-review. Probe
+  script + output JSON committed (reproducible; METI WAF pacing constraints
+  documented: hubs 403 to plain clients, bursts get 202 challenges, urllib gets
+  empty 200s - spaced curl or the browser).
+- Region coverage otherwise unchanged: Singapore park stands (quarterly catalog
+  diff not yet due, last sweep 2026-10-20); HK red-tide park stands (timing
+  contract; no new dictionary/vintage evidence); tw-reservoir investigating with
+  its recorded worker handoff untouched; tw-taipower/tw-typhoon unchanged.
+- Checks this session: check-candidate jp-meti-recall-expansion OK,
+  kr-kosis-kma-access OK, check-candidate --all rc=0 (148 records); local suite
+  723 tests OK (unittest discover).
+
+Next action (record.next_action): jp-meti-recall-expansion ordered handoff -
+cross-era detail-page schema verification, full-register enumeration (polite
+paced; per-year counts, marker base rates, update-lag distribution, clustered
+positives -> split capacity verdict), Wayback CDX vintages, CAA cross-check,
+formal novelty check, five-contract reconciliation -> ready review. NO
+construction while the operator's 2026-11-07 factory-repair directive stands.
+
+## 2026-11-07 (12:06Z) - follow-up (worker-status runner): ns-bwa-002 + ns-bwa-baseline-002 SUCCEEDED - the 11:39Z advancement session had already collected, destroyed and recorded both jobs but ended at its wall-clock ceiling before committing; this follow-up re-verified every required check from the collected bytes, the live provider and the live staging releases, corrected two timestamp slips against the job ledgers, committed the recording and marked both jobs handled
+
+The shared research mutex was this runner's for the whole invocation; no
+other session was active (the advancement session's processes were gone;
+the working tree held only this event's recording). Both jobs were
+already collected, so no collect, launch or recovery was needed.
+
+- RE-VERIFIED FROM THE COLLECTED BYTES (every fetched part digest-checked
+  against its staging manifest): ns-bwa-002 - gate 1.5.0 ok=true,
+  failed_checks [], 44 results, the artifact block pins train/eval/holdout
+  at 665b88a4/8f52bcdf/f0da86a8; acceptance receipt "ACCEPTED: /output/
+  extract matches the qualified artifact 49bf4cfa427375c6"; the references
+  report pins the same artifact_version. ns-bwa-baseline-002 - accept.log
+  ACCEPTED before any scoring; materialize copied public train+eval only
+  ("the private holdout was NOT copied"); runner files unmodified
+  (bundled digests equal the read-only harness checkout, re-checked
+  locally); both eval AUCs 0.5068; "[validate] CONTRACT OK";
+  baseline_result.json contract_ok true, holdout sealed.
+- CORRECTIONS against the job ledgers (the advancement session's
+  hand-written stamps): baseline worker destroyed 11:48:13Z (ledger
+  deleted_at), not 11:42:40Z; baseline job launched 11:36Z (ledger
+  created_at 11:36:16Z), not 11:42Z. Both fixed in the entry below and
+  in record.json. The build job's stamps all matched the ledger.
+- PRESERVATION re-verified live 12:04Z: private staging release 437529809
+  serves all 13 manifest assets plus manifest.json, every size and sha256
+  equal to the collected manifest (the accepted v2026.12 extract is
+  durable there); release 437536802 serves its 9 plus manifest.json
+  equally. No bulk CSV was fetched to the coordinator.
+- CLEANUP (deletion confirmed by the provider, re-read 12:04Z):
+  GET /v1/servers/174969934 -> 404; GET /v1/servers/174971571 -> 404;
+  GET /v1/servers -> 0 entries; GET /v1/primary_ips -> 0 entries.
+- Checks by this follow-up: check-candidate --all rc=0; the suite first
+  showed 723 tests / 1 PRE-EXISTING failure at HEAD -
+  test_runtime_audit (skills/dataset-release/SKILL.md differs from the
+  reviewed inventory ops/runtime-files.json): commit a43838b added the
+  fixture-shipping failure-mode row without the inventory digest bump.
+  Repaired exactly as the dd8026c precedent (digest refreshed to the
+  committed skill bytes; the a43838b delta verified to be that one row
+  only); suite 723/723 OK after the repair, recorded beside this entry.
+- Both jobs marked handled by this follow-up (.factory/ns-bwa-002/
+  handled, .factory/ns-bwa-baseline-002/handled, citing the recording
+  commit). Untracked probe/fetch_baseline_diagnostics_002_2026_11_07.py
+  committed with the recording.
+
+Next action unchanged (record.next_action): package v2026.12, private
+staging on both destinations (tag last), version-bound suitability
+re-bound to 49bf4cfa..., fresh pre-flip audit prompt re-running the
+frozen subtraction attacks on the new bytes; the staged v2026.10 bytes
+stay private and are never flipped.
+
+## 2026-11-07 (11:39Z) - scheduled advancement: ns-bwa v2026.12 REBUILD EXECUTED (ns-bwa-002) - gate 1.5.0 PASSED on the full artifact 49bf4cfa (0 failed checks), --accept ACCEPTED, references on identical eval rows (persistence 0.6124 recomputed register-side = the v2026.10 figure exactly); ns-bwa-baseline-002 RUNNING
+
+Primary candidate ns-bwa-advisory-lift-duration (release work outranks
+construction; the recorded, operator-accepted 2026-11-02 rebuild decision;
+all five other packaged records carry awaiting_operator TRUE = pure human
+wait; dvsa-mot next_action remains the operator decision, untouched).
+
+- THE EDIT (committed 0d36ffc, pushed): all eight outcome-derived history
+  columns dropped from the shipped frame (site/county prior-advisory
+  counts, resolved counts, lift30 rates, active flags) - the P0 channel
+  of the 2026-11-01 DO NOT PUBLISH audit (count x rounded-rate arithmetic
+  and subtraction recovered 196/372 eval, 286/884 holdout). The frame is
+  issuance attributes + issue-date recency only: 11 columns. cross_row
+  probes emptied with a rationale naming the structurally closed
+  exposure; quality.json feature_evidence/measurements/scope/limitations
+  re-derived. score.py's persistence reference is now computed
+  REGISTER-SIDE post-acceptance (fetch asserted sha256-identical to the
+  artifact's own vintage; arithmetic identical to v2026.10's shipped
+  site_prior_lift30_rate) because the shipped column is gone.
+- PRE-WORKER SMOKE (committed probe/smoke_v2026_12_2026_11_07.py,
+  PASSED on the coordinator): synthetic 162-row register incl. both
+  mandatory fixtures; as-of recency semantics asserted (strictly-earlier
+  only, same-(site,issue) rows never see each other, blank-county
+  sentinel, county recency recomputed independently); gate 1.5.0
+  two-phase PASSED + --accept ACCEPTED on the synthetic artifact; no
+  synthetic column separates the label (pre-checked with the gate's own
+  scorer); the register-side persistence helper unit-checked with a
+  monkeypatched register. Gate sha 4fab8a34 unchanged; --selftest PASSED.
+- ns-bwa-002 OUTCOME (server 174969934, cx23 hel1, exit 0, 16.0 s,
+  staging release 437529809, collected 11:31:07Z, destroyed 11:33:25Z
+  with provider read-back 404 / 0 servers / 0 primary IPs): register
+  byte-identical to v2026.10 (sha 60f77ac4, vintage 2026-06-16, 2649
+  rows); population identical by design (train 1069/715, eval 372/225,
+  holdout 884/514); gate 1.5.0 PASSED, 0 failed checks; --accept
+  ACCEPTED for artifact 49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c1
+  19c396b6b7ea4c6144; references on identical eval rows: persistence
+  0.6124 (covered 231/372, register sha-verified), calendar 0.5075,
+  reason 0.4307, majority accuracy 0.6048, paired persistence-calendar
+  +0.1014 [0.0144, 0.1739]; per-year persistence 0.608/0.620/0.599 over
+  the 0.744 -> 0.415 prevalence fall. All four reference figures equal
+  the v2026.10 measurements - the register-side reimplementation is
+  validated by reproduction.
+- BASELINE COMPLETE (ns-bwa-baseline-002, server 174971571, exit 0,
+  55.5 s, staging release 437536802, collected 11:40:15Z, destroyed
+  11:48:13Z per the job ledger deleted_at - the 11:42:40Z first written
+  here predates the ledger record and was corrected by the follow-up;
+  provider read-back 404 / 0 servers / 0 primary IPs re-confirmed live
+  at 2026-11-07T12:04Z):
+  re-accept ACCEPTED for 49bf4cfa... on the fetched bytes BEFORE any
+  scoring (accept.log), benchmark train.py + validate.sh unmodified,
+  both eval AUCs agree exactly at 0.5068, CONTRACT OK. MEASURED
+  COMPARISON on identical eval rows: stock runner 0.5068 TRAILS
+  persistence 0.6124 by 0.1056 (and sits at calendar level 0.5075) -
+  the recorded honest expectation, now a measured finding, not a
+  headroom claim. Against the v2026.10 19-column leak-carrying frame
+  the same runner measured 0.5086: removing the eight outcome-derived
+  columns cost the model -0.0018 AUC while closing the P0 channel - the
+  integrity fix did not trade away measured model signal.
+- NOT STARTED (recorded next_action): package v2026.12, private staging
+  on both destinations (tag last), version-bound suitability re-bound to
+  49bf4cfa..., fresh pre-flip audit prompt re-running the frozen
+  subtraction attacks on the new bytes. The staged v2026.10 bytes stay
+  private and are never flipped.
+
+Next action (record.next_action): the v2026.12 package/stage/suitability/
+audit sequence above; both workers are collected and destroyed, no job
+is running, nothing is scored before a future flip decision.
+
 ## 2026-11-07 (12:05Z) - operator directive: fix the factory before more packages; briefing for Codex written and committed
 
 The operator's assessment: too much construction and staging spend dies at the

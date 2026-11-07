@@ -52,3 +52,24 @@ OA-23122 is an enforcement/inspection-outcome family member (chicago-food-inspec
 msha citations published; cqc packaged) - opening it needs the operator family decision
 (air4thai/hk-datagov-portal precedent). Recorded as option (a) in record.next_action,
 not opened as a candidate.
+
+## Seoul catalog sweep, 25 family keywords (2026-11-07, East Asia tick)
+
+Executed option (b) of the recorded next_action. The catalog's search POST is
+server-rendered, so the sweep ran from a plain client (recipe:
+probe_kr_seoul_sweep_2026_11_07.py, this dir):
+
+| Keyword family | Hits | Grain of every hit |
+|---|---|---|
+| 사고 (accident) | 67 (34 공공데이터) | aggregate traffic-accident/fire/electric-shock statistics (all 33 public-data cards paginated and read: 통계 tables by district/age/time) |
+| 재난, 응급, 화재, 감염, 식중독 | 6-8 each | aggregate by-district/by-month statistics |
+| 민원, 신고, 단속, 누수, 지하수, 도시가스, 항공, 교량, 가로수 | 1-8 each | aggregate counts/rates; no per-complaint or per-incident register |
+| 리콜, 적발, 지연, 엘리베이터, 전력 사고, 도로 노면, 공사 지연, 시설물 안전, 자동차부품, 결함 | 0 | no such dataset family in the catalog |
+| 붕괴 | 1 | improvement-district aggregate |
+
+Verdict recorded in record.json (measurements.seoul_catalog_sweep_2026_11_07):
+**no event-grain register outside the bench's existing families exists in the
+Seoul catalog's search surface**; the only event-grain find remains OA-23122
+(식품행정처분, enforcement family) behind the recorded operator family decision.
+The Seoul gate collapses to that single decision (option (a)); option (b) is
+closed by this measurement. KOSIS/KMA park unchanged.

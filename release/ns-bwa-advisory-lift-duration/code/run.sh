@@ -12,7 +12,7 @@ mkdir -p /output
 
 echo "== build =="
 python3 -u /workspace/build.py --out "$OUT" --work-dir /tmp/nsbwa \
-    --built-at 2026-10-29T00:00:00Z
+    --built-at 2026-11-07T00:00:00Z
 build_status=$?
 
 if [ -f "$OUT/summary.json" ]; then

@@ -29,15 +29,24 @@ Nova Scotia publishes every boil water advisory the province has issued since
 Socrata dataset 7t68-9xmm). **At the instant an advisory is issued, will it be
 lifted within 30 days?** One row per issued advisory; the features are the
 advisory's own issuance-time register attributes (site, county, facility type,
-reason, issue month/weekday) plus as-of history derived only from strictly
-earlier advisories at the same site or county. The label (`lift30`) comes from
-the removal date, which can only be observed after issuance, and the label
-source columns are absent from the shipped files.
+reason, issue month/weekday) plus recency derived only from strictly earlier
+advisories' **issue dates** at the same site or county. The label (`lift30`)
+comes from the removal date, which can only be observed after issuance, and
+the label source columns are absent from the shipped files.
 
 - **Artifact version:** `{ARTIFACT_VERSION}`
 - **Version tag:** `{RELEASE_TAG}` (use this revision for reproducibility)
 - **Rows:** {ROWS_TOTAL} advisory rows across three disjoint temporal splits
 - **GitHub counterpart:** {GITHUB_REPOSITORY}
+
+This version (v2026.12) is a corrected re-release: the independent audit of
+the staged v2026.10 recovered eval and holdout labels **exactly** from eight
+outcome-derived history columns (cumulative-count x rounded-rate arithmetic and
+subtraction), so none of those columns ships here. The frame is 11 columns of
+issuance attributes and issue-date recency; the register, population and
+splits are unchanged, and the same stock runner scored within 0.002 AUC of
+its v2026.10 result, so the integrity repair traded away no measured model
+signal.
 
 ## Splits
 
@@ -64,50 +73,46 @@ benchmark's unmodified runner (`train.py` + `validate.sh`, digests verbatim):
 
 | Reference / model | Eval AUC | Brier |
 | --- | ---: | ---: |
-| Full model (stock XGBoost baseline, job ns-bwa-baseline-001) | 0.5086 | 0.3609 |
-| Site persistence: as-of prior lift30 rate (`site_prior_lift30_rate`) | **0.6124** | 0.2819 |
+| Full model (stock XGBoost baseline, job ns-bwa-baseline-002) | 0.5068 | not recomputed for this frame |
+| Site persistence: as-of prior lift30 rate (register-side reference, not a shipped feature) | **0.6124** | 0.2819 |
 | Calendar/identity prior (county x issue month, train-estimated) | 0.5075 | 0.3101 |
 | Reason prior (train rate per normalised reason) | 0.4307 | 0.2440 |
 | Majority-class accuracy on this split | 0.6048 | - |
 
 Site persistence covers 231 of the 372 eval rows (62.1%; global train-rate
-fallback on the rest). Paired differences vs the full model (1000 resamples,
-seed 23, job ns-bwa-diag-001 which preserved per-row scores): model vs
-persistence **-0.1038**, row-level 95% CI [-0.1693, -0.0357] and site-clustered
-CI [-0.1706, -0.0383] (286 site clusters) - both EXCLUDING zero. Model vs
-calendar is +0.0011 [-0.0866, +0.0723]: inconclusive, not parity.
+fallback on the rest). Paired bootstrap on the same rows (1000 resamples):
+persistence vs calendar **+0.1014** [0.0144, 0.1739] - excluding zero.
 
 **Finding: no demonstrated headroom over persistence under this protocol.** The
-stock baseline trails the one-line site-persistence rule by 0.1038 AUC with
-dependence-aware intervals excluding zero - a recorded defect, not an
-encouraging result - and this comparison is carried beside every figure in
-`measurements.json`, RELEASE_NOTES.md and VERIFICATION.md. Persistence
-dominates in every eval issue year (0.6084 / 0.6203 / 0.5991 vs the model's
-0.5554 / 0.5018 / 0.4886) while eval prevalence shifts 74.4% -> 64.0% ->
+stock baseline trails the one-line site-persistence rule by **0.1056** AUC and
+sits at the calendar-control level - a recorded defect, not an encouraging
+result - and this comparison is carried beside every figure in
+`measurements.json`, RELEASE_NOTES.md and VERIFICATION.md. No
+model-vs-persistence interval was recomputed for this frame; on these same eval
+rows the superseded v2026.10 diagnostic measured the analogous deficit with
+row-level and site-clustered intervals both excluding zero, and the observed
+gap here is larger. Persistence dominates in every eval issue year
+(0.6084 / 0.6203 / 0.5991) while eval prevalence shifts 74.4% -> 64.0% ->
 41.5% across 2018-2020 (the measured COVID-era duration regime: mean advisory
-duration 47-65 days in 2009-2018 vs 218 days in 2020) and the model's Brier
-degrades 0.23 -> 0.52. One stock model trailing persistence does not establish
-that no solver can beat it; that remains the benchmark's open question. The
-holdout was never scored and stays sealed.
+duration 47-65 days in 2009-2018 vs 218 days in 2020). One stock model
+trailing persistence does not establish that no solver can beat it; that
+remains the benchmark's open question. The holdout was never scored and stays
+sealed.
 
 ## Timing, honestly stated
 
 The prediction instant is the **advisory's issue date** (an event-time
 instant): every shipped feature is an issuance-time attribute or reads
-strictly-earlier same-site/county advisories, and no shipped column reads any
-row issued on or after the scored row's issue date. The register publishes one
-**revised-in-place current vintage with no historical vintages** (pinned
-register sha256 `60f77ac4...`, content current as of 2026-06-16), so
-training-label timing and full-row historical availability are **unverified**;
-the evaluation contract is **retrospective research over the pinned snapshot**,
-never a certified point-in-time reconstruction and never an
-operational-forecasting claim. A measured cross-row exposure is declared rather
-than hidden: a later advisory at the same site carries the earlier advisory's
-lift30 outcome inside its as-of history rate whenever that prior is its only
-resolved prior (the gate's own probes measured this reverse-history exposure
-covering 369 train / 56 eval / 217 holdout rows), so honest evaluation requires
-**isolated rows** - one row presented to the solver at a time. Isolated rows is
-the **design intent** of this artifact's row-per-advisory contract; the shipped
+strictly-earlier same-site/county **issue dates**, and no shipped column reads
+any row's removal date - the label source columns are absent from the shipped
+files, asserted by the gate. The register publishes one **revised-in-place
+current vintage with no historical vintages** (pinned register sha256
+`60f77ac4...`, content current as of 2026-06-16), so training-label timing and
+full-row historical availability are **unverified**; the evaluation contract is
+**retrospective research over the pinned snapshot**, never a certified
+point-in-time reconstruction and never an operational-forecasting claim.
+**Isolated rows** - one row presented to the solver at a time - remains the
+declared design intent of this row-per-advisory artifact; the shipped
 benchmark validator passes the whole eval feature table to the predictor, so no
 runtime enforcement claim is made anywhere in this package. Labeled eval is
 development/validation; the holdout is the final test and stays outside
@@ -120,15 +125,12 @@ evaluated agents' workspaces.
   fetched as one anonymous CSV (283,987 bytes, sha256 `60f77ac4945c...`,
   Last-Modified 2026-06-16, 2,649 register rows, pinned vintage; full digest in
   `MANIFEST.json`).
-- Construction: `code/build.py`, executed by worker job `ns-bwa-001`
+- Construction: `code/build.py`, executed by worker job `ns-bwa-002`
   (byte-identical re-fetch of the discovery vintage); qualification gate 1.5.0,
-  46/46 checks on the full artifact, exact-byte acceptance before any figure
-  was computed. Baseline job `ns-bwa-baseline-001`; per-row diagnostic
-  `ns-bwa-diag-001` (a second implementation replicated every reference figure
-  to 4 decimal places).
-- In-file fixtures asserted at build time: Maple Meadows (issued 2021-05-17,
-  lifted after 307 days -> label 0, in holdout) and Canning (lifted after 1 day
-  -> label 1, on the register but outside the scored windows).
+  44/44 checks on the full artifact, exact-byte acceptance before any figure
+  was computed. Baseline job `ns-bwa-baseline-002` re-accepted the fetched
+  bytes before scoring and printed eval AUC 0.5068 from both implementations
+  (`[validate] CONTRACT OK`).
 
 ## Licence
 

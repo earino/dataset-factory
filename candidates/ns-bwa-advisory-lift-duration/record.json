@@ -285,6 +285,51 @@
    "replication": "a second implementation (pandas-based diag.py, independent of the construction score.py) recomputed every reference from the shipped bytes: persistence 0.6124, calendar 0.5075, reason 0.4307, majority 0.6048 and the model 0.5086 all match the recorded figures to 4 dp",
    "finding_confirmed": "NO demonstrated headroom, now with intervals excluding zero: the model trails site persistence by 0.1038 with row-level CI [-0.1693, -0.0357] and site-clustered CI [-0.1706, -0.0383] (both exclude zero); model-vs-calendar +0.0011 with CI containing zero (inconclusive, not parity); persistence dominates every issue year and the model's Brier degrades 0.23 -> 0.52 across the prevalence shift while persistence holds 0.22-0.36. Recorded defect per dataset-qualification; the comparison is carried in the package beside every figure.",
    "evidence": ".factory/ns-bwa-diag-001/reports/ (all report assets fetched digest-verified 2026-10-29; per-row scores preserved in diag_result.json) and private staging release 427950656"
+  },
+  "construction_2026_11_07": {
+   "job": "ns-bwa-002",
+   "register": "sha256 60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a, vintage 2026-06-16, 2649 rows, 283987 bytes - byte-identical to the v2026.10 construction (sha_same_as_discovery true, all recorded counts reproduced exactly)",
+   "population": "identical to v2026.10 by design: train 1069 rows / 715 positives, eval 372 / 225, holdout 884 / 514; exclusions censored_active_at_vintage 2/1/10, negative_duration_invalid 2 (holdout); boundary durations 29:14, 30:16 (label 1), 31:6 (label 0)",
+   "frame": "11 columns: advisory_id, issue_date, site_name, county, facility_type, reason, issue_month, issue_dow, site_days_since_last, county_days_since_last, lift30 - the eight outcome-derived v2026.10 history columns are absent from every header (asserted in the smoke and by the gate)",
+   "artifact_version": "49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144",
+   "file_digests": {
+    "public/train.csv": "665b88a46979e199bf8924420408d2853dcb78db1ee4715fd9f586d1aac705fa (109659 bytes)",
+    "public/eval.csv": "8f52bcdf5cc2bec219cd3436210e114ef97f65a10f374afde72100e6988fd016 (41572 bytes)",
+    "private/holdout.csv": "f0da86a8e455691efe3e93bfd8b93d1728c536699d65df955846b1371bb15f0d (98821 bytes)"
+   }
+  },
+  "references_2026_11_07_post_acceptance": {
+   "job": "ns-bwa-002",
+   "rows": "eval 372 rows, identical to the v2026.10 reference rows",
+   "persistence_site_prior": "AUC 0.6124, Brier 0.2819, covered 231/372 - recomputed REGISTER-SIDE (score.py fetches the register post-acceptance and asserts sha256 equality with summary.json's fetch block, 60f77ac4... = the artifact's own vintage); arithmetic identical to v2026.10's shipped site_prior_lift30_rate; the value equals the v2026.10 measurement exactly, validating the reimplementation",
+   "calendar_county_month": "AUC 0.5075, Brier 0.3101",
+   "reason_prior": "AUC 0.4307, Brier 0.2440",
+   "facility_prior": "AUC null (constant scores, no ranking information; Brier 0.2429)",
+   "majority_class": "accuracy 0.6048 against this split's labels",
+   "global_rate": "Brier 0.2431, AUC null by construction",
+   "paired_differences": "persistence - calendar +0.1014 [0.0144, 0.1739]; calendar - reason +0.0779 [0.0072, 0.1492]; persistence - reason +0.1793 [0.1136, 0.2482] (1000 paired bootstrap resamples, seed 23)",
+   "per_issue_year": {
+    "2018": "129 rows, rate 0.7442, persistence AUC 0.6084",
+    "2019": "125 rows, rate 0.6400, persistence AUC 0.6203",
+    "2020": "118 rows, rate 0.4153, persistence AUC 0.5991"
+   },
+   "reading": "persistence remains the bar at 0.6124 with prevalence falling 0.744 -> 0.415 across the eval years (the measured regime shift); per the recorded design expectation the stock runner on the reduced 11-column frame will likely trail it - the runner comparison is the baseline job's to make, never scored before its accept"
+  },
+  "baseline_2026_11_07": {
+   "job": "ns-bwa-baseline-002",
+   "command": "runner-contract baseline through the benchmark's own train.py + validate.sh, unmodified (bundled verbatim), on the accepted v2026.12 artifact fetched from private staging release 437529809 (5/5 files, digests verified)",
+   "order": "re-accept BEFORE scoring: qualify_dataset.py --accept against the bundled report (the collected ns-bwa-002 gate report) -> ACCEPTED for artifact 49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144; only then materialize (public train+eval only, the private holdout was never copied into a workdir) and run the contract",
+   "contract": "train.py exit 0, validate.sh exit 0, '[validate] CONTRACT OK'; both eval AUCs agree exactly at 0.5068 (train.py print and validate.py's independent predict_proba path)",
+   "model_eval_auc": 0.5068,
+   "comparison_on_identical_eval_rows": {
+    "full_model_stock_runner": 0.5068,
+    "persistence_site_prior": 0.6124,
+    "calendar_county_month": 0.5075,
+    "reason_prior": 0.4307,
+    "majority_class_accuracy": 0.6048
+   },
+   "reading": "the model TRAILS persistence by 0.1056 AUC - recorded as the measured finding, not a headroom claim: after the v2026.12 removal of every outcome-derived history column, the stock runner extracts only calendar-level signal from the frame. v2026.10 comparison: the same runner on the leak-carrying 19-column frame measured 0.5086, so the removal cost the model -0.0018 AUC while closing the P0 label-recovery channel - the integrity fix did not trade away measured model signal. Publishable as an honest weak-signal task only if the fresh independent audit passes; per-year persistence AUC (0.608/0.620/0.599 across the 0.744->0.415 prevalence fall) stays mandatory reading beside any pooled figure.",
+   "staging_release": 437536802
   }
  },
  "novelty_check": {
@@ -431,9 +476,82 @@
    "reservation_eur": "0.04",
    "expected": "first hf_publish attempt",
    "result": "all five uploads verified at the manifest digests, but the loading check failed on a job-spec defect (verify_loading lacked the label column name and used string label values); superseded by ns-bwa-hf-002"
+  },
+  {
+   "id": "ns-bwa-002",
+   "status": "succeeded (deleted)",
+   "server_id": 174969934,
+   "launched": "2026-11-07T11:21Z",
+   "reservation_eur": "0.04",
+   "expected": "v2026.12 rebuild (operator-accepted 2026-11-02): construct from the pinned register (sha 60f77ac4..., vintage 2026-06-16) with all eight outcome-derived history columns dropped -> full-artifact qualification on the worker -> exact-byte --accept -> score.py references on identical eval rows with the persistence reference recomputed register-side",
+   "next_acceptance_check": "require the passing qualification report for this exact artifact then --accept before quoting any figure; destroy the worker after verified collection",
+   "outcome": "exit 0 in 16.0 s: construct -> gate 1.5.0 PASSED (0 failed checks) on the full 11-column artifact 49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144 -> --accept ACCEPTED -> references on identical eval rows (persistence_site_prior 0.6124 recomputed register-side with the fetched register asserted sha256-identical to the artifact's own vintage, covered 231/372; calendar 0.5075; reason 0.4307; majority accuracy 0.6048 - all four figures equal to the v2026.10 measurements on the same rows). Register sha unchanged (60f77ac4..., vintage 2026-06-16, eligibility cutoff 2026-05-17); population identical to v2026.10 by construction: train 1069/715, eval 372/225, holdout 884/514, exclusions censored 2/1/10 + negative-duration 2 (holdout); committed smoke probe/smoke_v2026_12_2026_11_07.py PASSED on the coordinator before launch. Staging release 437529809; collected 11:31:07Z; destroyed 11:33:25Z with provider read-back (GET /v1/servers/174969934 -> 404, 0 servers, 0 primary IPs)."
+  },
+  {
+   "id": "ns-bwa-baseline-002",
+   "status": "succeeded (deleted)",
+   "server_id": 174971571,
+   "launched": "2026-11-07T11:36Z (ledger created_at 11:36:16Z; corrected by the 2026-11-07 12:06Z follow-up from the session's 11:42Z stamp)",
+   "reservation_eur": "0.06",
+   "expected": "runner-contract baseline on the accepted v2026.12 artifact 49bf4cfa...: re-accept the five fetched files from staging release 437529809 against the gate's own collected report, materialize the runner workdir (public train+eval only), run the benchmark's own train.py and validate.sh unmodified, record both eval AUCs",
+   "next_acceptance_check": "require --accept ACCEPTED for artifact 49bf4cfa... in the job's accept.log before quoting the model AUC; compare on identical eval rows against persistence 0.6124 / calendar 0.5075 / reason 0.4307 / majority accuracy 0.6048; destroy with provider read-back after verified collection",
+   "outcome": "exit 0 in 55.5 s: re-accept ACCEPTED for artifact 49bf4cfa... on the fetched bytes BEFORE any scoring (accept.log), materialize (public train+eval only), benchmark train.py + validate.sh unmodified, both eval AUCs agree exactly at 0.5068, '[validate] CONTRACT OK'. The stock runner on the v2026.12 11-column frame TRAILS persistence_site_prior 0.6124 by 0.1056 AUC on identical eval rows (and sits at calendar_county_month level 0.5075) - the recorded honest expectation, now a measured comparison. Against the v2026.10 19-column frame the runner measured 0.5086 (baseline-001): removing the eight outcome-derived columns changed the stock runner's eval AUC by -0.0018, i.e. the leak-prone columns were not the source of the runner's signal. Staging release 437536802; collected 11:40:15Z; deleted 11:48:13Z (ledger deleted_at - corrected by the 2026-11-07 12:06Z follow-up from the session's 11:42:40Z stamp). Worker+IP deletion re-confirmed live 12:04Z (GET /v1/servers/174971571 -> 404; 0 servers; 0 primary IPs) and the accepted extract re-verified durable in private staging release 437529809 (all 13 manifest assets live at the recorded sizes and sha256)."
   }
  ],
  "artifacts": [
+  {
+   "artifact_version": "49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144",
+   "gate_version": "1.5.0",
+   "built_by_job": "ns-bwa-002",
+   "register_sha256": "60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a",
+   "register_vintage": "2026-06-16 (eligibility cutoff 2026-05-17 = vintage minus 30 days)",
+   "built_at_pin": "2026-11-07T00:00:00Z",
+   "frame": "v2026.12 - 11 columns: issuance attributes + issue-date recency only; the eight outcome-derived history columns of v2026.10 are removed (P0 exact-recovery channel closed)",
+   "layout": "public/train.csv, public/eval.csv, private/holdout.csv, meta.json, quality.json",
+   "split_stats": {
+    "train": {
+     "rows": 1069,
+     "positives": 715,
+     "rate": 0.668849,
+     "distinct_sites": 585,
+     "positive_sites": 447,
+     "positive_issue_dates": 569
+    },
+    "eval": {
+     "rows": 372,
+     "positives": 225,
+     "rate": 0.604839,
+     "distinct_sites": 286,
+     "positive_sites": 183,
+     "positive_issue_dates": 176
+    },
+    "holdout": {
+     "rows": 884,
+     "positives": 514,
+     "rate": 0.581448,
+     "distinct_sites": 547,
+     "positive_sites": 343,
+     "positive_issue_dates": 367
+    }
+   },
+   "exclusions_measured": {
+    "censored_active_at_vintage": {
+     "train": 2,
+     "eval": 1,
+     "holdout": 10
+    },
+    "negative_duration_invalid": {
+     "holdout": 2,
+     "other": 1
+    },
+    "blank_issue_dates": 30,
+    "out_of_window_2025_2026": "279 (208 in 2025 + 71 in 2026, of which 15 after the eligibility cutoff)"
+   },
+   "qualification": "PASSED on the full artifact on the worker (gate 1.5.0, 44/44 checks, 0 failed); --accept ACCEPTED on the exact bytes and re-ACCEPTED by ns-bwa-baseline-002 before any score",
+   "url": "https://github.com/earino/ns-bwa-advisory-lift-duration",
+   "repo": "earino/ns-bwa-advisory-lift-duration",
+   "staging": "PENDING - v2026.12 is fully packaged and locally verified (check-package OK, suitability re-bound to 49bf4cfa) but private staging on both destinations is DEFERRED under the operator's 2026-11-07 factory-repair directive (fix the factory before more packages); no release id or tag exists yet for v2026.12"
+  },
   {
    "artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
    "gate_version": "1.5.0",
@@ -485,13 +603,17 @@
    "url": "https://github.com/earino/ns-bwa-advisory-lift-duration",
    "tag": "v2026.10",
    "repo": "earino/ns-bwa-advisory-lift-duration",
-   "release_id": 428463645
+   "release_id": 428463645,
+   "superseded": {
+    "by": "v2026.12 (artifact 49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144)",
+    "reason": "2026-11-01 independent audit recovered 196/372 eval and 286/884 holdout labels exactly from eight shipped outcome-derived history columns (count x rounded-rate arithmetic and subtraction); staged bytes stay private at tag v2026.10 and are never flipped; GitHub release 428463645 is renamed 'SUPERSEDED - DO NOT PUBLISH' during the v2026.12 staging step"
+   }
   }
  ],
  "rejection_reason": null,
  "review": null,
- "next_action": "FLAG CORRECTED 2026-11-07: this candidate is NOT awaiting the operator's flip - the 2026-11-01 queue audit verdict on the staged v2026.10 bytes is DO NOT PUBLISH (P0 label recovery: 196/372 eval, 286/884 holdout, 0 errors) and the flip is not a permitted next step. The remaining work is the recorded v2026.12 rebuild (all eight outcome-derived history columns dropped), then requalification, packaging, staging and a fresh independent audit before any flip. The stale flip-ready flag was corrected after the release notifier announced this candidate as 'ready for the flip'. REBUILD QUEUED 2026-11-02 (operator accepted the recommendation; session decision: rebuild, the fix is cheap and the task stays clean). Design, executable by the next advancement session: remove EVERY outcome-derived history column from the shipped frame - site_prior_advisories, site_prior_resolved, site_prior_lift30_rate, site_active_prior, county_prior_advisories, county_prior_resolved, county_prior_lift30_rate, county_active_prior are all dropped (the 2026-11-01 queue audit recovered 196/372 eval and 286/884 holdout labels exactly by count x rounded-rate arithmetic and subtraction across consecutive same-site rows; active-count columns are outcome-derived the same way, since a lift event changes the active count). The v2026.12 frame keeps only issuance-time facts: advisory_id, issue_date, site_name, county, facility_type, reason, issue_month, issue_dow, site_days_since_last, county_days_since_last, lift30 (recency intervals measure advisory ISSUANCE dates, never an outcome). Sequence: edit source/build.py in both copies, worker construction job re-fetching the Nova Scotia register, gate 1.5.0 two-phase, exact-byte accept, runner-contract baseline, package v2026.12, private staging on both destinations (fts-publish/fts-hf pattern), version-bound suitability, then a fresh pre-flip audit prompt whose mandate re-runs the 2026-11-01 frozen subtraction attacks on the new bytes and hunts beyond them. Honest expectation to carry in the docs: site persistence 0.6124 remains the bar and the stock runner will likely still trail it - publishable as an honest weak-signal task only if the fresh audit passes. The staged v2026.10 bytes stay private and are never flipped.",
- "updated_at": "2026-10-29T14:17:14.000000+00:00",
+ "next_action": "v2026.12 PACKAGE PREPARED AND LOCALLY VERIFIED 2026-11-07 (artifact 49bf4cfa427375c6..., gate 1.5.0 44/44, check-package OK, suitability re-bound, docs Class-B-clean) - PRIVATE STAGING ON BOTH DESTINATIONS IS DEFERRED under the operator's 2026-11-07 factory-repair directive (fix the factory before more packages). On the operator's go, or when the new R1-R4 gates pass acceptance (R6's own condition), one session executes the recorded staging sequence: (1) commit the v2026.12 package files to main of earino/ns-bwa-advisory-lift-duration (preserve the v2026.10 tag and release; rename release 428463645 'SUPERSEDED - DO NOT PUBLISH'); (2) create draft release v2026.12, run the transfer worker job from staging 437529809 (5 assets by digest-resolved id, never hand-copied), publish non-draft so tag v2026.12 == main, verify server-side digests, run get_dataset.py + gate --accept on the downloaded tree from the coordinator (the dataset is ~330 KB); (3) hf-publish.py --create --upload-small, the hf_publish worker job, --verify --worker-job, --tag LAST; (4) write both DESTINATIONS.json v2026.12 blocks with files_verified lists; (5) generate the fresh pre-flip audit prompt from templates/pre-flip-audit-prompt.md with digests filled programmatically, mandated to re-run the 2026-11-01 frozen subtraction attacks on the new bytes, hunt beyond them, and RULE ON the frozen quality.json known_event declaration (open_rulings); (6) set awaiting_operator true - the flip of both destinations remains the operator's single act after the auditor's verdict. The staged v2026.10 bytes stay private and are never flipped.",
+ "updated_at": "2026-11-07T14:55:00Z",
  "qualification": {
   "gate": "skills/dataset-qualification/scripts/qualify_dataset.py (canonical copy, sha256 4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1)",
   "gate_version": "1.5.0",
@@ -515,9 +637,13 @@
     "distinct_sites": 547
    }
   },
-  "result": "PASSED - 46 checks, 0 failed, on the full artifact on the worker (job ns-bwa-001); --accept re-verified the report against the exact bytes",
-  "artifact_version": "e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
-  "note": "First attempt (ns-bwa-001) succeeded. Gate --selftest passed before the launch; a synthetic-register smoke on the coordinator exercised build.py + the real gate (every structural check incl. the timing block, evaluation_contract with the two cross-row probes, split windows, both-classes minimums) before any worker spend; the as-of history semantics were spot-verified on synthetic rows (strictly-earlier only; same-(site,issue) rows never see each other; blank-county rows never pool). Reports preserved at candidates/ns-bwa-advisory-lift-duration/reports/ and in the private staging release 427616218."
+  "result": "PASSED on the full v2026.12 artifact on the worker (job ns-bwa-002, 0 failed checks); --accept re-verified the report against the exact bytes (ACCEPTED, artifact 49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144)",
+  "artifact_version": "49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144",
+  "note": "v2026.12 rebuild (2026-11-07): the 11-column frame drops all eight outcome-derived history columns (site/county prior-advisory counts, resolved counts, lift30 rates, active flags) after the 2026-11-01 independent queue audit recovered 196/372 eval and 286/884 holdout labels from them (count x rounded-rate arithmetic and subtraction); the frame is issuance attributes + issue-date recency only, so no shipped column reads any removal date and the cross_row_audit probes list is empty with that rationale. A committed synthetic smoke (probe/smoke_v2026_12_2026_11_07.py) passed on the coordinator before worker spend: as-of recency semantics asserted (strictly-earlier only; same-(site,issue) rows never see each other; blank-county sentinel; county recency recomputed independently), gate two-phase + --accept green on the synthetic artifact, and the new register-side persistence helper unit-checked with a monkeypatched register. The v2026.10 artifact e8ed2a53... remains recorded below and its staged bytes stay private and are never flipped (DO NOT PUBLISH verdict stands for them).",
+  "superseded_v2026_10": {
+   "result": "PASSED 46/46 checks (job ns-bwa-001); --accept ACCEPTED for artifact e8ed2a53eaf0453c8ed52aea336edb994d888ad11e7b76f7898b663f017180a8",
+   "fate": "staged privately (release 428463645, tag v2026.10, both destinations private); 2026-11-01 independent queue audit verdict DO NOT PUBLISH (P0 label recovery); superseded by the v2026.12 rebuild, never to be flipped"
+  }
  },
  "awaiting_operator": false,
  "operator_decision_pending": false,
@@ -529,5 +655,15 @@
    "critical_finding": "P0 label recovery: multiplying resolved counts by the rounded lift-within-30-days rate recovers integer cumulative positive counts; where the fixed eligibility checks isolate one new advisory and one new resolution, subtraction reveals the label - 196/372 eval (all-features) and 286/884 holdout recovered with 0 errors, full-split AUC 0.8837/0.7672; stronger than the disclosed 56/217 exposure",
    "passed": "integrity, source reconstruction, references, licence, novelty"
   }
+ },
+ "package_prepared_2026_11_07": {
+  "prepared_at": "2026-11-07T14:55:00Z",
+  "what": "v2026.12 package assembled in release/ns-bwa-advisory-lift-duration from digest-verified recorded bytes only: byte-pinned meta.json (e362b42a...), quality.json (1930d86c...) and the gate report (76ffd8ee...) fetched from staging 437529809 against the worker-written manifest; code/build.py (2253fe59...), code/score.py (ab4d9fd5...), code/run.sh (ee73a468...) copied from the committed v2026.12 source (the exact bytes ns-bwa-002 executed); measurements.json regenerated by package/build_measurements_v2026_12_2026_11_07.py from the collected -002 evidence with reproduction asserts (all four reference figures equal v2026.10); get_dataset.py EXPECTED digests generated from the gate's artifact block (TAG v2026.12); README, RELEASE_NOTES, VERIFICATION, REPRODUCE, DATA_DICTIONARY and card.md rewritten for the 11-column frame with the honest model-trails-persistence comparison carried everywhere; MANIFEST.json + SHA256SUMS written last by scripts/release-manifest.py (artifact_version 49bf4cfa...); DESTINATIONS.json restructured (current identity v2026.12, zero staged destinations, v2026.10 evidence preserved verbatim under superseded).",
+  "checks": "check-package.py release/ns-bwa-advisory-lift-duration OK; check-suitability.py 22 OK (this record re-bound to 49bf4cfa...); gate report shipped in the package is the accepted one (76ffd8ee...); no fixture answer, salt, raw fixture id or named scored row appears in any regenerated document (operator 2026-11-07 briefing Class B applied).",
+  "staging_deferred": "The operator's 2026-11-07 directive (fix the factory before more packages; R6 holds new discovery collection and new package construction until the new gates pass acceptance) is read as covering the staging spend for a package built under the old gates. Preparation is complete, reversible and local; the two worker staging jobs (transfer from 437529809 + hf_publish), the repo commit, the release/tag creation, the DESTINATIONS blocks and the fresh pre-flip audit prompt are one session's work once the operator gives the go or the new gates land.",
+  "open_rulings": [
+   "STAGING GO: private staging of v2026.12 on both destinations - the operator's explicit go, or the factory fix's R1-R4 gates passing acceptance (R6's own condition), whichever comes first.",
+   "KNOWN_EVENT DECLARATION: the frozen quality.json (accepted artifact 49bf4cfa) carries the builder's v2026.10-era known_event block naming two register rows and their durations, including one scored holdout row. For this internal-threshold task the gate requires no such fixture (gate check units.known_event_fixture_recorded records 'no external threshold, so no known-event fixture is required') and does not verify it; it is inherited voluntary content inside bytes pinned by the artifact version - the same defect class (worked example naming a scored row) that the 2026-11-07 audit killed za-cct's README for, at one-row scale and in a gate-adjacent file. It cannot be edited without changing the artifact version. The fresh pre-flip audit must rule on it; if it must go, the fix is a fixture-to-train-row rebuild (a third build of this construction, which the factory-repair hold currently blocks and the operator would authorise). No package document repeats its contents."
+  ]
  }
 }

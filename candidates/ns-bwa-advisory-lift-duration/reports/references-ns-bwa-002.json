@@ -1,0 +1,130 @@
+{
+ "name": "ns-bwa-advisory-lift-duration",
+ "stage": "simple references on identical eval rows (post-acceptance)",
+ "accepted_report": "qualification-ns-bwa-advisory-lift-duration.json",
+ "artifact_version": "49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c119c396b6b7ea4c6144",
+ "rows": {
+  "train": 1069,
+  "eval": 372
+ },
+ "train_positive_rate": 0.668849,
+ "eval_positive_rate": 0.604839,
+ "references": {
+  "majority_class": {
+   "definition": "majority label fitted on train, measured against this split's labels",
+   "prediction": 1,
+   "accuracy": 0.6048387096774194
+  },
+  "global_rate": {
+   "definition": "constant train positive rate; no ranking information, AUC degenerate by construction",
+   "rate": 0.668849,
+   "brier": 0.24310621239882774,
+   "auc": null
+  },
+  "persistence_site_prior": {
+   "definition": "the site's as-of lift30 rate over earlier same-site advisories resolved strictly before the instant, recomputed register-side after acceptance (v2026.10 shipped this as site_prior_lift30_rate; v2026.12 removed the column and keeps the value as a reference only); register asserted sha256-identical to the artifact's vintage; global train rate fallback",
+   "reference_info": {
+    "register_sha256": "60f77ac4945ca824700f5bcd3eaf564f4e5c5d4ec3f08496e8dd796e7184a30a",
+    "matches_artifact_vintage": true,
+    "covered_rows": 231,
+    "scoring": "identical to v2026.10's shipped site_prior_lift30_rate, recomputed register-side as a reference only (v2026.12 ships no outcome-derived column)"
+   },
+   "covered_rows": 231,
+   "coverage": 0.621,
+   "auc": 0.6124414210128496,
+   "brier": 0.2818610959139785
+  },
+  "calendar_county_month": {
+   "definition": "train-estimated (county, issue month) rate with >=5 train rows, county rate then global train rate backoff (identity + seasonal control)",
+   "train_counties": 35,
+   "unseen_county_rows": 25,
+   "auc": 0.5074981103552532,
+   "brier": 0.3100867628398012
+  },
+  "reason_prior": {
+   "definition": "train-estimated positive rate per normalised reason, global rate fallback",
+   "train_reasons": [
+    "e. coli present",
+    "failure of treatment processes",
+    "ineffective disinfection",
+    "lack of disinfection",
+    "other",
+    "public health risk i.e. giardia, crypto",
+    "total coliform present",
+    "use of emergency water supply"
+   ],
+   "auc": 0.4306575963718821,
+   "brier": 0.24404174663204806
+  },
+  "facility_prior": {
+   "definition": "train-estimated positive rate per facility type, global rate fallback",
+   "train_types": [
+    "municipal",
+    "registered",
+    "unknown"
+   ],
+   "auc": null,
+   "brier": 0.24291359797110337
+  }
+ },
+ "paired_differences": {
+  "persistence_vs_calendar": {
+   "resamples": 1000,
+   "mean": 0.101394,
+   "ci95_low": 0.014429,
+   "ci95_high": 0.173883,
+   "note": "paired bootstrap on identical rows; an interval containing zero is inconclusive, not parity"
+  },
+  "calendar_vs_reason": {
+   "resamples": 1000,
+   "mean": 0.077946,
+   "ci95_low": 0.007156,
+   "ci95_high": 0.149222,
+   "note": "paired bootstrap on identical rows; an interval containing zero is inconclusive, not parity"
+  },
+  "persistence_vs_reason": {
+   "resamples": 1000,
+   "mean": 0.17934,
+   "ci95_low": 0.113629,
+   "ci95_high": 0.248222,
+   "note": "paired bootstrap on identical rows; an interval containing zero is inconclusive, not parity"
+  }
+ },
+ "per_issue_year": {
+  "2018": {
+   "rows": 129,
+   "positives": 96,
+   "positive_rate": 0.7442,
+   "persistence_auc": 0.6084280303030303,
+   "calendar_auc": 0.5402462121212122,
+   "reason_auc": 0.5642361111111112,
+   "persistence_brier": 0.21727839558139536
+  },
+  "2019": {
+   "rows": 125,
+   "positives": 80,
+   "positive_rate": 0.64,
+   "persistence_auc": 0.6202777777777778,
+   "calendar_auc": 0.47791666666666666,
+   "reason_auc": 0.4741666666666667,
+   "persistence_brier": 0.2747855616
+  },
+  "2020": {
+   "rows": 118,
+   "positives": 49,
+   "positive_rate": 0.4153,
+   "persistence_auc": 0.5990831115054718,
+   "calendar_auc": 0.5113871635610766,
+   "reason_auc": 0.3114463176574978,
+   "persistence_brier": 0.35995948686440676
+  }
+ },
+ "notes": [
+  "persistence is the site's own as-of outcome history; it may embed strictly-earlier eval-era outcomes, which is exactly its information set at the instant - unlike the train-only references. v2026.12 recomputes it register-side (the shipped column was removed after the 2026-11-01 audit recovered labels from it); the register is asserted sha256-identical to the artifact's vintage, so the reference reads no information the artifact's own construction did not",
+  "calendar_county_month, reason_prior and facility_prior are estimated only from training-era rows",
+  "constant global_rate scores carry no ranking information; its AUC is reported null, not zero",
+  "the full model (harness runner baseline) is quoted beside these references when its job exists; it is not computed here",
+  "the holdout is sealed: no reference or model in this file reads private/holdout.csv",
+  "per-issue-year figures are mandatory reading beside the pooled ones: duration has a measured regime shift around 2020"
+ ]
+}
