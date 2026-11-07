@@ -63,7 +63,7 @@ def refusal_for_missing(package, names):
     return {'ok': False, 'problems': ['Required current evidence missing: ' + ', '.join(missing)]} if missing else None
 
 
-def run_stages(package, output, scratch):
+def run_stages(package, output, scratch, *, review_root=ROOT):
     from factory.artifact_scrub import scan_tree
     from factory.asset_integrity import check as integrity
     from factory.claim_facts import measure
@@ -71,9 +71,11 @@ def run_stages(package, output, scratch):
     from factory.claim_contract import qualification_binding, validate as validate_claims
     from factory.license_contract import validate as validate_license
     from factory.qualification_receipt import check as qualification_receipt
+    from factory.suitability import publication_check
 
     gate = module('current_qualification', ROOT / 'skills/dataset-qualification/scripts/qualify_dataset.py')
     packaging = module('current_package_check', ROOT / 'scripts/check-package.py')
+    packaging.REVIEW_ROOT = review_root
     manifest = json.loads((package / 'MANIFEST.json').read_text())
     stages = {}
 
@@ -129,6 +131,12 @@ def run_stages(package, output, scratch):
 
     stage('license_admission', licensing)
 
+    def suitability():
+        problems, notes = publication_check(review_root, manifest)
+        return {'ok': not problems, 'problems': problems, 'notes': notes}
+
+    stage('suitability_admission', suitability)
+
     def package_check():
         problems, notes = packaging.check_package(package)
         return {'ok': not problems, 'problems': problems, 'notes': notes}
@@ -163,7 +171,17 @@ def audit(case, data, output):
             scratch = Path(folder); package = scratch / 'package'
             transport.prepare(case, data, package)
             _, before = package_binding(case, package)
-            result['stages'] = run_stages(package, output, scratch)
+            reviews = case['review_archive']
+            if (not reviews['members'] or len(reviews['members']) > 64
+                    or any(e['size'] > 256 * 1024 for e in reviews['members'])
+                    or sum(e['size'] for e in reviews['members']) > 2 * 1024 * 1024):
+                raise ValueError('current review evidence exceeds compact transport bounds')
+            review_root = scratch / 'reviews'
+            transport.prepare({'files': [], 'archives': [reviews]}, data, review_root)
+            result['review_evidence'] = {'archive_sha256': reviews['sha256'],
+                'inputs': {e['path']: e['sha256'] for e in reviews['members']},
+                'scope': 'Current editorial reviews and their compact references; outside frozen package'}
+            result['stages'] = run_stages(package, output, scratch, review_root=review_root)
             _, after = package_binding(case, package)
             if before != after:
                 raise ValueError('audit mutated historical package')
