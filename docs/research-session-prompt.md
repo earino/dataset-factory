@@ -10,7 +10,7 @@ A completed safe handoff is progress; claimed completion without checks is not.
 
 ## Choose one primary candidate
 
-Read `AGENTS.md`, `PROJECT.md`, recent `STATE.md` entries, the current candidate
+Read `AGENTS.md`, `PROJECT.md`, the generated `STATE.md` view, the current candidate
 record and relevant skill. Before worker commands read `docs/OPERATIONS.md`; use
 current ledgers and reports rather than inferring state from old prose.
 
@@ -127,8 +127,12 @@ all calls count. Keep bulk data and ML work off the coordinator. Scheduled appro
 refuse flagged commands: use small script files, not interpreter one-liners/heredocs
 or `execute_code`; never bypass a refused action.
 
-Update candidate records and `STATE.md` with artifact/report identities, decisions,
-uncertainties and next action. Run relevant checks, the test suite and required
+Update candidate records with artifact/report identities, decisions, uncertainties
+and next action. Append a bounded evidence-backed observation with
+`python3 scripts/operational-state.py --append <event.json>`, then refresh the
+generated view with `python3 scripts/operational-state.py --render`. Never hand-edit
+STATE.md or rewrite prior events or narrative archives. Read specific historical
+evidence only when needed; do not load the complete archive on resume. Run relevant checks, the test suite and required
 candidate/package checks. Review the diff, commit/push completed work and inspect
 CI for that exact commit; report pending CI as pending.
 
@@ -137,4 +141,8 @@ work, checks/commit/CI, and next action. Acknowledge blocked or partial outcomes
 directly. Completed-action claims require observed results; label proposed checks,
 worker deletion, commits and future outcomes as pending until verified. Sign `— Scout (Hermes)`.
 
-Apply docs/PREDICTION-CONTRACT.md before advancing a candidate. Do not launch construction while an explicit remediation hold in STATE.md is active. Review suitability by intended use and distinguish validation from final holdout.
+Apply docs/PREDICTION-CONTRACT.md before advancing a candidate. Admission is controlled
+by config/admission.json; the generated STATE.md displays it but cannot override it.
+Run `python3 scripts/operational-state.py --check` on resume and refresh a stale view
+from the current records before choosing work. Review suitability by intended use
+and distinguish validation from final holdout.
