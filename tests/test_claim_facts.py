@@ -56,6 +56,16 @@ class ClaimFactsTests(unittest.TestCase):
             value={'rows':{'train':3},'splits':{'eval':{'positives':1,'positive_rate':.5}}}
             self.assertEqual(2,len(population_claims(value,facts)))
 
+    def test_documented_vocabulary_may_include_bins_absent_from_a_split(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);self.make(root);facts=measure(root)
+            text='| `beds_bucket` | category vocabulary | 1-3, 4-10, 11-25, 26-50, 51+ |'
+            self.assertEqual([],text_claims(text,facts))
+            facts['splits']['eval']['columns']['beds_bucket']['values']=['1-9']
+            findings=text_claims(text,facts)
+            self.assertEqual(['dictionary_bins'],[f['rule'] for f in findings])
+            self.assertEqual('eval',findings[0]['split'])
+
     def test_honest_negation_does_not_waive_later_guarantees(self):
         self.assertEqual([],text_claims('The runner does not enforce holdout isolation. No scoring guarantee is made.'))
         findings=text_claims('The runner does not enforce isolation. However, the benchmark keeps the holdout outside agents workspaces.')
