@@ -41,7 +41,11 @@ passing CI, budget admission and zero active workers before Scout alone launches
 The admission hold, spending limits, frozen artifacts and public destinations stay
 unchanged. Collect and reconcile cleanup before any next worker.
 
-The active declaration is `resilience-a4-blocked-002`. The sealed local 001
+The active declaration is `resilience-a4-blocked-003`. The sealed local 001/002
 preparation was never admitted or launched and remains preserved. The fresh ID
 includes the claims-vocabulary correction: categories may be absent from a temporal
 split, while observed bins outside the documented vocabulary still refuse.
+
+Attempt 003 incorporates the shared frozen-artifact transport shipped for A2.
+The earlier sealed source bundles were never admitted or launched; their replacement
+spends no worker retry. The current pin is in the bundle-preparation receipt.
