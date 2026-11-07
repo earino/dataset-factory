@@ -25,6 +25,8 @@ from factory.artifact_scrub import scan_tree
 from factory.frozen import historical_files
 from factory.qualification_receipt import check as check_qualification_receipt
 from factory.asset_integrity import check as check_asset_integrity, safe_path
+from factory.claim_checks import inspect as inspect_claims
+from factory.claim_contract import validate as validate_claims
 
 # Documents a reviewer needs. Directories are checked separately.
 REQUIRED_FILES = (
@@ -98,6 +100,21 @@ def check_package(package_dir, *, external_assets=False):
         else:
             problems.append(problem)
     notes.extend(asset_notes)
+    try:
+        if frozen:
+            claim_report = inspect_claims(package_dir)
+        else:
+            facts = json.loads(safe_path(package_dir,'claims-facts.json').read_text())
+            claim_report = validate_claims(package_dir,facts,external_assets=external_assets)
+        for finding in claim_report['findings']:
+            name = finding.get('file')
+            message = 'Claim check: '+json.dumps(finding,sort_keys=True)
+            if (name and frozen.get(name) and sha256_of(safe_path(package_dir,name)) == frozen[name]):
+                notes.append('Frozen historical finding (not new-release clearance): '+message)
+            else:
+                problems.append(message)
+    except (OSError,ValueError,KeyError,TypeError,AttributeError) as exc:
+        problems.append('Claims receipt missing or invalid: '+str(exc))
 
     for field in ("dataset", "release_tag", "artifact_version", "qualification", "published"):
         if manifest.get(field) in (None, "", [], {}):

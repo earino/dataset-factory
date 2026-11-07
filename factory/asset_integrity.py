@@ -32,9 +32,9 @@ def sha256(path):
     return h.hexdigest()
 
 
-def checksums(path):
+def checksums(path, text=None):
     result = {}
-    for line in path.read_text().splitlines():
+    for line in (path.read_text() if text is None else text).splitlines():
         if not line.strip() or line.lstrip().startswith('#'):
             continue
         parts = line.split(None, 1)
@@ -47,7 +47,7 @@ def checksums(path):
     return result
 
 
-def check(package, manifest, *, external_assets=False, require_loader=True):
+def check(package, manifest, *, external_assets=False, require_loader=True, checksums_text=None):
     package = Path(package)
     problems, notes = [], []
     try:
@@ -56,7 +56,7 @@ def check(package, manifest, *, external_assets=False, require_loader=True):
             raise ValueError('manifest assets/files must be nonempty objects')
         if set(assets) != set(files):
             problems.append('Manifest assets and files inventories differ')
-        sums = checksums(safe_path(package, 'SHA256SUMS'))
+        sums = checksums(safe_path(package, 'SHA256SUMS'),checksums_text)
         used, aliases = set(), set()
         for name, entry in assets.items():
             path = safe_path(package, name)

@@ -1,3 +1,19 @@
+## 2026-11-07 — Codex: claims gate implementation in draft PR #29
+
+The integrity portion (`acac572`) passed 775 clean-clone tests (13 skips) and all
+four exact-SHA CI runs. It hashes every present release asset even when omitted
+from package_files, cross-checks all digest inventories and the loader, and labels
+external-asset inspection as metadata-only. All 14 frozen packages retain their
+bytes; ABS visitor arrivals and PriceCatcher carry exact-file stale-loader warnings.
+
+The claims engine now measures full-row population, grain, domains, years and
+min/max invariants; recomputes paired intervals from row-aligned scorer evidence;
+requires bound generated document claims; and refuses missing evidence before a
+new manifest is written. Static diagnostics are recorded in
+audits/resilience/2026-11-07-claims-static.json. These are not full A3/A4 acceptance.
+Next: clean-clone/CI, then pinned worker runs with original blocked-package bytes.
+R4, R5 and architecture/event/approval/reconciliation work remain pending; hold stays active.
+
 ## 2026-11-07 — Codex: R2 shipped/deployed; gate 1.6 implementation awaiting acceptance
 
 R2 PR #27 merged as `a2578ed`, passed both exact-merge CI workflows, and Scout

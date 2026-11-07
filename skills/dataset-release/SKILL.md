@@ -88,6 +88,13 @@ sh scripts/scout-factory worker run  <job.json>
 
 ## Required evidence
 
+Read `docs/CLAIMS-FROM-BYTES.md`. New packages require `CLAIMS.json`, a worker-produced
+`claims-facts.json` tied to the exact passing qualification, and generated claim
+blocks for measurable document statements. The worker recomputes population,
+domains, grain, years, min/max invariants and paired intervals from the bytes.
+Summary counts need count-only `summary.json` inside the qualified artifact.
+Neither a declaration nor a static lint substitutes for the independent audit.
+
 Every release asset must agree across `assets`, `files`, `SHA256SUMS` and the
 loader's literal `EXPECTED`/`LAYOUT`/`TAG`, even when absent from `package_files`.
 A present asset is always hashed, including in `--external-assets` mode. Metadata

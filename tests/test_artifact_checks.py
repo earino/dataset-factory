@@ -183,6 +183,13 @@ class PackageCheckTests(unittest.TestCase):
             shutil.copytree(dataset,root,dirs_exist_ok=True)
         self.assertTrue(qualification['ok'],qualification['failed_checks'])
         (root/'qualification.json').write_text(json.dumps(qualification))
+        from factory.claim_contract import compute, render
+        claim={'id':'eval-population','kind':'population','split':'eval'}
+        (root/'CLAIMS.json').write_text(json.dumps({'version':1,'claims':[claim]}))
+        facts=compute(root,qualification=root/'qualification.json')
+        (root/'claims-facts.json').write_text(json.dumps(facts))
+        (root/'README.md').write_text('<!-- FACTORY-CLAIM eval-population -->\n'+render(claim,facts)+
+                                    '\n<!-- /FACTORY-CLAIM -->\n')
         files = {
             str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in sorted(root.rglob("*")) if p.is_file()

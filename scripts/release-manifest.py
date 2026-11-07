@@ -19,6 +19,8 @@ sys.path.insert(0, str(ROOT))
 from factory.admission import require
 from factory.common import FactoryError
 from factory.qualification_receipt import check as check_qualification_receipt
+from factory.asset_integrity import check as check_assets
+from factory.claim_contract import validate as validate_claims
 from factory.release_schema import (ReleaseShapeError, load_release, from_manifest,
                                     normalise_destinations, normalise_splits,
                                     combined_artifact_version, atomic_write)
@@ -288,6 +290,14 @@ def main() -> int:
     qualification_problems = check_qualification_receipt(release, manifest, external_assets=True)
     if qualification_problems:
         raise SystemExit('Package construction refused: '+'; '.join(qualification_problems))
+    try:
+        asset_problems,_ = check_assets(release,manifest,external_assets=True,checksums_text=sums_text)
+        claims = validate_claims(release,load(release/'claims-facts.json') or {},
+                                 external_assets=True,manifest=manifest)
+        if asset_problems or not claims['ok']:
+            raise ValueError('; '.join(asset_problems)+'; claims: '+json.dumps(claims['findings']))
+    except (OSError,ValueError,TypeError,KeyError,AttributeError) as exc:
+        raise SystemExit('Package claims refused before manifest write: '+str(exc)) from None
     text = json.dumps(manifest, indent=2, allow_nan=False) + "\n"
     # All shape/licence checks precede the first write. Each replace is atomic; manifest last.
     release.mkdir(parents=True, exist_ok=True)
