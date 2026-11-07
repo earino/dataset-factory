@@ -156,6 +156,31 @@ Acceptance meaning: the draft gate reproduced the specified historical defects
 and refused the old artifacts. This is experimental acceptance of a draft gate
 under the hold - not production deployment, not A1 complete (remaining cases
 pending), and no blocked package was repaired or requalified by this run.
+## A1-fixtures historical acceptance worker: resilience-a1-fixtures-001 (Scout, 2026-11-07 ~20:1xZ)
+
+Second bounded R1 acceptance run on branch codex/deterministic-recovery-gate
+(merged tip 13737a6: my evidence d2ba315/58e127e merged with Codex d75cbf5, no
+reset/rebase). Job pinned to source SHA256
+`a00d503cbe4471e88c574b9b132f9b413dd5921710e49bb437cd9097e45db8d5` (verified at
+plan), one cx23, EUR 0.06 reservation. Worker elapsed 172.9 s; collected;
+destroyed; provider read-back 0 servers / 0 IPs; hold stayed true; no rebuild,
+no publication, no retry.
+
+acceptance-summary.json: ok=true, both cases exit 0. Expected fixture
+recoveries reproduced exactly and the strict gate REFUSED both old artifacts:
+- cqc (afe9ee20-era fixture channel): fixture:code/build.py lookup recovered
+  4/4 eval labels, 0 errors; gate failed checks: battery.exact_recovery,
+  battery.recorded_in_quality, artifacts.no_shipped_answers. 127.8 s,
+  peak RSS 184,772 KiB.
+- ab-wildfire (c2c8ceb5-era fixture channel): fixture:code/build.py recovered
+  3 eval and 4 holdout labels, 0 errors; gate failed checks additionally
+  include units.validation_receipt. 32.3 s, peak RSS 71,512 KiB.
+
+Evidence committed by manifest logical path (single-object acceptance/battery/
+qualification per case, validated), plus receipt.json binding staging release
+437775462, manifest sha 68795b64..., per-file asset IDs/digests and runtime.
+Full results JSONL and the 17.8 MB historical bytes remain staging-only.
+Compact evidence: audits/resilience/2026-11-07-a1-fixtures-001-acceptance/.
 ## Next action
 
 Run pinned R1 historical acceptance through Scout, then complete the remaining gates
