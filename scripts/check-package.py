@@ -28,6 +28,9 @@ from factory.asset_integrity import check as check_asset_integrity, safe_path
 from factory.claim_checks import inspect as inspect_claims
 from factory.claim_contract import validate as validate_claims
 from factory.license_contract import validate as validate_license
+from factory.suitability import publication_check
+
+REVIEW_ROOT = Path(__file__).resolve().parents[1]
 
 # Documents a reviewer needs. Directories are checked separately.
 REQUIRED_FILES = (
@@ -92,6 +95,9 @@ def check_package(package_dir, *, external_assets=False):
         return problems, notes
 
     frozen = historical_files(package_dir)
+    suitability_errors, suitability_notes = publication_check(REVIEW_ROOT, manifest, package=package_dir)
+    problems.extend(suitability_errors)
+    notes.extend(suitability_notes)
     try:
         if frozen and not (package_dir/'LICENSE-EVIDENCE.json').exists():
             # A frozen historical manifest is not permission to edit its terms.

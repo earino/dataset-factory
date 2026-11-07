@@ -444,13 +444,14 @@ Enforced mechanically, by the pre-check script attached to each research job:
 | Period allowance, stop at `stop_fraction` (95%) | Gate refuses to wake the model |
 | Weekly session cap (200) | Counted from the run ledger; further ticks skip |
 | Over-long session (over `session_token_cap`) | Counts **double** against the weekly cap |
-| Overlapping sessions | Refused while a run is in flight, or the lock is fresh |
+| Overlapping sessions | Refused while the shared OS admission mutex is owned; no stale-time takeover |
 | Catch-up bursts | `cron.catch_up_missed: false`, plus a late-tick window; a missed slot is skipped |
 | Unconfigured allowance | **Fail closed** - no allowance means no model work |
 
-Advisory (instruction only, not machine-checked): the per-session wall-clock target. The gate
-can refuse a session but cannot interrupt one already running. Cron bounds a run by its
-inactivity budget, not by this script's timeout (scripts default to 3600 s).
+The pre-check can refuse a session before launch. The existing session wrapper also enforces
+per-invocation turns and wall-clock limits through Hermes flags and process-group cleanup.
+The per-session token cap is advisory during execution; measured overruns count against the
+weekly budget afterwards. See the runtime controls and session admission sections below.
 
 ### The gate
 
@@ -644,29 +645,41 @@ See `docs/FACTORY-RESILIENCE-IMPLEMENTATION.md` for the remaining work and evide
 
 ### Who authorises a publication
 
-Standing authority was granted by the operator on 2026-10-20: **a release that passes every gate may
-be published without a per-release yes, and is reported afterwards.** The gates are unchanged and are
-not negotiable by this authority:
+The operator approves the specific private-to-public change on both GitHub and
+Hugging Face after review of the exact artifact and independent audit. The current
+resilience implementation goal authorises code delivery and private acceptance work;
+it is not a dataset publication approval. Passing gates is necessary, and does not
+supply the operator's approval.
 
-- the qualification covers this exact artifact, and the package check passes;
-- every destination is verified anonymously (no credential) before the manifest may say `published`;
-- a licence that cannot be read is recorded in `candidates/<id>/license.json` *before* construction,
-  and a candidate with no recorded licence decision is never published.
+A demonstrated label-blind exact recovery blocks a new release unconditionally.
+Disclosure, retrospective scope, row isolation and a purported waiver never override
+that rule. `factory.suitability.publication_check` enforces the current version-bound
+review at package/manifest and publishing preparation boundaries, in addition to gate
+1.6. `python3 scripts/check-suitability.py --publication <dataset>` performs strict
+admission without the exact-frozen-package diagnostic exception. A historical warning
+is not permission for a new public destination or release.
 
-Publication is still a logged act: record the version, the three destinations and the verification
-result in `STATE.md`. The authority covers ordinary releases of an accepted candidate; it does not
-cover making a private repository public, which was the specific ambiguity on 2026-10-19 and is now
-settled in MSHA's favour.
+After the approved flip, finish the already approved release plan, verify both data
+destinations anonymously, preserve the manifest/version tags and record the receipts.
+Website deployment still requires the operator-reviewed website plan and verified public
+data destinations. Append the operational observation and regenerate `STATE.md`.
+
+This replaces the contradictory October standing-authority wording. Its original text
+remains in Git history; no historical approval is inferred or ratified here. The user's
+2026-11-07 instruction selected the stricter gate, and the supplied AGENTS instructions
+retain explicit operator control of publication. Those existing instructions resolve
+the contradiction without asking the operator to decide it again.
 
 ### Release priority and the flip boundary
 
 Authority is split at one event: **making a private repository public** (the flip).
 
-- Up to `packaged` Scout acts freely: discovery, construction, qualification, packaging, verification,
-  documentation, and preparing a repository to be made public.
+- Before the flip, Scout performs ordinary research and private preparation within the
+  configured admission hold, gates, resource budgets and current evidence.
 - The flip itself is the operator's. That is the only approval in the release path.
-- After the flip, publication is automatic: GitHub release, Hugging Face, site page and anonymous
-  verification run without another yes, and the operator is told the link.
+- After the approved flip, complete GitHub/Hugging Face delivery and anonymous verification
+  without another yes. A site deployment follows its operator-reviewed plan, and the
+  operator receives the verified links.
 
 Two mechanisms keep "ship first" true rather than aspirational:
 
@@ -725,10 +738,12 @@ while a destination is unverified. Corrections are published as a new version.
 
 ## Licensing policy for releases
 
-`config/licensing-policy.json` holds the standing policy, `candidates/<id>/license.json` the
-per-dataset decision, and `scripts/release-manifest.py` writes both into the release manifest as a
-`licenses` block (code, derived compilation, source terms). `check-package.py` refuses a package
-with no declared terms, or one naming a licence file it does not ship.
+`config/licensing-policy.json` holds the standing policy; `candidates/<id>/license.json`
+preserves the research decision. New packages bind source captures and exact quotations in
+`LICENSE-EVIDENCE.json`. The licence verifier generates the terms, card statement and manifest
+`licenses` block from that evidence and the policy. Candidate declarations alone cannot clear
+new packaging. `check-package.py` refuses absent, unreadable, conflicting or stale evidence,
+as well as missing licence files. Exact frozen releases retain historical evidence gaps.
 
 Defaults: **MIT** for our code and documentation, **CC0-1.0** for our rights in a derived
 compilation, and the **source's terms preserved** - never relicensed, always with its designation,

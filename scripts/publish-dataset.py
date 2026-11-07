@@ -89,6 +89,10 @@ def plan(candidate: str) -> dict:
     if not manifest_path.is_file():
         raise SystemExit(f"no MANIFEST.json for {candidate}; run scripts/release-manifest.py")
     manifest = json.loads(manifest_path.read_text())
+    from factory.suitability import publication_check
+    errors, _ = publication_check(ROOT, manifest, package=release_dir)
+    if errors:
+        raise SystemExit('; '.join(errors))
     declared = json.loads((ROOT / "candidates" / candidate / "release.json").read_text())
     docs = tuple(DOCS) + tuple(declared.get("required_docs", ()))
     if not historical_files(release_dir):

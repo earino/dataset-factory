@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "rules": {
+    "533ece01486081fa1362": {
+      "status": "enforced",
+      "scope": "The configured research-budget gate refuses an unset allowance before session launch.",
+      "checks": [
+        "scripts/research-budget.py",
+        "scripts/scout_research_session.py",
+        "tests/test_research_budget.py"
+      ]
+    },
+    "5c08c21ea1bf7a44e8b8": {
+      "status": "enforced",
+      "scope": "Repository-supported discovery, capture, manifest and worker launch entry points enforce the typed hold. The existing scheduler records a held slot without consuming it. Direct external shell actions remain outside these entry points.",
+      "checks": [
+        "factory/admission.py",
+        "scripts/scout_research_schedule.py",
+        "tests/test_admission_hold.py",
+        "tests/test_research_schedule.py"
+      ]
+    },
+    "a06d6ae0ced067edcd31": {
+      "status": "enforced",
+      "scope": "Known exact recovery in the current version-bound suitability review or the current gate receipt refuses supported new-release admission, regardless of scope or waiver fields. This is not proof that all possible recovery identities have been discovered.",
+      "checks": [
+        "factory/suitability.py",
+        "factory/qualification_receipt.py",
+        "tests/test_suitability.py",
+        "tests/test_artifact_checks.py"
+      ]
+    },
+    "ed46aa1fac4a954ed702": {
+      "status": "enforced",
+      "scope": "The wrapper checks process exit and the full single decision schema; the budget reader now also fails closed on unavailable/partial accounting, as documented later in OPERATIONS.",
+      "checks": [
+        "scripts/scout_research_session.py",
+        "scripts/research-budget.py",
+        "tests/test_session_admission.py",
+        "tests/test_budget_accounting_failures.py"
+      ]
+    },
+    "738dbb94b7ff7e145e96": {
+      "status": "enforced",
+      "scope": "The qualification timing checks require and validate declarations. They deliberately do not certify source timing truth.",
+      "checks": [
+        "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "tests/test_timing_gate.py"
+      ]
+    },
+    "057733a0a907423ade15": {
+      "status": "enforced",
+      "scope": "The package and manifest entry points hash present assets and compare inventories and literal loader fields. Missing CSVs in explicit external mode remain reported as unverified, with downstream full-artifact receipts required. Exact frozen loader exceptions cannot admit changed files.",
+      "checks": [
+        "factory/asset_integrity.py",
+        "scripts/check-package.py",
+        "scripts/release-manifest.py",
+        "tests/test_asset_integrity.py"
+      ]
+    },
+    "bf94c35345960cb60d5a": {
+      "status": "prose-only",
+      "scope": "Partially enforced: current battery freezes predictions before scored-label access and rejects known exact identities; receipt acceptance binds bytes/code. Instructions governing every caller and never distributing arbitrary external audit vectors are broader than those checks.",
+      "checks": [
+        "factory/leakage_battery.py",
+        "factory/qualification_receipt.py",
+        "tests/test_leakage_battery.py"
+      ]
+    },
+    "a151dee8414414827c19": {
+      "status": "prose-only",
+      "scope": "Supported tag creation verifies content/commit and refuses moving a tag, including races. Choosing a new reviewed release version and avoiding manual GitHub/Hub changes remains an operator/agent obligation.",
+      "checks": [
+        "factory/hub_integrity.py",
+        "tests/test_hub_integrity.py"
+      ]
+    },
+    "47bf155fd72cedd019b0": {
+      "status": "prose-only",
+      "scope": "Captured text, readability/conflict heuristics, quotations and generated statements are mechanically checked. Correct source scope and compatibility require independent judgment, so the complete paragraph is not mechanically established.",
+      "checks": [
+        "factory/license_evidence.py",
+        "factory/license_contract.py",
+        "tests/test_license_contract.py",
+        "tests/test_license_evidence.py"
+      ]
+    },
+    "df50020ec833aba384ab": {
+      "status": "prose-only",
+      "scope": "The gate refuses single-class splits. That does not establish that a unit/frame error caused the uniform result; diagnosis remains evidence-dependent.",
+      "checks": [
+        "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "tests/test_gate_unscorable.py"
+      ]
+    }
+  }
+}

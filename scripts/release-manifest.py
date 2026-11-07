@@ -22,6 +22,7 @@ from factory.qualification_receipt import check as check_qualification_receipt
 from factory.asset_integrity import check as check_assets
 from factory.claim_contract import validate as validate_claims
 from factory.license_contract import validate as validate_license
+from factory.suitability import publication_check
 from factory.release_schema import (ReleaseShapeError, load_release, from_manifest,
                                     normalise_destinations, normalise_splits,
                                     combined_artifact_version, atomic_write)
@@ -268,6 +269,9 @@ def main() -> int:
     except (OSError,ValueError,TypeError,KeyError,AttributeError) as exc:
         raise SystemExit('Package claims refused before manifest write: '+str(exc)) from None
     text = json.dumps(manifest, indent=2, allow_nan=False) + "\n"
+    suitability_errors, _ = publication_check(ROOT, manifest)
+    if suitability_errors:
+        raise SystemExit('Package suitability refused before manifest write: ' + '; '.join(suitability_errors))
     # All shape/licence checks precede the first write. Each replace is atomic; manifest last.
     release.mkdir(parents=True, exist_ok=True)
     atomic_write(release / "SHA256SUMS", sums_text)
