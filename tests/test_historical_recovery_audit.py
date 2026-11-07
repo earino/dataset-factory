@@ -60,10 +60,12 @@ class HistoricalAuditTests(unittest.TestCase):
             {**expected, 'covered': 21, 'errors': 0}]})[0]['ok'])
 
     def test_plan_pins_reconstruct_original_core_versions_and_fetches(self):
-        root = ROOT / 'candidates/nz-ea-wholesale-price-exceedance/resilience-a1'
-        cases = json.loads((root / 'cases.json').read_text())['cases']
-        fetch = {a['dest']: a for a in json.loads((root / 'job.json').read_text())['fetch']['assets']}
-        for case in cases:
+        plans = []
+        for root in ROOT.glob('candidates/*/resilience-a1'):
+            cases = json.loads((root / 'cases.json').read_text())['cases']
+            fetch = {a['dest']: a for a in json.loads((root / 'job.json').read_text())['fetch']['assets']}
+            plans.extend((case,fetch) for case in cases)
+        for case,fetch in plans:
             components = {}
             for entry in case['files']:
                 key = {'public/train.csv': 'train', 'public/eval.csv': 'eval',

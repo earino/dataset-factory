@@ -1,0 +1,317 @@
+{
+  "job": {
+    "id": "resilience-a1-fixtures-001",
+    "candidate": "cqc-care-home-deregistration",
+    "image": "python:3.13-slim",
+    "command": [
+      "python3",
+      "-B",
+      "/workspace/historical-recovery-audit.py"
+    ],
+    "server_type": "cx23",
+    "location": "hel1",
+    "cpus": 2,
+    "memory_mb": 3072,
+    "timeout_minutes": 90,
+    "lifetime_minutes": 120,
+    "max_disk_mb": 12000,
+    "max_artifact_mb": 20,
+    "release": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "assets": [
+        {
+          "asset_id": 708316347,
+          "dest": "cqc/meta.json",
+          "size": 2349,
+          "sha256": "3b350af60fcd415824cd4940b36c4c4e19f4933ec7190d5846fd9920dd9a98c0"
+        },
+        {
+          "asset_id": 708316399,
+          "dest": "cqc/private/holdout.csv",
+          "size": 1788226,
+          "sha256": "880a36d468b779fce541e5419d3f785d482dc86376fadbfd5b436460b55ac552"
+        },
+        {
+          "asset_id": 708316470,
+          "dest": "cqc/public/eval.csv",
+          "size": 1787102,
+          "sha256": "2078146fce1f75b23b0a1060e7efc0241317c981c21a5d502457ada2ec0ee20e"
+        },
+        {
+          "asset_id": 708316565,
+          "dest": "cqc/public/train.csv",
+          "size": 9553058,
+          "sha256": "6138dd92974d7b70504ab32af2c8a3b73b4c0f1d6f87dba99eaac1f10f37ddf1"
+        },
+        {
+          "asset_id": 708316648,
+          "dest": "cqc/quality.json",
+          "size": 24584,
+          "sha256": "4e07a858396ec032c47d67a62cd9f1ba9e04a607bd0eeb962c4d7249cef77f50"
+        },
+        {
+          "asset_id": 708316898,
+          "dest": "cqc/original-source.tar",
+          "size": 245760,
+          "sha256": "50fe3bd141a8d33362a4e35177f9cfb06b33df308b43423a3834069b44e5a1ab"
+        },
+        {
+          "asset_id": 718800868,
+          "dest": "wildfire/meta.json",
+          "size": 1217,
+          "sha256": "aeb2ef927fc0d8565a86a6901afe5ee29359787bb39693342d18ce6850a9bcfb"
+        },
+        {
+          "asset_id": 718800905,
+          "dest": "wildfire/private/holdout.csv",
+          "size": 930923,
+          "sha256": "53583f4d2dff386bfebe864f49dba348d9717ee7bf96d28574082f80668edc12"
+        },
+        {
+          "asset_id": 718800983,
+          "dest": "wildfire/public/eval.csv",
+          "size": 838515,
+          "sha256": "d099e4cb9da999e3e301b0e4da1cc98cd56fc11371feba7711447571c83a7759"
+        },
+        {
+          "asset_id": 718801033,
+          "dest": "wildfire/public/train.csv",
+          "size": 2351953,
+          "sha256": "575649d52c304d2fa0751411e0e4dc291309b42fbd0b280cbeae9e4b747cc2ae"
+        },
+        {
+          "asset_id": 718801140,
+          "dest": "wildfire/quality.json",
+          "size": 21089,
+          "sha256": "331a4ceb0944d33b80b0a6519c0148603b19b4fff1ae5136571ae3126cff3ec1"
+        },
+        {
+          "asset_id": 718801547,
+          "dest": "wildfire/original-source.tar",
+          "size": 225280,
+          "sha256": "9e8450164f4b5047c72c68c6d493af1944344e46972231c6bca11a892cf6517d"
+        }
+      ]
+    },
+    "note": "Read-only A1 fixture recovery acceptance on exact historical CQC and wildfire artifacts and original build.py bytes. Never execute historical code; never rebuild, publish or modify frozen artifacts. Scout is sole launcher. Collect all compact reports and clean up; no blind retry.",
+    "source_files": [
+      {
+        "bundled_as": "historical-recovery-audit.py",
+        "source": "scripts/historical-recovery-audit.py",
+        "bytes": 7899,
+        "sha256": "81467d34ef6221e356b1ec901ac3c079c633d2212b452f7fa95d2f16c50fefe1"
+      },
+      {
+        "bundled_as": "cases.json",
+        "source": "candidates/cqc-care-home-deregistration/resilience-a1/cases.json",
+        "bytes": 4067,
+        "sha256": "9e04d3586aba469031ccf76c17224eaab228784eff39569fc8d8a2b4c4b98e7a"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 62645,
+        "sha256": "83a5f14b9427fdd115dff26a4d65f43b28781774818b8da7ae6641d5848e6959"
+      },
+      {
+        "bundled_as": "artifact_scrub.py",
+        "source": "factory/artifact_scrub.py",
+        "bytes": 11369,
+        "sha256": "8c663253e691a7b8751f9c853b40a3752a833360caafb1ea8e8f534e64af4b68"
+      },
+      {
+        "bundled_as": "leakage_battery.py",
+        "source": "factory/leakage_battery.py",
+        "bytes": 17379,
+        "sha256": "adbf7ee0aca0012b78cc1f1e4aeb968a23717cae30f66a02e080215e75f830e3"
+      },
+      {
+        "bundled_as": "recovery_recipes.py",
+        "source": "factory/recovery_recipes.py",
+        "bytes": 17609,
+        "sha256": "f64c542fcda232169c95ace17421b45275194b934938c0ea4c9b68e6f844ad0e"
+      }
+    ]
+  },
+  "reservation_eur": "0.06",
+  "rate_ceiling_eur": "0.02",
+  "reserved_hours": 3,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 225280,
+  "source_sha256": "a00d503cbe4471e88c574b9b132f9b413dd5921710e49bb437cd9097e45db8d5",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "deleted",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-07T18:52:30.338844+00:00",
+  "expires": 1794084750,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0115200000000000",
+  "server_id": 175019878,
+  "known_hosts": "/opt/data/dataset-factory/.factory/resilience-a1-fixtures-001/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168",
+  "result": {
+    "job_id": "resilience-a1-fixtures-001",
+    "status": "succeeded",
+    "uploaded": true,
+    "fetch": {
+      "repo": "earino/dataset-factory-staging",
+      "release": null,
+      "fetched": [
+        {
+          "dest": "cqc/meta.json",
+          "bytes": 2349,
+          "sha256": "3b350af60fcd415824cd4940b36c4c4e19f4933ec7190d5846fd9920dd9a98c0"
+        },
+        {
+          "dest": "cqc/private/holdout.csv",
+          "bytes": 1788226,
+          "sha256": "880a36d468b779fce541e5419d3f785d482dc86376fadbfd5b436460b55ac552"
+        },
+        {
+          "dest": "cqc/public/eval.csv",
+          "bytes": 1787102,
+          "sha256": "2078146fce1f75b23b0a1060e7efc0241317c981c21a5d502457ada2ec0ee20e"
+        },
+        {
+          "dest": "cqc/public/train.csv",
+          "bytes": 9553058,
+          "sha256": "6138dd92974d7b70504ab32af2c8a3b73b4c0f1d6f87dba99eaac1f10f37ddf1"
+        },
+        {
+          "dest": "cqc/quality.json",
+          "bytes": 24584,
+          "sha256": "4e07a858396ec032c47d67a62cd9f1ba9e04a607bd0eeb962c4d7249cef77f50"
+        },
+        {
+          "dest": "cqc/original-source.tar",
+          "bytes": 245760,
+          "sha256": "50fe3bd141a8d33362a4e35177f9cfb06b33df308b43423a3834069b44e5a1ab"
+        },
+        {
+          "dest": "wildfire/meta.json",
+          "bytes": 1217,
+          "sha256": "aeb2ef927fc0d8565a86a6901afe5ee29359787bb39693342d18ce6850a9bcfb"
+        },
+        {
+          "dest": "wildfire/private/holdout.csv",
+          "bytes": 930923,
+          "sha256": "53583f4d2dff386bfebe864f49dba348d9717ee7bf96d28574082f80668edc12"
+        },
+        {
+          "dest": "wildfire/public/eval.csv",
+          "bytes": 838515,
+          "sha256": "d099e4cb9da999e3e301b0e4da1cc98cd56fc11371feba7711447571c83a7759"
+        },
+        {
+          "dest": "wildfire/public/train.csv",
+          "bytes": 2351953,
+          "sha256": "575649d52c304d2fa0751411e0e4dc291309b42fbd0b280cbeae9e4b747cc2ae"
+        },
+        {
+          "dest": "wildfire/quality.json",
+          "bytes": 21089,
+          "sha256": "331a4ceb0944d33b80b0a6519c0148603b19b4fff1ae5136571ae3126cff3ec1"
+        },
+        {
+          "dest": "wildfire/original-source.tar",
+          "bytes": 225280,
+          "sha256": "9e8450164f4b5047c72c68c6d493af1944344e46972231c6bca11a892cf6517d"
+        }
+      ],
+      "failures": [],
+      "bytes": 17770056
+    },
+    "image_id": "sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc",
+    "image_digests": [
+      "python@sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc"
+    ],
+    "exit_code": 0,
+    "oom_killed": false,
+    "elapsed_seconds": 172.9,
+    "repo": "earino/dataset-factory-staging",
+    "release_id": 437775462,
+    "release_url": "https://github.com/earino/dataset-factory-staging/releases/tag/untagged-5cb04a3f8266ef56e0eb",
+    "manifest_url": "https://github.com/earino/dataset-factory-staging/releases/download/untagged-5cb04a3f8266ef56e0eb/manifest.json",
+    "assets": [
+      {
+        "id": 721625351,
+        "size": 210,
+        "sha256": "79f32aa31add084ae563efd671e3d6cc635bfc79fb608883b0a45a33ed913687"
+      },
+      {
+        "id": 721625432,
+        "size": 1904,
+        "sha256": "9be1e3cca9323895080c23047406547d01ad8e3d507913ad8ba376403e63c87f"
+      },
+      {
+        "id": 721625538,
+        "size": 2019,
+        "sha256": "8d96048f7a0c70892258b6d0731f99faec6ad01d863e0ea90b40a70847275525"
+      },
+      {
+        "id": 721625803,
+        "size": 22182,
+        "sha256": "284ca097c034578f1eafb9ac8d940b01c7211512684e66080827907bdcfaddc3"
+      },
+      {
+        "id": 721625904,
+        "size": 245629,
+        "sha256": "49dee6d9fdfbd3cf8779612d05c8dc77b04837977b26e22b96ccd6f9680af050"
+      },
+      {
+        "id": 721625981,
+        "size": 6903,
+        "sha256": "2533be9f7446aa7b83207747f52e27341ede85d0344475e2cd27c208ff6a5e1f"
+      },
+      {
+        "id": 721626039,
+        "size": 2364,
+        "sha256": "b16d83d6b1fc19b80f2a82aff3a41900ecc79a78ab7d5d26b6d77ca91f62ff9b"
+      },
+      {
+        "id": 721626119,
+        "size": 3234,
+        "sha256": "03c0b37dc338cb2768ced94e644669b6cc0a2e765e9c9e255e76d6eb4de5558f"
+      },
+      {
+        "id": 721626164,
+        "size": 22659,
+        "sha256": "2a9a48b1e3efb62ca6787563e8031d3228078da5a9fa14f7efcccf9b70d5c51b"
+      },
+      {
+        "id": 721626217,
+        "size": 245586,
+        "sha256": "5350e311fc505d1cd8f7f29a01cceb0c6b5163033c38a2f09e031720698936fa"
+      },
+      {
+        "id": 721626278,
+        "size": 57294,
+        "sha256": "61cceef9cd402a83cb324386ee327bf5d01a1be574bb5b105c9ba0cbbd1d0f1f"
+      },
+      {
+        "id": 721626345,
+        "size": 225280,
+        "sha256": "a00d503cbe4471e88c574b9b132f9b413dd5921710e49bb437cd9097e45db8d5"
+      },
+      {
+        "id": 721626413,
+        "size": 116,
+        "sha256": "bd81888390d8a934438d19db87d0195970b25f25d61c245adfa64536107e5793"
+      },
+      {
+        "id": 721626471,
+        "size": 12477,
+        "sha256": "0b62e5a9003f65d28ff3f41b6965ec99bba2358091cfbc95453228eac45731cb"
+      }
+    ],
+    "skipped_empty": []
+  },
+  "collected_at": "2026-11-07T18:57:33.930482+00:00",
+  "deleted_at": "2026-11-07T18:58:34.337116+00:00"
+}

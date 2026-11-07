@@ -254,6 +254,24 @@ class WorkerTests(unittest.TestCase):
             worker.destroy(self.root, self.job["id"], self.config, self.cloud)
         self.assertEqual(self.cloud.deleted, [])
 
+    def test_repeated_absence_preserves_original_deletion_timestamp(self):
+        self.launch()
+        self.cloud.servers = []
+        first = worker.reconcile(self.root, self.job['id'], self.config, self.cloud)
+        with patch('factory.worker.utcnow', return_value=datetime(2099, 1, 1, tzinfo=timezone.utc)):
+            second = worker.reconcile(self.root, self.job['id'], self.config, self.cloud)
+        self.assertEqual(first['deleted_at'], second['deleted_at'])
+        self.assertEqual(first, second)
+
+    def test_deleted_ledger_cannot_hide_a_live_owned_worker(self):
+        self.launch()
+        path = self.root / 'jobs' / (self.job['id'] + '.json')
+        record = read_json(path); record['status'] = 'deleted'; write_json(path, record)
+        with self.assertRaisesRegex(FactoryError, 'still exists'):
+            worker.reconcile(self.root, self.job['id'], self.config, self.cloud)
+        with self.assertRaisesRegex(FactoryError, 'still exists'):
+            worker.destroy(self.root, self.job['id'], self.config, self.cloud)
+
     def test_collect_verifies_release_membership_then_allows_cleanup(self):
         self.launch()
         report = {"job_id": self.job["id"], "status": "succeeded", "uploaded": True, "repo": "owner/private",
