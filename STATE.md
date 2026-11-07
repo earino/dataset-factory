@@ -1,3 +1,121 @@
+## 2026-11-07 (12:06Z) - follow-up (worker-status runner): ns-bwa-002 + ns-bwa-baseline-002 SUCCEEDED - the 11:39Z advancement session had already collected, destroyed and recorded both jobs but ended at its wall-clock ceiling before committing; this follow-up re-verified every required check from the collected bytes, the live provider and the live staging releases, corrected two timestamp slips against the job ledgers, committed the recording and marked both jobs handled
+
+The shared research mutex was this runner's for the whole invocation; no
+other session was active (the advancement session's processes were gone;
+the working tree held only this event's recording). Both jobs were
+already collected, so no collect, launch or recovery was needed.
+
+- RE-VERIFIED FROM THE COLLECTED BYTES (every fetched part digest-checked
+  against its staging manifest): ns-bwa-002 - gate 1.5.0 ok=true,
+  failed_checks [], 44 results, the artifact block pins train/eval/holdout
+  at 665b88a4/8f52bcdf/f0da86a8; acceptance receipt "ACCEPTED: /output/
+  extract matches the qualified artifact 49bf4cfa427375c6"; the references
+  report pins the same artifact_version. ns-bwa-baseline-002 - accept.log
+  ACCEPTED before any scoring; materialize copied public train+eval only
+  ("the private holdout was NOT copied"); runner files unmodified
+  (bundled digests equal the read-only harness checkout, re-checked
+  locally); both eval AUCs 0.5068; "[validate] CONTRACT OK";
+  baseline_result.json contract_ok true, holdout sealed.
+- CORRECTIONS against the job ledgers (the advancement session's
+  hand-written stamps): baseline worker destroyed 11:48:13Z (ledger
+  deleted_at), not 11:42:40Z; baseline job launched 11:36Z (ledger
+  created_at 11:36:16Z), not 11:42Z. Both fixed in the entry below and
+  in record.json. The build job's stamps all matched the ledger.
+- PRESERVATION re-verified live 12:04Z: private staging release 437529809
+  serves all 13 manifest assets plus manifest.json, every size and sha256
+  equal to the collected manifest (the accepted v2026.12 extract is
+  durable there); release 437536802 serves its 9 plus manifest.json
+  equally. No bulk CSV was fetched to the coordinator.
+- CLEANUP (deletion confirmed by the provider, re-read 12:04Z):
+  GET /v1/servers/174969934 -> 404; GET /v1/servers/174971571 -> 404;
+  GET /v1/servers -> 0 entries; GET /v1/primary_ips -> 0 entries.
+- Checks by this follow-up: check-candidate --all rc=0; the suite first
+  showed 723 tests / 1 PRE-EXISTING failure at HEAD -
+  test_runtime_audit (skills/dataset-release/SKILL.md differs from the
+  reviewed inventory ops/runtime-files.json): commit a43838b added the
+  fixture-shipping failure-mode row without the inventory digest bump.
+  Repaired exactly as the dd8026c precedent (digest refreshed to the
+  committed skill bytes; the a43838b delta verified to be that one row
+  only); suite 723/723 OK after the repair, recorded beside this entry.
+- Both jobs marked handled by this follow-up (.factory/ns-bwa-002/
+  handled, .factory/ns-bwa-baseline-002/handled, citing the recording
+  commit). Untracked probe/fetch_baseline_diagnostics_002_2026_11_07.py
+  committed with the recording.
+
+Next action unchanged (record.next_action): package v2026.12, private
+staging on both destinations (tag last), version-bound suitability
+re-bound to 49bf4cfa..., fresh pre-flip audit prompt re-running the
+frozen subtraction attacks on the new bytes; the staged v2026.10 bytes
+stay private and are never flipped.
+
+## 2026-11-07 (11:39Z) - scheduled advancement: ns-bwa v2026.12 REBUILD EXECUTED (ns-bwa-002) - gate 1.5.0 PASSED on the full artifact 49bf4cfa (0 failed checks), --accept ACCEPTED, references on identical eval rows (persistence 0.6124 recomputed register-side = the v2026.10 figure exactly); ns-bwa-baseline-002 RUNNING
+
+Primary candidate ns-bwa-advisory-lift-duration (release work outranks
+construction; the recorded, operator-accepted 2026-11-02 rebuild decision;
+all five other packaged records carry awaiting_operator TRUE = pure human
+wait; dvsa-mot next_action remains the operator decision, untouched).
+
+- THE EDIT (committed 0d36ffc, pushed): all eight outcome-derived history
+  columns dropped from the shipped frame (site/county prior-advisory
+  counts, resolved counts, lift30 rates, active flags) - the P0 channel
+  of the 2026-11-01 DO NOT PUBLISH audit (count x rounded-rate arithmetic
+  and subtraction recovered 196/372 eval, 286/884 holdout). The frame is
+  issuance attributes + issue-date recency only: 11 columns. cross_row
+  probes emptied with a rationale naming the structurally closed
+  exposure; quality.json feature_evidence/measurements/scope/limitations
+  re-derived. score.py's persistence reference is now computed
+  REGISTER-SIDE post-acceptance (fetch asserted sha256-identical to the
+  artifact's own vintage; arithmetic identical to v2026.10's shipped
+  site_prior_lift30_rate) because the shipped column is gone.
+- PRE-WORKER SMOKE (committed probe/smoke_v2026_12_2026_11_07.py,
+  PASSED on the coordinator): synthetic 162-row register incl. both
+  mandatory fixtures; as-of recency semantics asserted (strictly-earlier
+  only, same-(site,issue) rows never see each other, blank-county
+  sentinel, county recency recomputed independently); gate 1.5.0
+  two-phase PASSED + --accept ACCEPTED on the synthetic artifact; no
+  synthetic column separates the label (pre-checked with the gate's own
+  scorer); the register-side persistence helper unit-checked with a
+  monkeypatched register. Gate sha 4fab8a34 unchanged; --selftest PASSED.
+- ns-bwa-002 OUTCOME (server 174969934, cx23 hel1, exit 0, 16.0 s,
+  staging release 437529809, collected 11:31:07Z, destroyed 11:33:25Z
+  with provider read-back 404 / 0 servers / 0 primary IPs): register
+  byte-identical to v2026.10 (sha 60f77ac4, vintage 2026-06-16, 2649
+  rows); population identical by design (train 1069/715, eval 372/225,
+  holdout 884/514); gate 1.5.0 PASSED, 0 failed checks; --accept
+  ACCEPTED for artifact 49bf4cfa427375c6b7bf90f85eb0330d78da0cc49197c1
+  19c396b6b7ea4c6144; references on identical eval rows: persistence
+  0.6124 (covered 231/372, register sha-verified), calendar 0.5075,
+  reason 0.4307, majority accuracy 0.6048, paired persistence-calendar
+  +0.1014 [0.0144, 0.1739]; per-year persistence 0.608/0.620/0.599 over
+  the 0.744 -> 0.415 prevalence fall. All four reference figures equal
+  the v2026.10 measurements - the register-side reimplementation is
+  validated by reproduction.
+- BASELINE COMPLETE (ns-bwa-baseline-002, server 174971571, exit 0,
+  55.5 s, staging release 437536802, collected 11:40:15Z, destroyed
+  11:48:13Z per the job ledger deleted_at - the 11:42:40Z first written
+  here predates the ledger record and was corrected by the follow-up;
+  provider read-back 404 / 0 servers / 0 primary IPs re-confirmed live
+  at 2026-11-07T12:04Z):
+  re-accept ACCEPTED for 49bf4cfa... on the fetched bytes BEFORE any
+  scoring (accept.log), benchmark train.py + validate.sh unmodified,
+  both eval AUCs agree exactly at 0.5068, CONTRACT OK. MEASURED
+  COMPARISON on identical eval rows: stock runner 0.5068 TRAILS
+  persistence 0.6124 by 0.1056 (and sits at calendar level 0.5075) -
+  the recorded honest expectation, now a measured finding, not a
+  headroom claim. Against the v2026.10 19-column leak-carrying frame
+  the same runner measured 0.5086: removing the eight outcome-derived
+  columns cost the model -0.0018 AUC while closing the P0 channel - the
+  integrity fix did not trade away measured model signal.
+- NOT STARTED (recorded next_action): package v2026.12, private staging
+  on both destinations (tag last), version-bound suitability re-bound to
+  49bf4cfa..., fresh pre-flip audit prompt re-running the frozen
+  subtraction attacks on the new bytes. The staged v2026.10 bytes stay
+  private and are never flipped.
+
+Next action (record.next_action): the v2026.12 package/stage/suitability/
+audit sequence above; both workers are collected and destroyed, no job
+is running, nothing is scored before a future flip decision.
+
 ## 2026-11-07 (12:05Z) - operator directive: fix the factory before more packages; briefing for Codex written and committed
 
 The operator's assessment: too much construction and staging spend dies at the
