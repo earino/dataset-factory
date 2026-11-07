@@ -1,3 +1,36 @@
+## 2026-11-07 (20:26Z) - follow-up (worker-status runner): resilience-a1-cpcb-001 SUCCEEDED, handled at 53cbd51 - the Codex entry's pending items below are resolved (ledger/evidence commit done, cleanup verified live); independently re-verified read-only this session
+
+Watcher event for the pinned CPCB A1 acceptance job (server 175022272, pin
+9e61565). The ledger-owning Scout session had already collected the job
+(19:35:28Z), destroyed the worker (server GET 404 verified live at 20:01:51Z
+and re-confirmed ~20:06Z by this session; the project-wide /v1/servers list
+route answers 404 'api route not found' with this credential, so the
+server-level 404 plus the zero-IP readback is the cleanup evidence), committed
+the full evidence + ledger at 53cbd51 (20:20:39Z), pushed it and marked the
+job handled (20:20:46Z). Exact-commit CI on 53cbd51 is green (push and both
+pull_request runs completed/success).
+
+This session's independent read-only re-verification agrees with Codex 41da507:
+the four evidence files hash to their staging asset digests (809addb5 /
+3e019404 / 7ebdeb80 / ff38b56b), all five JSONs parse, acceptance-summary ok
+with plan sha 5349b07a equal to the committed cases.json, per-case acceptance
+ok=true / strict_gate_refused=true / unchanged=true on artifact a749f0df with
+all three pinned recoveries at 0 errors (self eval 125,277; all eval 125,776;
+all holdout 143,793 - each exactly at its pinned minimum, AUC 1.0 on covered
+rows), receipt pins staging release 437793118 (manifest asset 721709616, sha
+7ae0cf44), and the live staging API reads back all ten asset digests equal to
+the ledger.
+
+Resolved for the record: the CPCB ledger/evidence commit is DONE (53cbd51,
+CI green) and provider cleanup is VERIFIED - the Codex entry's 'provider
+cleanup and the CPCB ledger commit remain pending' is superseded. A1
+historical acceptance is complete (7/7 families: small-002 nzea/unhcr/nsbwa/
+ocha, fixtures-001 cqc/ab-wildfire, cpcb-001). Draft-gate acceptance under
+the hold only: not package clearance, not A2/A3/A4; no published byte, tag,
+manifest or destination changed; no next worker authorized. The workflow
+owner should refresh docs/FACTORY-RESILIENCE-IMPLEMENTATION.md's 'Next
+action' section, which still names the completed A1 run.
+
 ## 2026-11-07 — Codex: all seven A1 recoveries measured; cleanup handoff pending
 
 CPCB compact reports independently match the raw staging manifest and expected
