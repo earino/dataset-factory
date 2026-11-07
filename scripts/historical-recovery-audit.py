@@ -18,6 +18,8 @@ import sys
 import tarfile
 import tempfile
 import time
+from urllib.parse import urlparse
+from urllib.request import Request, urlopen
 
 
 def digest(path):
@@ -46,15 +48,44 @@ def verify(path, entry):
         raise ValueError('historical input digest/size mismatch: ' + str(path))
 
 
-def prepare(case, data, artifact):
+def public_download(entry, destination, *, opener=urlopen):
+    """Worker-only fallback for a frozen public asset absent from private staging."""
+    url=entry['url'];parsed=urlparse(url)
+    if (parsed.scheme!='https' or parsed.hostname!='github.com' or parsed.username
+            or parsed.query or parsed.fragment or '/releases/download/' not in parsed.path
+            or type(entry.get('size')) is not int or not 0<entry['size']<=5*1024**3):
+        raise ValueError('public audit input must be a bounded HTTPS GitHub release asset')
+    request=Request(url,headers={'User-Agent':'DatasetFactory-FrozenAudit/1.0'})
+    with opener(request,timeout=30) as response:
+        final=urlparse(response.geturl())
+        if (response.status!=200 or final.scheme!='https' or final.hostname not in
+                ('github.com','release-assets.githubusercontent.com','objects.githubusercontent.com')):
+            raise ValueError('unexpected public audit asset response')
+        count=0
+        with destination.open('xb') as handle:
+            while True:
+                block=response.read(min(1024*1024,entry['size']-count+1))
+                if not block:break
+                count+=len(block)
+                if count>entry['size']:raise ValueError('public audit asset exceeds pinned size')
+                handle.write(block)
+    verify(destination,entry)
+
+
+def prepare(case, data, artifact, *, public_fetch=False):
     artifact.mkdir()
     for entry in case['files']:
-        source = contained(data, entry['fetch_dest'])
-        verify(source, entry)
         destination = contained(artifact, entry['path'])
         destination.parent.mkdir(parents=True, exist_ok=True)
         if destination.exists():
             raise ValueError('duplicate historical destination')
+        if 'url' in entry:
+            if not public_fetch:
+                raise ValueError('public asset fetch requires the explicit worker-only flag')
+            public_download(entry,destination)
+            continue
+        source = contained(data, entry['fetch_dest'])
+        verify(source, entry)
         shutil.copyfile(source, destination)
     for source in case.get('archives', []):
         archive_path = contained(data, source['fetch_dest'])
@@ -96,7 +127,28 @@ def expectations(case, battery):
     return results
 
 
-def audit(case, data, output):
+def published_binding(case, artifact, registry):
+    """A comparison mode must name an actually frozen release, not waive a new one."""
+    binding=case['published_binding']
+    entry=next((e for e in registry['releases'] if e['dataset']==binding['dataset']),None)
+    manifest_path=contained(artifact,'package/MANIFEST.json')
+    if (entry is None or digest(manifest_path)!=entry['manifest_sha256']
+            or binding.get('manifest_sha256')!=entry['manifest_sha256']):
+        raise ValueError('published comparison lacks an exact frozen manifest binding')
+    manifest=json.loads(manifest_path.read_text())
+    level=binding.get('level')
+    version=manifest['levels'][level]['artifact_version'] if level else manifest['artifact_version']
+    if version!=case['artifact_version'] or manifest['release_tag']!=entry['release_tag']:
+        raise ValueError('published comparison artifact/level does not match frozen release')
+    for name,expected in entry['editorial_files'].items():
+        if digest(contained(artifact,'package/'+name))!=expected:
+            raise ValueError('published comparison editorial bytes changed: '+name)
+    return {'dataset':binding['dataset'],'level':level,'release_tag':entry['release_tag'],
+            'manifest_sha256':entry['manifest_sha256'],'artifact_version':version,
+            'disposition':'Frozen historical warnings for review only; never new-release clearance'}
+
+
+def audit(case, data, output, *, public_fetch=False):
     import qualify_dataset as gate
     import leakage_battery as battery_module
 
@@ -110,7 +162,15 @@ def audit(case, data, output):
         with tempfile.TemporaryDirectory(prefix='historical-audit-') as temporary:
             scratch = Path(temporary)
             artifact = scratch / 'artifact'
-            prepare(case, data, artifact)
+            prepare(case, data, artifact, public_fetch=public_fetch)
+            mode=case.get('mode','recovery_acceptance')
+            if mode not in ('recovery_acceptance','published_comparison'):
+                raise ValueError('unknown historical audit mode')
+            if mode=='published_comparison':
+                registry=json.loads(Path(__file__).with_name('frozen-releases.json').read_text())
+                result['published_binding']=published_binding(case,artifact,registry)
+                result['scope']='Frozen published core artifact/level and exact registered code/documents'
+                result['disposition']='Comparison completed is not qualification or release approval'
             before = battery_module.input_identity(artifact)
             report = gate.qualify(artifact, battery_output=scratch / 'vectors').as_dict()
             write_report(output / 'qualification.json', report)
@@ -120,7 +180,7 @@ def audit(case, data, output):
                 raise ValueError('audit changed the historical inputs')
             battery = json.loads((scratch / 'vectors' / 'battery.json').read_text())
             write_report(output / 'battery.json', battery)
-            checks = expectations(case, battery)
+            checks = expectations(case, battery) if mode=='recovery_acceptance' else []
             result.update({'expectations': checks, 'failed_checks': report['failed_checks'],
                            'gate_version': report['gate_version'], 'code': battery['code'],
                            'inputs': before, 'input_digest': battery['input_digest'],
@@ -133,6 +193,12 @@ def audit(case, data, output):
                 shutil.copyfile(path, output / path.name)
             result['ok'] = bool(checks and all(r['ok'] for r in checks)
                                 and not report['ok'] and not battery['ok'])
+            if mode=='published_comparison':
+                required={'battery.exact_recovery','battery.recorded_in_quality','artifacts.no_shipped_answers'}
+                if not required <= {r['check'] for r in report['results']}:
+                    raise ValueError('published comparison did not complete the full new gate')
+                result.update(ok=True,comparison_completed=True,release_eligible=False,
+                              battery_passed=battery['ok'],review_required=True)
     except Exception as exc:
         result['error'] = type(exc).__name__ + ': ' + str(exc)
     result['elapsed_seconds'] = round(time.monotonic() - start, 3)
@@ -148,16 +214,20 @@ def main():
     parser.add_argument('--data', type=Path, default=Path('/data'))
     parser.add_argument('--output', type=Path, default=Path('/output'))
     parser.add_argument('--case')
+    parser.add_argument('--public-fetch',action='store_true',
+                        help='worker only: download explicitly pinned public GitHub release assets')
     args = parser.parse_args()
     plan = json.loads(args.plan.read_text())
     if args.case:
         case = next(c for c in plan['cases'] if c['id'] == args.case)
-        return audit(case, args.data, contained(args.output, case['id']))
+        return audit(case, args.data, contained(args.output, case['id']),public_fetch=args.public_fetch)
     results = []
     for case in plan['cases']:
         # Release all memory between datasets. No historical code is executed.
-        run = subprocess.run([sys.executable, '-B', __file__, '--plan', str(args.plan),
-                              '--data', str(args.data), '--output', str(args.output), '--case', case['id']])
+        command=[sys.executable, '-B', __file__, '--plan', str(args.plan),
+                 '--data', str(args.data), '--output', str(args.output), '--case', case['id']]
+        if args.public_fetch:command.append('--public-fetch')
+        run = subprocess.run(command)
         results.append({'case': case['id'], 'exit_code': run.returncode})
     write_report(args.output / 'acceptance-summary.json', {'cases': results,
                  'ok': all(r['exit_code'] == 0 for r in results), 'plan_sha256': digest(args.plan)})

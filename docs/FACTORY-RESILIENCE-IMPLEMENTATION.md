@@ -15,17 +15,17 @@ proof of exact reconstruction. Published data, tags and manifests remain frozen.
 | Work | Status | Acceptance evidence still needed |
 | --- | --- | --- |
 | R6: config-driven admission hold | Shipped in PR #26, merge `16657ab`; exact-commit CI passed; Scout deployment read-back in `d1e6030` below | Hold remains active until R1-R4/A4 acceptance |
-| R1: deterministic label-blind battery, gate 1.6 | In progress on `codex/deterministic-recovery-gate`: two-phase stdlib battery, full generated-artifact scan, quality receipt and strict package admission | Historical A1 reproductions, published A2 comparison, exact-byte binding and worker integration |
+| R1: deterministic label-blind battery, gate 1.6 | Shipped PR #28, merge `94ece4d`; A1 all seven historical cases reproduced and refused, compact evidence independently verified; complete job ledgers on main | A2 comparisons remain pending; hold stays true |
 | R2: scaffold/answer scrubber | Shipped PR #27, merge `a2578ed`; both exact-commit CI workflows passed; deployed/read back by Scout in `fbc8fee` | Worker-generated artifact integration is in R1; full worker A3/A4 pending |
-| R3: measurable claims from bytes | Draft PR #29: full-row fact measurement, generated claim blocks, paired interval recomputation, asset/loader agreement and pre-write admission | Full clean-clone/CI for claims engine; historical A3/A4 worker acceptance |
-| R4: source licence evidence and generation | Pending | Browser-capable evidence path, unreadable and conflicting source refusals |
+| R3: measurable claims from bytes | Implemented in draft PR #29; 792 clean-clone tests, exact CI green at `f235939` | Full worker A3/A4 evidence pending |
+| R4: source licence evidence and generation | Implemented in draft PR #30; unreadable Alberta and conflicting SINASC captures refuse; exact CI green at `fc40357` | Full-package worker A4 and deployment pending |
 | R5: autonomous independent adversarial audit | Pending | Bounded auditor stage, digest-bound verdict, queue admission enforced |
 | Review item 2: publication invariants/rule consolidation | Pending | Verify reported hash gap; strict recovery rule, normative-rule inventory |
-| Review item 3: structured events and generated state | Implemented on `codex/structured-operational-state`; not deployed | 1,364,901 original bytes preserved by monthly partitions; 4,354-byte generated view; clean-clone/CI and Scout handoff next |
+| Review item 3: structured events and generated state | Shipped PR #33 as `817aaa0`, exact CI green | Original 1,364,901 bytes preserved; generated view below 20 KB; Scout deployment readback pending |
 | Review item 4: digest-bound approvals | Pending | Matching approval required at flip, historical evidence with honest gaps |
-| Review item 5: deterministic reconciliation | Implemented on `codex/mechanical-worker-reconciliation`; not deployed | 30 recorded follow-ups replayed, five conditionally eligible; clean-clone/CI and live Scout readback next |
+| Review item 5: deterministic reconciliation | Shipped PR #34 as `e79b0f1`; 785 clean-clone tests, integrated branch exact CI green | Main CI and one live Scout bookkeeping readback pending; replay is conditional, not measured session savings |
 | Review item 6: actor identity | In progress | Codex author on new commits; no history rewrite |
-| A4: four blocked packages through full pipeline | Pending | Worker-side frozen-artifact outcomes; disposition remains operator's |
+| A4: four blocked packages through full pipeline | Prepared in draft PR #31 at `d2c062d`; 811 clean-clone tests and exact CI green; immutable job 002 pin prepared, not admitted | Worker-side original-package outcomes pending; disposition remains operator's |
 
 Each item gets a separate branch/PR. This ledger is implementation status, not a passing
 audit or permission to publish. Do not treat partial code or synthetic unit fixtures as
@@ -245,3 +245,70 @@ holdout 143,793, each with zero errors. Scout must verify the plan, budget, exac
 pin and absence of active workers before one attempt, collect bounded reports,
 destroy/reconcile, preserve evidence and check the exact pushed commit's CI.
 No rebuild, publication or scoring-adapter experiment is authorized by this job.
+
+## A2 transport preparation (no comparison results yet)
+
+`scripts/prepare-frozen-audit.py` creates deterministic code/document-only archives
+from the existing frozen registry. It refuses changed bytes, escaped/symlink paths,
+bulk-file entries and existing output directories. The prepared fourteen archives
+plus inventory total 4,014,080 archive bytes and are in private draft staging release
+437790346. Server digests were checked; the inventory and staging receipt are under
+`audits/resilience/2026-11-07-a2-document-*.json`. Dataset bytes and version tags are
+unchanged. The draft requires numeric release-ID lookup; REST releases/tags is not
+an appropriate lookup for this draft.
+
+The historical audit driver adds `published_comparison` mode, requiring the actual
+frozen MANIFEST.json, the registered editorial files and the requested artifact or
+level identity. It runs the full gate and retains bounded diagnostics without
+rewriting historical data. A completed comparison is labelled historical review,
+`release_eligible: false`, and never grants new-release clearance. A1's strict known
+recovery expectations remain separate and unchanged. Transport tests pass; full
+clean-clone/CI and actual A2 runs remain to be done.
+
+The 14 releases include 40 Chicago food targets, 45 MSHA targets and two NOAA
+protocols. All levels need comparison, with sequential bounded worker batches
+sized from measured runtime. Thirteen staging manifests map the published CSVs.
+Frozen EC merger meta/quality and OCHA quality must come from their exact frozen
+editorial copies, since original staging differs. PriceCatcher's recorded staging
+reference could not be resolved by REST or gh release lookup; a pinned published
+source must be fetched on a worker. No local full datasets were downloaded.
+
+### All-level A2 declarations
+
+`audits/resilience/2026-11-07-a2-batches.json` records eighteen unlaunched bundles
+covering all 98 core task artifacts, with source pins and explicit input sizes.
+Each core hash set is checked against its frozen manifest by a transport test.
+The PriceCatcher fallback uses public release 420542550: the server's asset digests
+and sizes match the frozen manifest. Only the worker may download its CSVs, with
+an explicit public-fetch flag, fixed HTTPS release URL, size limit and full digest
+check. Other dataset CSVs use the existing authenticated worker fetch from private
+staging. No A2 hold exceptions have been registered and no A2 jobs have launched.
+The combined ceiling reservation is EUR 5.76 (eighteen times EUR 0.32), not a billing
+measurement or permission to exceed the current remaining allowance. Scout must
+plan each job, run only one worker, collect and clean up before advancing. Use the
+CPCB and first comparison measurements to assess later batch sizing. The transport
+precursor d4b7848 passed 773 clean-clone tests and exact-SHA CI; the complete plans
+and public-fallback change still need their clean-clone and CI pass.
+
+CPCB's measured 853.168-second runtime and 1,119,604-KiB peak RSS support the
+existing 6-GiB container choice. For runtime margin, the original five-case large
+A2 batch was split into three before launch, yielding eighteen batches and a
+EUR 5.76 combined maximum reservation. The superseded local declaration and sealed
+bundle were preserved; no job with that old id ran. These runtime estimates do not
+replace the configured per-job deadline or Scout's live budget gate.
+
+## First A2 batch admission
+
+Only `resilience-a2-small-001` is newly admitted, at source SHA256
+`b4f932809fcac7190dfd9c5bd0815ecf2c1509ce0bda347bebc1f024d4ed1556`. The assembled bundle was rehashed
+after integrating all three A1 ledgers and the state/reconciliation changes. It compares
+eight frozen published packages over all rows on a single cpx32 worker, maximum
+EUR 0.32 reservation, subject to the unchanged live budget/provider checks. Scout
+is the sole launcher. One attempt, compact report collection and confirmed cleanup
+precede any subsequent batch. The other 17 declared batches remain unadmitted.
+No historical artifact is rebuilt, requalified for publication, or changed.
+
+Actor correction: Codex initiated PR #28 through GitHub's merge API, which assigned
+the merge commit `94ece4d` to the authenticated account. This is not an operator act
+or publication approval. Subsequent integration merges explicitly use the Codex
+author identity (`817aaa0`, `e79b0f1`); existing history is not rewritten.
