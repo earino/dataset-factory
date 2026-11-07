@@ -1,3 +1,62 @@
+## 2026-11-07 (06:15Z) - scheduled advancement: dvsa-mot-next-test-outcome repair relaunch dvsa-mot-build-002 RUNNING (the one rebuild allowed for the measured 2015 'ABRVE' value defect; red/green dry run green on the coordinator, gate 45/45 on synthetic fixtures)
+
+Construction work only (no packaged candidate is actionable: all five packaged
+records - ab-wildfire, cpcb, cqc, ns-bwa, za-cct - carry awaiting_operator TRUE,
+i.e. the flip is the operator's single approval and a pure human wait; no
+remediation hold is active). Candidate chosen from the operator's actionable
+list as the most shovel-ready item: its single permitted rebuild was diagnosed,
+specified and pre-registered by the 2026-11-05 session
+(build_failure_2015_abrve_2026_11_05 + artifact_allowance_check_2026_11_05).
+
+- REPAIR (exactly the two recorded changes, both before any score has ever
+  existed; no score, gate run or acceptance has ever existed for this
+  candidate): (1) source/build.py treats any test_result outside {P, F, PRS}
+  as a non-completed test - excluded from both sides of every pair
+  (build_pairs filter not-in-COMPLETED_RESULTS), counted per year with a
+  distinct-value inventory (population.per_year non_completed_rows /
+  non_completed_values in summary.json); the fail-loud assertion now covers
+  schema-level unmappability only, and looks_like_data recognises headerless-
+  era data rows by parseable date so an undocumented value cannot masquerade
+  as a header. The parse-time counters the deterministic 2005-2014
+  cross-check reads behave identically to build-001. (2) max_artifact_mb
+  8 -> 200 in source/job.json + bundle.json (extract estimate ~57-65 MB,
+  3x headroom). Every shipped declaration string that named the ABR/ABA
+  tuple now states the general non-completed rule (module docstring, meta
+  split_description, quality target_definition, timing row_selection basis,
+  limitations). Label rule, pre-registered triad and deciding rule untouched.
+- RED/GREEN DRY RUN (probe/dryrun_abrve_2026_11_07.py, committed; synthetic
+  fixtures regenerated from probe/dryrun_fixtures_2026_11_05.py with the
+  exact measured ABRVE row injected verbatim plus an ABRVE and an ABR row for
+  a real md5-bucket vehicle): RED - the pre-repair build (git HEAD) exits 1
+  on ABRVE with the exact recorded assertion, so the dry run is shown to
+  bite. GREEN - the repaired build exits 0, ABRVE+ABR inventoried in 2015 and
+  excluded from pairs; gate 1.5.0 45/45 PASS on the synthetic extract,
+  exact-byte --accept ACCEPTED, post-acceptance triad machinery exit 0.
+  Fixture numbers are not findings and are not quoted as task evidence.
+- LAUNCH: dvsa-mot-build-002 (new job ID; bundles immutable; assemble-job
+  verified the bundle carries the repaired build.py at
+  ef6463fd... plus run.sh, score.py, gate 1.5.0 qualify_dataset.py), server
+  174936753 (cpx32, hel1), launched 2026-11-07T06:13:46Z, reservation
+  0.32 EUR, budget month 2026-11. Stage order in run.sh unchanged:
+  construct -> qualify -> accept exact bytes -> pre-registered triad;
+  nothing is scored before acceptance. Mid-run peek (06:16Z): 2005 receipt
+  rows_seen=7,499,744 / class4=7,113,089 / sampled=7,101 - EXACTLY the
+  build-001 recorded value, so the deterministic cross-check is reproducing
+  year by year as designed.
+- Checks: check-candidate dvsa-mot-next-test-outcome OK, check-candidate
+  --all rc=0 (147), suite 723 OK (32.5 s). No bulk data on the coordinator
+  (fixtures ~1 MB synthetic; largest fetch unchanged).
+
+Next action (record.next_action carries the full standing order): on
+completion, worker collect dvsa-mot-build-002; require the 2005-2014
+per-year cross-check to reproduce the recorded values EXACTLY; read the new
+2015-2024 non_completed_values inventories; require gate 1.5.0 PASSED on the
+FULL artifact + exact-byte --accept in the collected bytes BEFORE any figure
+is quoted; record the post-acceptance triad (eval only, holdout sealed);
+destroy with provider 404 read-back; then the dvsa-mot-baseline bundle with
+re-accept before any score. A failed build or gate is a recorded finding
+with diagnosis first - this was the one rebuild allowed for this defect.
+
 ## 2026-11-07 (04:20Z) - discovery (Africa tick): four new licence-first closures recorded (ke-ppra-ppip, gh-bog-treasury-auction, ng-nerc-grid-disturbance, gh-gss-coverage); ma-datagovma + saps dated re-checks confirm both parks; no new viable lead - the region's named institutions all have verdicts
 
 Regional focus: Africa (SA, KE, NG, GH, MA, AfDB, UNECA). Licence-first triage

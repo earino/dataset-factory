@@ -1,6 +1,6 @@
 #!/bin/sh
 # Worker entrypoint for the dvsa-mot-next-test-outcome full build
-# (dvsa-mot-build-001).
+# (dvsa-mot-build-002; identical stage order to build-001).
 #
 # Order is fixed and each stage stops the next: construct -> qualify ->
 # accept exact bytes -> pre-registered reference triad. build.py only

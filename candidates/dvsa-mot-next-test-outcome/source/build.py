@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""DVSA/DfT anonymised MOT next-test-outcome construction (job dvsa-mot-build-001).
+"""DVSA/DfT anonymised MOT next-test-outcome construction (job dvsa-mot-build-002).
 
 Candidate: dvsa-mot-next-test-outcome. This script ONLY constructs the runner-layout
 artifact plus the diagnostics the qualification gate recomputes. NO performance
@@ -33,8 +33,11 @@ Population (pre-registered in the candidate record 2026-11-05, before any score)
     comparable. Tests with other class ids are skipped and counted.
   * vehicles deterministically hash-sampled: md5(vehicle_id) as int, mod 1000 == 0
     (~0.1%, fixed before any split/label look; outcome-independent, reproducible).
-  * completed tests only: test_result in {P, F, PRS}. ABR/ABA rows (<0.6% measured)
-    are excluded from both sides of every pair and counted.
+  * completed tests only: test_result in {P, F, PRS}. Any other value - the
+    documented ABR/ABA codes and any undocumented code (build_failure_2015_
+    abrve_2026_11_05 measured 'ABRVE') - is a non-completed test, excluded
+    from both sides of every pair and counted per year with a distinct-value
+    inventory in summary.json.
   * pair (t_prev, t_next) = consecutive completed class-4 tests of one vehicle in
     (test_date, completed_date, file order). The row exists iff the PRIOR test's
     date lies in [2009-01-01, 2023-12-01); priors after 2023-11-30 are excluded so
@@ -95,8 +98,12 @@ EVENT_KEY_COLUMN = "vehicle_id"
 CLASS_ID = "4"
 SAMPLE_MODULUS = 1000
 COMPLETED_RESULTS = {"P": 0, "F": 1, "PRS": 1}
-EXCLUDED_RESULTS = ("ABR", "ABA")
-ALLOWED_RESULTS = set(COMPLETED_RESULTS) | set(EXCLUDED_RESULTS)
+# Any test_result outside {P, F, PRS} is a NON-COMPLETED test: the documented
+# ABR/ABA codes and any undocumented value (build_failure_2015_abrve_2026_11_05
+# measured 'ABRVE'). Non-completed tests are counted per year with a distinct-
+# value inventory in summary.json and excluded from both sides of every pair in
+# build_pairs(). The fail-loud assertion stays on schema-level unmappability
+# (RowParser), never on result values.
 
 WINDOW_START = date(2009, 1, 1)
 WINDOW_END = date(2023, 12, 1)          # exclusive; priors on/after this are censored out
@@ -364,11 +371,17 @@ def stream_tests(path: Path, year: int, stats: dict) -> list:
         nonlocal seq
         stats["rows_seen"] = stats.get("rows_seen", 0) + 1
         result = fields["test_result"]
-        if result not in ALLOWED_RESULTS:
-            fail(f"{path.name}: unexpected test_result {result!r} at seq {seq}; "
-                 f"row {fields!r}")
         stats["result_histogram"] = stats.get("result_histogram", {})
         stats["result_histogram"][result] = stats["result_histogram"].get(result, 0) + 1
+        if result not in COMPLETED_RESULTS:
+            # Non-completed test (any value outside {P, F, PRS}): counted and
+            # inventoried per year here; build_pairs() excludes it from both
+            # sides of every pair. Counters that the deterministic 2005-2014
+            # cross-check reads (rows_seen / class4 / sampled) are unchanged.
+            stats["non_completed_rows"] = stats.get("non_completed_rows", 0) + 1
+            values = stats.setdefault("non_completed_values", [])
+            if result not in values:
+                values.append(result)
         if fields["test_class_id"] != CLASS_ID:
             stats["other_class_rows"] = stats.get("other_class_rows", 0) + 1
             return
@@ -400,7 +413,10 @@ def stream_tests(path: Path, year: int, stats: dict) -> list:
             return False
         day = parse_day(parts[active.mapping["test_date"]].strip().strip('"'))
         result = parts[active.mapping["test_result"]].strip().strip('"')
-        return day is not None and result in ALLOWED_RESULTS
+        # A data row is recognised by its parseable date; the result check only
+        # rejects header text, because result VALUES are data (undocumented
+        # codes such as 'ABRVE' must not make a headerless file look headed).
+        return day is not None and result and result not in FIELD_ALIASES["test_result"]
 
     for name, line in open_text_lines(path, year):
         line = line.rstrip("\n").rstrip("\r")
@@ -461,7 +477,10 @@ def build_pairs(all_rows: list, counters: dict) -> dict:
     for vehicle_id, rows in vehicles.items():
         tests = []
         for row in rows:
-            if row[4] in EXCLUDED_RESULTS:
+            if row[4] not in COMPLETED_RESULTS:
+                # Non-completed test (ABR/ABA and any undocumented value):
+                # excluded from both sides of every pair, never a prior or a
+                # next test. Counted per year at parse time.
                 abandoned += 1
                 continue
             tests.append(row)
@@ -635,8 +654,10 @@ def write_artifact(out: Path, split_rows: dict, counters: dict) -> dict:
             "(md5(vehicle_id) mod 1000 == 0, ~0.1%), consecutive completed class-4 "
             "test pairs, prior date in [2009-01-01, 2023-12-01) so no row needs a "
             "next test beyond the 2024-12 data end; tests 2005-2008 are prior-"
-            "history priming only; ABR/ABA rows (<0.6% measured) are excluded and "
-            "counted"),
+            "history priming only; any test with test_result outside {P, F, PRS} "
+            "(documented ABR/ABA and any undocumented code, e.g. the measured "
+            "'ABRVE') is excluded from both sides of every pair and counted per "
+            "year"),
         "target_definition": (
             "1 if the vehicle's next completed class-4 MOT test ended in an "
             "initial failure (test_result F or PRS, the DfT/DVSA documented "
@@ -689,7 +710,7 @@ QUALITY_JSON = {
  ],
  "task": {
   "prediction_time": "the completion instant of the vehicle's previous completed class-4 MOT test (the prior test's test_date; completed_date timestamp where the era's file carries it). The test record is an administrative record written at the event; the user guide (MOT Testing Data User Guide v5.1, part of the same OGL dataset) documents the test regime and result codes",
-  "target_definition": "1 if the vehicle's next completed class-4 test ended in an initial failure (test_result F or PRS), 0 if a clean pass (P); ABR/ABA outcomes are excluded from both sides of every pair",
+  "target_definition": "1 if the vehicle's next completed class-4 test ended in an initial failure (test_result F or PRS), 0 if a clean pass (P); any test with test_result outside {P, F, PRS} is a non-completed test, excluded from both sides of every pair",
   "description": "at the previous test's completion, using static vehicle attributes as recorded on that prior test plus the vehicle's prior-test history (results, test types, mileage and deltas, counts), predict whether the vehicle's next completed MOT test initially fails"
  },
  "measurements": [
@@ -741,7 +762,7 @@ QUALITY_JSON = {
     "n_prior_tests",
     "prior_fail_count"
    ],
-   "basis": "scored rows are consecutive completed class-4 test pairs of deterministically hash-sampled vehicles (md5(vehicle_id) mod 1000 == 0) whose PRIOR test completed in 2009-01..2023-11; a prior test on/after 2023-12-01 is excluded because its next test could fall beyond the 2024-12 data end (right-censoring rule that never reads the label; excluded pairs counted); tests 2005-2008 are history priming only; ABR/ABA rows are excluded and counted. Both label values are retained in every window"
+   "basis": "scored rows are consecutive completed class-4 test pairs of deterministically hash-sampled vehicles (md5(vehicle_id) mod 1000 == 0) whose PRIOR test completed in 2009-01..2023-11; a prior test on/after 2023-12-01 is excluded because its next test could fall beyond the 2024-12 data end (right-censoring rule that never reads the label; excluded pairs counted); tests 2005-2008 are history priming only; any test with test_result outside {P, F, PRS} is a non-completed test, excluded from both sides of every pair and counted per year. Both label values are retained in every window"
   },
   "observations": []
  },
@@ -762,7 +783,7 @@ QUALITY_JSON = {
    "current_snapshot vintage: features are current-vintage values of event-time administrative records; the publisher revised the 2017 file in June 2022 and keeps no historical vintages, so values corrected after the event cannot be distinguished",
    "right-censoring: pairs whose next test occurred after 2024-12-31 are absent because the data window ends; the 2023-11-30 prior cutoff removes the outcome-conditioned tail (short-gap retests surviving late priors) wholesale, and the retained-window gap distribution is reported",
    "class 4 (passenger cars) only; other test classes are excluded and counted; a vehicle's tests in other classes are invisible to its history",
-   "ABR/ABA outcomes (<0.6% measured in the 2024-08 prefix) are excluded from both sides of every pair",
+   "any test with test_result outside {P, F, PRS} is a non-completed test (documented ABR/ABA, <0.6% measured in the 2024-08 prefix, plus any undocumented code such as the 2015 'ABRVE' the first build measured); non-completed tests are excluded from both sides of every pair and inventoried per year in summary.json",
    "deterministic vehicle hash sampling (md5 mod 1000 == 0, ~0.1%) bounds the artifact; sampling is outcome-independent and fixed before any split or label, but it is a sample, not the full panel",
    "training_label_timing is unverified: no as-of ledger exists for when any test row first appeared in the published files",
    "positives cluster by vehicle; the independent positive evidence is the declared distinct-vehicle count, not the row count",
@@ -985,7 +1006,7 @@ def main() -> int:
         per_split_per_year[key] = table
 
     summary = {
-        "job": "dvsa-mot-build-001",
+        "job": "dvsa-mot-build-002",
         "name": NAME,
         "source_vintage": {
             "files": len(receipts),

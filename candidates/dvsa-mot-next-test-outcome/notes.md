@@ -95,3 +95,39 @@ pre-registered before any score:
 Status: worker cpx32 (server 174661065, hel1) running the build; expected
 reports and the collection/baseline standing order are in `record.json`
 `next_action`.
+
+## Repair relaunch dvsa-mot-build-002 (advancement 2026-11-07)
+
+Build-001 died at the 2015 source value 'ABRVE' (see record
+`measurements.build_failure_2015_abrve_2026_11_05`). This session executed the
+recorded repair: exactly two construction-side changes, before any score has
+ever existed.
+
+- build.py: any test_result outside {P, F, PRS} is a NON-COMPLETED test -
+  excluded from both sides of every pair (the build_pairs filter is now
+  not-in-COMPLETED_RESULTS, not the ABR/ABA tuple), counted per year with a
+  distinct-value inventory (population.per_year non_completed_rows /
+  non_completed_values in summary.json). The fail-loud assertion now covers
+  schema-level unmappability only; looks_like_data recognises headerless-era
+  data rows by parseable date so an undocumented value cannot masquerade as a
+  header. The parse-time counters the deterministic 2005-2014 cross-check reads
+  (rows_seen / class4 / sampled) behave identically to build-001.
+- source/job.json + bundle.json: max_artifact_mb 8 -> 200 (extract estimate
+  ~57-65 MB, 3x headroom; the 8 MiB launch allowance would have refused the
+  whole upload per artifact_allowance_check_2026_11_05).
+- Every shipped declaration string that named the ABR/ABA tuple now states the
+  general non-completed rule (module docstring, meta split_description, quality
+  task target_definition, timing row_selection basis, limitations).
+- Red/green dry run (probe/dryrun_abrve_2026_11_07.py, synthetic fixtures from
+  the committed generator + the exact measured ABRVE row injected): pre-repair
+  build exits 1 on ABRVE as recorded; repaired build exits 0 with ABRVE+ABR
+  inventoried in 2015 and excluded from pairs; gate 1.5.0 45/45 PASS,
+  --accept ACCEPTED, post-acceptance triad machinery exit 0. Fixture numbers
+  are not findings.
+- Launched dvsa-mot-build-002: server 174936753 (cpx32, hel1), 06:13:46Z,
+  reservation 0.32 EUR (budget month 2026-11). This is the ONE rebuild allowed
+  for this defect; a second value/schema refusal is a new finding requiring
+  fresh diagnosis. Expected reports and the collection order (collect ->
+  2005-2014 cross-check EXACT -> gate PASSED + exact-byte --accept before any
+  figure -> triad recording -> destroy with provider read-back -> baseline
+  bundle with re-accept before any score) are in `record.json` `next_action`.
