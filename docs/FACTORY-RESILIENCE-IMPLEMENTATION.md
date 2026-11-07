@@ -15,17 +15,17 @@ proof of exact reconstruction. Published data, tags and manifests remain frozen.
 | Work | Status | Acceptance evidence still needed |
 | --- | --- | --- |
 | R6: config-driven admission hold | Shipped in PR #26, merge `16657ab`; exact-commit CI passed; Scout deployment read-back in `d1e6030` below | Hold remains active until R1-R4/A4 acceptance |
-| R1: deterministic label-blind battery, gate 1.6 | In progress on `codex/deterministic-recovery-gate`: two-phase stdlib battery, full generated-artifact scan, quality receipt and strict package admission | Historical A1 reproductions, published A2 comparison, exact-byte binding and worker integration |
+| R1: deterministic label-blind battery, gate 1.6 | Shipped PR #28, merge `94ece4d`; A1 all seven historical cases reproduced and refused, compact evidence independently verified; complete job ledgers on main | A2 comparisons remain pending; hold stays true |
 | R2: scaffold/answer scrubber | Shipped PR #27, merge `a2578ed`; both exact-commit CI workflows passed; deployed/read back by Scout in `fbc8fee` | Worker-generated artifact integration is in R1; full worker A3/A4 pending |
-| R3: measurable claims from bytes | Pending | Dictionary/min-max/interval/prevalence/placeholder/digest regressions |
-| R4: source licence evidence and generation | Pending | Browser-capable evidence path, unreadable and conflicting source refusals |
+| R3: measurable claims from bytes | Implemented in draft PR #29; 792 clean-clone tests, exact CI green at `f235939` | Full worker A3/A4 evidence pending |
+| R4: source licence evidence and generation | Implemented in draft PR #30; unreadable Alberta and conflicting SINASC captures refuse; exact CI green at `fc40357` | Full-package worker A4 and deployment pending |
 | R5: autonomous independent adversarial audit | Pending | Bounded auditor stage, digest-bound verdict, queue admission enforced |
 | Review item 2: publication invariants/rule consolidation | Pending | Verify reported hash gap; strict recovery rule, normative-rule inventory |
-| Review item 3: structured events and generated state | Implemented on `codex/structured-operational-state`; not deployed | 1,364,901 original bytes preserved by monthly partitions; 4,354-byte generated view; clean-clone/CI and Scout handoff next |
+| Review item 3: structured events and generated state | Shipped PR #33 as `817aaa0`, exact CI green | Original 1,364,901 bytes preserved; generated view below 20 KB; Scout deployment readback pending |
 | Review item 4: digest-bound approvals | Pending | Matching approval required at flip, historical evidence with honest gaps |
-| Review item 5: deterministic reconciliation | Implemented on `codex/mechanical-worker-reconciliation`; not deployed | 30 recorded follow-ups replayed, five conditionally eligible; clean-clone/CI and live Scout readback next |
+| Review item 5: deterministic reconciliation | Shipped PR #34 as `e79b0f1`; 785 clean-clone tests, integrated branch exact CI green | Main CI and one live Scout bookkeeping readback pending; replay is conditional, not measured session savings |
 | Review item 6: actor identity | In progress | Codex author on new commits; no history rewrite |
-| A4: four blocked packages through full pipeline | Pending | Worker-side frozen-artifact outcomes; disposition remains operator's |
+| A4: four blocked packages through full pipeline | Prepared in draft PR #31 at `d2c062d`; 811 clean-clone tests and exact CI green; immutable job 002 pin prepared, not admitted | Worker-side original-package outcomes pending; disposition remains operator's |
 
 Each item gets a separate branch/PR. This ledger is implementation status, not a passing
 audit or permission to publish. Do not treat partial code or synthetic unit fixtures as
@@ -296,3 +296,19 @@ A2 batch was split into three before launch, yielding eighteen batches and a
 EUR 5.76 combined maximum reservation. The superseded local declaration and sealed
 bundle were preserved; no job with that old id ran. These runtime estimates do not
 replace the configured per-job deadline or Scout's live budget gate.
+
+## First A2 batch admission
+
+Only `resilience-a2-small-001` is newly admitted, at source SHA256
+`b4f932809fcac7190dfd9c5bd0815ecf2c1509ce0bda347bebc1f024d4ed1556`. The assembled bundle was rehashed
+after integrating all three A1 ledgers and the state/reconciliation changes. It compares
+eight frozen published packages over all rows on a single cpx32 worker, maximum
+EUR 0.32 reservation, subject to the unchanged live budget/provider checks. Scout
+is the sole launcher. One attempt, compact report collection and confirmed cleanup
+precede any subsequent batch. The other 17 declared batches remain unadmitted.
+No historical artifact is rebuilt, requalified for publication, or changed.
+
+Actor correction: Codex initiated PR #28 through GitHub's merge API, which assigned
+the merge commit `94ece4d` to the authenticated account. This is not an operator act
+or publication approval. Subsequent integration merges explicitly use the Codex
+author identity (`817aaa0`, `e79b0f1`); existing history is not rewritten.
