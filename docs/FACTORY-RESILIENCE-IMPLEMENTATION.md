@@ -178,7 +178,7 @@ recoveries reproduced exactly and the strict gate REFUSED both old artifacts:
 
 Evidence committed by manifest logical path (single-object acceptance/battery/
 qualification per case, validated), plus receipt.json binding staging release
-437775462, manifest sha 68795b64..., per-file asset IDs/digests and runtime.
+437775462, manifest sha corrected to 0b62e5a9... by independent download below; per-file asset IDs/digests and runtime.
 Full results JSONL and the 17.8 MB historical bytes remain staging-only.
 Compact evidence: audits/resilience/2026-11-07-a1-fixtures-001-acceptance/.
 ## Next action
@@ -218,3 +218,30 @@ Its exact source-bundle hash is pinned while `hold` remains true. Archive safety
 plan identity and degraded-recovery regressions passed with assembly safety (19 tests).
 This is preparation, not a completed acceptance run. Scout must read back the live
 plan and bounded allowance, operate the sole worker, collect diagnostics and clean up.
+
+## Independent fixture verification and remaining CPCB A1 run
+
+Codex verified all seven fixture worker reports byte-for-byte against staging
+manifest asset 721626471 (12,477 bytes, SHA256
+`0b62e5a9003f65d28ff3f41b6965ec99bba2358091cfbc95453228eac45731cb`).
+The previous receipt's manifest hash was inaccurate; the correction preserves that
+previous claim and its evidence. Worker report bytes are unchanged. Full vectors
+are temporary worker scratch; bounded diagnostic JSONL remains in private staging.
+See `audits/resilience/2026-11-07-a1-fixtures-independent-verification.json`.
+CQC recovered four eval labels and wildfire three eval plus four holdout labels,
+all without errors; gate 1.6 refused both original artifacts. This completes six
+of the seven A1 recovery families, not A2/A3/A4 acceptance or release clearance.
+
+Scout reported zero servers/IPs and a reconciled ledger after both jobs. Existing
+worker options are cx23 at EUR 0.02/h, cpx32 at EUR 0.08/h and cpx42 at EUR 0.15/h;
+no policy allowances changed. The remaining original CPCB panel is prepared as
+`resilience-a1-cpcb-001`, cpx32, 6 GiB container, four CPUs, 120-minute timeout,
+180-minute lifetime, maximum reservation EUR 0.32 including existing cleanup grace.
+The exact source-bundle pin is
+`b5a4f3eb9e849cc585ef6b6d71dea30c6483bea55082977b8915f35296b84758`.
+The 89,081,808 bytes of historical inputs move only to the worker. Expected exact
+coverage is pinned before launch: self eval 125,277; all-scope eval 125,776 and
+holdout 143,793, each with zero errors. Scout must verify the plan, budget, exact
+pin and absence of active workers before one attempt, collect bounded reports,
+destroy/reconcile, preserve evidence and check the exact pushed commit's CI.
+No rebuild, publication or scoring-adapter experiment is authorized by this job.

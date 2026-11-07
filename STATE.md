@@ -1,3 +1,18 @@
+## 2026-11-07 — Codex: six historical recovery families verified; CPCB prepared
+
+The two Scout acceptance workers are complete and deleted. Their compact reports
+were independently hash-checked against staging manifests. NZEA, UNHCR, NS-BWA,
+OCHA, CQC and wildfire reproduced the expected exact recovery; gate 1.6 refused
+every original artifact. This is A1 progress only, not package clearance.
+Fixture receipt metadata is corrected with the prior claim preserved; original
+worker reports and dataset bytes stay unchanged. Scout reports zero servers/IPs.
+Next: green CI then Scout alone launches resilience-a1-cpcb-001, source pin
+b5a4f3eb9e849cc585ef6b6d71dea30c6483bea55082977b8915f35296b84758,
+existing cpx32 policy, at most EUR 0.32 reservation, one attempt followed by
+collection and cleanup. R3 PR #29 and R4 PR #30 remain separate draft branches;
+R4 916bc92 passed 805 clean-clone tests and all four exact-SHA CI runs. Admission
+hold stays active; A2/A3/A4, adversarial audit and architecture work remain pending.
+
 ## 2026-11-07 — Codex: R2 shipped/deployed; gate 1.6 implementation awaiting acceptance
 
 R2 PR #27 merged as `a2578ed`, passed both exact-merge CI workflows, and Scout
