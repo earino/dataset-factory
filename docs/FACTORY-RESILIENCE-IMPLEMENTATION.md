@@ -272,3 +272,27 @@ Frozen EC merger meta/quality and OCHA quality must come from their exact frozen
 editorial copies, since original staging differs. PriceCatcher's recorded staging
 reference could not be resolved by REST or gh release lookup; a pinned published
 source must be fetched on a worker. No local full datasets were downloaded.
+
+### All-level A2 declarations
+
+`audits/resilience/2026-11-07-a2-batches.json` records eighteen unlaunched bundles
+covering all 98 core task artifacts, with source pins and explicit input sizes.
+Each core hash set is checked against its frozen manifest by a transport test.
+The PriceCatcher fallback uses public release 420542550: the server's asset digests
+and sizes match the frozen manifest. Only the worker may download its CSVs, with
+an explicit public-fetch flag, fixed HTTPS release URL, size limit and full digest
+check. Other dataset CSVs use the existing authenticated worker fetch from private
+staging. No A2 hold exceptions have been registered and no A2 jobs have launched.
+The combined ceiling reservation is EUR 5.76 (eighteen times EUR 0.32), not a billing
+measurement or permission to exceed the current remaining allowance. Scout must
+plan each job, run only one worker, collect and clean up before advancing. Use the
+CPCB and first comparison measurements to assess later batch sizing. The transport
+precursor d4b7848 passed 773 clean-clone tests and exact-SHA CI; the complete plans
+and public-fallback change still need their clean-clone and CI pass.
+
+CPCB's measured 853.168-second runtime and 1,119,604-KiB peak RSS support the
+existing 6-GiB container choice. For runtime margin, the original five-case large
+A2 batch was split into three before launch, yielding eighteen batches and a
+EUR 5.76 combined maximum reservation. The superseded local declaration and sealed
+bundle were preserved; no job with that old id ran. These runtime estimates do not
+replace the configured per-job deadline or Scout's live budget gate.

@@ -1,3 +1,19 @@
+## 2026-11-07 — Codex: all published comparison batches specified
+
+Eighteen unlaunched A2 batches cover every one of the 98 core task artifacts in
+all 14 frozen releases. Each plan binds exact core digests, frozen manifest and
+registered editorial archive. PriceCatcher's public v2026.10 release 420542550
+supplies a verified worker-only fallback for its three CSVs; no rows came through
+the coordinator. Combined maximum reservation is EUR 5.76 under existing cpx32
+ceilings, subject to Scout's live budget and single-worker checks. No A2 admission
+pins have been added yet; none of these jobs may launch until reviewed and pinned.
+The transport precursor d4b7848 passed 773 clean-clone tests and exact-SHA CI.
+Latest targeted checks pass for all plans, public transport bounds and frozen
+bindings. Next: clean-clone/CI for these full declarations; review CPCB runtime,
+then pin and hand off a small batch after Scout confirms CPCB cleanup. Preserve
+full coverage; adjust later batch sizing from measurements rather than skipping
+levels. Historical warning disposition remains pending actual comparisons.
+
 ## 2026-11-07 — Codex: frozen published comparison transport prepared
 
 A2 transport is on codex/published-regression-acceptance. The offline preparer
