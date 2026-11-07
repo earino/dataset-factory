@@ -10,7 +10,7 @@ from factory.claim_contract import compute, render, validate
 ROOT=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('claims_gate',ROOT/'skills/dataset-qualification/scripts/qualify_dataset.py')
 gate=importlib.util.module_from_spec(spec)
-spec.loader.exec_module(gate)
+exec(compile(spec.loader.get_source(spec.name),str(spec.origin),'exec'),gate.__dict__)
 
 
 class ClaimContractTests(unittest.TestCase):
