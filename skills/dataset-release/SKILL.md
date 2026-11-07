@@ -271,13 +271,17 @@ When it is approved:
    the auditor's version-bound verdict. The internal model pass does not replace it. The auditor must be
    independent of the sessions that built and staged the release.
 
-1. **Flip both destinations, then prove it anonymously.** GitHub: `gh api -X PATCH repos/<owner>/<repo>`
-   -F private=false`. Hugging Face: `HfApi.update_repo_settings(repo_id=..., repo_type="dataset",
-   private=False)` with the **write** credential (the `/settings` REST path is not the endpoint;
-   asking for it returns 404). Then verify from a client with no credential at all: the repository
-   page answers 200, every release asset answers a ranged GET, the Hub API reports `private: false`,
-   and the data files answer ranged GETs at the **tag** revision. A successful PATCH is not
-   verification.
+1. **Bind approval to the exact plan, then flip both destinations.** Follow
+   `docs/PUBLICATION-APPROVALS.md`: record the version-bound independent verdict,
+   generate `publish-dataset.py DATASET --flip-plan`, present that plan and hash,
+   and record the operator's actual words and source in `candidates/DATASET/approval.json`.
+   `publish-dataset.py DATASET --flip` and `hf-publish.py --candidate DATASET --flip`
+   use the same guarded two-platform operation. Missing, stale, draft or historical
+   approvals refuse before mutation; there is no hard-gate waiver. The durable intent
+   supports bounded manual resumption after a partial provider failure. Completion
+   requires anonymous asset access and digest/commit readback on both platforms.
+   Never replace this boundary with direct visibility calls or infer approval from
+   a passing audit. No artifact, manifest or tag changes during the flip.
 2. **Record visibility separately from frozen package bytes.** Record verified visibility, note and timestamp in
    `DESTINATIONS.json`. Preserve the historical manifest; do not regenerate it to update status.
    The website planner reads two more fields from the same file and refuses without them: a

@@ -471,7 +471,18 @@ def main(argv=None):
     parser.add_argument("--verify", action="store_true", help="verify uploaded files and record evidence in DESTINATIONS.json (writes locally)")
     parser.add_argument("--worker-job", help="collected successful hf_publish job supplying pinned bulk-digest evidence")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--flip-plan", action="store_true", help="print the exact two-destination approval plan")
+    parser.add_argument("--flip", action="store_true", help="execute the recorded digest-bound approval on both destinations")
     args = parser.parse_args(argv)
+    if args.flip or args.flip_plan:
+        if (not args.candidate or args.repo or args.token_file or args.token_var != "HF_TOKEN_WRITE"
+                or any((args.plan, args.create, args.upload_small, args.tag, args.verify, args.worker_job))
+                or (args.flip and args.flip_plan)):
+            parser.error("use --candidate with the flip operation alone; shared factory write credentials apply")
+        from factory import publication
+        result = publication.execute(REPO_ROOT, args.candidate) if args.flip else publication.review_plan(REPO_ROOT, args.candidate)
+        print(json.dumps(result, indent=2))
+        return 0
 
     # The package must be chosen before anything is read from it: reading the manifest first meant
     # this ran against whichever dataset was hardcoded, whatever --candidate said.

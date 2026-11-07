@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "kind": "historical_publication_record",
+  "dataset": "chicago-doah-adjudication",
+  "release_tag": "v2026.09",
+  "artifact_version": "b71586bf28fa56ebbfaede26c4494d68b166545ac504b2ebd8a52c7f272627ef",
+  "manifest_sha256": "5054cc945d207094494dd3549d50d22194979fa10a7bd71b69151c25c96f8fab",
+  "authorizes_new_publication": false,
+  "evidence_status": "reported_only",
+  "recorded_operator_words": null,
+  "reported_instruction_date": "2026-09-26",
+  "approved_at": null,
+  "waived_rules": [],
+  "source_snapshot": {
+    "path": "audits/resilience/2026-11-07-approval-history/source-records.json",
+    "sha256": "13a0e75a1d523d260deaafa2d93486d0743b9b73f9bb1595f6ace326f09bd7ae",
+    "record_key": "chicago-doah-adjudication"
+  },
+  "citations": [
+    {
+      "path": "docs/state-archive/2026-09.md",
+      "sha256": "69b39bbd29def5d34dcf0403325f4c2a02ff0be661309ade42ae567a686bbef8",
+      "start_line": 2495,
+      "quote": "| step | evidence |\n| --- | --- |\n| construction + gate | frozen extract, docket-level split, disclaimer carried on every row; gate produced the accepted artifact |\n| qualification | worker job `chicago-001`, PASSED, then destroyed; cleanups verified by direct read |\n| baseline | `chicago-baseline-001`, `baseline/reproduce_baseline.sh` exit 0 |\n| staging | private repo + a `v2026.09` release carrying the five assets, digests read back from GitHub |\n| Hub publish | worker job `chicago-hf-001` uploaded all five files and they re-hash at the published revision, but its loading check failed (splits `train`/`test`, `eval` and `holdout` missing) because the card declared no configs block; the card was then fixed to declare the manifest's three splits and the documented path was re-verified anonymously at `v2026.09` - 47414 / 3436 / 2913 rows, 11 columns, `Liable` / `Not Liable` |\n| consumer verification | `chicago-consumer-001` in a fresh environment with no factory access: `run.sh` exit 0, digests and `sha256sum -c` OK, qualification PASSED, baseline 0.6915 |\n| publication | both destinations flipped public under explicit operator authorisation, no asset or digest changed |"
+    }
+  ],
+  "limitations": [
+    "This is a retrospective index of agent-written historical evidence, not an authenticated operator transcript.",
+    "No contemporaneous digest-bound approval record was found; this retrospective identity does not prove that the operator saw this manifest.",
+    "This record cannot authorize any new flip, changed artifact or hard-gate waiver.",
+    "No verbatim publication approval was found in the retained evidence; no words have been invented."
+  ]
+}

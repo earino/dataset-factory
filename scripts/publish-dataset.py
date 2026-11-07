@@ -1,34 +1,14 @@
 #!/usr/bin/env python3
-"""Prepare - and only on explicit request, execute - the public release of a dataset.
+"""Plan release transfers, or execute an explicitly approved staged visibility change.
 
-Publication is a reviewed step, so this script **does nothing by default**: it prints the exact
-plan (repository, documents, release, assets, sizes, hashes, provenance) and exits. Actually
-publishing needs both `--execute` and `--confirm-publication`, because a public repository and a
-public release are not reversible the way a merge commit is.
+The default legacy transfer plan is read-only. Bulk transfer belongs on workers;
+--execute still cannot upload data from this coordinator.
 
-The token is read from its `_FILE` path and never printed.
-
-    python3 scripts/publish-dataset.py <dataset>     # the plan, and nothing else
-
-**What is verified and what is not.** `--stream-test` resolves the staged artifact to concrete
-asset ids through the worker-written `manifest.json`, so the mapping from artifact files to
-release assets is checked against recorded evidence rather than assumed. The **upload step
-itself is not implemented here and has not been run**: copying ~131 MB from a private release to
-a public one needs either a machine that can hold the bytes or a worker-side publish path, and
-neither exists yet. This script therefore stops at a plan instead of pretending to publish.
-
-## The publication steps, for when the operator approves
-
-1. `python3 scripts/release-manifest.py <dataset>` - regenerate MANIFEST.json and
-   SHA256SUMS from recorded evidence.
-2. `python3 scripts/publish-dataset.py <dataset> --stream-test` - confirm the plan and
-   that every artifact file maps to exactly one staged asset.
-3. Create the public repository `earino/<dataset>` and commit the documents in
-   `release/<dataset>/` as its initial commit.
-4. Create release `v2026.09` and attach the five artifact files under the names in the plan.
-   Verify each uploaded asset's SHA-256 against `SHA256SUMS` after upload, not before.
-5. Add the public repository URL to the release README, and record the publication in the
-   factory's `STATE.md` and the candidate's `record.json`.
+For a current verified private package, --flip-plan prints the exact artifact,
+independent review and both destination commits for the operator. After the
+operator approves that plan, record their words and source in the candidate's
+approval.json. --flip checks it and uses the common two-platform path. No
+manifest, data file or tag is changed. See docs/PUBLICATION-APPROVALS.md.
 """
 from __future__ import annotations
 
@@ -191,7 +171,16 @@ def main() -> int:
     parser.add_argument("--confirm-publication", action="store_true")
     parser.add_argument("--stream-test", action="store_true",
                         help="resolve the staged artifact to asset ids; publishes nothing")
+    parser.add_argument("--flip-plan", action="store_true", help="print the exact two-destination approval plan")
+    parser.add_argument("--flip", action="store_true", help="execute the recorded digest-bound approval on both destinations")
     args = parser.parse_args()
+    if args.flip or args.flip_plan:
+        if args.execute or args.stream_test or args.confirm_publication or (args.flip and args.flip_plan):
+            parser.error("use the approved flip operation by itself")
+        from factory import publication
+        result = publication.execute(ROOT, args.candidate) if args.flip else publication.review_plan(ROOT, args.candidate)
+        print(json.dumps(result, indent=2))
+        return 0
 
     step = plan(args.candidate)
     render(step)
@@ -210,10 +199,12 @@ def main() -> int:
 
     if not args.execute:
         return 0
+    from factory.publication import approved_plan
+    approved_plan(ROOT, args.candidate)
     if not args.confirm_publication:
         raise SystemExit("refusing to publish: pass --confirm-publication with --execute")
-    raise SystemExit("the upload step is not implemented; see the module docs for the five "
-                     "publication steps and ask the operator to approve before running them")
+    raise SystemExit("the legacy upload step is not implemented; use worker transfers and the "
+                     "documented digest-bound --flip workflow for verified private staging")
 
 
 if __name__ == "__main__":

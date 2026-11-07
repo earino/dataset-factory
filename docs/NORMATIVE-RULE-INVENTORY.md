@@ -1582,17 +1582,21 @@ Source: [skills/dataset-release/SKILL.md:263](../skills/dataset-release/SKILL.md
 
 No complete mechanical enforcement identified; retain as an agent/operator obligation.
 
-## 6c1694dc76cbd711bb99 — prose-only
+## af63911b33efe470074c — prose-only
 
 Source: [skills/dataset-release/SKILL.md:274](../skills/dataset-release/SKILL.md#L274).
 
-> 1. **Flip both destinations, then prove it anonymously.** GitHub: `gh api -X PATCH repos/<owner>/<repo>`
->    -F private=false`. Hugging Face: `HfApi.update_repo_settings(repo_id=..., repo_type="dataset",
->    private=False)` with the **write** credential (the `/settings` REST path is not the endpoint;
->    asking for it returns 404). Then verify from a client with no credential at all: the repository
->    page answers 200, every release asset answers a ranged GET, the Hub API reports `private: false`,
->    and the data files answer ranged GETs at the **tag** revision. A successful PATCH is not
->    verification.
+> 1. **Bind approval to the exact plan, then flip both destinations.** Follow
+>    `docs/PUBLICATION-APPROVALS.md`: record the version-bound independent verdict,
+>    generate `publish-dataset.py DATASET --flip-plan`, present that plan and hash,
+>    and record the operator's actual words and source in `candidates/DATASET/approval.json`.
+>    `publish-dataset.py DATASET --flip` and `hf-publish.py --candidate DATASET --flip`
+>    use the same guarded two-platform operation. Missing, stale, draft or historical
+>    approvals refuse before mutation; there is no hard-gate waiver. The durable intent
+>    supports bounded manual resumption after a partial provider failure. Completion
+>    requires anonymous asset access and digest/commit readback on both platforms.
+>    Never replace this boundary with direct visibility calls or infer approval from
+>    a passing audit. No artifact, manifest or tag changes during the flip.
 > 2. **Record visibility separately from frozen package bytes.** Record verified visibility, note and timestamp in
 >    `DESTINATIONS.json`. Preserve the historical manifest; do not regenerate it to update status.
 >    The website planner reads two more fields from the same file and refuses without them: a
@@ -1617,7 +1621,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## a463d8986bc1cf96ea53 — prose-only
 
-Source: [skills/dataset-release/SKILL.md:301](../skills/dataset-release/SKILL.md#L301).
+Source: [skills/dataset-release/SKILL.md:305](../skills/dataset-release/SKILL.md#L305).
 
 > **Documents generated after publication must re-derive the managed navigation.** The pipeline writes a
 > navigation block (links to the dataset's page, the catalog, both destinations) into the repository
@@ -1633,7 +1637,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 9826ab1fc04219e2813c — prose-only
 
-Source: [skills/dataset-release/SKILL.md:311](../skills/dataset-release/SKILL.md#L311).
+Source: [skills/dataset-release/SKILL.md:315](../skills/dataset-release/SKILL.md#L315).
 
 > **State is derived from recorded evidence, never asserted in a generator.** Three defects of this
 > exact shape shipped at once: a card whose status was a string literal, a manifest whose
@@ -1646,7 +1650,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 37ac9aea576bf0c78e1f — prose-only
 
-Source: [skills/dataset-release/SKILL.md:318](../skills/dataset-release/SKILL.md#L318).
+Source: [skills/dataset-release/SKILL.md:322](../skills/dataset-release/SKILL.md#L322).
 
 > **Anything a human reads or runs must be executed once before it ships.** The card carried the
 > repository id as a doubled-brace placeholder inside an f-string, which renders to a single brace -
@@ -1658,7 +1662,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 234e7df121d6fa9f75f1 — prose-only
 
-Source: [skills/dataset-release/SKILL.md:326](../skills/dataset-release/SKILL.md#L326).
+Source: [skills/dataset-release/SKILL.md:330](../skills/dataset-release/SKILL.md#L330).
 
 > | Symptom | Cause | Action |
 > | --- | --- | --- |
@@ -1690,7 +1694,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 291c95b9c231da3b37e4 — prose-only
 
-Source: [skills/dataset-release/SKILL.md:352](../skills/dataset-release/SKILL.md#L352).
+Source: [skills/dataset-release/SKILL.md:356](../skills/dataset-release/SKILL.md#L356).
 
 > | A generated document still claims "private" after publication | The status was a literal in the generator, not derived from recorded state | Derive it from `DESTINATIONS.json`/the manifest; assert nothing about a state you can read |
 > | A printed command contains a placeholder | A doubled-brace placeholder inside an f-string renders to a single brace, so the replacement no-ops | Use an unambiguous token; execute the artifact you generate before shipping it |
@@ -1719,7 +1723,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 14067b213ea0adc693d3 — prose-only
 
-Source: [skills/dataset-release/SKILL.md:396](../skills/dataset-release/SKILL.md#L396).
+Source: [skills/dataset-release/SKILL.md:400](../skills/dataset-release/SKILL.md#L400).
 
 > For editorial corrections, increment `site_revision`, prepare and review the new
 > plan. Existing data identity is immutable. Website navigation updates default-branch
@@ -1730,7 +1734,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## f149c27867406c2af0ac — prose-only
 
-Source: [skills/dataset-release/SKILL.md:403](../skills/dataset-release/SKILL.md#L403).
+Source: [skills/dataset-release/SKILL.md:407](../skills/dataset-release/SKILL.md#L407).
 
 > - [ ] `check-package.py` reports no missing document and no manifest/hash mismatch.
 > - [ ] Every command in the reproduction instructions was executed on the published bytes, in a
@@ -1750,7 +1754,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## f85a6b4893841749862f — prose-only
 
-Source: [skills/dataset-release/SKILL.md:425](../skills/dataset-release/SKILL.md#L425).
+Source: [skills/dataset-release/SKILL.md:429](../skills/dataset-release/SKILL.md#L429).
 
 > Follow `docs/PREDICTION-CONTRACT.md` in the project before new construction or release.
 > Read observation time, actual feature availability, label availability and revision/vintage
@@ -1766,7 +1770,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 56e5489db42bceff9979 — prose-only
 
-Source: [skills/dataset-release/SKILL.md:435](../skills/dataset-release/SKILL.md#L435).
+Source: [skills/dataset-release/SKILL.md:439](../skills/dataset-release/SKILL.md#L439).
 
 > New artifacts require `quality.json.evaluation_contract` and the current gate. Older reports
 > remain historical evidence only. Never fill fields with invented evidence to obtain a pass.
