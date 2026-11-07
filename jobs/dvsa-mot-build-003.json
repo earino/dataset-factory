@@ -1,0 +1,68 @@
+{
+  "job": {
+    "id": "dvsa-mot-build-003",
+    "candidate": "dvsa-mot-next-test-outcome",
+    "image": "python:3.13-slim",
+    "command": [
+      "sh",
+      "/workspace/run.sh"
+    ],
+    "server_type": "cpx32",
+    "location": "hel1",
+    "cpus": 4,
+    "memory_mb": 8192,
+    "timeout_minutes": 100,
+    "lifetime_minutes": 140,
+    "max_disk_mb": 30000,
+    "max_artifact_mb": 200,
+    "what": "Construct the dvsa-mot-next-test-outcome artifact on a worker (repair relaunch dvsa-mot-build-003; the only construction change vs build-002 is the Deflate64 route: the 2017-2023 DfT zips are compress_type 9 (every member, measured 2026-11-07), stdlib zipfile raised NotImplementedError at 2017 and killed build-002, so open_text_lines now decodes type-9 members through the explicit local-header read + inflate64 route verified in-container on the real 2017 file (1.4 s/member, VmPeak 700 MB, size match), streaming lines through TextIOWrapper - never splitlines on a full member; run.sh installs the pinned inflate64==1.0.4 and verifies the import before any download; the ABRVE value-rule repair from build-002 is unchanged and carries over): download the 20 per-year DVSA/DfT anonymised MOT result files (2005-2016 txt.gz + 2017-2022 zips at data.dft.gov.uk, 2023-2024 zips at the DVSA S3 origin; the 2024 zip byte-pinned to the 2026-10-19 measurement), stream-parse class-4 rows of md5-sampled vehicles (~0.1%), join consecutive completed tests per vehicle, label the next test's initial failure (F/PRS vs P), features strictly from the prior test and earlier, splits by prior-test year (train 2009-2018 / eval 2019-2021 / holdout 2022-2023.11, right-censoring cutoff 2023-11-30), then run the gate 1.5.0 on the FULL artifact on the worker, --accept the exact bytes, and compute the pre-registered reference triad (post-acceptance). No performance metric exists before acceptance; the deciding model-vs-triad check runs in a later baseline job.",
+    "stopping_condition": "a failed build or gate stops the job with the reports preserved for collection; a failed gate is a recorded finding requiring diagnosis before any rebuild; no re-tuning of threshold, window, label or features after any score.",
+    "source_files": [
+      {
+        "bundled_as": "build.py",
+        "source": "candidates/dvsa-mot-next-test-outcome/source/build.py",
+        "bytes": 58120,
+        "sha256": "328d9247d71f37d708dfa59626c85d56aef49ea151fcfe341ca6cc6734de33ec"
+      },
+      {
+        "bundled_as": "run.sh",
+        "source": "candidates/dvsa-mot-next-test-outcome/source/run.sh",
+        "bytes": 2795,
+        "sha256": "a11a95380b30d6a12cbc05165c800437dbbec762e7ad66c4a25269fae2054cd5"
+      },
+      {
+        "bundled_as": "score.py",
+        "source": "candidates/dvsa-mot-next-test-outcome/source/score.py",
+        "bytes": 18081,
+        "sha256": "4b52fd9d9c1ca7854b3df93409673fa04bdad0160149a5df85766d5cbf2ebc62"
+      },
+      {
+        "bundled_as": "qualify_dataset.py",
+        "source": "skills/dataset-qualification/scripts/qualify_dataset.py",
+        "bytes": 57029,
+        "sha256": "4fab8a34fe4f3357b7cd911087bfa243c56a96d8720e40d0d4cb2169100404d1"
+      }
+    ]
+  },
+  "reservation_eur": "0.32",
+  "rate_ceiling_eur": "0.08",
+  "reserved_hours": 4,
+  "note": "Conservative reservation, not a provider billing guarantee",
+  "source_bytes": 235520,
+  "source_sha256": "4f52156bf92409e8e0827c5257f27a8b39f604640917579730544e76c76ebd73",
+  "cloud_calls": 0,
+  "enabled": true,
+  "status": "running",
+  "project": "earino-dataset-factory",
+  "created_at": "2026-11-07T09:02:28.469976+00:00",
+  "expires": 1794050548,
+  "budget_months": [
+    "2026-11"
+  ],
+  "cleanup_grace_minutes": 60,
+  "provider_hourly_eur": "0.0692400000000000",
+  "server_id": 174954439,
+  "known_hosts": "/opt/data/dataset-factory/.factory/dvsa-mot-build-003/known_hosts",
+  "staging_repo": "earino/dataset-factory-staging",
+  "ipv4": "2.29.159.168"
+}

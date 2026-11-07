@@ -1,3 +1,84 @@
+## 2026-11-07 (09:10Z) - scheduled advancement: dvsa-mot Deflate64 repair executed and LAUNCHED as dvsa-mot-build-003 (worker 174954439 running; dry run green on REAL Deflate64 bytes, cross-implementation; 2005 receipt reproduces build-001/002 EXACTLY mid-run)
+
+Construction work only (no packaged candidate is actionable: all five packaged
+records - ab-wildfire, cpcb, cqc, ns-bwa, za-cct - carry awaiting_operator
+TRUE, i.e. the flip is the operator's single approval and a pure human wait;
+no remediation hold is active). Candidate chosen from the operator's
+actionable list: its Deflate64 repair was diagnosed, specified, in-container
+verified and pre-staged by the 2026-11-07 07:04Z follow-up; this session
+executed exactly the recorded next_action.
+
+- REPAIR (exactly the two recorded changes, both before any score has ever
+  existed; no score, gate run or acceptance has ever existed for this
+  candidate): (1) source/build.py open_text_lines routes compress_type 9
+  members through _member_blob (explicit local-header read: seek to
+  info.header_offset, PK\x03\x04 check, name/extra lengths from bytes
+  26..30) + inflate64.Inflater().inflate, asserts the decode equals the
+  central directory's file_size, and streams lines through TextIOWrapper one
+  at a time (never splitlines on a full member - the first verification
+  attempt's OOM was the probe's own splitlines, not the decode); stdlib
+  zipfile still reads central directories and standard-deflate members
+  (pinned 2024 zip measured deflate 2026-10-19); import is conditional so the
+  coordinator dry run runs without the package; main() fails fast in
+  non-test mode BEFORE any download if inflate64 is missing. (2) run.sh
+  installs the pinned inflate64==1.0.4 and verifies the import before
+  build.py. ABRVE value-rule repair, label rule, pre-registered triad and
+  deciding rule untouched; max_artifact_mb stays 200.
+- DRY RUN GREEN ON REAL DEFLATE64 BYTES (probe/dryrun_deflate64_2026_11_07.py,
+  committed; scratch venv python3.13 + pinned inflate64==1.0.4 - the same
+  version run.sh installs; the script self-bootstraps and re-execs): RED-A -
+  build-001 source (git be68bfd) exits 1 on the injected ABRVE row with the
+  recorded assertion (value repair intact). RED-D - build-002 source (git
+  5dc4b61) raises stdlib zipfile's NotImplementedError on a compress_type 9
+  member (the exact failure class that killed build-002 at 2017). GREEN-D -
+  the patched route round-trips a known-plaintext type-9 zip built with
+  inflate64's own Deflater in the measured 2017 member shape (pipe header,
+  \r\n, two members) EXACTLY, and on the inflate64 project's own
+  tests/data/test-file.zip (another producer's container) every member's
+  blob read equals the central directory's compress_size and its one-shot
+  inflate equals file_size - cross-implementation: Deflater-written,
+  Inflater-read. GREEN-S - patched build on stdlib fixtures exits 0, all
+  five ABRVE checks hold. GREEN-FULL - with fixture years 2017-2023
+  re-encoded as real Deflate64 zips with byte-identical member content, the
+  full build reproduces the stdlib-route extract byte-for-byte
+  (train/eval/holdout CSVs, meta.json, quality.json) with equal per-year
+  counters and pair counters. GATE - gate 1.5.0 passes on BOTH synthetic
+  extracts + exact-byte --accept ACCEPTED + post-acceptance triad machinery
+  exit 0, in the run.sh stage order. Fixture numbers are not findings.
+- TOOLING PRE-STAGED for completion (committed): bounded staged-diagnostics
+  fetch for build-003 (probe/fetch_diagnostics_build003_2026_11_07.py) and
+  the deterministic cross-check chain (probe/
+  verify_crosscheck_build003_2026_11_07.py): 2005-2014 must reproduce
+  build-001's collected receipts EXACTLY (verified present: 10 years), 2015
+  (37,490,736/35,445,915/35,591) and 2016 (37,693,380/35,637,088/35,626)
+  must reproduce build-002's collected receipts EXACTLY (verified present
+  in .factory/dvsa-mot-build-002/staged-container.log), and 2017-2024
+  zip-era receipts + non-completed inventories are read as NEW evidence.
+- LAUNCH: dvsa-mot-build-003 (assemble-job verified the bundle carries the
+  patched build.py at 328d9247... plus patched run.sh, score.py, gate 1.5.0
+  qualify_dataset.py), server 174954439 (cpx32, hel1), launched
+  2026-11-07T09:02:28Z, reservation 0.32 EUR, budget month 2026-11.
+  Mid-run peek (~09:07Z): pinned inflate64 installed cleanly and the 2005
+  receipt rows_seen=7,499,744 / class4=7,113,089 / sampled=7,101 reproduces
+  the recorded build-001/002 value EXACTLY, so the deterministic
+  cross-check is reproducing year by year as designed.
+- Checks: compile OK under 3.13 and 3.14, check-candidate
+  dvsa-mot-next-test-outcome OK, check-candidate --all rc=0 (147), suite 723
+  OK (33.3 s). No bulk data on the coordinator (fixtures ~1 MB synthetic;
+  inflate64 wheel ~100 KB in a scratch venv; the real 2017 zip never
+  touched this host).
+
+Next action (record.next_action carries the full standing order): the worker
+runs construct -> qualify -> accept exact bytes -> pre-registered triad;
+nothing is scored before acceptance. ON COMPLETION: collect, run the bounded
+diagnostics fetch + the deterministic 2005-2016 EXACT cross-check, read the
+2017-2024 zip-era inventories, require gate 1.5.0 PASSED + exact-byte
+--accept BEFORE any figure, record the post-acceptance triad (eval only,
+holdout sealed), destroy with provider 404 read-back, then the
+dvsa-mot-baseline bundle (fetch-block filler already staged) with re-accept
+before any score. A failed build-003 at the same zip stage is a
+task-design question, not another retry.
+
 ## 2026-11-07 (08:40Z) - discovery (South & Southeast Asia tick): NEW READY CANDIDATE my-rapidrail-od-exceedance (Klang Valley Rapid Rail day-ahead station-pair ridership exceedance, data.gov.my CC BY 4.0, all five contracts evidenced); PH/TH enumerated only to bounded coverage
 
 Regional focus: India, Indonesia, Philippines, Thailand, Vietnam, Malaysia. The

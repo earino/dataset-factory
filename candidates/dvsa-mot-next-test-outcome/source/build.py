@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""DVSA/DfT anonymised MOT next-test-outcome construction (job dvsa-mot-build-002).
+"""DVSA/DfT anonymised MOT next-test-outcome construction (job dvsa-mot-build-003).
 
 Candidate: dvsa-mot-next-test-outcome. This script ONLY constructs the runner-layout
 artifact plus the diagnostics the qualification gate recomputes. NO performance
@@ -20,6 +20,12 @@ Source (measured, anonymous, OGL v3.0 - see the candidate record):
   * 2017-2022  dft_test_result_YYYY.zip  at data.dft.gov.uk/anonymised-mot-test/test_data/
   * 2023       dft_test_result_2023.zip  at the DVSA S3 origin (also mirrored at DfT)
   * 2024       "MOT testing data results (2024).zip" at the DVSA S3 origin
+  The 2017-2023 zips are Deflate64 containers (every member compress_type 9,
+  measured 2026-11-07): stdlib zipfile cannot open their members, so
+  open_text_lines decodes each through the local-header + inflate64 route
+  verified in-container (run.sh pins inflate64==1.0.4; the coordinator dry
+  run exercises the same code shape on real Deflate64 bytes via
+  probe/dryrun_deflate64_2026_11_07.py).
   The 2024 zip is pinned byte-exactly to the 2026-10-19 measurement
   (1,531,265,132 bytes, 12 members test_result_202401..202412.csv); a different
   vintage refuses the build. Older files were never fetched before, so the build
@@ -80,6 +86,7 @@ import hashlib
 import io
 import json
 import re
+import struct
 import sys
 import threading
 import time
@@ -126,6 +133,18 @@ for year in range(2017, 2023):
     SOURCE_FILES[year] = DFT_BASE + f"dft_test_result_{year}.zip"
 SOURCE_FILES[2023] = S3_BASE + "dft_test_result_2023.zip"
 SOURCE_FILES[2024] = S3_BASE + "MOT+testing+data+results+(2024).zip"
+
+# The 2017-2023 DfT zips are Deflate64 containers: every member is
+# compress_type 9 (measured 2026-11-07 on the real 2017 file: 1,082,702,159 B,
+# 12 members, ~277 MB uncompressed each, pipe-delimited WITH header and \r\n
+# line ends). Stdlib zipfile reads their central directories but raises
+# NotImplementedError on archive.open(), so open_text_lines routes type-9
+# members through an explicit local-header read + inflate64 decode - the route
+# verified in-container (record measurements.deflate64_decode_verified_
+# 2026_11_07: 1.4 s/member, VmPeak 700 MB, size match). run.sh installs the
+# pinned inflate64==1.0.4; the import is conditional so the coordinator dry
+# run (synthetic stdlib-deflate fixtures) runs without the package.
+DEFLATE64 = 9
 
 # Required source fields. completed_date is optional (believed absent pre-2017);
 # static fields are optional only for history priming years but required on any
@@ -337,7 +356,14 @@ class RowParser:
 
 
 def open_text_lines(path: Path, year: int):
-    """Yields (member_name, line) for a txt.gz or a zip of CSV members."""
+    """Yields (member_name, line) for a txt.gz or a zip of CSV members.
+
+    Deflate64 members (compress_type 9, the 2017-2023 DfT zips) cannot be
+    opened by stdlib zipfile, so each is decoded through the local-header +
+    inflate64 route verified on the real 2017 file; every other member takes
+    the unchanged stdlib path (the 2024 zip is standard deflate, measured
+    2026-10-19).
+    """
     if path.suffix == ".gz":
         with gzip.open(path, "rt", encoding="utf-8", errors="replace") as handle:
             for line in handle:
@@ -347,11 +373,62 @@ def open_text_lines(path: Path, year: int):
         for info in archive.infolist():
             if info.is_dir():
                 continue
+            if info.compress_type == DEFLATE64:
+                yield from _deflate64_member_lines(path, info)
+                continue
             with archive.open(info, "r") as member:
                 text = io.TextIOWrapper(member, encoding="utf-8",
                                         errors="replace")
                 for line in text:
                     yield info.filename, line
+
+
+def _member_blob(path: Path, info) -> bytes:
+    """Read one member's raw compressed bytes via its local file header.
+
+    Stdlib zipfile exposes no other way to reach the bytes of a member it
+    cannot decompress: info.header_offset names the local header, whose bytes
+    26..30 carry the name and extra-field lengths preceding the data.
+    """
+    with open(path, "rb") as raw:
+        raw.seek(info.header_offset)
+        header = raw.read(30)
+        if len(header) < 30 or header[:4] != b"PK\x03\x04":
+            fail(f"{path.name}#{info.filename}: no local file header at "
+                 f"offset {info.header_offset} (got {header[:4]!r})")
+        name_len, extra_len = struct.unpack("<HH", header[26:30])
+        raw.seek(info.header_offset + 30 + name_len + extra_len)
+        return raw.read(info.compress_size)
+
+
+def _deflate64_member_lines(path: Path, info):
+    """Yields (member_name, line) for one Deflate64 (compress_type 9) member.
+
+    The verified route (record measurements.deflate64_decode_verified_
+    2026_11_07): read the compressed blob via the local header, inflate with
+    inflate64.Inflater(), then stream lines through TextIOWrapper - one line
+    at a time, never splitlines() on the whole member (that OOM was the first
+    verification probe's own, not the decode's). The import is conditional so
+    the coordinator dry run (synthetic stdlib-deflate fixtures) runs without
+    the package; on the worker run.sh installs inflate64==1.0.4 first.
+    """
+    try:
+        import inflate64
+    except ImportError as error:
+        fail(f"{path.name}#{info.filename}: Deflate64 member but inflate64 "
+             f"is unavailable ({error}); run.sh installs the pinned "
+             f"inflate64==1.0.4 before build.py and the 2017-2023 DfT zips "
+             f"cannot be read without it")
+    blob = _member_blob(path, info)
+    text = inflate64.Inflater().inflate(blob)
+    del blob
+    if len(text) != info.file_size:
+        fail(f"{path.name}#{info.filename}: Deflate64 decode produced "
+             f"{len(text)} bytes, the local header says {info.file_size}")
+    with io.TextIOWrapper(io.BytesIO(text), encoding="utf-8",
+                          errors="replace") as handle:
+        for line in handle:
+            yield info.filename, line
 
 
 def stream_tests(path: Path, year: int, stats: dict) -> list:
@@ -944,6 +1021,18 @@ def main() -> int:
 
     years = sorted(SOURCE_FILES)
     test_mode = bool(args.source_dir)
+    if not test_mode:
+        # Fail fast BEFORE any download: the 2017-2023 DfT zips are Deflate64
+        # (compress_type 9, measured 2026-11-07) and stdlib zipfile cannot read
+        # their members. run.sh installs the pinned inflate64==1.0.4; finding a
+        # missing wheel after 10 GB of downloads is not fail-fast.
+        try:
+            import inflate64  # noqa: F401
+        except ImportError as error:
+            fail(f"inflate64 is unavailable ({error}); run.sh installs the "
+                 f"pinned inflate64==1.0.4 before build.py and the 2017-2023 "
+                 f"DfT zips (Deflate64, compress_type 9) cannot be read "
+                 f"without it")
     all_rows: list = []
     receipts: dict[int, dict] = {}
     per_year: dict[int, dict] = {}
@@ -1006,7 +1095,7 @@ def main() -> int:
         per_split_per_year[key] = table
 
     summary = {
-        "job": "dvsa-mot-build-002",
+        "job": "dvsa-mot-build-003",
         "name": NAME,
         "source_vintage": {
             "files": len(receipts),
