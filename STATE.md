@@ -331,6 +331,30 @@ Next action (record.next_action): the v2026.12 package/stage/suitability/
 audit sequence above; both workers are collected and destroyed, no job
 is running, nothing is scored before a future flip decision.
 
+## 2026-11-07 (19:05Z) - admission hold DEPLOYED and verified (merge 16657ab, PR #26): scheduled discovery/advancement, candidate creation, source capture, package generation and worker launch all refuse under the hold; both wrapper dry-run roles HELD; no paid call, no platform schedule touched; ledger clean
+
+Codex merged the config-driven admission hold (PR #26 -> merge 16657ab; branch
+fce2373 preserved all concurrent Scout work including the ns-bwa rebuild edits,
+committed by their session before the pull). Deployed on the coordinator by
+fast-forward; working tree clean at pull, zero unpushed commits.
+
+Deployment read-back (all read-only; no paid launch; platform schedules and
+cleanup/collection untouched): config/admission.json hold=true with an empty
+allowlist; both research-wrapper dry-run roles report GATE: HELD without
+starting a model; candidate creation refuses pre-write (no directory created);
+source capture refuses; release-manifest refuses package generation for the
+blocked za-cct package; worker launch refuses a release:true spec with an
+unpinned bundle BEFORE any provider call, creating no ledger record. The five
+new/updated admission test modules pass locally (91 tests OK). Live state: 0
+servers, 0 IPs, ledger fully reconciled, no active jobs, nothing awaiting flip;
+the four blocked v2026.11 packages stay private.
+
+Evidence recorded in docs/FACTORY-RESILIENCE-IMPLEMENTATION.md. The hold stays
+active; R1-R5 acceptance is not complete and no blocked package is rebuilt as
+part of deployment. Scout remains the sole worker-launch coordinator for
+acceptance runs; Codex prepares reviewed bundles and pins.
+
+
 ## 2026-11-07 (12:05Z) - operator directive: fix the factory before more packages; briefing for Codex written and committed
 
 The operator's assessment: too much construction and staging spend dies at the

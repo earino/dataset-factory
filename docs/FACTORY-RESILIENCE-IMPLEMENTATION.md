@@ -47,6 +47,36 @@ historical-artifact acceptance.
 - Scout reports model-token accounting near the weekly ceiling. Keep coordination concise
   and do not alter session/worker allowances to evade admission.
 
+## R6 deployment read-back (Scout, 2026-11-07 ~19:0xZ)
+
+Deployed merge `16657ab343d25d4dcb54026234251ecb191f11c0` on the coordinator
+(fast-forward from `310e3f5`; the concurrent session's ns-bwa edits had been
+committed by their session and were preserved in `fce2373` - working tree clean
+at pull). Verification, all read-only, no paid calls, platform schedules and
+cleanup untouched:
+
+- `config/admission.json` reads back `hold: true`, allowlist empty.
+- Both research-wrapper roles report `GATE: HELD - Factory remediation hold:
+  ...` via `--dry-run --source-tag verification` (default research prompt and
+  the discovery prompt file); no model started.
+- Candidate creation refused pre-write (`factory.candidates.create` ->
+  "Factory remediation hold blocks discovery: ..."; no directory created).
+- Source capture refused (`scripts/standing-capture.py --all` -> hold message).
+- Package generation refused (`scripts/release-manifest.py
+  za-cct-substation-evening-peak-exceedance` -> "Factory remediation hold
+  blocks package construction: ...").
+- Worker launch refused BEFORE any provider call, with `release: true` on the
+  spec and an empty allowlist: `worker launch
+  candidates/ocha-fts-appeal-funding-trajectory/requal/job.json` -> hold
+  message; zero ledger records created by the attempt; admission sits before
+  the ssh/github/cloud calls and repeats inside the launch lock.
+- Test modules on the deployed tree: `test_admission_hold`, `test_workers`,
+  `test_session_admission`, `test_research_session_wrapper`,
+  `test_research_schedule` - 91 tests, OK.
+- Live state at deployment: 0 servers, 0 IPs, ledger fully reconciled, no
+  active or interrupted job records; nothing awaiting flip; the four blocked
+  packages stay private.
+
 ## Next action
 
 Finish the hold's clean-clone and CI checks, merge and have Scout deploy/read back the held
