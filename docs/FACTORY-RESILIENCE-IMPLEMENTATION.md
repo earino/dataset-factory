@@ -14,9 +14,9 @@ proof of exact reconstruction. Published data, tags and manifests remain frozen.
 
 | Work | Status | Acceptance evidence still needed |
 | --- | --- | --- |
-| R6: config-driven admission hold | Implemented on `codex/factory-admission-hold`; tests in `test_admission_hold.py` plus existing lifecycle/scheduler tests | Clean-clone suite, exact-commit CI, Scout deployment read-back |
+| R6: config-driven admission hold | Shipped in PR #26, merge `16657ab`; exact-commit CI passed; Scout deployment read-back in `d1e6030` below | Hold remains active until R1-R4/A4 acceptance |
 | R1: deterministic label-blind battery, gate 1.6 | Pending | Historical A1 reproductions, published A2 comparison, exact-byte binding and worker integration |
-| R2: scaffold/answer scrubber | Pending | Wildfire/CQC/ZA-CCT regressions and all-file package scan |
+| R2: scaffold/answer scrubber | Implemented on `codex/answer-artifact-scrubber`: assembly and package guards, all-file inventory, pinned historical warnings | Clean-clone/CI, worker-generated artifact integration with R1, full worker A3/A4 |
 | R3: measurable claims from bytes | Pending | Dictionary/min-max/interval/prevalence/placeholder/digest regressions |
 | R4: source licence evidence and generation | Pending | Browser-capable evidence path, unreadable and conflicting source refusals |
 | R5: autonomous independent adversarial audit | Pending | Bounded auditor stage, digest-bound verdict, queue admission enforced |
@@ -77,9 +77,28 @@ cleanup untouched:
   active or interrupted job records; nothing awaiting flip; the four blocked
   packages stay private.
 
+## R2 static evidence (Codex, 2026-11-07)
+
+`factory/artifact_scrub.py` scans every package file, with bounded text/AST analysis
+without executing package code. It refuses fixture answers, literal salts, raw fixture
+identifiers, scored-row/date outcome examples, unresolved placeholders and uninspectable
+non-split files. Intentionally labelled CSV splits are inventoried but excluded from the
+scaffold scan. Both job assembly and `check-package.py` enforce the result. The scanner
+is bounded static analysis, not a guarantee that arbitrary code hides no answer.
+
+`audits/resilience/2026-11-07-answer-scrub.json` records the local tracked code/document
+findings on all four blocked packages. This reproduces the R2 defect shapes without
+fetching data rows or changing frozen artifacts. It is not worker qualification or A4.
+The 14 published package identities and existing editorial hashes are frozen in
+`config/frozen-releases.json`; only exact old files receive historical warnings.
+New/changed files and a self-asserted `published: true` cannot bypass the guard.
+
+Validation at `6b0faf9`: 103 targeted tests passed; a fresh clone ran the complete
+745-test suite successfully (13 platform-specific skips). Runtime source inventory
+passed. Exact-commit remote CI remains required after pushing.
+
 ## Next action
 
-Finish the hold's clean-clone and CI checks, merge and have Scout deploy/read back the held
-state while preserving concurrent edits. Then read all five referenced audit reports in full,
-map each attack to pinned artifacts and regressions, and implement R1/R2. Keep the hold active
-until measured acceptance is recorded; do not rebuild the blocked datasets as part of A4.
+Ship R2 after clean-clone and exact-commit CI. Implement R1 with the generated-artifact
+scrub on the worker, bind every diagnostic to the scanned bytes, and run pinned historical
+acceptance through Scout. Keep the hold active; do not rebuild the blocked datasets in A4.

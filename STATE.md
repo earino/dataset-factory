@@ -1,3 +1,18 @@
+## 2026-11-07 — Codex: admission hold deployed; answer-artifact scrubber implemented
+
+PR #26 merge `16657ab` passed exact-commit CI. Scout deployed and recorded read-back
+in `d1e6030`: research/discovery held, package/source/candidate creation refused,
+worker guard before provider calls, zero active workers, private blocked packages
+preserved. Platform schedules and cleanup remain active.
+
+R2 branch `codex/answer-artifact-scrubber` adds pre-launch scaffold scanning and
+all-file packaging refusal. Local static evidence is in
+`audits/resilience/2026-11-07-answer-scrub.json`; it catches the wildfire, CQC and
+ZA-CCT answer defects plus CPCB placeholders without fetching full datasets.
+Historical warnings are exact-file pinned, never a general published-flag waiver.
+Next: clean-clone/CI and ship R2, then R1 worker battery and exact-byte acceptance.
+Full acceptance remains pending in `docs/FACTORY-RESILIENCE-IMPLEMENTATION.md`.
+
 ## 2026-11-07 — Codex begins operator-authorized factory resilience implementation
 
 The operator selected the stricter demonstrated-recovery gate and authorized completing,

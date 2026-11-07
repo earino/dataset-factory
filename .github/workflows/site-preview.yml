@@ -19,15 +19,8 @@ jobs:
       - run: python3 -m unittest discover -s tests -p test_sites.py -v
       # Every release package that has an editorial file, rather than one named dataset: this
       # workflow used to preview a single dataset, so a second one was never exercised in CI.
-      - run: |
-          set -e
-          for package in release/*/; do
-            dataset=$(basename "$package")
-            [ -f "sites/$dataset.json" ] || { echo "no editorial for $dataset; skipping"; continue; }
-            echo "== $dataset =="
-            python3 scripts/site-publish.py prepare "$package" --editorial "sites/$dataset.json" \
-              --out ".factory/site-review/$dataset"
-          done
+      # Rejected private fixtures must refuse; unexpected failures AND passes fail CI.
+      - run: python3 scripts/site-preview-all.py --out .factory/site-review
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: website-publication-review

@@ -44,6 +44,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from factory.common import FactoryError, identifier, locked
+from factory.artifact_scrub import scan_tree
 OWNER_FILE = "bundle-owner.json"
 ALLOWED_SUFFIXES = (".py", ".sh", ".json", ".txt", ".toml", ".yaml", ".yml", ".md")
 # Standard checksum files have no suffix; mirrors factory.worker.BARE_ALLOWED_NAMES.
@@ -236,6 +237,13 @@ def assemble(spec: dict, job: dict, target: Path):
     (target / "job.json").write_text(json.dumps(job, indent=1) + "\n")
     # One source of truth for the id, readable inside the container, so no script has to pin it.
     (target / "job_id.txt").write_text(job["id"] + "\n")
+
+    # Stop scaffold answers before a paid worker starts. Historical audit inputs
+    # are fetched as data on the worker, not disguised as clean construction code.
+    scrub = scan_tree(target)
+    if not scrub['ok']:
+        locations = [f"{f['file']}:{f['line']} {f['rule']}" for f in scrub['findings'][:12]]
+        raise SystemExit('Shipped-answer scaffold refused: ' + '; '.join(locations))
 
     seal(target, job["id"])
     total = check_bundle(target)

@@ -228,17 +228,24 @@ class ShapeFailuresTests(unittest.TestCase):
 
 
 class OfflineSitePackageTests(unittest.TestCase):
+    def test_preview_refusals_cannot_hide_unexpected_passes_or_errors(self):
+        from factory.common import FactoryError
+        preview = script('site-preview-all')
+        with tempfile.TemporaryDirectory() as tmp:
+            with patch.object(preview, 'prepare', return_value={}):
+                with self.assertRaisesRegex(FactoryError, 'unexpected pass'):
+                    preview.preview_all(ROOT, Path(tmp))
+            with patch.object(preview, 'prepare', side_effect=FactoryError('unexpected defect')):
+                with self.assertRaisesRegex(FactoryError, 'unexpected defect'):
+                    preview.preview_all(ROOT, Path(tmp))
+
     def test_every_editorial_prepares_offline_without_dataset_downloads(self):
-        from factory.site_pipeline import prepare
-        config = json.loads((ROOT / 'config/sites.json').read_text())
         before = hashes(ROOT / 'release')
         with tempfile.TemporaryDirectory() as tmp:
-            for editorial in (ROOT / 'sites').glob('*.json'):
-                package = ROOT / 'release' / editorial.stem
-                if package.is_dir():
-                    with self.subTest(dataset=editorial.stem):
-                        prepare(package, json.loads(editorial.read_text()), config,
-                                Path(tmp).resolve() / editorial.stem)
+            results = script('site-preview-all').preview_all(ROOT, Path(tmp).resolve())
+            self.assertEqual({'cqc-care-home-deregistration', 'unhcr-refugee-data-finder'},
+                             {name for name, result in results.items() if result['status'] == 'refused'})
+            self.assertGreaterEqual(sum(r['status'] == 'prepared' for r in results.values()), 14)
         self.assertEqual(before, hashes(ROOT / 'release'))
 
     def test_declared_external_csvs_are_metadata_only_not_local_verification(self):
