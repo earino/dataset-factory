@@ -1,5 +1,14 @@
 ## Scheduled scripts: the name decides the interpreter
 
+## Current state and session close-out
+
+STATE.md is now a generated view, not an editable session transcript. Read
+[OPERATIONAL-STATE.md](OPERATIONAL-STATE.md) for append-only observations, exact
+history archives and the render/check commands. Any instruction below to record
+a result in STATE means: persist its evidence, append an observation, then render
+the view. Existing candidate/job records and admission checks remain authoritative.
+
+
 The scheduler runs a `.py` script **as Python** and a `.sh`/`.bash` script through the shell. A
 shell script named `.py` therefore fails on every tick with a SyntaxError, and a job that fails on
 every tick looks from the outside exactly like a job with nothing to report - the watchdog added for
