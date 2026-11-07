@@ -1,3 +1,14 @@
+## 2026-11-07 — Codex: four original blocked-package audit plans prepared
+
+The A4 branch combines the R1/R3/R4 gates in a read-only worker harness. All four
+original manifests and every code/document hash match the independent November 7
+audit. Compact archives are privately staged (437803069); all full-row inputs
+remain worker-only. Eight gate outcomes are recorded independently; completion
+is not clearance. No A4 worker has launched. Next: clean-clone suite and CI, then
+review/pin the one-attempt bundle after Scout completes CPCB ledger reconciliation.
+The hold remains active; A2/A3/A4 acceptance and R5/architecture work remain open.
+See docs/BLOCKED-PACKAGE-ACCEPTANCE.md for the exact operational scope.
+
 ## 2026-11-07 — Codex: six historical recovery families verified; CPCB prepared
 
 The two Scout acceptance workers are complete and deleted. Their compact reports
