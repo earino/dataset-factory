@@ -1,3 +1,29 @@
+## 2026-11-07 (12:05Z) - operator directive: fix the factory before more packages; briefing for Codex written and committed
+
+The operator's assessment: too much construction and staging spend dies at the
+independent audit; the gates must catch these defect classes during building,
+and the adversarial audit should run autonomously as a factory stage. Codex
+(the builder) is tasked with fixing the factory system.
+
+This session's action: the briefing is written and committed at
+docs/CODEX-BRIEFING-2026-11-07-factory-self-audit.md, for the operator to
+relay. It specifies: R1 a deterministic label-blind leakage battery as a hard
+gate at construction time (the frozen attack families from all five audit
+reports; exact recovery = hard fail), R2 a fixture/salt/answer-artifact
+scrubber, R3 a claims-from-bytes verifier, R4 a licence verifier, R5 autonomous
+audit orchestration with recorded verdicts, R6 a config-driven operating hold
+on new discovery/construction until the gates pass acceptance. Acceptance:
+the battery must reproduce every historical exact recovery (nz-ea, unhcr,
+ns-bwa, ocha v2026.10, cpcb, cqc, ab-wildfire fixtures) at build time and
+not hard-fail the 14 published packages; the four blocked 2026-11-07 packages
+get re-run through the new pipeline with recorded outcomes.
+
+Per the operator's explicit instruction this session did NOT stop or pause any
+scheduled job; the operating hold is R6, to be implemented in config by the
+builder. Nothing was published; the four blocked packages stay private with
+their recorded correction designs.
+
+
 ## 2026-11-07 (11:30Z) - queue audit verdicts: ALL FOUR staged packages DO NOT PUBLISH (zero bad datasets reached the public); corrections recorded per item; Tier C verdicts applied; fixture-shipping added to the skill's failure modes
 
 The operator relayed the 2026-11-07 independent queue audit (Codex, report at
