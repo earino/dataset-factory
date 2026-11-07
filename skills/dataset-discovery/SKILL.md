@@ -91,7 +91,7 @@ measured. That order is the waste. Classify first, in minutes, and record it on 
 | --- | --- | --- |
 | **A** | Explicit open licence permitting redistribution *and* derivatives (OGL, CC BY, CC0, US federal public domain) | Probe the task |
 | **B** | Open but conditional - attribution-plus-sharealike, or a compilation licence over a source with its own terms | Probe, and plan to state the conditions in `LICENSE.md` |
-| **C** | Unstated, ambiguous, or "contact us" | Close new unresolved leads under the standing policy: no unsolicited permission email or indefinite wait. Record the evidence actually obtained and what would reopen it. An existing candidate-specific operator risk acceptance is an exception to record explicitly, never a publisher grant |
+| **C** | Unstated, ambiguous, or "contact us" | Close new unresolved leads under the standing policy: no unsolicited permission email or indefinite wait. Record the evidence actually obtained and what would reopen it. Record an existing candidate-specific operator risk acceptance as historical evidence, never a publisher grant or permission to bypass current packaging gates |
 | **D** | Prohibits redistribution or derivatives, or requires an authorisation not held | Reject on the spot with the clause quoted |
 
 - **Classify from the publisher's own instrument**, not from a general policy page. A general

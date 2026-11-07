@@ -187,11 +187,11 @@ Rules that are not negotiable:
 
 - **CC0 is not a blanket override of upstream terms.** A source requiring attribution, share-alike
   or non-commercial use keeps those terms, carried through unchanged. A source whose licence cannot
-  be read is not published at all **unless the operator has recorded a risk acceptance in
-  `candidates/<id>/license.json`** - written as a risk acceptance, never as a grant: our
-  contribution only under our dedication, attribution to the publisher, a takedown route in the
-  card, and no standard licence presented as the publisher's. Terms are chosen per dataset to be
-  compatible with each source; the licence-posture notes live in `dataset-discovery`.
+  be read is not published. Gate R4 refuses unreadable or conflicting source evidence without
+  interpreting a precedence or accepting a waiver. Historical candidate risk acceptances remain
+  historical records, never publisher grants or clearance for new packaging. Terms are chosen
+  per dataset to be compatible with each source; the licence-posture notes live in
+  `dataset-discovery`.
 - **State the scope.** The dedication covers our contribution and not the source, which keeps its
   own designation, attribution and suggested citation.
 - **Label derived data as derived**, and never present it as the source agency's official product.
@@ -200,8 +200,9 @@ Rules that are not negotiable:
 - **A release with no declared terms is refused** by `check-package.py`, as is one naming a licence
   file it does not ship. Licensing is not an afterthought before publication; it is part of the
   package.
-- Terms are recorded in the manifest, **generated from the declaration** rather than edited in
-  afterwards - a hand-edited block is lost the next time the manifest is regenerated.
+- New terms are recorded in the manifest, **generated from the captured source evidence**
+  through `LICENSE-EVIDENCE.json` and its verified receipt. Candidate declarations alone are
+  historical records, not the source of new release licence statements.
 
 ## Publication: recorded approval, then verified completion
 

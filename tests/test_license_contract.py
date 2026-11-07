@@ -86,6 +86,8 @@ class LicenseContractTests(unittest.TestCase):
             (candidate/'card.md').write_text(TEMPLATE)
             manifest={'licenses':generated['manifest'],'dataset':'example','release_tag':'v1',
                       'artifact_version':'a'*64,'published':False,'splits':{}}
+            from tests.suitability_fixture import prepare as prepare_suitability
+            prepare_suitability(root, manifest)
             hub.REPO_ROOT=root;hub.PACKAGE=package;hub.CANDIDATE='example';hub.BUILD=root/'hub'
             with patch.object(hub,'navigation_record',return_value=None):
                 files=hub.build_package(manifest,'owner/example')

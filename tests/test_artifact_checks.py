@@ -16,6 +16,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -214,6 +215,10 @@ class PackageCheckTests(unittest.TestCase):
         }
         if note:
             manifest["publication_note"] = "Awaiting review."
+        from tests.suitability_fixture import prepare as prepare_suitability
+        review_root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        self.enterContext(patch.object(package_check, 'REVIEW_ROOT', review_root))
+        prepare_suitability(review_root, manifest)
         (root / "MANIFEST.json").write_text(json.dumps(manifest, indent=1))
         (root / "SHA256SUMS").write_text(
             "".join(f"{digest}  {name}\n" for name, digest in (sums or
@@ -225,6 +230,19 @@ class PackageCheckTests(unittest.TestCase):
             root = self._build(Path(tmp))
             problems, _ = package_check.check_package(root)
             self.assertEqual([], problems)
+
+    def test_recovery_review_blocks_even_with_a_passing_qualification(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._build(Path(tmp))
+            path = package_check.REVIEW_ROOT/'suitability/example.json'
+            record = json.loads(path.read_text())
+            record['cross_row_audit'] = {'status':'recovery_demonstrated', 'scope':'test identity',
+                                         'evidence':'unit-test frozen blind predictions'}
+            record['evaluation_access'] = 'isolated_rows'
+            record['operator_waiver'] = {'rule':'exact_recovery', 'approved':True}
+            path.write_text(json.dumps(record))
+            problems, _ = package_check.check_package(root)
+            self.assertTrue(any('demonstrated exact label recovery blocks' in p for p in problems), problems)
 
     def test_manifest_claim_cannot_replace_a_passing_battery_receipt(self):
         with tempfile.TemporaryDirectory() as tmp:

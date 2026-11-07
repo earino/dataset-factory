@@ -38,6 +38,21 @@ class AssetIntegrityTests(unittest.TestCase):
             manifest['files']['public/eval.csv']['bytes']+=1
             self.assertTrue(check(root,manifest,external_assets=True)[0])
 
+    def test_stale_meta_and_quality_are_hashed_even_when_omitted_from_package_files(self):
+        for name in ('meta.json','quality.json'):
+            with self.subTest(name=name),tempfile.TemporaryDirectory() as folder:
+                root=Path(folder);manifest=self.make(root)
+                path=root/name;path.write_text('{"revision":1}\n')
+                entry={'sha256':sha256(path),'bytes':path.stat().st_size}
+                manifest['assets'][name]=dict(entry,asset_name=name)
+                manifest['files'][name]=dict(entry)
+                sums=root/'SHA256SUMS';sums.write_text(sums.read_text()+entry['sha256']+'  '+name+'\n')
+                path.write_text('{"revision":2}\n')
+                for external in (False,True):
+                    errors,_=check(root,manifest,external_assets=external,require_loader=False)
+                    self.assertTrue(any(name in error and 'actual release asset bytes' in error
+                                        for error in errors),errors)
+
     def test_stale_loader_fails_even_when_all_other_digests_are_correct(self):
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder);manifest=self.make(root)

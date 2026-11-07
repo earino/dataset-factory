@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import date
 from pathlib import Path
 
@@ -14,6 +15,50 @@ ENUMS = {
     'selection': {'prediction_time', 'outcome_conditioned', 'unverified'},
 }
 AUDITS = {'recovery_demonstrated', 'bounded_no_recovery', 'untested'}
+
+
+def publication_check(root, manifest, *, package=None):
+    """Check current editorial evidence; an exact frozen package is historical only.
+
+    With no package argument this is strict new-publication admission. Passing a
+    package enables only the registered, exact-manifest historical diagnostics
+    used when maintaining existing releases. A caller's published flag or waiver
+    cannot grant that exception.
+    """
+    from .frozen import historical_files
+    errors, notes = [], []
+    dataset = manifest.get('dataset')
+    if not isinstance(dataset, str) or not re.fullmatch(r'[a-z0-9][a-z0-9-]*', dataset):
+        return ['publication suitability: invalid dataset identifier'], notes
+    path = Path(root) / 'suitability' / (dataset + '.json')
+    try:
+        historical = False
+        if package is not None and historical_files(package):
+            pinned = json.loads((Path(package) / 'MANIFEST.json').read_text())
+            historical = all(pinned.get(key) == manifest.get(key) for key in
+                             ('dataset', 'release_tag', 'artifact_version'))
+        if path.is_symlink() or path.parent.is_symlink() or not path.is_file() or path.stat().st_size > 256 * 1024:
+            raise ValueError('missing, symlinked or oversized current review')
+        record = json.loads(path.read_text())
+        errors.extend('publication suitability: ' + error for error in validate(record, manifest, root))
+        if errors:
+            return errors, notes
+        if record['cross_row_audit']['status'] == 'recovery_demonstrated':
+            message = ('demonstrated exact label recovery blocks new publication; '
+                       'disclosure, retrospective scope, row isolation and waivers do not override it')
+            if historical:
+                notes.append('Frozen historical suitability finding (not new-release clearance): ' + message)
+            else:
+                errors.append('publication suitability: ' + message)
+        if record['decision'] in ('rebuild_before_use', 'retire'):
+            message = 'review requires ' + record['decision']
+            if historical:
+                notes.append('Frozen historical suitability finding (not new-release clearance): ' + message)
+            else:
+                errors.append('publication suitability: ' + message)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+        errors.append('publication suitability: ' + str(exc))
+    return errors, notes
 
 
 def validate(record, manifest, root=None):

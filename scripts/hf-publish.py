@@ -55,6 +55,7 @@ from factory.release_schema import as_release, load_release, record_destination,
 from factory.hub_integrity import HubIntegrityError, refs, verify_revision, tag_verified_commit, load_worker_receipt
 from factory.license_contract import validate as validate_license, check_card as check_license_card
 from factory.frozen import historical_files
+from factory.suitability import publication_check
 
 def _config_names(splits):
     """The config names a split map is grouped by, through the rule the dataset page also uses.
@@ -335,6 +336,9 @@ def loading_text(manifest_data, repo_id):
 
 
 def build_package(manifest_data, repo_id):
+    suitability_errors, _ = publication_check(REPO_ROOT, as_release(manifest_data).metadata, package=PACKAGE)
+    if suitability_errors:
+        raise ValueError('; '.join(suitability_errors))
     terms=None
     if not historical_files(PACKAGE):
         terms=validate_license(PACKAGE,manifest=manifest_data,
