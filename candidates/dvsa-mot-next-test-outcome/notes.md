@@ -131,3 +131,30 @@ ever existed.
   2005-2014 cross-check EXACT -> gate PASSED + exact-byte --accept before any
   figure -> triad recording -> destroy with provider read-back -> baseline
   bundle with re-accept before any score) are in `record.json` `next_action`.
+
+## dvsa-mot-build-002 outcome + Deflate64 diagnosis (2026-11-07, same session)
+
+- The relaunch parsed 2005-2016 - the ABRVE repair is PROVEN on real data:
+  2015 carries 242 ABRVE rows and 2016 carries 27, all counted as
+  non-completed and excluded from pairs; the 2005-2014 receipts reproduce
+  build-001 EXACTLY.
+- NEW defect at the 2017 DfT zip (first zip-era file; build-001 died before
+  it, and the dry-run fixtures were Python-written deflate, so it was not
+  observable earlier): every member is compress_type 9 = Deflate64. Stdlib
+  zipfile raises NotImplementedError. Measured on the worker: 2017 zip =
+  1,082,702,159 B, sha256 8b52a91e..., 12 members ~277 MB uncompressed each.
+  Bounded S3 tail probes show the DVSA S3 origin has no 2017-2021 mirrors
+  (403) and its 2022/2023 mirrors are ALSO Deflate64 - no URL switch avoids
+  it. The pinned 2024 zip is standard deflate (measured 2026-10-19).
+- Package evidence: zipfile-deflate64 0.2.0 has no cp313 wheel (dead end on
+  python:3.13-slim); inflate64 1.0.4 (LGPL-2.1+) has cp313 manylinux wheels
+  and exposes the raw Inflater, but no zipfile integration - the build must
+  parse local headers itself (30-byte fixed header + name/extra, then
+  compress_size bytes) and inflate explicitly.
+- First in-container verification (python:3.13-slim + inflate64 on the
+  build-002 worker) OOM-killed (exit 137) with the buffered progress output
+  lost, so the memory behaviour of a single-shot inflate on a ~90 MB member
+  is UNMEASURED. Next session must instrument RSS (python -u, --memory cap,
+  chunked feeding if needed) and only then patch + relaunch as
+  dvsa-mot-build-003. Full plan in `record.json` `next_action`; diagnosis in
+  `measurements.build_failure_2017_deflate64_2026_11_07`.

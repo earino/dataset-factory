@@ -1,4 +1,4 @@
-## 2026-11-07 (06:15Z) - scheduled advancement: dvsa-mot-next-test-outcome repair relaunch dvsa-mot-build-002 RUNNING (the one rebuild allowed for the measured 2015 'ABRVE' value defect; red/green dry run green on the coordinator, gate 45/45 on synthetic fixtures)
+## 2026-11-07 (06:15Z) - scheduled advancement: dvsa-mot-next-test-outcome repair dvsa-mot-build-002 EXECUTED AND FAILED AT A NEW DEFECT (2017 DfT zip is Deflate64; ABRVE repair PROVEN on real data with 10/10 receipts EXACT; repair verified in-container, next session launches dvsa-mot-build-003)
 
 Construction work only (no packaged candidate is actionable: all five packaged
 records - ab-wildfire, cpcb, cqc, ns-bwa, za-cct - carry awaiting_operator TRUE,
@@ -47,15 +47,70 @@ specified and pre-registered by the 2026-11-05 session
   --all rc=0 (147), suite 723 OK (32.5 s). No bulk data on the coordinator
   (fixtures ~1 MB synthetic; largest fetch unchanged).
 
-Next action (record.next_action carries the full standing order): on
-completion, worker collect dvsa-mot-build-002; require the 2005-2014
-per-year cross-check to reproduce the recorded values EXACTLY; read the new
-2015-2024 non_completed_values inventories; require gate 1.5.0 PASSED on the
-FULL artifact + exact-byte --accept in the collected bytes BEFORE any figure
-is quoted; record the post-acceptance triad (eval only, holdout sealed);
-destroy with provider 404 read-back; then the dvsa-mot-baseline bundle with
-re-accept before any score. A failed build or gate is a recorded finding
-with diagnosis first - this was the one rebuild allowed for this defect.
+Next action (record.next_action carries the full standing order): ON
+COMPLETION the worker collect + 2005-2014 cross-check and the baseline bundle
+were the plan - the job FAILED at 2017 instead (see the follow-up section
+below), so the executed outcome and the verified repair plan are recorded
+there. Fixture numbers from the dry run are not findings; nothing was scored
+and no figure is quoted; the holdout has never existed outside the (never-
+reached) construction stage.
+
+## 2026-11-07 (07:04Z) - advancement follow-up (same session): dvsa-mot-build-002 FAILED at 2017 on a NEW defect - the DfT 2017-2023 zips are Deflate64 (compress_type 9) - the ABRVE repair itself is PROVEN on real data (10/10 receipts EXACT, 2015 ABRVE=242 / 2016 ABRVE=27 counted); the inflate64 repair is VERIFIED in-container (1.4 s/member, VmPeak 700 MB); worker destroyed with provider 404 read-back; next session launches dvsa-mot-build-003
+
+- OUTCOME (dvsa-mot-build-002, server 174936753, exit 1, 2,082.7 s, staging
+  437396758, collected 07:00:53Z): parsed 2005-2016 cleanly, then
+  NotImplementedError at the 2017 DfT zip - every member is compress_type 9
+  (Deflate64), unsupported by stdlib zipfile. This defect was unobservable
+  before: build-001 died at 2015 (never reached the zip era) and the dry-run
+  fixtures were Python-written deflate. No extract, no gate, no acceptance,
+  no score - the first failure at this stage is a recorded finding, and this
+  was a different defect from the one the rebuild was spent on.
+- THE ABRVE REPAIR IS PROVEN ON REAL DATA (collected container.log, digest-
+  verified from staging): 2005-2014 receipts reproduce build-001 EXACTLY
+  10/10 (rows_seen/class4/sampled identical year by year); 2015 parsed with
+  result_histogram ABRVE=242 and 2016 with ABRVE=27 - the undocumented code
+  the value-rule generalisation exists for is real, counted, inventoried and
+  excluded from pairs.
+- DIAGNOSIS (measured on the still-alive worker + bounded S3 tail probes):
+  2017 zip = 1,082,702,159 B sha256 8b52a91e..., 12 members all type 9
+  (~277 MB uncompressed each, pipe-delimited WITH header - the txt.gz schema
+  inside a Deflate64 container, which RowParser already maps). S3 hosts no
+  2017-2021 mirrors (403) and its 2022/2023 mirrors are ALSO type 9 - no URL
+  switch avoids it; the pinned 2024 zip is standard deflate (measured
+  2026-10-19). zipfile-deflate64 0.2.0 has no cp313 wheel (dead end on
+  python:3.13-slim); inflate64 1.0.4 (LGPL-2.1+) has cp313 manylinux wheels.
+- REPAIR VERIFIED IN-CONTAINER before any relaunch (python:3.13-slim +
+  inflate64==1.0.4, docker --memory 6g, python -u with RSS prints): explicit
+  local-header read + Inflater().inflate decodes member test_result_31870.csv
+  in 1.4 s, 90,093,684 -> 277,437,970 B size_match true, decompressed sha256
+  568cf809..., VmPeak 700 MB - comfortable in the job's 8192 MB. The first
+  verification attempt's OOM was the probe script's own splitlines() over
+  whole members, not the decode path; the build patch must stream lines
+  (never splitlines a full member).
+- TOOLING PRE-STAGED AND COMMITTED for the next session: bounded diagnostics
+  fetch, deterministic cross-check verifier, baseline fetch-block filler
+  (digests read programmatically, live name+digest match) - all named in
+  record.next_action with the exact patch steps (open_text_lines Deflate64
+  route, run.sh pinned install, job id dvsa-mot-build-003, dry run, assemble,
+  plan, launch) and the 2005-2016 EXACT cross-check targets including the new
+  2015/2016 receipts.
+- CLEANUP: worker 174936753 destroyed after collection with provider
+  read-back (07:03:08Z: GET /v1/servers/174936753 -> 404 server not found;
+  GET /servers 0 entries; GET /primary_ips 0 entries).
+- Checks: check-candidate dvsa-mot-next-test-outcome OK, check-candidate
+  --all rc=0 (147), suite 723 OK; CI green on both pushed commits (1ae4f52,
+  368db69 - the failure-recording commit follows). Nothing scored, nothing
+  public, no gate report exists to accept; the label rule, pre-registered
+  triad and deciding rule are untouched.
+
+Next action (record.next_action): patch build.py open_text_lines with the
+verified Deflate64 route + run.sh pinned inflate64 install, dry run, assemble
+and launch dvsa-mot-build-003; on completion collect, require the 2005-2016
+EXACT cross-check, read the 2017-2024 non-completed inventories, gate 1.5.0
+PASSED + exact-byte --accept BEFORE any figure, record the post-acceptance
+triad, destroy with provider read-back, then the baseline bundle with
+re-accept before any score. A failed build-003 at the same zip stage is a
+task-design question, not another retry.
 
 ## 2026-11-07 (04:20Z) - discovery (Africa tick): four new licence-first closures recorded (ke-ppra-ppip, gh-bog-treasury-auction, ng-nerc-grid-disturbance, gh-gss-coverage); ma-datagovma + saps dated re-checks confirm both parks; no new viable lead - the region's named institutions all have verdicts
 
