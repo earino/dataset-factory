@@ -22,7 +22,7 @@ from .leakage_battery import digest
 from .release_audit import capsule, prompt, validate_response
 
 RUNTIME_FILES = ('model_tools.py','hermes_cli/main.py','hermes_cli/cli_agent_setup_mixin.py',
-                 'hermes_cli/cli_single_query.py')
+                 'hermes_cli/cli_single_query.py','run_agent.py','agent/agent_init.py')
 
 
 def wrapper(root):
