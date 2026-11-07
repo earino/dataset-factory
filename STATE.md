@@ -1,3 +1,75 @@
+## 2026-11-07 (17:04Z) - scheduled discovery (Oceania tick): planSA LABEL CHANNEL MEASURED (decision dates + per-consent outcomes ARE published per application; both label families constructible) but the detail endpoint degrades to hollow responses under sustained load - refusal prevalence UNMEASURED, candidate stays investigating with a one-session paced-pass gate; PDI-era per-year population measured from the register's own backend; CSV export measured non-deterministically truncated above ~789 KB; GEN star-ratings extract probe BLOCKED on fetch channel
+
+Discovery-only session; regional focus Oceania; no construction, no
+qualification, no advancement, no worker launched (EUR 0), no bulk data on
+the coordinator; every planSA number is an aggregate printed from in-page
+browser computations.
+
+- PLANSA (SA state register - the region's own recorded next action): the
+  2026-11-02 session's open question "are decision dates displayed at all?"
+  is ANSWERED at the endpoint layer. Three machine endpoints
+  reverse-engineered from the page's own bundle and verified (recipes
+  retained at probe/plansa_endpoint_recipes_2026_11_07.py, full detail in
+  notes.md s6): CSV export (7 columns, coarse status only, m/d/yyyy),
+  search (authoritative TotalRecords column; response Count unreliable),
+  per-application detail POST with a DecisionDetails child carrying
+  per-consent [decision type, decision, DECISION DATE]. Verified example:
+  app 6154 -> "Development Approval / Granted / 30 Apr 2021" (lodged
+  1 Apr 2021). So BOTH recorded candidate labels are constructible:
+  statutory-timeframe latency (pathway rules documented from the
+  publisher's own pages: 5-95 business days + 5bd verification + 2bd issue
+  + a declared clock-SUSPENSION confounder) and refusal (DRT). Record
+  updated: prediction_question/target_definition FIXED family,
+  split_strategy now carries measured per-year PDI-era decided counts
+  (2020-2026: 5,235/34,482/35,782/31,356/34,549/33,280/23,028; sum
+  198,312; all-status and under-assessment per year recorded), and the
+  population is measured TWO-ERA: DEV-act rows 73,464 (decided back to at
+  least 2000: 26,532 in 2000-2009 + 36,067 in 2010-2019) vs PDI 226,568
+  (sum 300,032 = register total) - DEV-era rows are a different
+  state-referred population and are excluded from the frame.
+- TWO MEASURED SOURCE HAZARDS that would have bitten construction:
+  (1) the CSV export returns a NON-DETERMINISTIC ~789,151-byte subset when
+  a window exceeds that size (dual-fetch: equal bytes, different content,
+  in-page hash; five identical calls parsed 2,287-4,349 rows vs the
+  backend's 5,235; parser determinism proven by double-parse) -
+  construction must enumerate month-scale windows and reconcile against
+  TotalRecords; (2) the detail endpoint DEGRADED to hollow children after
+  ~100 POSTs (bursts), including for previously-verified IDs, and a 30 s
+  pause did not restore it in-session; trigger undetermined. Because of
+  (2) the 42-app refusal-prevalence sample could not run: refusal
+  prevalence per split window is the ONE measurement gating the ready
+  verdict (record.next_action names the paced pass: >= 1.5 s spacing,
+  hollow-read re-fetch, ~30 apps/window via month-scale CSV windows).
+  Status stays investigating; check-candidate OK.
+- LICENCE: the register footer's CC BY 3.0 Australia line re-verified
+  live this session (class A unchanged). The status filter is measured
+  backend-enforced to the five coarse statuses (Refused/Granted search
+  POSTs return no rows; positive control Decision Made returns 260,311) -
+  there is no refusal-enumeration channel other than per-app details.
+- GEN STAR RATINGS (federal AU, the other recorded next action): series
+  verified on gen-agedcaredata.gov.au (15 quarterly extracts May 2023 ->
+  13 Oct 2026, service-level 1-5 stars + 4 sub-categories, Dept of Health;
+  site licence CC BY 4.0 recorded 2026-10-31), but the extract itself
+  (XLSX ~2 MB hosted on health.gov.au) is UNREACHABLE from this host:
+  curl gets HTTP/2 stream error rc=92 then hangs to timeout (two
+  attempts), and the browser download channel does not deliver files in
+  this environment. No candidate opened; the one-extract probe stays
+  recorded and blocked on a working fetch channel (worker fetch or
+  operator network) - measured in the planSA record's measurements for
+  provenance.
+- REGION COVERAGE, honestly: this tick spent its depth on the SA state
+  register (the region's strongest lead). VIC/NSW/QLD state-portal
+  licence triage named by earlier ticks was NOT reached and remains the
+  next Oceania item; NZ leads (fenz, nz-ea) untouched and unchanged; NZ
+  Charities Register stays licence-cleared-but-unopened (charity family
+  already carried by acnc ready + cra-charity ready).
+- Checks: check-candidate plansa OK; --all rc=0 (149 records); suite
+  723/723 OK (33.3 s).
+
+Next action: the paced detail pass in record.next_action (one quiet-window
+session, no worker money) decides ready vs parked for plansa; VIC or NSW
+portal licence triage is the following Oceania tick's queue item.
+
 ## 2026-11-07 (15:05Z) - scheduled advancement: ns-bwa v2026.12 PACKAGE FULLY PREPARED AND LOCALLY VERIFIED (artifact 49bf4cfa, check-package OK, suitability re-bound, docs regenerated Class-B-clean) - private staging DEFERRED under the operator's factory-repair directive, not cancelled; one inherited defect found and recorded for the auditor (frozen quality.json known_event declaration names one holdout row)
 
 Release work first. Triage of the brief's five release items against the
