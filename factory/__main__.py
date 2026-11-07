@@ -53,7 +53,7 @@ def main(argv=None):
     operations = workers.add_subparsers(dest="action", required=True)
     for name in ("plan", "launch"):
         operations.add_parser(name).add_argument("job_file", type=Path)
-    for name in ("status", "collect", "destroy", "retry-upload"):
+    for name in ("status", "collect", "destroy", "retry-upload", "bookkeep"):
         operations.add_parser(name).add_argument("id")
     resume = operations.add_parser("resume")
     resume.add_argument("id")
@@ -80,6 +80,9 @@ def main(argv=None):
             elif args.action == "resume":
                 bundle = worker.source_bundle(args.job_file.resolve(), read_json(args.job_file))
                 result = worker.resume(root, args.id, config, bundle=bundle)
+            elif args.action == 'bookkeep':
+                from .reconciliation import bookkeep
+                result = bookkeep(root, args.id, config)
             else:
                 function = {"status": worker.reconcile, "collect": worker.collect,
                             "destroy": worker.destroy, "retry-upload": worker.retry_upload}[args.action]

@@ -23,7 +23,7 @@ proof of exact reconstruction. Published data, tags and manifests remain frozen.
 | Review item 2: publication invariants/rule consolidation | Pending | Verify reported hash gap; strict recovery rule, normative-rule inventory |
 | Review item 3: structured events and generated state | Pending | Byte-preserved narrative archive, deterministic current state under 20 KB |
 | Review item 4: digest-bound approvals | Pending | Matching approval required at flip, historical evidence with honest gaps |
-| Review item 5: deterministic reconciliation | Pending | Replay actual watcher events, preserve every verification |
+| Review item 5: deterministic reconciliation | Implemented on `codex/mechanical-worker-reconciliation`; not deployed | 30 recorded follow-ups replayed, five conditionally eligible; clean-clone/CI and live Scout readback next |
 | Review item 6: actor identity | In progress | Codex author on new commits; no history rewrite |
 | A4: four blocked packages through full pipeline | Pending | Worker-side frozen-artifact outcomes; disposition remains operator's |
 

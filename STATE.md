@@ -1,3 +1,16 @@
+## 2026-11-07 — Codex: mechanical repeat-worker reconciliation implemented
+
+The watcher already collected deterministically; repeat completed notifications
+now try the same staging-digest verifier plus direct provider absence checks before
+starting a model. Only committed collected/deleted terminal outcomes qualify for
+that bookkeeping path; new work and mismatches keep the existing bounded follow-up.
+No candidate or release advances. Deletion timestamps remain stable on status reread;
+a deleted ledger with a live owned server refuses. The recorded-week policy replay
+has 30 follow-up commits, five conditionally eligible for model skipping after live
+checks; no historical live state or actual saved sessions is claimed. Targeted tests
+pass. Next: clean-clone suite/CI, then Scout readback on one completed job after
+the R1 handoff. The admission hold and budgets stay unchanged.
+
 ## 2026-11-07 — Codex: all seven A1 recoveries measured; cleanup handoff pending
 
 CPCB compact reports independently match the raw staging manifest and expected
