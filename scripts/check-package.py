@@ -27,6 +27,7 @@ from factory.qualification_receipt import check as check_qualification_receipt
 from factory.asset_integrity import check as check_asset_integrity, safe_path
 from factory.claim_checks import inspect as inspect_claims
 from factory.claim_contract import validate as validate_claims
+from factory.license_contract import validate as validate_license
 
 # Documents a reviewer needs. Directories are checked separately.
 REQUIRED_FILES = (
@@ -91,6 +92,17 @@ def check_package(package_dir, *, external_assets=False):
         return problems, notes
 
     frozen = historical_files(package_dir)
+    try:
+        if frozen and not (package_dir/'LICENSE-EVIDENCE.json').exists():
+            # A frozen historical manifest is not permission to edit its terms.
+            for name in ('LICENSE.md','LICENSE-MIT.txt','LICENSE-CC0-1.0.txt'):
+                if name in frozen and sha256_of(safe_path(package_dir,name)) != frozen[name]:
+                    raise ValueError('historical licence text changed: '+name)
+            notes.append('Frozen historical licence evidence gap: no captured-source receipt; not new-release clearance')
+        else:
+            validate_license(package_dir,manifest=manifest)
+    except (OSError,ValueError,KeyError,TypeError,AttributeError) as exc:
+        problems.append('Source licence evidence missing or invalid: '+str(exc))
     asset_problems, asset_notes = check_asset_integrity(
         package_dir, manifest, external_assets=external_assets, require_loader=not bool(frozen))
     for problem in asset_problems:

@@ -1,3 +1,16 @@
+## 2026-11-07 — Codex: source-evidence licence admission implementation
+
+R4 work on codex/source-license-evidence binds the manifest, LICENSE.md and card
+to captured source terms, exact quotations, policy and implementation digests.
+New packaging requires a fresh readable capture; HTTP and native browser imports
+share refusal rules. No precedence interpretation resolves conflicting grants.
+Actual preserved HTTP captures refuse Alberta (403) and SINASC (CC-BY metadata
+versus CC-BY-ND 3.0 footer). This is not source reuse permission or A4 acceptance.
+The R3 parent b3825cc passed 791 clean-clone tests and exact-SHA CI. R4 clean-clone
+and CI are next, followed by original blocked-package worker acceptance. R1
+acceptance workers remain under Scout's sole ledger coordination. The admission
+hold remains active; no frozen artifact, version tag or public destination changed.
+
 ## 2026-11-07 — Codex: claims gate implementation in draft PR #29
 
 The integrity portion (`acac572`) passed 775 clean-clone tests (13 skips) and all

@@ -40,6 +40,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from factory.license_contract import validate as validate_license
+from factory.frozen import historical_files
 OWNER = "earino"
 STAGING_REPO = "earino/dataset-factory-staging"
 TOKEN_FILE = Path(os.environ.get("FACTORY_GITHUB_TOKEN_FILE",
@@ -88,6 +91,11 @@ def plan(candidate: str) -> dict:
     manifest = json.loads(manifest_path.read_text())
     declared = json.loads((ROOT / "candidates" / candidate / "release.json").read_text())
     docs = tuple(DOCS) + tuple(declared.get("required_docs", ()))
+    if not historical_files(release_dir):
+        terms=validate_license(release_dir,manifest=manifest)
+        evidence=('LICENSE-EVIDENCE.json','license-receipt.json','card.md')
+        evidence += tuple(name for name in sorted(terms['receipt']['inputs']) if name.startswith('licensing/'))
+        docs=tuple(dict.fromkeys(docs+evidence))
     missing = [name for name in docs if not (release_dir / name).is_file()]
     if missing:
         raise SystemExit(f"release documents are missing: {missing}")

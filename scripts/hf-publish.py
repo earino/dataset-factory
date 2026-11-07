@@ -53,6 +53,8 @@ BUILD = REPO_ROOT / ".factory" / "hf-package"
 sys.path.insert(0, str(REPO_ROOT))
 from factory.release_schema import as_release, load_release, record_destination, atomic_write, UNKNOWN
 from factory.hub_integrity import HubIntegrityError, refs, verify_revision, tag_verified_commit, load_worker_receipt
+from factory.license_contract import validate as validate_license, check_card as check_license_card
+from factory.frozen import historical_files
 
 def _config_names(splits):
     """The config names a split map is grouped by, through the rule the dataset page also uses.
@@ -258,6 +260,13 @@ def card(manifest_data):
     """The dataset card, generated from the manifest so both platforms describe one dataset."""
     template = REPO_ROOT / "candidates" / CANDIDATE / "card.md"
     if template.is_file():
+        if (manifest_data.get('licenses') or {}).get('evidence_receipt_sha256'):
+            package = PACKAGE or REPO_ROOT/'release'/CANDIDATE
+            generated = validate_license(package,manifest=manifest_data,template=template.read_text())
+            text = check_license_card(template.read_text(),generated['card'],template=True)
+            rendered = render_card_template(text,manifest_data)
+            check_license_card(rendered,generated['card'])
+            return rendered
         # A dataset that supplies its own card gets the dataset-driven path; Austin's published card
         # predates this and is left byte-identical by the branch below.
         return render_card_template(template.read_text(), manifest_data)
@@ -326,6 +335,10 @@ def loading_text(manifest_data, repo_id):
 
 
 def build_package(manifest_data, repo_id):
+    terms=None
+    if not historical_files(PACKAGE):
+        terms=validate_license(PACKAGE,manifest=manifest_data,
+                               template=(REPO_ROOT/'candidates'/CANDIDATE/'card.md').read_text())
     BUILD.mkdir(parents=True, exist_ok=True)
     (BUILD / "data").mkdir(exist_ok=True)
     written = []
@@ -340,6 +353,18 @@ def build_package(manifest_data, repo_id):
         if source.is_file():
             (BUILD / target_name).write_bytes(source.read_bytes())
             written.append(target_name)
+    # The captured terms and receipt travel to both platforms, not only the card.
+    evidence_paths = []
+    if terms is not None:
+        evidence_paths=[PACKAGE/'LICENSE-EVIDENCE.json',PACKAGE/'license-receipt.json']
+        evidence_paths += [PACKAGE/name for name in sorted(terms['receipt']['inputs'])
+                           if name.startswith('licensing/')]
+    for source in evidence_paths:
+        if source.is_file():
+            name=source.relative_to(PACKAGE).as_posix()
+            target=BUILD/name
+            target.parent.mkdir(parents=True,exist_ok=True)
+            target.write_bytes(source.read_bytes());written.append(name)
     card_text = card(manifest_data).replace(REPO_PLACEHOLDER, repo_id)
     # A live site is linked from the card, and the block is derived here rather than written once by
     # the publication pipeline: a later card re-upload without it stripped the only link a reader

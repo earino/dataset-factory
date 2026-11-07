@@ -96,7 +96,7 @@ def text_claims(text, facts=None):
     return findings
 
 
-def inspect(package, facts=None):
+def inspect(package, facts=None, *, verified_license=None):
     package = Path(package)
     findings = list(facts.get('problems',[])) if facts else []
     for path in sorted(package.rglob('*')):
@@ -122,7 +122,11 @@ def inspect(package, facts=None):
                 for value in strings(obj):
                     found.extend(text_claims(value,facts))
             else:
-                found = text_claims(path.read_text(),facts)
+                text=path.read_text()
+                if verified_license is not None:
+                    from .license_contract import without_generated
+                    text=without_generated(text,verified_license)
+                found = text_claims(text,facts)
             findings.extend(dict(f,file=relative) for f in found)
         except (ValueError,TypeError,KeyError,SyntaxError) as exc:
             findings.append({'rule':'claim_inspection_incomplete','file':relative,'error':str(exc)})

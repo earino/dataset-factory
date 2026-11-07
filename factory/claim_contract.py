@@ -8,6 +8,7 @@ from .asset_integrity import safe_path, sha256
 from .claim_facts import canonical, measure
 from .claim_checks import DOC_NAMES, inspect
 from .paired_claims import from_evidence
+from .license_contract import validate as validate_license, without_generated
 
 VERSION = '1.0.0'
 BLOCK = re.compile(r'<!-- FACTORY-CLAIM ([a-z0-9-]+) -->\n(.*?)\n<!-- /FACTORY-CLAIM -->', re.S)
@@ -15,7 +16,8 @@ BLOCK = re.compile(r'<!-- FACTORY-CLAIM ([a-z0-9-]+) -->\n(.*?)\n<!-- /FACTORY-C
 
 def implementation():
     return {name:sha256(Path(__file__).with_name(name)) for name in
-            ('claim_facts.py','claim_checks.py','paired_claims.py','claim_contract.py','asset_integrity.py')}
+            ('claim_facts.py','claim_checks.py','paired_claims.py','claim_contract.py','asset_integrity.py',
+             'license_contract.py','license_evidence.py')}
 
 
 def pointer(value, path):
@@ -162,12 +164,17 @@ def validate(package,facts,*,external_assets=False,manifest=None):
         if sha256(path)!=expected:
             raise ValueError('claims input changed: '+name)
     rendered={c['id']:render(c,facts) for c in plan['claims']}
+    license_block=None
     used=set()
     for path in sorted(package.rglob('*')):
         if not path.is_file() or path.name not in DOC_NAMES:
             continue
         name=path.relative_to(package).as_posix()
         text=safe_path(package,name).read_text()
+        if 'FACTORY-LICENSE' in text:
+            if license_block is None:
+                license_block=validate_license(package)['card']
+            text=without_generated(text,license_block)
         for match in BLOCK.finditer(text):
             ident,body=match.groups();used.add(ident)
             if ident not in rendered or body!=rendered[ident]:
@@ -186,7 +193,7 @@ def validate(package,facts,*,external_assets=False,manifest=None):
             findings.append({'rule':'malformed_claim_block','file':name})
     if used!=set(rendered):
         findings.append({'rule':'unbound_claims','unused':sorted(set(rendered)-used),'unknown':sorted(used-set(rendered))})
-    result=inspect(package,facts)
+    result=inspect(package,facts,verified_license=license_block)
     result['findings'].extend(findings)
     result['ok']=not result['findings'] and facts.get('ok') is True
     return result
