@@ -245,3 +245,30 @@ holdout 143,793, each with zero errors. Scout must verify the plan, budget, exac
 pin and absence of active workers before one attempt, collect bounded reports,
 destroy/reconcile, preserve evidence and check the exact pushed commit's CI.
 No rebuild, publication or scoring-adapter experiment is authorized by this job.
+
+## A2 transport preparation (no comparison results yet)
+
+`scripts/prepare-frozen-audit.py` creates deterministic code/document-only archives
+from the existing frozen registry. It refuses changed bytes, escaped/symlink paths,
+bulk-file entries and existing output directories. The prepared fourteen archives
+plus inventory total 4,014,080 archive bytes and are in private draft staging release
+437790346. Server digests were checked; the inventory and staging receipt are under
+`audits/resilience/2026-11-07-a2-document-*.json`. Dataset bytes and version tags are
+unchanged. The draft requires numeric release-ID lookup; REST releases/tags is not
+an appropriate lookup for this draft.
+
+The historical audit driver adds `published_comparison` mode, requiring the actual
+frozen MANIFEST.json, the registered editorial files and the requested artifact or
+level identity. It runs the full gate and retains bounded diagnostics without
+rewriting historical data. A completed comparison is labelled historical review,
+`release_eligible: false`, and never grants new-release clearance. A1's strict known
+recovery expectations remain separate and unchanged. Transport tests pass; full
+clean-clone/CI and actual A2 runs remain to be done.
+
+The 14 releases include 40 Chicago food targets, 45 MSHA targets and two NOAA
+protocols. All levels need comparison, with sequential bounded worker batches
+sized from measured runtime. Thirteen staging manifests map the published CSVs.
+Frozen EC merger meta/quality and OCHA quality must come from their exact frozen
+editorial copies, since original staging differs. PriceCatcher's recorded staging
+reference could not be resolved by REST or gh release lookup; a pinned published
+source must be fetched on a worker. No local full datasets were downloaded.

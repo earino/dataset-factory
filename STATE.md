@@ -1,3 +1,21 @@
+## 2026-11-07 — Codex: frozen published comparison transport prepared
+
+A2 transport is on codex/published-regression-acceptance. The offline preparer
+verified every registered frozen code/document byte for all 14 published releases
+and created 4,014,080 bytes of archives, without reading dataset rows. All 15
+archive/inventory assets were uploaded to private draft staging release 437790346
+and their server digests verified. Inventory and staging receipt are in
+`audits/resilience/2026-11-07-a2-document-*.json`. No public release or tag changed.
+The historical worker driver now has a frozen-manifest-bound comparison mode;
+completion explicitly cannot qualify a new release. 22 targeted transport tests pass.
+Next: clean-clone/CI, then assemble bounded A2 batches over every level (40 Chicago
+food, 45 MSHA, two NOAA protocols and the single-level releases). Thirteen original
+staging manifests map the published CSVs. Use exact frozen metadata for EC merger
+meta/quality and OCHA quality, which differ from original staging. PriceCatcher's
+recorded staging tag and gh release lookup both fail; pin its published data for a
+worker fetch rather than guessing a staging release. No A2 dataset comparison has
+run yet. Scout alone is handling the already handed-off CPCB A1 worker on 9e61565.
+
 ## 2026-11-07 — Codex: six historical recovery families verified; CPCB prepared
 
 The two Scout acceptance workers are complete and deleted. Their compact reports

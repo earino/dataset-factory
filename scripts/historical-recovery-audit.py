@@ -96,6 +96,27 @@ def expectations(case, battery):
     return results
 
 
+def published_binding(case, artifact, registry):
+    """A comparison mode must name an actually frozen release, not waive a new one."""
+    binding=case['published_binding']
+    entry=next((e for e in registry['releases'] if e['dataset']==binding['dataset']),None)
+    manifest_path=contained(artifact,'package/MANIFEST.json')
+    if (entry is None or digest(manifest_path)!=entry['manifest_sha256']
+            or binding.get('manifest_sha256')!=entry['manifest_sha256']):
+        raise ValueError('published comparison lacks an exact frozen manifest binding')
+    manifest=json.loads(manifest_path.read_text())
+    level=binding.get('level')
+    version=manifest['levels'][level]['artifact_version'] if level else manifest['artifact_version']
+    if version!=case['artifact_version'] or manifest['release_tag']!=entry['release_tag']:
+        raise ValueError('published comparison artifact/level does not match frozen release')
+    for name,expected in entry['editorial_files'].items():
+        if digest(contained(artifact,'package/'+name))!=expected:
+            raise ValueError('published comparison editorial bytes changed: '+name)
+    return {'dataset':binding['dataset'],'level':level,'release_tag':entry['release_tag'],
+            'manifest_sha256':entry['manifest_sha256'],'artifact_version':version,
+            'disposition':'Frozen historical warnings for review only; never new-release clearance'}
+
+
 def audit(case, data, output):
     import qualify_dataset as gate
     import leakage_battery as battery_module
@@ -111,6 +132,14 @@ def audit(case, data, output):
             scratch = Path(temporary)
             artifact = scratch / 'artifact'
             prepare(case, data, artifact)
+            mode=case.get('mode','recovery_acceptance')
+            if mode not in ('recovery_acceptance','published_comparison'):
+                raise ValueError('unknown historical audit mode')
+            if mode=='published_comparison':
+                registry=json.loads(Path(__file__).with_name('frozen-releases.json').read_text())
+                result['published_binding']=published_binding(case,artifact,registry)
+                result['scope']='Frozen published core artifact/level and exact registered code/documents'
+                result['disposition']='Comparison completed is not qualification or release approval'
             before = battery_module.input_identity(artifact)
             report = gate.qualify(artifact, battery_output=scratch / 'vectors').as_dict()
             write_report(output / 'qualification.json', report)
@@ -120,7 +149,7 @@ def audit(case, data, output):
                 raise ValueError('audit changed the historical inputs')
             battery = json.loads((scratch / 'vectors' / 'battery.json').read_text())
             write_report(output / 'battery.json', battery)
-            checks = expectations(case, battery)
+            checks = expectations(case, battery) if mode=='recovery_acceptance' else []
             result.update({'expectations': checks, 'failed_checks': report['failed_checks'],
                            'gate_version': report['gate_version'], 'code': battery['code'],
                            'inputs': before, 'input_digest': battery['input_digest'],
@@ -133,6 +162,12 @@ def audit(case, data, output):
                 shutil.copyfile(path, output / path.name)
             result['ok'] = bool(checks and all(r['ok'] for r in checks)
                                 and not report['ok'] and not battery['ok'])
+            if mode=='published_comparison':
+                required={'battery.exact_recovery','battery.recorded_in_quality','artifacts.no_shipped_answers'}
+                if not required <= {r['check'] for r in report['results']}:
+                    raise ValueError('published comparison did not complete the full new gate')
+                result.update(ok=True,comparison_completed=True,release_eligible=False,
+                              battery_passed=battery['ok'],review_required=True)
     except Exception as exc:
         result['error'] = type(exc).__name__ + ': ' + str(exc)
     result['elapsed_seconds'] = round(time.monotonic() - start, 3)
