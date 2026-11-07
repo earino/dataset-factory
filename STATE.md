@@ -1,3 +1,43 @@
+## 2026-11-07 (10:04Z) - follow-up (worker-status runner): dvsa-mot-build-003 event processed - the job was already collected, destroyed and recorded by the 09:58Z advancement session; re-verified from ledger + live provider and marked handled; dvsa-mot-build-004 RUNNING as the standing handoff
+
+Watcher event: dvsa-mot-build-003 failed (exit 1, ~36 min, 3 assets, staging
+release 437475493, uploaded) - exactly the job the 09:58Z advancement
+follow-up had already collected (09:45:23Z), destroyed (09:46:06Z) and
+recorded at f541e7b + 2ebeac9, including the 2018 macOS __MACOSX/ AppleDouble
+junk-member diagnosis, the skip-rule repair with green RED-M/GREEN-M dry-run
+legs, and the dvsa-mot-build-004 relaunch. This session added no collect, no
+launch, no recovery and no score; it verified from existing records (the
+shared research mutex was this runner's for the whole invocation):
+
+- Ledger jobs/dvsa-mot-build-003.json: status deleted, collected_at
+  09:45:23Z, deleted_at 09:46:06Z, exit 1, elapsed 2,180.9 s, staging 437475493;
+  record.json carries the same terminal block plus the
+  build_failure_2018_macosx_2026_11_07 measurement. Nothing quotable exists
+  for 003: no extract, gate, acceptance or score ever ran; holdout never
+  reached. Evidence preserved in staging release 437475493 (source.tar
+  4f52156b plus manifest.json/container.log at the ledger digests).
+- Cleanup re-confirmed live this session (10:03:36Z, api.hetzner.cloud,
+  read-only GETs): GET /v1/servers/174954439 -> 404 "server not found";
+  project inventory shows exactly ONE server, 174959633
+  scout-dvsa-mot-build-004 (running) with its one assigned primary IP - the
+  expected running handoff, not cleanup residue.
+- CI read for the advancement session's pushed commits (its entry predates
+  the completed runs): f541e7b push completed/success (run 42361674443),
+  2ebeac9 push completed/success (run 42361684809).
+- Marked handled: .factory/dvsa-mot-build-003/handled (local untracked
+  marker citing f541e7b/2ebeac9 and this re-verification). Unrelated
+  untracked candidates/fenz-incident-data/ preserved untouched.
+
+Next action unchanged (record.next_action): on completion collect
+dvsa-mot-build-004, run the deterministic 2005-2017 EXACT cross-check
+(2005-2014 == build-001, 2015-2016 == build-002, 2017 == build-003's
+38,056,161/35,983,938/35,975), require gate 1.5.0 PASSED + exact-byte
+--accept BEFORE any figure, record the post-acceptance triad (eval only,
+holdout sealed), destroy with provider read-back, then the dvsa-mot-baseline
+bundle with re-accept. A failed build-004 at 2018's junk-member stage means
+the skip rule is wrong; a failure at a later year is a new source-shape
+finding and the one-rebuild-per-structural-defect budget applies.
+
 ## 2026-11-07 (09:58Z) - advancement follow-up (same session): dvsa-mot-build-003 FAILED at 2018 on a NEW, smaller defect - the Deflate64 repair itself is PROVEN on the real 2017 DfT zip (38,056,161 rows parsed; 2015/2016 receipts reproduced EXACTLY, ABRVE 242/27); the 2018 zip carries macOS __MACOSX/ AppleDouble junk members; skip repair dry-run green (RED-M/GREEN-M) and dvsa-mot-build-004 LAUNCHED (worker 174959633)
 
 - OUTCOME (dvsa-mot-build-003, server 174954439, exit 1, collected
