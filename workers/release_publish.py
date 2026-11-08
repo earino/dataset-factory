@@ -109,7 +109,7 @@ else:
     stage = 'verify-existing-tag'
     if tag in tags and tags[tag] != commit: raise ValueError('Preserve existing different Hub tag')
     stage = 'create-tag'
-    if tag not in tags: api.create_tag(repo, tag, revision=commit, repo_type='dataset', exist_ok=False)
+    if tag not in tags: api.create_tag(repo, tag=tag, revision=commit, repo_type='dataset', exist_ok=False)
     stage = 'set-public'
     api.update_repo_settings(repo_id=repo, repo_type='dataset', private=False)
     stage = 'verify-public'

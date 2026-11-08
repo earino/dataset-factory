@@ -135,6 +135,30 @@ class ReleaseWorkerTests(unittest.TestCase):
 
 
 class HubFailureEvidenceTests(unittest.TestCase):
+    def test_publish_helper_uses_keyword_only_tag_and_checks_public_revision(self):
+        class Api:
+            private = True
+            tagged = None
+            def list_repo_refs(self, repo, *, repo_type):
+                return types.SimpleNamespace(branches=[types.SimpleNamespace(name='main',target_commit='commit')], tags=[])
+            # Matches the public huggingface_hub HfApi.create_tag signature.
+            def create_tag(self, repo, *, tag, revision, repo_type, exist_ok):
+                self.tagged = (tag,revision)
+            def update_repo_settings(self, *, repo_id, repo_type, private): self.private = private
+            def repo_info(self, repo, *, repo_type, revision):
+                return types.SimpleNamespace(private=self.private, sha='commit')
+        api = Api(); hub = types.ModuleType('huggingface_hub'); hub.HfApi = lambda **kw: api
+        hub.hf_hub_download = lambda *a, **k: None
+        errors = types.ModuleType('huggingface_hub.errors'); errors.RepositoryNotFoundError = FileNotFoundError
+        with patch.dict(sys.modules, {'huggingface_hub':hub, 'huggingface_hub.errors':errors}), \
+                patch.dict('os.environ', {'HF_WRITE_TOKEN':'fixture-secret'}), \
+                patch.object(sys, 'argv', ['helper','publish','owner/repo','dataset','v-tag','commit']), \
+                patch.object(sys, 'excepthook'), patch('sys.stdout', new_callable=io.StringIO) as output:
+            exec(release_publish.HUB_CONTROL, {})
+        self.assertEqual(('v-tag','commit'),api.tagged)
+        self.assertFalse(api.private)
+        self.assertTrue(json.loads(output.getvalue())['tag_matches_main'])
+
     def test_helper_reports_only_operation_class_and_http_status(self):
         class ProviderError(Exception):
             response = types.SimpleNamespace(status_code=403)

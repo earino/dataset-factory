@@ -1431,3 +1431,16 @@ Two focused regressions cover structured failure capture and secret-message
 exclusion; all three release-worker tests pass locally. Full clean-checkout and
 CI verification are next. Scout paused new attempts at a safe boundary, preserving
 cleanup and source-15's completed paid repair, so retries need not run blindly.
+
+## Definite publication call defect found — 2026-11-08
+
+Upstream `huggingface_hub` source defines create_tag(repo_id, *, tag, ...): tag
+is keyword-only. HUB_CONTROL passed it positionally as create_tag(repo, tag, ...).
+This is a concrete call defect, not evidence of a newly changed visibility API.
+The call is now create_tag(repo, tag=tag, ...). The helper test uses that actual
+keyword-only contract and exercises tag creation through public revision checks;
+the old call raises TypeError against it. The original worker's exact exception
+was discarded, so its recorded error class remains UploadError; do not rewrite
+historical evidence as a captured TypeError. Both fixes deploy together so another
+provider failure retains its safe operation/error/status details.
+Primary source: https://github.com/huggingface/huggingface_hub/blob/main/src/huggingface_hub/hf_api.py
