@@ -96,12 +96,36 @@ class Driver:
         if config.get('enabled') is not True or config.get('cleanup_configured') is not True:
             raise BudgetWait('Worker policy or independent cleanup is not enabled')
         if data.get('construction_attempt') != attempt['id']:
-            example = read_json(self.root / 'skills/dataset-qualification/fixtures/corrected/quality.json')
-            response = self.model.run(attempt['id'], task_prompts.construction(
-                                      data['source'], example, data.get('failure'), data.get('construction')),
-                                      construction=True)
-            construction.validate(response)
-            data.update(construction=response, construction_attempt=attempt['id'])
+            terms_failure = (data.get('source_terms_failure') or
+                             data.get('failure', {}).get('diagnostics', {}).get('failure.json', {}))
+            if terms_failure.get('error') == 'TermsEvidenceError' and data.get('construction'):
+                data['source_terms_failure'] = terms_failure
+                save(data)
+                repair = self.model.run(attempt['id'], task_prompts.repair_terms(
+                    data['source'], terms_failure), research=True)
+                if repair.get('verdict') != 'ready':
+                    return {'status': 'reject', 'reason': repair.get('reason', 'Source terms remain unsupported')}
+                fields = repair.get('source')
+                allowed = {'documentation_url', 'terms_url', 'terms_excerpt', 'license',
+                           'attribution', 'citation', 'redistribution'}
+                if not isinstance(fields, dict) or set(fields) != allowed:
+                    raise TaskFailure('Terms repair may change only the declared source-evidence fields')
+                updated = {**data['source'], 'source': {**data['source']['source'], **fields},
+                           'evidence': repair.get('evidence')}
+                validate_source(updated)
+                data.setdefault('source_terms_repairs', []).append(
+                    {'attempt': attempt['id'], 'previous_source': data['source'], 'proposal': repair})
+                # Reuse the paid builder; only source evidence changed. The new
+                # immutable worker bundle must prove the corrected claims again.
+                data.update(source=updated, construction_attempt=attempt['id'])
+                data.pop('source_terms_failure', None)
+            else:
+                example = read_json(self.root / 'skills/dataset-qualification/fixtures/corrected/quality.json')
+                response = self.model.run(attempt['id'], task_prompts.construction(
+                                          data['source'], example, data.get('failure'), data.get('construction')),
+                                          construction=True)
+                construction.validate(response)
+                data.update(construction=response, construction_attempt=attempt['id'])
             data.pop('job', None)
             save(data)
         # The replacement queue owns its own priority. Historical packaged records
@@ -130,8 +154,6 @@ class Driver:
                     diagnostics[name] = worker_artifacts.collect_json(self.root, record, 'output/' + name, api)
             data['failure'] = {'stage': 'build', 'diagnostics': diagnostics, 'worker': result['report']}
             save(data)
-            if diagnostics.get('failure.json', {}).get('error') == 'TermsEvidenceError':
-                return {'status': 'reject', 'reason': 'Publisher terms evidence could not support the source claim'}
             return {'status': 'retry', 'retry_scope': 'worker',
                     'reason': 'Construction/qualification failed; artifacts preserved and worker deleted'}
         data['evidence'] = {name: worker_artifacts.collect_json(self.root, record, 'output/' + name, api)

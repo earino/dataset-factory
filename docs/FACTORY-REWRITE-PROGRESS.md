@@ -460,6 +460,32 @@ path and distinguishes it from the earlier temporary web-only construction path.
 The budget-interpretation correction `fdcec77` passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42494036812).
 
+### Bounded source-evidence repair (15:30 UTC finding)
+
+SBA source 8's first worker produced the same terms-quote failure as USFS. Its
+exact manifest and digest-verified failure are retained in `new-source-outcomes/`
+(staging release 438333639, manifest asset 724347456). The immediate terminal
+rejection discarded the researched task and paid builder before a bounded
+correction could repair the source claim.
+
+Terms capture failures now use the existing worker retry allowance. On the next
+attempt, a bounded research task can correct only terms/documentation fields and
+their evidence. The controller preserves the previous source, reuses the builder,
+and keeps download URLs, target/features and splits fixed. It re-runs the same
+captured-document check and full artifact checks on a new immutable worker bundle.
+A research verdict that cannot establish readable terms rejects the candidate.
+Malformed repair output retains the repair classification across task retries.
+No new stage, allowance, approval, or validation exception was added. Previously
+rejected candidates are not reopened. Tests verify fixed task/code, prior evidence,
+new worker dispatch, and refusal of out-of-scope or unsupported corrections.
+The clean checkout passed 929 tests (13 skipped). Source 8's full construction
+response, usage and worker record are retained under `audits/rewrite/source8-build-outcome/`.
+It completed in 258.5 seconds, with 44,068 input-plus-output tokens and zero tool
+messages; this was another successful write-only task, not a qualified dataset.
+
+Recovery/capability evidence commit `8d3d4d3` passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42494677743).
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;

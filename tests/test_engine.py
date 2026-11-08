@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 from factory.common import FactoryError, write_json
 from factory.admission import require
@@ -26,6 +26,65 @@ def source():
 
 
 class EngineTests(unittest.TestCase):
+    def test_terms_repair_reuses_builder_and_keeps_frozen_task_and_prior_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_json(root / 'config/local.json', {'enabled': True, 'cleanup_configured': True})
+            harness = root / 'harness/task_template'; harness.mkdir(parents=True)
+            for name in ('train.py', 'validate.py', 'validate.sh'):
+                (harness / name).write_text('# fixture')
+            original = source()
+            code = {'build_py': 'def build(output, cache): return []', 'quality': {}, 'references': {}}
+            data = {'source': copy.deepcopy(original), 'construction': code, 'construction_attempt': 'old',
+                    'failure': {'diagnostics': {'failure.json': {'error': 'TermsEvidenceError',
+                                                              'diagnostic': 'quote absent'}}}}
+            fields = {k: original['source'].get(k, '') for k in ('documentation_url', 'terms_url',
+                'terms_excerpt', 'license', 'attribution', 'citation', 'redistribution')}
+            fields['terms_url'] = 'https://example.org/data-specific-terms'
+            model = Mock()
+            model.run.return_value = {'verdict': 'ready', 'reason': 'corrected citation',
+                                      'source': fields, 'evidence': original['evidence']}
+            driver = Driver(root, {'worker': {}}, model=model)
+            with patch.dict(os.environ, {'FACTORY_BENCHMARK_ROOT': str(harness.parent)}), \
+                    patch('factory.engine.construction.assemble', return_value=root / 'new.json') as assemble, \
+                    patch('factory.engine.worker.launch') as launch, \
+                    patch('factory.engine.advance_worker', return_value={'status': 'waiting'}):
+                result = driver.execute({'stage': 'build', 'data': data}, {'id': 'new'}, lambda value: None)
+            self.assertEqual('waiting', result['status'])
+            self.assertEqual(original['task'], data['source']['task'])
+            self.assertEqual(original['source']['urls'], data['source']['source']['urls'])
+            self.assertEqual(original, data['source_terms_repairs'][0]['previous_source'])
+            self.assertIs(code, data['construction'])
+            self.assertEqual(fields['terms_url'], assemble.call_args.args[2]['source']['terms_url'])
+            self.assertIs(code, assemble.call_args.args[3])
+            self.assertTrue(model.run.call_args.kwargs['research'])
+            launch.assert_called_once()
+            self.assertNotIn('source_terms_failure', data)
+
+    def test_terms_repair_cannot_change_task_and_survives_bad_model_response(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_json(root / 'config/local.json', {'enabled': True, 'cleanup_configured': True})
+            harness = root / 'harness/task_template'; harness.mkdir(parents=True)
+            for name in ('train.py', 'validate.py', 'validate.sh'):
+                (harness / name).write_text('# fixture')
+            original = source()
+            data = {'source': original, 'construction': {'build_py': 'unchanged'},
+                    'failure': {'diagnostics': {'failure.json': {'error': 'TermsEvidenceError'}}}}
+            model = Mock(); model.run.return_value = {'verdict': 'ready', 'source': {'urls': ['https://other.test']}}
+            driver = Driver(root, {}, model=model)
+            with patch.dict(os.environ, {'FACTORY_BENCHMARK_ROOT': str(harness.parent)}), \
+                    patch('factory.engine.construction.assemble') as assemble:
+                self.assertEqual('retry', driver.execute({'stage': 'build', 'data': data},
+                    {'id': 'bad'}, lambda value: None)['status'])
+                self.assertEqual(original, data['source'])
+                self.assertEqual('TermsEvidenceError', data['source_terms_failure']['error'])
+                model.run.return_value = {'verdict': 'defer', 'reason': 'No readable grant'}
+                self.assertEqual('reject', driver.execute({'stage': 'build', 'data': data},
+                    {'id': 'next'}, lambda value: None)['status'])
+                assemble.assert_not_called()
+                self.assertTrue(model.run.call_args.kwargs['research'])
+
     def test_repair_context_keeps_failed_checks_instead_of_large_passing_evidence(self):
         from factory.task_prompts import construction
         report = {'ok': False, 'failed_checks': ['late-failure'], 'results': [

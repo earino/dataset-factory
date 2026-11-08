@@ -30,7 +30,11 @@ replacement. Demonstrated defects relevant to the new path must be fixed.
 to bounded repair or rejection, transient failures to bounded retry. Budget/access
 waits are resumable and explicit. One candidate's rejection cannot stall others.
 Task failures and completed construction-worker failures each have the configured
-three-failure allowance. A model startup failure does not consume a worker repair;
+three-failure allowance. A failed publisher-terms capture gets a bounded research
+repair within that worker allowance. Only source terms/documentation fields and
+their evidence may change; the builder, download URLs, task and splits stay fixed.
+Preserve the previous proposal, then re-run the unchanged captured-document check
+and all artifact checks. Unresolved terms are rejected. A model startup failure does not consume a worker repair;
 attempt identities and all failure evidence remain durable. Resource and spending
 limits still apply across both categories.
 Construction has six model turns within the same five-minute task bound: live
