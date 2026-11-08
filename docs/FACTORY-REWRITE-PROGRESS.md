@@ -197,6 +197,28 @@ transport/format diagnostic, not dataset qualification or publication evidence.
 `d330178` passed [CI](https://github.com/earino/dataset-factory/actions/runs/42486489329).
 Scout's HURDAT2 build-4 export passed [CI](https://github.com/earino/dataset-factory/actions/runs/42486829140).
 Construction-proposal retention passed 921 clean-clone tests (13 skipped).
+`3c3c551` passed [CI](https://github.com/earino/dataset-factory/actions/runs/42487251797).
+
+### Deployment recovery at 14:03 UTC
+
+Scout deployed `3c3c551` and reopened source 3 (HURDAT2) and source 4 (STATS19)
+under the controller lock, reusing their existing construction proposals unchanged.
+The former had been discarded at the old model turn limit; the latter had hit the
+publisher-quote formatting defect. Both previous workers were deleted. Original
+attempt rows remain, and fresh queued candidates were preserved. Receipts and the
+exact reused proposals are in `audits/rewrite/deployment-replay/`; the export passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42487997311).
+The source-3 receipt reflects a partially completed first migration pass, explicitly
+recorded, rather than claiming an untouched before-state. These are deployment
+recoveries and do not establish A4's uninterrupted autonomous path.
+
+Codex independently parsed and validated both proposals. Source 4 writes `target`
+while declaring `quality.target=ksi`, the same kind of mismatch that stopped the
+previous HURDAT2 worker. The construction prompt now makes exact header agreement
+explicit, and the worker error reports the declared name and observed headers.
+It still rejects the mismatch before any measurement; it does not silently rename
+columns or alter the frozen task. Normal bounded repair remains responsible for
+correcting generated code. Full qualification/publication is still pending.
 
 ## Known findings relevant to implementation
 

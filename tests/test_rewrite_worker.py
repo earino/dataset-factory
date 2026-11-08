@@ -24,6 +24,17 @@ class Response(io.BytesIO):
 
 
 class RewriteWorkerTests(unittest.TestCase):
+    def test_declared_target_mismatch_reports_headers_before_measurement(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            extract = Path(tmp)
+            (extract / 'public').mkdir()
+            (extract / 'public/train.csv').write_text('id,target\na,1\n')
+            with self.assertRaisesRegex(ValueError, "train: declared columns .*ksi.*CSV headers .*target"):
+                dataset_run.finalize(extract, {'quality': {'target': 'ksi', 'event_key_column': 'id'}},
+                                     {'dataset_id': 'schema-mismatch'})
+            self.assertFalse((extract / 'quality.json').exists())
+            self.assertFalse((extract / 'meta.json').exists())
+
     def test_terms_quote_is_checked_against_preserved_publisher_bytes(self):
         with tempfile.TemporaryDirectory() as tmp:
             source = {'terms_url': 'https://publisher.example/terms',

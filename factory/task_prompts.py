@@ -84,8 +84,10 @@ Return ONLY JSON {"build_py":"complete Python source", "quality":{...},
 API: define build(output: pathlib.Path, cache: pathlib.Path). The controller calls it
 once. Write public/train.csv, public/eval.csv, private/holdout.csv under output.
 Each CSV has identical columns, a binary 0/1 target, stable IDs, a time column,
-and only the declared features/carry columns. Sort deterministically. No metrics,
-training, qualification or packaging in this function. It must return a nonempty
+and only the declared features/carry columns. Sort deterministically.
+The target's CSV header must exactly equal quality.target; likewise use the exact
+declared ID, time, feature and carry-column names. Nothing renames columns for you.
+No metrics, training, qualification or packaging in this function. Return a nonempty
 list of source checks: [{"check":"what was checked", "observed":"actual value",
 "expected":"publisher evidence or rule", "passed":true}]. Assert failures.
 Use the publisher's actual field semantics, not a guessed schema. Concrete source

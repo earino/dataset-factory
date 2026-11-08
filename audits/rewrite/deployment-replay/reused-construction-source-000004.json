@@ -1,0 +1,283 @@
+{
+ "build_py": "from __future__ import annotations\nimport csv\nfrom collections import Counter\nfrom pathlib import Path\nimport pandas as pd\nfrom source_io import fetch\n\nSOURCE_URL = ('https://data.dft.gov.uk/road-accidents-safety-data/'\n              'dft-road-casualty-statistics-collision-last-5-years.csv')\nYEARS = (2021, 2022, 2023, 2024, 2025)\nREQUIRED = ['collision_index', 'collision_year', 'police_force', 'collision_severity',\n            'date', 'time', 'day_of_week', 'local_authority_ons_district',\n            'first_road_class', 'road_type', 'speed_limit', 'light_conditions',\n            'weather_conditions', 'road_surface_conditions',\n            'special_conditions_at_site', 'urban_or_rural_area', 'trunk_road_flag']\nFEATURES = ['speed_limit', 'light_conditions', 'weather_conditions',\n            'road_surface_conditions', 'special_conditions_at_site',\n            'first_road_class', 'road_type', 'urban_or_rural_area',\n            'trunk_road_flag', 'police_force', 'local_authority_ons_district',\n            'hour_of_day', 'day_of_week', 'month']\nNUMERIC_FEATURES = ['speed_limit', 'light_conditions', 'weather_conditions',\n                    'road_surface_conditions', 'special_conditions_at_site',\n                    'first_road_class', 'road_type', 'urban_or_rural_area',\n                    'trunk_road_flag', 'police_force']\nCOLUMNS = ['collision_index', 'collision_datetime'] + FEATURES + ['target']\n\n\ndef _as_int(series):\n    value = pd.to_numeric(series, errors='coerce')\n    value = value.mask(value < 0)\n    return value.round().astype('Int64')\n\n\ndef _header(path):\n    with open(path, 'r', encoding='utf-8-sig', newline='') as handle:\n        return [cell.strip() for cell in next(csv.reader(handle))]\n\n\ndef _write_csv(frame, path):\n    path = Path(path)\n    path.parent.mkdir(parents=True, exist_ok=True)\n    frame.to_csv(path, index=False, lineterminator=chr(10), na_rep='')\n\n\ndef build(output: Path, cache: Path):\n    output = Path(output)\n    cache = Path(cache)\n    output.mkdir(parents=True, exist_ok=True)\n    cache.mkdir(parents=True, exist_ok=True)\n    checks = []\n\n    def record(name, observed, expected, passed, kind=None):\n        item = {'check': name, 'observed': str(observed),\n                'expected': str(expected), 'passed': bool(passed)}\n        if kind is not None:\n            item['kind'] = kind\n        checks.append(item)\n        if not passed:\n            raise AssertionError(name + ': observed=' + str(observed) + ' expected=' + str(expected))\n\n    local = Path(fetch(SOURCE_URL, cache, 'stats19_collision_last_5_years.csv'))\n    size_mb = local.stat().st_size / (1024.0 * 1024.0)\n    record('five-year collision bundle size matches publisher description',\n           f'{size_mb:.1f} MB',\n           'publisher lists 97.7 MB for the last-five-years collision CSV (allow >50 MB)',\n           size_mb > 50.0)\n\n    header = _header(local)\n    lower_to_original = {}\n    for name in header:\n        lower_to_original.setdefault(name.lower(), name)\n    missing = [name for name in REQUIRED if name not in lower_to_original]\n    record('source header exposes the required collision fields',\n           f'{len(header)} columns; missing={missing}',\n           f'all required fields present: {REQUIRED}',\n           not missing)\n\n    usecols = [lower_to_original[name] for name in REQUIRED]\n    rename = {lower_to_original[name]: name for name in REQUIRED}\n    reader = pd.read_csv(local, dtype=str, keep_default_na=False, na_filter=False,\n                         usecols=usecols, chunksize=50000, encoding='utf-8-sig')\n\n    parts = []\n    total_rows = 0\n    year_rows = 0\n    year_counts = Counter()\n    date_fail = 0\n    time_fail = 0\n    parse_fail_rows = 0\n    dow_mismatch = 0\n    missing_severity = 0\n    bad_severity = 0\n    id_missing = 0\n    severity_values = set()\n    dow_values = set()\n    examples = []\n\n    for raw in reader:\n        total_rows += len(raw)\n        raw = raw.rename(columns=rename)\n        for name in REQUIRED:\n            raw[name] = raw[name].astype(str).str.strip()\n        year_int = _as_int(raw['collision_year'])\n        for value, count in year_int.dropna().value_counts().items():\n            year_counts[int(value)] += int(count)\n        in_years = year_int.isin(list(YEARS))\n        raw = raw.loc[in_years].copy()\n        if raw.empty:\n            continue\n        year_rows += len(raw)\n        if len(examples) < 3:\n            examples.extend((raw['date'] + ' ' + raw['time']).head(3).tolist())\n\n        date_text = raw['date']\n        parsed_date = pd.to_datetime(date_text, format='%d/%m/%Y', errors='coerce')\n        bad_date = parsed_date.isna() & date_text.ne('')\n        if bad_date.any():\n            parsed_date.loc[bad_date] = pd.to_datetime(\n                date_text.loc[bad_date], dayfirst=True, errors='coerce')\n\n        time_parts = raw['time'].str.split(':', expand=True)\n        for col in range(time_parts.shape[1], 3):\n            time_parts[col] = pd.NA\n        hour = pd.to_numeric(time_parts[0], errors='coerce')\n        minute = pd.to_numeric(time_parts[1], errors='coerce')\n        second_numeric = pd.to_numeric(time_parts[2], errors='coerce')\n        second_ok = time_parts[2].isna() | second_numeric.between(0, 59)\n        second = second_numeric.fillna(0)\n        time_ok = hour.between(0, 23) & minute.between(0, 59) & second_ok\n        if time_parts.shape[1] > 3:\n            time_ok = time_ok & False\n        total_seconds = hour * 3600 + minute * 60 + second\n        stamp = parsed_date + pd.to_timedelta(total_seconds, unit='s')\n        stamp = stamp.where(parsed_date.notna() & time_ok)\n\n        date_fail += int(parsed_date.isna().sum())\n        time_fail += int((~time_ok).sum())\n        parse_fail_rows += int((parsed_date.isna() | (~time_ok)).sum())\n\n        day_of_week = _as_int(raw['day_of_week'])\n        expected_dow = (((stamp.dt.dayofweek + 1) % 7) + 1).round().astype('Int64')\n        dow_mismatch += int((day_of_week.notna() & expected_dow.notna() &\n                             (day_of_week != expected_dow)).sum())\n        dow_values.update(int(value) for value in day_of_week.dropna().unique())\n\n        severity = _as_int(raw['collision_severity'])\n        missing_severity += int(severity.isna().sum())\n        nonnull_severity = severity.dropna()\n        severity_values.update(int(value) for value in nonnull_severity.unique())\n        bad_severity += int((~nonnull_severity.isin([1, 2, 3])).sum())\n\n        id_missing += int(raw['collision_index'].eq('').sum())\n        keep = (stamp.notna() & severity.isin([1, 2, 3]) &\n                raw['collision_index'].ne(''))\n        raw = raw.loc[keep].copy()\n        if raw.empty:\n            continue\n        stamp = stamp.loc[keep]\n        severity = severity.loc[keep]\n        day_of_week = day_of_week.loc[keep]\n\n        frame = pd.DataFrame(index=raw.index)\n        frame['collision_index'] = raw['collision_index']\n        frame['collision_datetime'] = stamp.dt.strftime('%Y-%m-%dT%H:%M:%S')\n        for name in NUMERIC_FEATURES:\n            frame[name] = _as_int(raw[name])\n        frame['local_authority_ons_district'] = raw['local_authority_ons_district'].replace(\n            {'': pd.NA, '-1': pd.NA})\n        frame['hour_of_day'] = stamp.dt.hour.astype('Int64')\n        frame['day_of_week'] = day_of_week.astype('Int64')\n        frame['month'] = stamp.dt.month.astype('Int64')\n        frame['target'] = severity.isin([1, 2]).astype('int8')\n        parts.append(frame)\n\n    if not parts:\n        raise AssertionError('no eligible collision rows found')\n    combined = pd.concat(parts, ignore_index=True)\n\n    observed_years = sorted(year for year in year_counts if year in YEARS)\n    counts = {year: year_counts[year] for year in observed_years}\n    record('fixed collision years 2021-2025 are present',\n           f'years={observed_years}; counts={counts}',\n           'all five fixed years present: 2021, 2022, 2023, 2024, 2025',\n           observed_years == list(YEARS))\n    record('five-year bundle has the expected row scale',\n           f'total_rows={total_rows}; selected_year_rows={year_rows}',\n           'publisher describes roughly 95,000-110,000 collisions per year; at least 400,000 across 2021-2025',\n           total_rows > 400000 and year_rows > 400000)\n    parse_rate = 1.0 - (parse_fail_rows / year_rows) if year_rows else 0.0\n    record('collision date and time parse under DfT DD/MM/YYYY and HH:MM frames',\n           f'examples={examples}; date_failures={date_fail}; time_failures={time_fail}; parse_rate={parse_rate:.6f}',\n           'date DD/MM/YYYY and 24-hour HH:MM; at least 99.99% parseable, invalid rows excluded',\n           parse_rate >= 0.9999, kind='unit')\n    record('collision_severity uses documented DfT codes',\n           f'values={sorted(severity_values)}; missing={missing_severity}; out_of_domain={bad_severity}',\n           '1=Fatal, 2=Serious, 3=Slight; non-missing values all in {1,2,3}; missing/out-of-range excluded',\n           severity_values == {1, 2, 3} and bad_severity == 0, kind='unit')\n    record('day_of_week follows DfT calendar coding',\n           f'values={sorted(dow_values)}; mismatches={dow_mismatch}',\n           '1=Sunday, 2=Monday, ..., 7=Saturday and must match the date',\n           set(dow_values) <= {1, 2, 3, 4, 5, 6, 7} and len(dow_values) == 7 and dow_mismatch == 0,\n           kind='unit')\n    record('collision_index is present on every selected row',\n           f'missing_ids={id_missing}',\n           '0 missing stable collision identifiers',\n           id_missing == 0)\n\n    source_dups = int(combined.duplicated('collision_index').sum())\n    if source_dups:\n        combined = combined.drop_duplicates('collision_index', keep='first').reset_index(drop=True)\n    output_dups = int(combined.duplicated('collision_index').sum())\n    record('collision_index is unique after de-duplication',\n           f'source_duplicate_rows={source_dups}; output_duplicate_ids={output_dups}',\n           'one row per collision; 0 output duplicate ids',\n           output_dups == 0)\n\n    speed = combined['speed_limit'].dropna().astype(int)\n    valid_limits = {20, 30, 40, 50, 60, 70, 99}\n    nonstandard = int((~speed.isin(valid_limits)).sum())\n    standard_fraction = float(speed.isin(valid_limits).mean()) if len(speed) else 0.0\n    min_speed = int(speed.min()) if len(speed) else None\n    max_speed = int(speed.max()) if len(speed) else None\n    record('speed_limit is a posted road limit recorded in mph',\n           f'n={len(speed)}; min={min_speed}; max={max_speed}; nonstandard={nonstandard}; standard_fraction={standard_fraction:.6f}',\n           'DfT: 20/30/40/50/60/70 are the valid public-highway limits; 99=self-reported unknown; -1 missing is left blank; unit is mph',\n           len(speed) > 0 and min_speed >= 0 and max_speed <= 99 and standard_fraction >= 0.999,\n           kind='unit')\n\n    target_values = sorted(int(value) for value in combined['target'].unique())\n    positive_count = int(combined['target'].sum())\n    record('target is a binary KSI indicator',\n           f'values={target_values}; positives={positive_count}; rows={len(combined)}',\n           '0/1 only; 1 for severity 1 or 2, 0 for severity 3',\n           set(target_values) <= {0, 1}, kind='unit')\n    missing_features = {name: int(combined[name].isna().sum()) for name in NUMERIC_FEATURES}\n    negative_present = {name: int((combined[name].dropna() < 0).sum()) for name in NUMERIC_FEATURES}\n    record('missing feature codes are not imputed as zero',\n           f'negative_sentinels_remaining={negative_present}; missing_counts={missing_features}',\n           'no negative sentinel remains; missing cells are blank, never zero-filled',\n           all(value == 0 for value in negative_present.values()))\n    record('shipped columns contain only declared ids, time, features and target',\n           str(COLUMNS),\n           'exactly the declared column list',\n           list(combined.columns) == COLUMNS)\n    forbidden = {'collision_severity', 'number_of_casualties', 'number_of_vehicles',\n                 'enhanced_severity_collision', 'enhanced_collision_severity',\n                 'collision_injury_based', 'collision_adjusted_severity_serious',\n                 'collision_adjusted_severity_slight'}\n    present = sorted(set(COLUMNS) & forbidden)\n    record('no label source or post-outcome field is shipped as an input',\n           f'forbidden_present={present}',\n           'no severity, casualty-count, vehicle-count or adjusted-severity columns',\n           not present)\n\n    stamps = pd.to_datetime(combined['collision_datetime'], format='%Y-%m-%dT%H:%M:%S', errors='coerce')\n    record('shipped event timestamps parse',\n           f'null_timestamps={int(stamps.isna().sum())}',\n           '0 null timestamps',\n           int(stamps.isna().sum()) == 0)\n    train_mask = ((stamps >= pd.Timestamp('2021-01-01T00:00:00')) &\n                  (stamps < pd.Timestamp('2024-01-01T00:00:00')))\n    eval_mask = ((stamps >= pd.Timestamp('2024-01-01T00:00:00')) &\n                 (stamps < pd.Timestamp('2025-01-01T00:00:00')))\n    holdout_mask = ((stamps >= pd.Timestamp('2025-01-01T00:00:00')) &\n                    (stamps < pd.Timestamp('2026-01-01T00:00:00')))\n    assigned = train_mask.astype(int) + eval_mask.astype(int) + holdout_mask.astype(int)\n    unassigned = int((assigned == 0).sum())\n    record('rows fall into exactly one fixed half-open split window',\n           f'train={int(train_mask.sum())}; eval={int(eval_mask.sum())}; holdout={int(holdout_mask.sum())}; unassigned={unassigned}',\n           'train [2021-01-01, 2024-01-01), eval [2024-01-01, 2025-01-01), holdout [2025-01-01, 2026-01-01)',\n           unassigned == 0 and int(train_mask.sum()) > 0 and int(eval_mask.sum()) > 0 and int(holdout_mask.sum()) > 0)\n\n    train = combined.loc[train_mask].sort_values(\n        ['collision_datetime', 'collision_index'], kind='mergesort').reset_index(drop=True)\n    eval_frame = combined.loc[eval_mask].sort_values(\n        ['collision_datetime', 'collision_index'], kind='mergesort').reset_index(drop=True)\n    holdout = combined.loc[holdout_mask].sort_values(\n        ['collision_datetime', 'collision_index'], kind='mergesort').reset_index(drop=True)\n\n    id_sets = [set(train['collision_index']), set(eval_frame['collision_index']),\n               set(holdout['collision_index'])]\n    overlaps = len(id_sets[0] & id_sets[1]) + len(id_sets[0] & id_sets[2]) + len(id_sets[1] & id_sets[2])\n    record('split id sets are disjoint',\n           f'overlap_ids={overlaps}',\n           '0 overlapping ids',\n           overlaps == 0)\n\n    for label, frame in [('train', train), ('eval', eval_frame), ('holdout', holdout)]:\n        values = sorted(int(value) for value in frame['target'].unique())\n        positive_count = int(frame['target'].sum())\n        record('split target is binary and nonempty: ' + label,\n               f'rows={len(frame)}; positives={positive_count}; values={values}',\n               'both 0 and 1 present; binary only',\n               len(frame) > 0 and values == [0, 1])\n\n    _write_csv(train.loc[:, COLUMNS], output / 'public' / 'train.csv')\n    _write_csv(eval_frame.loc[:, COLUMNS], output / 'public' / 'eval.csv')\n    _write_csv(holdout.loc[:, COLUMNS], output / 'private' / 'holdout.csv')\n    written = [output / 'public' / 'train.csv', output / 'public' / 'eval.csv',\n               output / 'private' / 'holdout.csv']\n    record('three CSV artifacts are nonempty',\n           f'sizes={[path.stat().st_size for path in written]}',\n           'all > 0 bytes',\n           all(path.stat().st_size > 0 for path in written))\n    return checks\n",
+ "construction_notes": "Downloaded the DfT last-five-years collision CSV with fetch and streamed it in 50,000-row chunks, selecting only the declared fields. Dates are parsed as DD/MM/YYYY and times as 24-hour HH:MM; hour_of_day, month and collision_datetime are derived. collision_severity 1 or 2 maps to target 1 and 3 maps to 0; missing or out-of-domain severity is dropped, never imputed. Numeric feature sentinels at -1 are converted to blank nullable integers, so missing is not zero. collision_index is the stable event key, checked unique after de-duplication, and splits are the fixed half-open windows train 2021-2023, eval 2024, holdout 2025. Source checks assert the published header, year coverage, row scale, date/time frames, severity code frame, day-of-week coding, collision_index uniqueness, speed_limit mph frame, absence of label/post-outcome columns, and split integrity. No model metrics, training, qualification or packaging are performed. references.persistence_column is null because this file has no genuinely prior persistence score for a collision; enhanced and adjusted severity fields are concurrent outcome-derived fields and are excluded. No threshold is tuned and the holdout is never used for feature, target, threshold or split choice.",
+ "quality": {
+  "carry_columns": [
+   "collision_datetime"
+  ],
+  "evaluation_contract": {
+   "access": "isolated_rows",
+   "assumptions": [
+    "Field semantics are taken from the DfT 2025 data guide and the stats19 schema; availability of the same fields at the collision-time prediction instant during 2021-2025 is assumed because only the current final annual snapshot is shipped.",
+    "The 2025 final annual release date is the publication anchor; exact publication dates for 2021-2024 are not asserted.",
+    "Police severity-recording practice changes by force and year; police_force is included as a recording-practice control, not as a causal risk factor."
+   ],
+   "cross_row_audit": {
+    "auxiliary_files_review": "Only the three declared CSV outputs are shipped; no fixture labels, answer scaffolds or auxiliary evaluation files.",
+    "probes": [],
+    "rationale": "All features are same-row road-environment and timing attributes; no lagged, rolling, cumulative or cross-collision construction."
+   },
+   "feature_evidence": {
+    "collision_datetime": {
+     "availability": "derived from the published date and time fields; prediction-time historical availability assumed from the stable STATS19 specification",
+     "source": "https://docs.ropensci.org/stats19/articles/stats19.html",
+     "status": "documented"
+    },
+    "collision_index": {
+     "availability": "stable unique collision key present in the published collision file",
+     "source": "https://assets.publishing.service.gov.uk/media/6a63900b2dc18ebe4c3b2bc8/dft-road-casualty-statistics-road-safety-open-dataset-data-guide-2025.xlsx",
+     "status": "documented"
+    },
+    "day_of_week": {
+     "availability": "published source field using DfT coding 1=Sunday to 7=Saturday",
+     "source": "https://assets.publishing.service.gov.uk/media/6a63900b2dc18ebe4c3b2bc8/dft-road-casualty-statistics-road-safety-open-dataset-data-guide-2025.xlsx",
+     "status": "documented"
+    },
+    "first_road_class": {
+     "availability": "static road classification recorded on the collision return; prediction-time historical availability assumed",
+     "source": "https://docs.ropensci.org/stats19/articles/stats19.html",
+     "status": "documented"
+    },
+    "hour_of_day": {
+     "availability": "derived from the collision time field, not a separate source column",
+     "source": "https://docs.ropensci.org/stats19/articles/stats19.html",
+     "status": "documented"
+    },
+    "light_conditions": {
+     "availability": "same-row lighting condition at the collision; prediction-time historical availability assumed",
+     "source": "https://docs.ropensci.org/stats19/articles/stats19.html",
+     "status": "documented"
+    },
+    "local_authority_ons_district": {
+     "availability": "same-row ONS district code; prediction-time historical availability assumed",
+     "source": "https://docs.ropensci.org/stats19/articles/stats19.html",
+     "status": "documented"
+    },
+    "month": {
+     "availability": "derived from the collision date field, not a separate source column",
+     "source": "https://docs.ropensci.org/stats19/articles/stats19.html",
+     "status": "documented"
+    },
+    "police_force": {
+     "availability": "same-row police-force code; retained as a recording-practice control; prediction-time historical availability assumed",
+     "source": "https://assets.publishing.service.gov.uk/media/6a63900b2dc18ebe4c3b2bc8/dft-road-casualty-statistics-road-safety-open-dataset-data-guide-2025.xlsx",
+     "status": "documented"
+    },
+    "road_surface_conditions": {
+     "availability": "same-row road-surface state at the collision; prediction-time historical availability assumed",
+     "source": "https://docs.ropensci.org/stats19/articles/stats19.html",
+     "status": "documented"
+    },
+    "road_type": {
+     "availability": "static road layout recorded on the collision return; prediction-time historical availability assumed",
+     "source": "https://docs.ropensci.org/stats19/articles/stats19.html",
+     "status": "documented"
+    },
+    "special_conditions_at_site": {
+     "availability": "same-row site condition at the collision; prediction-time historical availability assumed",
+     "source": "https://docs.ropensci.org/stats19/articles/stats19.html",
+     "status": "documented"
+    },
+    "speed_limit": {
+     "availability": "same-row posted-limit field recorded at the collision; prediction-time historical availability assumed from the published STATS19 specification",
+     "source": "https://assets.publishing.service.gov.uk/media/6a63900b2dc18ebe4c3b2bc8/dft-road-casualty-statistics-road-safety-open-dataset-data-guide-2025.xlsx",
+     "status": "documented"
+    },
+    "trunk_road_flag": {
+     "availability": "static strategic-network flag recorded on the collision return; prediction-time historical availability assumed",
+     "source": "https://docs.ropensci.org/stats19/articles/stats19.html",
+     "status": "documented"
+    },
+    "urban_or_rural_area": {
+     "availability": "static area classification recorded on the collision return; prediction-time historical availability assumed",
+     "source": "https://docs.ropensci.org/stats19/articles/stats19.html",
+     "status": "documented"
+    },
+    "weather_conditions": {
+     "availability": "same-row weather condition at the collision; prediction-time historical availability assumed",
+     "source": "https://docs.ropensci.org/stats19/articles/stats19.html",
+     "status": "documented"
+    }
+   },
+   "limitations": [
+    "Severity is partly a recording artefact: police forces adopted injury-based severity reporting at different times and slight-injury collisions are under-reported, so part of any signal from police_force, time-of-day or district may reflect recording practice rather than injury risk.",
+    "Predicting severity conditional on a collision having been reported is not the same as predicting collision risk; there is no exposure denominator such as traffic volume or vehicle kilometres in this file.",
+    "The open files omit contributory factors and other sensitive fields, which are the most informative pre-outcome variables and are available only to approved researchers, so the feature set is deliberately environment-and-timing only.",
+    "The 2024 STATS19 specification changed several variables; junction_detail, junction_control and pedestrian_crossing are excluded here for cross-year comparability, and remaining code sets should be checked year-by-year against the data guide before modelling.",
+    "Vehicle-level attributes live in a separate vehicle table joined on collision_index and are out of scope for this single-file release.",
+    "2021 is a COVID-distorted traffic year; if drift diagnostics show a break, the frozen fallback is to move the training window to 2022-2023 and keep eval 2024 and holdout 2025.",
+    "The bundle is re-issued annually, so construction pins the current vintage and records file checksums through fetch to keep the split reproducible."
+   ],
+   "selection": {
+    "evidence": "Every shipped feature is a same-row STATS19 attribute recorded on the collision return; collision_severity and all adjusted/enhanced severity fields are excluded from inputs.",
+    "kind": "prediction_time"
+   },
+   "training_label_timing": "post_outcome",
+   "use": "retrospective_research",
+   "vintage": {
+    "evidence": "Current final annual STATS19 files updated 30 July 2026; historical field availability is assumed, not proven.",
+    "kind": "current_snapshot"
+   }
+  },
+  "event_key_column": "collision_index",
+  "expected_duplicate_ids": 0,
+  "external_threshold": null,
+  "features": [
+   "speed_limit",
+   "light_conditions",
+   "weather_conditions",
+   "road_surface_conditions",
+   "special_conditions_at_site",
+   "first_road_class",
+   "road_type",
+   "urban_or_rural_area",
+   "trunk_road_flag",
+   "police_force",
+   "local_authority_ons_district",
+   "hour_of_day",
+   "day_of_week",
+   "month"
+  ],
+  "features_documented_at": "prediction_time",
+  "high_cardinality_columns": [
+   "collision_index",
+   "collision_datetime",
+   "local_authority_ons_district"
+  ],
+  "id_columns": [
+   "collision_index"
+  ],
+  "label_source_columns": [
+   "collision_severity"
+  ],
+  "measurements": [
+   {
+    "column": "collision_datetime",
+    "frame": "STATS19 collision date in DD/MM/YYYY and 24-hour HH:MM, combined as a local wall-clock timestamp",
+    "unit": "timestamp"
+   },
+   {
+    "column": "speed_limit",
+    "frame": "posted speed limit at the collision location",
+    "unit": "mph"
+   },
+   {
+    "column": "hour_of_day",
+    "frame": "clock hour derived from the collision time field",
+    "unit": "hour 0-23"
+   },
+   {
+    "column": "day_of_week",
+    "frame": "DfT day code on the collision record",
+    "unit": "code 1=Sunday to 7=Saturday"
+   },
+   {
+    "column": "month",
+    "frame": "calendar month derived from the collision date",
+    "unit": "month 1-12"
+   },
+   {
+    "column": "collision_severity",
+    "frame": "final published collision severity code used only to construct the target",
+    "unit": "code 1=Fatal, 2=Serious, 3=Slight"
+   }
+  ],
+  "name": "stats19-collision-ksi",
+  "positive_label": 1,
+  "post_hoc_columns": [
+   "collision_severity",
+   "enhanced_severity_collision",
+   "collision_injury_based",
+   "collision_adjusted_severity_serious",
+   "collision_adjusted_severity_slight",
+   "number_of_casualties",
+   "number_of_vehicles"
+  ],
+  "split_windows": {
+   "eval": {
+    "end": "2025-01-01T00:00:00.000",
+    "start": "2024-01-01T00:00:00.000"
+   },
+   "holdout": {
+    "end": "2026-01-01T00:00:00.000",
+    "start": "2025-01-01T00:00:00.000"
+   },
+   "train": {
+    "end": "2024-01-01T00:00:00.000",
+    "start": "2021-01-01T00:00:00.000"
+   }
+  },
+  "splits": {
+   "eval": "public/eval.csv",
+   "holdout": "private/holdout.csv",
+   "train": "public/train.csv"
+  },
+  "target": "ksi",
+  "task": {
+   "decision_user": "A road safety analyst or police collision-recording supervisor deciding which reported collisions to flag for specialist investigation and which road-environment configurations to prioritise for engineering treatment.",
+   "outcome_horizon": "Final recorded severity for that collision in the published annual STATS19 record; severity may be revised after the event where injury-based reporting is used.",
+   "population": "All collisions in the DfT collision extract with collision_year in 2021-2025, a valid date and time, and a non-missing collision_severity code in 1, 2 or 3. Eligibility uses only fields present on the record itself.",
+   "prediction_time": "At the collision, using only road-environment and timing fields recorded on the STATS19 collision return; no casualty-severity, casualty-count or vehicle-count field.",
+   "question": "Given a personal-injury collision already reported to police in Great Britain, will at least one person involved be killed or seriously injured (KSI), rather than only slightly injured?",
+   "simple_references": "Majority class Slight; calendar-only model using month, day of week and hour; identity-only model using police force and district frequency encoding; single-variable rule speed_limit >= 50 mph.",
+   "split_policy": "Fixed chronological boundaries: train 2021-01-01 to 2023-12-31, eval 2024-01-01 to 2024-12-31, holdout 2025-01-01 to 2025-12-31, represented as half-open instants. No embargo because every feature is same-row and contemporaneous.",
+   "target": "collision_severity 1 Fatal or 2 Serious -> 1; collision_severity 3 Slight -> 0. Missing or out-of-range severity is excluded, never imputed.",
+   "usefulness": "The label is a casualty-severity assessment made after the event, while inputs are road environment and timing known at the scene, so the task requires combination of speed limit, lighting, rurality, road class and time rather than copying a field."
+  },
+  "time_column": "collision_datetime",
+  "timing": {
+   "features": {
+    "note": "Final annual STATS19 files are released in late July following the reference year; 2025 final was published 2026-07-30. Earlier release dates are not asserted.",
+    "period": "A",
+    "published_days_after_period_end": 211
+   },
+   "observations": [
+    {
+     "period": "2021",
+     "period_end": "2021-12-31",
+     "published": "annual final release; exact date not captured"
+    },
+    {
+     "period": "2022",
+     "period_end": "2022-12-31",
+     "published": "annual final release; exact date not captured"
+    },
+    {
+     "period": "2023",
+     "period_end": "2023-12-31",
+     "published": "annual final release; exact date not captured"
+    },
+    {
+     "period": "2024",
+     "period_end": "2024-12-31",
+     "published": "annual final release; exact date not captured"
+    },
+    {
+     "period": "2025",
+     "period_end": "2025-12-31",
+     "published": "2026-07-30"
+    }
+   ],
+   "prediction_instant": {
+    "citation": "DfT final annual STATS19 release; 2025 final published 2026-07-30, with earlier years on the same annual cadence",
+    "days_after_period_end": 211,
+    "kind": "publication",
+    "period": "A"
+   },
+   "row_selection": {
+    "fields": [
+     "collision_year"
+    ],
+    "latest_period_used": "2025"
+   }
+  }
+ },
+ "references": {
+  "entity_columns": [
+   "police_force",
+   "local_authority_ons_district"
+  ],
+  "persistence_column": null,
+  "persistence_direction": 1
+ }
+}

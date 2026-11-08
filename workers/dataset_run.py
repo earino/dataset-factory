@@ -33,6 +33,12 @@ def finalize(extract, descriptor, source):
     for split, relative in quality['splits'].items():
         with (extract / relative).open(newline='') as stream:
             reader = csv.DictReader(stream)
+            required = {quality['target'], quality['event_key_column']}
+            missing = sorted(required - set(reader.fieldnames or []))
+            if missing:
+                raise ValueError(f'{split}: declared columns {missing!r} absent from CSV headers '
+                                 f'{reader.fieldnames!r}; quality.target={quality["target"]!r}. '
+                                 'Make the builder headers and descriptor agree; columns are not renamed.')
             if columns is not None and columns != reader.fieldnames:
                 raise ValueError('Split schemas differ')
             columns = reader.fieldnames
