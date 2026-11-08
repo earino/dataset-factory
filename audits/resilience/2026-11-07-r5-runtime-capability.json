@@ -1,0 +1,73 @@
+{
+ "schema_version": 1,
+ "recorded_at": "2026-11-07T21:41:01Z",
+ "checked_by": "Scout (Hermes)",
+ "scope": "R5 read-only Hermes runtime capability capture for the evals/research-prompts/run_one.py zero-tool preflight; no model call, no configuration or auth change",
+ "hermes_version": "0.23.0",
+ "hermes_release_date": "2026.9.24",
+ "runtime_root": "/opt/hermes",
+ "source_files": {
+  "model_tools.py": {
+   "path": "/opt/hermes/model_tools.py",
+   "bytes": 51121,
+   "sha256": "24850d5ce74f7bcf17e58638fc787d6b955bfb89f4980e74b361d7927de74581"
+  },
+  "hermes_cli/main.py": {
+   "path": "/opt/hermes/hermes_cli/main.py",
+   "bytes": 149925,
+   "sha256": "e1321a2b30d92716b88c72fed3104b79195bc59067fad9f6b0740c3cc54f2f8c"
+  },
+  "hermes_cli/cli_agent_setup_mixin.py": {
+   "path": "/opt/hermes/hermes_cli/cli_agent_setup_mixin.py",
+   "bytes": 52433,
+   "sha256": "7d3db020acfa411909c4cfac240795950919545be7a302598b72a595db3c7231"
+  },
+  "hermes_cli/cli_single_query.py": {
+   "path": "/opt/hermes/hermes_cli/cli_single_query.py",
+   "bytes": 32798,
+   "sha256": "ee524db7ce7c6ff1e5e79a8ff47c3c0e8c6b72e37a55364231b9d6e29c6f9903"
+  },
+  "run_agent.py": {
+   "path": "/opt/hermes/run_agent.py",
+   "bytes": 88895,
+   "sha256": "8f8df32b0a027516c11ec58221d266048d0b76157599aa3934b4348add52a643"
+  },
+  "agent/agent_init.py": {
+   "path": "/opt/hermes/agent/agent_init.py",
+   "bytes": 120464,
+   "sha256": "6d3deb12e5b60dd432e474fff4bcd54393d723aaf9b4102ddf99d0e5a25b7109"
+  }
+ },
+ "zero_tool_preflight": {
+  "call": "get_tool_definitions(enabled_toolsets=[\"__none__\"], quiet_mode=True)",
+  "signature": "(enabled_toolsets: list[str] | None = None, disabled_toolsets: list[str] | None = None, quiet_mode: bool = False, skip_tool_search_assembly: bool = False) -> list[dict[str, typing.Any]]",
+  "resolves_exactly_empty_list": true,
+  "observed": {
+   "type": "list",
+   "len": 0,
+   "repr": "[]"
+  },
+  "interpretation_rule": "unknown toolset names can fall back to tools in some releases; a failed preflight must refuse, never infer zero tools"
+ },
+ "cli_flags": {
+  "--toolsets": "-t, comma-separated toolsets to enable for this invocation (applies to -z/--oneshot and --tui); global default None, chat default SUPPRESS (parser: /opt/hermes/hermes_cli/_parser.py lines 177, 256)",
+  "--in": "dest in_dir, change into DIR before starting or resuming; scopes --resume latest / -c lookups to that workspace (lines 184, 284)",
+  "--ignore-rules": "store_true, skip auto-injection of AGENTS.md, SOUL.md, .cursorrules, memory and preloaded skills; chat variant combines with --ignore-user-config for isolated runs (lines 208, 317)",
+  "--source": "session source tag for filtering, default cli; value tool marks third-party integrations so they do not appear in user session lists (line 321)"
+ },
+ "related_flags_noted": [
+  "--ignore-user-config (falls back to built-in defaults, .env credentials still loaded)",
+  "--safe-mode (implies --ignore-user-config and --ignore-rules)",
+  "-z/--oneshot"
+ ],
+ "related_parser": "/opt/hermes/hermes_cli/_parser.py (25635 bytes)",
+ "addendum": {
+  "recorded_at": "2026-11-07T23:08:56Z",
+  "added_by": "Codex upstream review d923a5eb; adopted by Scout",
+  "added_files": [
+   "run_agent.py - tool selection is forwarded through run_agent",
+   "agent/agent_init.py - controls memory/context-engine tool injection"
+  ],
+  "note": "first four upstream hashes match Codex's earlier recorded ones; the R5 capability pin now covers six files; no model call, install, configuration or credential change"
+ }
+}
