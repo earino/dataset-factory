@@ -4,15 +4,14 @@ Specification: [FACTORY-REWRITE.md](FACTORY-REWRITE.md).
 Goal tool confirmed **active** at kickoff 2026-11-08 11:07:00 UTC.
 Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 
-**Current status (18:05 UTC): incomplete, zero replacement publications.** Latest
-confirmed production is 286a6fa (17:47:09 UTC, including paid-response reuse and the
-five-failure allowance). UCMR5 build-5 succeeded: construction, full qualification,
+**Current status (18:16 UTC): incomplete, zero replacement publications.** Latest
+confirmed production is 75137d7 (18:13:06 UTC, including semantic repair routing). UCMR5 build-5 succeeded: construction, full qualification,
 evaluation and packaging completed; all 33 package assets match staged hashes and
 the exact-artifact receipt passes. Semantic review subsequently found real
 construction/metadata defects and requested repair. The old controller incorrectly
-rejected that repair verdict; the routing correction is being tested. UCMR is not
+rejected that repair verdict; the routing correction is deployed as `75137d7`, with exact-commit CI green; live repair is being observed. UCMR is not
 an accepted dataset. CMS is in bounded terms-access repair. RCRA deferred after its
-then-configured worker failures. The full clean-checkout suite passes 938 tests
+then-configured worker failures. The full clean-checkout suite passes 941 tests
 (13 skipped); these do not establish the two-source acceptance criterion.
 
 ## Four-hour checkpoint — 2026-11-08 15:07 UTC
@@ -1010,3 +1009,41 @@ preserved history, true rejections and changed decisions; all 29 pass.
 
 Dashboard/website redesign, old remediation matrix completion, experimental
 chronological benchmark adapter, global overhead-percentage study.
+
+## Seven-hour update — 18:12 UTC
+
+Reported to Eduardo: zero replacement publications, the first qualified prototype
+needs substantive repair, and completing two public datasets within the remaining
+time is unlikely. Work continues within the unchanged acceptance criteria. Scout
+was asked to deploy `75137d7` at a free tick boundary and arrange the existing
+scheduler/config cutoff for 19:07 UTC, preserving resumable state and cleanup.
+The cutoff arrangement and deployment remain unconfirmed at this observation.
+
+The semantic repair correction passed 941 tests (13 skipped) in a clean checkout
+and [exact-commit CI](https://github.com/earino/dataset-factory/actions/runs/42508580209).
+Scout's earlier snapshot export also passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42507566957).
+
+CMS build-3 again failed before construction with HTTP 403 during terms capture
+(32.5 seconds, exit 1, no OOM). Its compact failure bytes were checked against the
+staging manifest before retention:
+[cms-build-3-manifest.json](../audits/rewrite/new-source-outcomes/cms-build-3-manifest.json)
+and [diagnostic](../audits/rewrite/new-source-outcomes/cms-build-3-failure.json).
+This is source-access failure, not a measured dataset quality result.
+
+### Deployment and cutoff confirmed — 18:16 UTC
+
+Scout confirms `75137d7` deployed at 18:13:06 UTC. Its export passed
+[exact-commit CI](https://github.com/earino/dataset-factory/actions/runs/42508913756).
+[Deployment and cutoff record](../audits/rewrite/75137d7-deploy-cutoff/note.md).
+The existing scheduler has a one-shot no-agent job `f0852e8c6392`, due at
+19:07:00 UTC with catch-up, which sets local `pipeline_enabled=false`. This stops
+new controller admissions, preserves saved attempts/results, permits admitted
+work to finish, and leaves cleanup `e80975eddd4a` active. Its execution still needs
+verification at the deadline. The normal token ceiling resumes for sessions
+started after the development window; earlier development sessions remain measured
+and excluded from normal-operation charging.
+
+A compact post-deployment state export was requested to confirm automatic UCMR
+repair routing and identify the current second-source path. No manual queue edit
+or extra worker coordinator is used.
