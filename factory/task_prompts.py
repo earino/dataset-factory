@@ -70,6 +70,9 @@ Return ONLY JSON {"verdict":"accept"|"repair"|"reject", "reason":"...",
 
 
 def construction(source, quality_example, failure=None):
+    # Retain full diagnostics in operational state; send only a bounded excerpt
+    # to the repair task so one failed report cannot consume the entire context.
+    failure = json.dumps(failure, sort_keys=True)[:12000] if failure is not None else None
     return '''Write a small complete Python builder for this real source and frozen task.
 Return ONLY JSON {"build_py":"complete Python source", "quality":{...},
 "references":{"persistence_column":null,"persistence_direction":1,"entity_columns":[]},
@@ -106,7 +109,8 @@ retrospective_research unless measured full-row availability supports forecastin
 The controller fills name, target from your descriptor, positive_label=1, splits,
 positive_events, expected_duplicate_ids and meta.json from the produced CSVs. You
 must provide time_column, event_key_column and fixed half-open split_windows.
-For a domain threshold, include real unit/frame checks; no fabricated receipt.
+For a domain threshold, include real unit/frame checks with kind="unit" in the
+returned source checks; no fabricated receipt.
 Do not include adversarial_battery; the actual gate writes it after inspecting rows.
 
 references describes a genuinely available persistence score column, or null with

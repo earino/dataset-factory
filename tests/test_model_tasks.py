@@ -32,11 +32,11 @@ class ModelTaskTests(unittest.TestCase):
             with closing(sqlite3.connect(path)) as db:
                 db.executescript('''CREATE TABLE sessions(id,source);
                     CREATE TABLE messages(session_id,role);
-                    CREATE TABLE session_model_usage(session_id,model,billing_provider,
+                    CREATE TABLE session_model_usage(session_id,task,model,billing_provider,
                         api_call_count,input_tokens,output_tokens,cache_read_tokens,cache_write_tokens);
                     INSERT INTO sessions VALUES('old','oneshot'),('new','oneshot');
                     INSERT INTO messages VALUES('new','tool');
-                    INSERT INTO session_model_usage VALUES('new','requested','nous',2,100,20,0,0);''')
+                    INSERT INTO session_model_usage VALUES('new',NULL,'requested','nous',2,100,20,0,0);''')
                 db.commit()
             actual = usage(path, ['old'])
             self.assertEqual(actual['session_id'], 'new')

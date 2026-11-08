@@ -8,6 +8,16 @@ from .common import FactoryError
 from .state import Store
 
 
+def enabled(root):
+    from .common import read_json
+    root = Path(root)
+    local = root / 'config/local.json'
+    if local.is_file() and read_json(local).get('pipeline_enabled') is True:
+        return True
+    policy = root / 'config/pipeline.json'
+    return policy.is_file() and read_json(policy).get('enabled') is True
+
+
 @contextmanager
 def controller_lock(root):
     folder = Path(root) / '.factory'
@@ -24,10 +34,12 @@ def controller_lock(root):
         yield True
 
 
-def tick(root, driver, *, max_attempts=3):
+def tick(root, driver, *, max_attempts=3, prepare=None):
     with controller_lock(root) as acquired:
         if not acquired:
             return {'status': 'busy'}
+        if prepare is not None:
+            prepare()
         store = Store(root)
         candidates = store.eligible()
         if not candidates:

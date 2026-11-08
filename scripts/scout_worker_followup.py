@@ -40,6 +40,9 @@ def bookkeep(state):
 
 
 def main():
+    from factory.pipeline import enabled
+    if enabled(session.REPO):
+        return 0
     try:
         with session.admission_lock() as lock_fd:
             states = [watch.state_of(job) for job in watch.watchlist()]

@@ -1,5 +1,24 @@
 # Dataset Factory — project specification
 
+## Current authority: autonomous replacement (2026-11-08)
+
+[FACTORY-REWRITE.md](docs/FACTORY-REWRITE.md) is the current specification for the
+replacement and supersedes conflicting legacy workflow rules below. It authorizes
+automatic publication under its standing policy. Historical releases and their
+limitations remain intact. Implementation and observed acceptance evidence live in
+[FACTORY-REWRITE-PROGRESS.md](docs/FACTORY-REWRITE-PROGRESS.md).
+
+Scout owns the one deployed worker-launching coordinator. Use `python3 -m factory
+run --once` to advance it and `python3 -m factory status` to inspect it. Models
+research, generate construction code and review meaning; the controller owns
+worker collection, retries, cleanup and publication. Do not start separate
+research/follow-up agents or manually advance replacement candidate states.
+The old remediation admission hold remains for legacy workflows and is not a
+prerequisite for the replacement. Deployment is explicitly enabled by
+`pipeline_enabled: true` in the existing private worker configuration.
+
+The remainder records the original project design and historical operating rules.
+
 **Status:** working draft, updated 2026-09-18. The project direction comes from the operator's
 conversation; the starting defaults and deployment choices below remain proposals.
 

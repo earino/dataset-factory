@@ -59,6 +59,7 @@ class Store:
         identifier(candidate_id)
         stamp = time.time()
         with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
             prior = db.execute('SELECT * FROM candidates WHERE id=?', (candidate_id,)).fetchone()
             if prior:
                 # An add retry cannot overwrite a progressed candidate.

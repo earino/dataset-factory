@@ -1,0 +1,167 @@
+"""Production stage driver. Models propose; deterministic code owns transitions."""
+import json
+import os
+from pathlib import Path
+import time
+from urllib.parse import urlsplit
+
+from .common import FactoryError, identifier, read_json
+from .model_tasks import ModelTasks, BudgetWait, TaskFailure
+from .state import Store, STAGES
+from . import construction, task_prompts, worker, worker_artifacts
+from .reconciliation import advance_worker
+
+
+def validate_source(value):
+    if value.get('verdict') != 'ready':
+        return False
+    identifier(value['dataset_id'])
+    source = value['source']
+    if source.get('redistribution') is not True:
+        raise TaskFailure('Source redistribution is not supported')
+    for key in ('publisher', 'documentation_url', 'terms_url', 'license', 'terms_excerpt', 'attribution'):
+        if not isinstance(source.get(key), str) or not source[key].strip():
+            raise TaskFailure('Missing source evidence: ' + key)
+    if not isinstance(source.get('urls'), list) or not source['urls']:
+        raise TaskFailure('No concrete source downloads')
+    for url in source['urls'] + [source['documentation_url'], source['terms_url']]:
+        parsed = urlsplit(url)
+        if parsed.scheme != 'https' or not parsed.hostname or parsed.username or parsed.password:
+            raise TaskFailure('Source evidence requires public HTTPS URLs without credentials')
+    for key in ('question', 'prediction_time', 'target', 'features', 'population', 'split_policy', 'usefulness'):
+        if not value.get('task', {}).get(key):
+            raise TaskFailure('Incomplete prediction task: ' + key)
+    if not value.get('evidence') or not isinstance(value.get('limitations'), list):
+        raise TaskFailure('Source evidence or limitations are missing')
+    return True
+
+
+class Driver:
+    def __init__(self, root, policy, model=None):
+        self.root = Path(root)
+        self.policy = policy
+        self.model = model or ModelTasks(root, policy['model'])
+
+    def execute(self, candidate, attempt, save):
+        data = candidate['data']
+        try:
+            return getattr(self, candidate['stage'])(candidate, attempt, data, save)
+        except BudgetWait as exc:
+            return {'status': 'waiting', 'reason': str(exc), 'delay': 3600}
+        except (FactoryError, ValueError, KeyError, TypeError, OSError) as exc:
+            # A durable live job must be reconciled, never replaced by a retry.
+            job = data.get('publication_job', {}) if candidate['stage'] == 'publish' else data.get('job', {})
+            record = self.root / 'jobs' / (job.get('id', 'absent') + '.json')
+            if record.exists() and read_json(record).get('status') != 'deleted':
+                return {'status': 'waiting', 'reason': str(exc)[:1000], 'delay': 60}
+            # Resource/admission failures before launch wait for the existing
+            # allowance/configuration; they do not spend further model attempts.
+            if job and not record.exists() and isinstance(exc, FactoryError) and not isinstance(exc, TaskFailure):
+                return {'status': 'waiting', 'reason': str(exc)[:1000], 'delay': 300}
+            data['failure'] = {'stage': candidate['stage'], 'reason': str(exc)[:4000]}
+            save(data)
+            return {'status': 'retry', 'reason': str(exc)[:1000]}
+
+    def discover(self, candidate, attempt, data, save):
+        context = {'focus': data.get('focus', ''),
+                   'already_selected': [c['data'].get('source', {}).get('title') for c in Store(self.root).listing()
+                                        if c['id'] != candidate['id']]}
+        source = self.model.run(attempt['id'], task_prompts.discovery(context), research=True)
+        if not validate_source(source):
+            return {'status': 'defer', 'reason': source.get('reason', 'Insufficient source evidence')}
+        for other in Store(self.root).listing():
+            if other['id'] != candidate['id'] and other['data'].get('source', {}).get('dataset_id') == source['dataset_id']:
+                return {'status': 'reject', 'reason': 'Source task already selected by another candidate'}
+        data['source'] = source; save(data)
+        return {'status': 'done', 'reason': 'Source researched with access, terms and task evidence'}
+
+    def build(self, candidate, attempt, data, save):
+        config = read_json(self.root / 'config/local.json')
+        harness = Path(os.environ.get('FACTORY_BENCHMARK_ROOT', '/opt/data/harness_benchmark'))
+        if not all((harness / 'task_template' / name).is_file() for name in ('train.py', 'validate.py', 'validate.sh')):
+            raise BudgetWait('Existing benchmark runner is unavailable; no substitute is used')
+        if config.get('enabled') is not True or config.get('cleanup_configured') is not True:
+            raise BudgetWait('Worker policy or independent cleanup is not enabled')
+        if data.get('construction_attempt') != attempt['id']:
+            example = read_json(self.root / 'skills/dataset-qualification/fixtures/corrected/quality.json')
+            response = self.model.run(attempt['id'], task_prompts.construction(data['source'], example, data.get('failure')))
+            construction.validate(response)
+            data.update(construction=response, construction_attempt=attempt['id'])
+            data.pop('job', None)
+            save(data)
+        # The replacement queue owns its own priority. Historical packaged records
+        # are preserved, not imported as live queue blockers or auto-approved.
+        config['release_preempts'] = False
+        path = construction.assemble(self.root, attempt['id'], data['source'], data['construction'],
+                                     self.policy['worker'], config)
+        data['job'] = {'id': attempt['id'], 'file': str(path.relative_to(self.root))}; save(data)
+        record_path = self.root / 'jobs' / (attempt['id'] + '.json')
+        if not record_path.exists():
+            worker.launch(self.root, path, config)
+        result = advance_worker(self.root, attempt['id'], config, job_file=path)
+        if result['status'] == 'waiting':
+            return result
+        if result['status'] == 'lost':
+            data['failure'] = result; save(data)
+            return {'status': 'retry', 'reason': result['reason']}
+        record = worker.load_record(self.root, attempt['id'])
+        api = worker.github(config)
+        if not result['ok']:
+            raw = worker_artifacts.manifest(self.root, record, api)
+            diagnostics = {}
+            names = {a.get('file') for a in raw['assets']}
+            for name in ('failure.json', 'qualification.json'):
+                if 'output/' + name in names:
+                    diagnostics[name] = worker_artifacts.collect_json(self.root, record, 'output/' + name, api)
+            data['failure'] = {'stage': 'build', 'diagnostics': diagnostics, 'worker': result['report']}
+            save(data)
+            if diagnostics.get('failure.json', {}).get('error') == 'TermsEvidenceError':
+                return {'status': 'reject', 'reason': 'Publisher terms evidence could not support the source claim'}
+            return {'status': 'retry', 'reason': 'Construction/qualification failed; artifacts preserved and worker deleted'}
+        data['evidence'] = {name: worker_artifacts.collect_json(self.root, record, 'output/' + name, api)
+                            for name in ('MANIFEST.json', 'qualification.json', 'evaluation.json', 'source-checks.json', 'SOURCES.json', 'LICENSE-EVIDENCE.json')}
+        save(data)
+        return {'status': 'done', 'reason': 'Full artifact constructed, qualified, accepted and measured on worker'}
+
+    def evaluate(self, candidate, attempt, data, save):
+        evidence = data['evidence']
+        if evidence['qualification.json'].get('ok') is not True:
+            return {'status': 'reject', 'reason': 'Full-artifact qualification did not pass'}
+        compact = {name: evidence[name] for name in ('evaluation.json', 'source-checks.json', 'SOURCES.json', 'LICENSE-EVIDENCE.json')}
+        compact['qualification'] = {k: evidence['qualification.json'][k] for k in ('ok', 'gate_version', 'failed_checks')}
+        compact['evaluation_contract'] = data['construction']['quality']['evaluation_contract']
+        review = self.model.run(attempt['id'], task_prompts.review(data['source'],
+                                data['construction']['build_py'], compact), research=True)
+        data['review'] = review; save(data)
+        if review.get('verdict') != 'accept':
+            return {'status': 'reject', 'reason': review.get('reason', 'Unresolved semantic or usefulness concern')}
+        if review.get('findings'):
+            return {'status': 'reject', 'reason': 'Review claims acceptance but retains unresolved findings'}
+        return {'status': 'done', 'reason': 'Source interpretation and measured usefulness reviewed'}
+
+    def publish(self, candidate, attempt, data, save):
+        from .automatic_publication import publish
+        return publish(self.root, self.policy, candidate, attempt, data, save)
+
+
+def seed(root, policy):
+    store = Store(root)
+    rows = store.listing()
+    pending = sum(c['stage'] in STAGES for c in rows)
+    focuses = ('Public infrastructure or environmental operations, with independent observations',
+               'A different domain: institutions, commerce, transportation or public services')
+    index = len(rows) + 1
+    while pending < policy['max_pending_candidates']:
+        identity = f'source-{index:06d}'
+        if store.get(identity) is None:
+            store.add(identity, {'focus': focuses[(index - 1) % len(focuses)]})
+            pending += 1
+        index += 1
+
+
+def run(root, policy):
+    from .pipeline import tick
+    if policy.get('enabled') is not True:
+        return {'status': 'disabled', 'reason': 'Replacement controller has not been enabled'}
+    return tick(root, Driver(root, policy), max_attempts=policy['max_attempts'],
+                prepare=lambda: seed(root, policy))

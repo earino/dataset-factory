@@ -16,6 +16,8 @@ Keep the current lightweight coordinator, Hetzner workers, staging storage,
 GitHub and Hugging Face destinations. Reuse working cloud/transfer/cleanup code,
 substantive validators, source research and construction scripts. Bulk data and
 ML run on workers. The existing benchmark checkout remains read-only.
+The first deployed path uses that runner's binary classification CSV contract;
+new task formats are outside this implementation timebox.
 
 Exclude dashboard/website redesign, general-purpose agent frameworks, speculative
 validators, new benchmark protocols, and the deferred chronological adapter.
@@ -32,6 +34,8 @@ A small SQLite store owns operational candidate/attempt/job/artifact state. Git
 holds code, source evidence and compact exported results, not live transactional
 coordination. Updates are atomic; interrupted operations are reconciled using
 stable identities before retry. Notes never act as executable state.
+`STATE.md` remains the legacy repository projection; replacement runtime state is
+read with `factory status`, not inferred from the historical candidate queue.
 
 `python3 -m factory run --once` performs eligible work through a deterministic
 controller, invoked by the existing no-agent scheduler. `status` explains current
@@ -56,6 +60,9 @@ The operator authorizes automatic publication of new versions meeting this polic
 within existing configured spending/resource limits and destination namespaces.
 Per-dataset operator transcripts/approvals and operator-relayed audits are removed
 from the replacement. Keep credentials separate from generated code and data.
+New repositories use the existing `earino` GitHub and Hugging Face namespaces and
+the reserved `factory-` prefix. Existing repositories without the replacement's
+ownership/manifest identity are not adopted or made public.
 
 Acceptance requires readable compatible source terms with attribution; a clear
 prediction question and target; evidence for feature/label availability and stated
@@ -73,6 +80,10 @@ Never mutate frozen historical bytes/tags. New corrections get new versions.
 GitHub and Hugging Face retries resume independently; publication is complete only
 when anonymous consumers verify the declared files on both. Websites are outside
 the critical path and outside this project's acceptance criteria.
+One publication worker reuses the existing GitHub transfer and Hugging Face
+publisher, then tags, changes visibility and performs anonymous full-file loading.
+It receives only accepted, digest-bound assets. Version tags bind the entire
+package inventory; the qualification digest separately identifies the scored data.
 
 ## Implementation and migration
 

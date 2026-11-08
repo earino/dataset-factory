@@ -52,9 +52,15 @@ def validate(job, config):
     # A transfer job moves already-built artifacts between releases, an hf_publish job pushes
     # them to Hugging Face, and a smoke_adapter job runs the integration smoke host-side:
     # none runs a container, so none needs argv or an image.
-    if sum(bool(job.get(mode)) for mode in ("transfer", "hf_publish", "smoke_adapter")) > 1:
+    if sum(bool(job.get(mode)) for mode in ("transfer", "hf_publish", "smoke_adapter", "release_publish")) > 1:
         raise FactoryError("Host operation modes are mutually exclusive")
-    runs_container = not (job.get("transfer") or job.get("hf_publish") or job.get("smoke_adapter"))
+    runs_container = not (job.get("transfer") or job.get("hf_publish") or job.get("smoke_adapter") or job.get('release_publish'))
+    if job.get('release_publish'):
+        from workers.release_publish import validate as validate_publication
+        try:
+            validate_publication(job['release_publish'])
+        except (ValueError, KeyError, TypeError) as exc:
+            raise FactoryError('Invalid automatic publication job: ' + str(exc)) from exc
     if job.get("smoke_adapter"):
         smoke = job.get("smoke")
         if not isinstance(smoke, dict):
@@ -129,7 +135,7 @@ def validate(job, config):
                 raise FactoryError(f"{key} asset entry is missing {absent}")
     needs_publish = ((job.get("transfer") and job["transfer"]["target_repo"] != config["staging_repo"])
                      or (job.get("fetch") and job["fetch"]["repo"] != config["staging_repo"])
-                     or bool(job.get("hf_publish")))
+                     or bool(job.get("hf_publish")) or bool(job.get('release_publish')))
     if needs_publish:
         # The staging token is scoped to the staging repository alone, so reaching another
         # repository needs its own credential. Refused here, before provisioning, rather than on
@@ -138,7 +144,7 @@ def validate(job, config):
             raise FactoryError(
                 "Reaching a repository other than staging needs FACTORY_PUBLISH_TOKEN (or "
                 "FACTORY_PUBLISH_TOKEN_FILE): the staging token cannot see it")
-    if job.get("hf_publish"):
+    if job.get("hf_publish") or job.get('release_publish'):
         # Same lesson as the publish token: refuse before provisioning rather than on a paid
         # worker. The inference credential is a different one and is never used to publish.
         if not credential_status("FACTORY_HF_WRITE_TOKEN")["ready"]:
@@ -185,7 +191,10 @@ def source_bundle(job_path, job):
                 raise FactoryError("Job source exceeds 2 MiB; source bundle is not a data transport")
             add("source/" + relative.as_posix(), path.read_bytes())
         add("job.json", json.dumps(job, sort_keys=True).encode())
-        for name in ("executor.py", "upload.py", "hf_publish.py", "smoke_runner.py"):
+        runtime_files = ["executor.py", "upload.py", "hf_publish.py", "smoke_runner.py"]
+        if job.get('release_publish'):
+            runtime_files += ['release_publish.py', 'get_dataset.py']
+        for name in runtime_files:
             add(name, (Path(__file__).resolve().parents[1] / "workers" / name).read_bytes())
     if len(buffer.getvalue()) > BUNDLE_LIMIT + 256 * 1024:
         raise FactoryError("Job bundle too large")
@@ -429,11 +438,11 @@ def resume(root, job_id, config, cloud=None, bundle=None):
         remote(config, record, "umask 077; mkdir -p /opt/scout/source /opt/scout/output && cat > /opt/scout/source.tar && tar -xf /opt/scout/source.tar -C /opt/scout", bundle)
         credentials = {"token": secret("FACTORY_GITHUB_TOKEN"), "repo": record["staging_repo"]}
         if (record["job"].get("transfer") or record["job"].get("fetch")
-                or record["job"].get("hf_publish")):
+                or record["job"].get("hf_publish") or record['job'].get('release_publish')):
             # Kept deliberately separate: staging reads use the staging token, and only a reach
             # into another repository uses this one, which is the narrower of the two available.
             credentials["publish_token"] = secret("FACTORY_PUBLISH_TOKEN")
-        if record["job"].get("hf_publish"):
+        if record["job"].get("hf_publish") or record['job'].get('release_publish'):
             # The publishing credential, delivered the same way as the others: a root-only file on
             # the worker, never in the bundle, the job source, a mount, a log or an argument.
             credentials["hf_write_token"] = secret("FACTORY_HF_WRITE_TOKEN")

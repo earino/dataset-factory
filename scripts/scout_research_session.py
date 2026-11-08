@@ -368,6 +368,11 @@ def main(argv=None):
 
 
 def run_session(args, lock_fd, observe=None, *, worker_followup=False):
+    from factory.pipeline import enabled
+    if enabled(REPO):
+        # The replacement owns research and worker outcomes. This guard also
+        # disables an accidentally retained legacy follow-up schedule.
+        return 0
     # The scheduled caller records admission durably before any model process starts.
     # Observation never supplies a gate decision or changes the execution path.
     scheduled = observe is not None

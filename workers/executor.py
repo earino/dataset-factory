@@ -24,6 +24,15 @@ BASE = Path("/opt/scout")
 REPORT_LIMIT = 262144
 
 
+def operation_status(report):
+    if 'exit_code' not in report:
+        # Host functions and supervision failures do not necessarily have an OS
+        # child exit status. Label the derived operation result explicitly.
+        report['exit_code'] = 0 if report.get('status') == 'succeeded' else 1
+        report['exit_code_source'] = 'operation-status'
+    return report
+
+
 def write_report(base, report):
     raw = json.dumps(report, indent=2).encode()
     if len(raw) > REPORT_LIMIT:
@@ -256,6 +265,13 @@ def host_child(base, operation, receipt):
         elif operation == "hf_publish" and job.get("hf_publish"):
             hf_publish(base, job, report)
             report["status"] = "succeeded" if not report["hf_publish"]["failures"] else "failed"
+        elif operation == 'release_publish' and job.get('release_publish'):
+            try:
+                from .release_publish import release_publish
+            except ImportError:
+                from release_publish import release_publish
+            release_publish(base, job, report)
+            report['status'] = 'succeeded'
         elif operation == "smoke_adapter" and job.get("smoke_adapter"):
             # smoke_runner follows the same pattern as transfer/hf_publish:
             # a function that mutates the report in place and raises on failure.
@@ -288,13 +304,13 @@ def execute(base, job):
     log.touch()
     # Host operations used to return before reaching any resource monitor.
     # Their outer deadline includes client bootstrap, downloads and retry waits.
-    if job.get("transfer") or job.get("hf_publish") or job.get("smoke_adapter"):
+    if job.get("transfer") or job.get("hf_publish") or job.get("smoke_adapter") or job.get('release_publish'):
         operation = ("transfer" if job.get("transfer")
                      else "hf_publish" if job.get("hf_publish")
-                     else "smoke_adapter")
+                     else 'release_publish' if job.get('release_publish') else "smoke_adapter")
         report = execute_host(base, job, operation, started + job["timeout_minutes"] * 60)
         report["elapsed_seconds"] = round(time.monotonic() - started, 1)
-        return report
+        return operation_status(report)
     try:
         if job.get("fetch"):
             # Download the released artifact before starting the container, so a job can measure
@@ -346,7 +362,7 @@ def execute(base, job):
             report["summary"] = json.loads(summary.read_text())
         except (OSError, ValueError):
             report["summary_error"] = "Invalid summary.json; inspect uploaded artifacts"
-    return report
+    return operation_status(report)
 
 
 def main(base=BASE):
@@ -370,6 +386,7 @@ def main(base=BASE):
             (base / "started").touch()
             report = execute(base, job)
             execution.write_text(json.dumps(report))
+        operation_status(report)
         if report.get("host_cleanup_complete") is False:
             # No upload can establish stable artifact digests while a host
             # process may still be changing files. Keep bounded evidence local.
@@ -386,7 +403,7 @@ def main(base=BASE):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--host-operation", choices=("transfer", "hf_publish", "smoke_adapter"))
+    parser.add_argument("--host-operation", choices=("transfer", "hf_publish", "smoke_adapter", "release_publish"))
     parser.add_argument("--base", type=Path, default=BASE)
     parser.add_argument("--receipt", type=Path)
     args = parser.parse_args()

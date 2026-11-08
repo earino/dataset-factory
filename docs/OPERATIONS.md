@@ -1,5 +1,29 @@
 ## Scheduled scripts: the name decides the interpreter
 
+## Autonomous replacement
+
+For the replacement, [FACTORY-REWRITE.md](FACTORY-REWRITE.md) supersedes conflicting
+legacy procedures in this file. `python3 -m factory run --once` owns the complete
+pipeline; `status` is read-only. The deployed script-only entrypoint is
+`ops/shims/scout_factory_tick.py`, installed under `/opt/data/scripts/`.
+Enable it with `pipeline_enabled: true` in `config/local.json`, after disabling
+the discovery, advancement and model worker-follow-up schedules. Keep the
+independent expiry sweeper. The worker allowance, release reserve, resource limits
+and research allowance remain unchanged. The old hold continues to protect
+legacy paths; registered replacement attempts use the new standing authorization.
+
+SQLite `.factory/pipeline.sqlite3` owns replacement candidates and attempts.
+Existing `jobs/*.json` remain the cloud transport/budget journal. Neither a Git
+commit nor a model follow-up is required to collect/delete a completed worker.
+Do not copy that live ledger into a second launching checkout. A rollout rollback
+disables new ticks while leaving independent cleanup active; preserve the database,
+job source directories and staging releases to resume safely.
+
+Before cutover, back up the compact database/job records and the old scheduler
+configuration. After cutover, verify the three old schedules are disabled, the
+new script has no agent dispatch, and an actual scheduled tick has completed.
+The rollout's progress/evidence record is FACTORY-REWRITE-PROGRESS.md.
+
 ## Current state and session close-out
 
 STATE.md is now a generated view, not an editable session transcript. Read

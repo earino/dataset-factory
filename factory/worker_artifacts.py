@@ -22,7 +22,7 @@ def assets(api, repo, release_id):
     raise FactoryError('Staging asset inventory exceeds limit')
 
 
-def download_json(repo, entry, path):
+def download_small(repo, entry, path):
     if (not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repo)
             or type(entry.get('id')) is not int or type(entry.get('size')) is not int
             or not 0 < entry['size'] < LIMIT
@@ -44,9 +44,6 @@ def download_json(repo, entry, path):
             data = response.read(LIMIT)
     if len(data) != entry['size'] or hashlib.sha256(data).hexdigest() != entry['sha256']:
         raise FactoryError('Compact artifact digest/size mismatch')
-    value = json.loads(data)
-    if not isinstance(value, dict):
-        raise FactoryError('Compact artifact must be an object')
     if not path.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
         # Preserve original bytes; a JSON re-encoding would change the digest.
@@ -54,6 +51,13 @@ def download_json(repo, entry, path):
         if temporary.is_symlink():
             raise FactoryError('Compact artifact temporary path is a symlink')
         temporary.write_bytes(data); temporary.replace(path)
+    return data
+
+
+def download_json(repo, entry, path):
+    value = json.loads(download_small(repo, entry, path))
+    if not isinstance(value, dict):
+        raise FactoryError('Compact artifact must be an object')
     return value
 
 
@@ -75,9 +79,9 @@ def manifest(root, record, api):
     return value
 
 
-def collect_json(root, record, logical, api):
-    if not logical.startswith('output/') or not logical.endswith('.json'):
-        raise FactoryError('Only compact output JSON may be collected')
+def collect_small(root, record, logical, api):
+    if not logical.startswith('output/') or Path(logical).suffix not in ('.json', '.md', '.txt', '.py', '.sh'):
+        raise FactoryError('Only compact metadata/code may be collected; no bulk data')
     from .asset_integrity import safe_path
     raw = manifest(root, record, api)
     entries = [a for a in raw['assets'] if a.get('file') == logical]
@@ -88,7 +92,25 @@ def collect_json(root, record, logical, api):
     if len(pins) != 1 or any(pins[0][k] != entry[k] for k in ('size', 'sha256')):
         raise FactoryError('Compact output differs from collected result')
     path = safe_path(Path(root) / '.factory' / record['job']['id'], logical)
-    return download_json(record['staging_repo'], entry, path)
+    runtime = Path(root) / '.factory'
+    files = set(runtime.glob('*/result.json')) | set(runtime.glob('*/staging-manifest.json'))
+    files.update(p for folder in runtime.glob('*/output') for p in folder.rglob('*') if p.is_file())
+    total = sum(p.stat().st_size for p in files if p != path)
+    from .common import read_json
+    config_path = Path(root) / 'config/local.json'
+    cap = read_json(config_path).get('max_coordinator_reports_bytes', 20 * 1024**2) if config_path.exists() else 20 * 1024**2
+    if total + entry['size'] > min(cap, 20 * 1024**2):
+        raise FactoryError('Coordinator collected-report budget exhausted')
+    return download_small(record['staging_repo'], entry, path)
+
+
+def collect_json(root, record, logical, api):
+    if not logical.endswith('.json'):
+        raise FactoryError('JSON collection requires a JSON output')
+    value = json.loads(collect_small(root, record, logical, api))
+    if not isinstance(value, dict):
+        raise FactoryError('Compact artifact must be an object')
+    return value
 
 
 def recover(root, record, api):

@@ -43,6 +43,10 @@ def main(argv=None):
     check = commands.add_parser("doctor", help="Offline environment summary; never prints credentials")
     check.add_argument("--require-worker-credentials", action="store_true",
                        help="Exit nonzero if either worker credential is missing or unreadable; no API calls")
+    run = commands.add_parser('run', help='One deterministic autonomous factory tick')
+    run.add_argument('--once', action='store_true', required=True)
+    run.add_argument('--config', type=Path)
+    commands.add_parser('status', help='Read replacement lifecycle state without a model')
     candidate = commands.add_parser("candidate", help="Track source investigations")
     actions = candidate.add_subparsers(dest="action", required=True)
     create = actions.add_parser("create")
@@ -71,6 +75,17 @@ def main(argv=None):
             if args.require_worker_credentials:
                 result["errors"] = [f"{name}: missing or unusable" for name, state in result["worker_credentials"].items()
                                     if not state["ready"]]
+        elif args.command == 'run':
+            from .engine import run
+            from .pipeline import enabled
+            policy = read_json(args.config or root / 'config/pipeline.json')
+            if args.config is None:
+                policy['enabled'] = enabled(root)
+            result = run(root, policy)
+        elif args.command == 'status':
+            from .state import Store
+            result = {'candidates': [{k: c[k] for k in ('id', 'stage', 'updated', 'next_run', 'reason')}
+                                     for c in Store(root).listing()]}
         elif args.command == "candidate":
             result = candidates.create(root, args.id) if args.action == "create" else candidates.listing(root)
         elif args.command == "audit":

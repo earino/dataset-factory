@@ -41,6 +41,17 @@ def hold_reason(root):
 
 
 def require(root, operation, *, job_id=None, bundle_sha256=None):
+    from .pipeline import enabled
+    if enabled(root):
+        # The operator's replacement policy supersedes the old remediation hold,
+        # but only the transactional controller may originate replacement jobs.
+        if operation == 'worker' and job_id and (Path(root) / '.factory/pipeline.sqlite3').is_file():
+            from .state import Store
+            with Store(root).connect() as db:
+                row = db.execute("SELECT stage FROM attempts WHERE id=? AND status='running'", (job_id,)).fetchone()
+            if row and row['stage'] in ('build', 'publish'):
+                return
+        raise FactoryError('Replacement controller owns admission; superseded launch paths are disabled')
     value = policy(root)
     if not value["hold"]:
         return

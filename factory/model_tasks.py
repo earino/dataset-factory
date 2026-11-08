@@ -6,6 +6,7 @@ or decide lifecycle transitions. Successful responses are reused after restart.
 import argparse
 from contextlib import closing
 import json
+import os
 from pathlib import Path
 import sqlite3
 import subprocess
@@ -46,14 +47,14 @@ def usage(db_path, before):
     with closing(sqlite3.connect(Path(db_path).resolve().as_uri() + '?mode=ro', uri=True)) as db:
         created = {r[0] for r in db.execute("SELECT id FROM sessions WHERE source='oneshot'")} - set(before)
         if len(created) != 1:
-            raise TaskFailure('Model session identity is ambiguous')
+            raise TaskFailure(f'Expected one model session; observed {len(created)} new sessions')
         sid = created.pop()
-        rows = db.execute('SELECT model,billing_provider,api_call_count,input_tokens,output_tokens,'
+        rows = db.execute('SELECT task,model,billing_provider,api_call_count,input_tokens,output_tokens,'
                           'cache_read_tokens,cache_write_tokens FROM session_model_usage WHERE session_id=?',
                           (sid,)).fetchall()
         if not rows:
             raise TaskFailure('Model session has no measured usage')
-        fields = ('model', 'provider', 'calls', 'input_tokens', 'output_tokens',
+        fields = ('task', 'model', 'provider', 'calls', 'input_tokens', 'output_tokens',
                   'cache_read_tokens', 'cache_write_tokens')
         tools = db.execute("SELECT count(*) FROM messages WHERE session_id=? AND role='tool'", (sid,)).fetchone()[0]
         return {'session_id': sid, 'tasks': [dict(zip(fields, row)) for row in rows],
@@ -95,6 +96,16 @@ class ModelTasks:
                 seconds = min(int(self.policy['task_seconds']), int(limits['session_max_minutes']) * 60)
                 if min(turns, seconds) < 1:
                     raise BudgetWait('Configured task limits disallow inference')
+                toolset = self.policy['research_toolset'] if research else '__none__'
+                expected = ['web_search', 'web_extract'] if research else []
+                probe = ('from model_tools import get_tool_definitions as g; '
+                         'd=g(enabled_toolsets=[' + repr(toolset) + '],quiet_mode=True); '
+                         'assert sorted(x.get("function",x)["name"] for x in d)==sorted(' + repr(expected) + ')')
+                checked = subprocess.run([str(self.hermes_root / '.venv/bin/python3'), '-c', probe],
+                                         cwd=self.hermes_root, env={**os.environ, 'PYTHONPATH': str(self.hermes_root)},
+                                         capture_output=True, timeout=30)
+                if checked.returncode:
+                    raise TaskFailure('Installed runtime does not expose the bounded task toolset')
                 with closing(sqlite3.connect(self.db.resolve().as_uri() + '?mode=ro', uri=True)) as db:
                     before = [r[0] for r in db.execute("SELECT id FROM sessions WHERE source='oneshot'")]
                 (directory / 'prompt.txt').write_text(prompt)
@@ -108,8 +119,7 @@ class ModelTasks:
                                '--source', 'oneshot', '--model', self.policy['model'],
                                '--ignore-rules', '--in', neutral,
                                '-t', self.policy['research_toolset'] if research else '__none__',
-                               '--max-turns', str(turns), '--run-budget', str(seconds),
-                               '--usage-file', str(directory / 'runtime-usage.json')]
+                               '--max-turns', str(turns), '--run-budget', str(seconds)]
                     if self.policy.get('provider'):
                         command.extend(['--provider', self.policy['provider']])
                     with w.session_marker(argparse.Namespace(max_turns=turns, run_budget=seconds)):
@@ -118,11 +128,26 @@ class ModelTasks:
                             result = w.run_agent(command, seconds + 30, fd)
                         except subprocess.TimeoutExpired as exc:
                             raise TaskFailure('Model task exceeded its wall-clock limit') from exc
+                if result.returncode:
+                    # Parser errors are useful and precede credentials/provider
+                    # requests. Do not persist arbitrary provider stderr/tokens.
+                    parser_error = [line for line in result.stderr.splitlines()
+                                    if 'error: unrecognized arguments:' in line or 'error: argument ' in line]
+                    failure = {'exit_code': result.returncode, 'parser_error': parser_error[-2:]}
+                    try:
+                        write_json(directory / 'usage.json', usage(self.db, before))
+                    except TaskFailure as exc:
+                        failure['accounting'] = str(exc)
+                    write_json(directory / 'failure.json', failure)
+                    raise TaskFailure('Model invocation failed: ' + json.dumps(failure))
                 measured = usage(self.db, before)
                 measured['elapsed_seconds'] = round(time.monotonic() - started, 3)
                 write_json(directory / 'usage.json', measured)
-                if result.returncode:
-                    raise TaskFailure('Model task failed; recorded usage retained')
+                main_tasks = [task for task in measured['tasks'] if task['task'] in (None, '')]
+                if not main_tasks or any(task['model'] != self.policy['model'] for task in main_tasks):
+                    raise TaskFailure('Recorded inference route differs from the configured model')
+                if not research and measured['tool_results']:
+                    raise TaskFailure('A no-tool construction task executed tools')
                 response_text = w.strip_footer(result.stdout)
                 if len(response_text.encode()) < 256 * 1024:
                     (directory / 'response.txt').write_text(response_text)
