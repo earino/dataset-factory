@@ -252,6 +252,30 @@ had been assembled before the clearer error was deployed; immutable attempt
 bundles were preserved. Exact manifest and verified failure bytes are retained.
 No passing qualification or publication is claimed for either replay.
 
+### Construction needs a write-only capability (14:27–14:35 UTC)
+
+HURDAT2 build-6 received its exact failed proposal but used all six turns on
+12 web calls and returned only a 170-character exhaustion message. It deferred
+at the existing limit; no further state reopening was requested. Exact prompt,
+usage, final response and tool sequence are in `audits/rewrite/build-6-turn-exhaustion/`.
+Source 5 (BTS flight arrival disruption) reached a worker but its terms URL
+returned HTTP 403; the source was rejected without dataset acceptance. Source 6
+(SBA corporate charge-offs) was retrying incomplete attribution evidence.
+
+Installed-source inspection confirms `HermesCLI(toolsets=[], run_budget=...)`
+preserves explicit zero tools and the native time bound. The argv parser alone
+maps empty tool selections to defaults. The replacement's small write-task adapter
+therefore calls that constructor and the existing quiet single-query procedure.
+It retains the gateway, source/usage accounting, model route, admission lock,
+outer timeout and native cleanup. Constructor assertions reject changed runtime
+semantics before inference; measured tool execution rejects a write-only result.
+Discovery and review retain web access. No model, spending limit, retry allowance
+or scientific check was relaxed. Live verification of this adapter remains pending.
+Clean checkout: 924 tests passed (13 skipped). The preceding evidence-only commit
+`19da69b` passed [CI](https://github.com/earino/dataset-factory/actions/runs/42489589348),
+and Scout's turn-exhaustion export passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42490155457).
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;

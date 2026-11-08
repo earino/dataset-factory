@@ -26,7 +26,7 @@ class ModelTaskTests(unittest.TestCase):
             quality = read_json(Path(__file__).resolve().parents[1] /
                                 'skills/dataset-qualification/fixtures/corrected/quality.json')
             proposal = {'build_py': 'def build(output, cache):\n    pass\n', 'references': {}, 'quality': quality}
-            measured = {'tasks': [{'task': '', 'model': 'requested'}]}
+            measured = {'tasks': [{'task': '', 'model': 'requested'}], 'tool_results': 0}
             model = ModelTasks(root, {'model': 'requested', 'research_toolset': 'web', 'code_turns': 6,
                                      'task_seconds': 300}, hermes_home=root)
             with patch('factory.model_tasks.wrapper', return_value=w), \
@@ -35,6 +35,8 @@ class ModelTaskTests(unittest.TestCase):
                 preflight.return_value.returncode = 0
                 w.run_agent.return_value = subprocess.CompletedProcess('hermes', 1, json.dumps(proposal), '')
                 self.assertEqual(proposal, model.run('produced', 'builder', construction=True))
+                self.assertIn(str(root.resolve() / 'factory/hermes_write_task.py'), w.run_agent.call_args.args[0])
+                self.assertEqual([], read_json(root / '.factory/model-tasks/produced/attempt.json')['toolsets'])
                 # The same exit code and JSON are not enough to accept a review.
                 with self.assertRaises(TaskFailure): model.run('review', 'review prompt')
                 w.run_agent.return_value = subprocess.CompletedProcess('hermes', 1, '{"error":"gave up"}', '')

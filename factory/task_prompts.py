@@ -74,9 +74,10 @@ def construction(source, quality_example, failure=None, previous=None):
     # to the repair task so one failed report cannot consume the entire context.
     failure = json.dumps(failure, sort_keys=True)[:12000] if failure is not None else None
     return '''Write a small complete Python builder for this real source and frozen task.
-You may use web_search/web_extract to check source field documentation if needed.
-The source research is supplied below. Batch necessary documentation reads and
-leave time for the complete construction response; do not repeat source discovery.
+This is the write-only phase: no tools are available. Use the supplied source
+research, field evidence, previous code and failure diagnostics. Produce the
+complete code proposal now; do not repeat source discovery or claim to have read
+additional documentation. State missing semantic evidence honestly in construction_notes.
 Return ONLY JSON {"build_py":"complete Python source", "quality":{...},
 "references":{"persistence_column":null,"persistence_direction":1,"entity_columns":[]},
 "construction_notes":"source interpretation and checks"}.

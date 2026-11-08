@@ -124,13 +124,10 @@ class ModelTasks:
                 seconds = min(int(self.policy['task_seconds']), int(limits['session_max_minutes']) * 60)
                 if min(turns, seconds) < 1:
                     raise BudgetWait('Configured task limits disallow inference')
-                # Both source interpretation and code generation may read public
-                # documentation. Use the supported web-only gateway capability;
-                # an invented unknown toolset is not a portable no-tool API.
-                toolset = self.policy['research_toolset']
-                expected = ['web_search', 'web_extract']
+                toolsets = [self.policy['research_toolset']] if research else []
+                expected = ['web_search', 'web_extract'] if research else []
                 probe = ('from model_tools import get_tool_definitions as g; '
-                         'd=g(enabled_toolsets=[' + repr(toolset) + '],quiet_mode=True); '
+                         'd=g(enabled_toolsets=' + repr(toolsets) + ',quiet_mode=True); '
                          'assert sorted(x.get("function",x)["name"] for x in d)==sorted(' + repr(expected) + ')')
                 checked = subprocess.run([str(self.hermes_root / '.venv/bin/python3'), '-c', probe],
                                          cwd=self.hermes_root, env={**os.environ, 'PYTHONPATH': str(self.hermes_root)},
@@ -142,15 +139,22 @@ class ModelTasks:
                 (directory / 'prompt.txt').write_text(prompt)
                 write_json(directory / 'attempt.json', {'started': time.time(), 'model': self.policy['model'],
                            'provider': self.policy.get('provider'), 'max_turns': turns, 'seconds': seconds,
-                           'research': research, 'sessions_before': before})
+                           'research': research, 'toolsets': toolsets, 'sessions_before': before})
                 started = time.monotonic()
                 with tempfile.TemporaryDirectory(prefix='factory-task-') as neutral:
                     command = [str(self.hermes_root / '.venv/bin/python3'), str(self.hermes_root / 'hermes'),
                                'chat', '--oneshot', '-Q', '--query-file', str(directory / 'prompt.txt'),
                                '--source', 'oneshot', '--model', self.policy['model'],
                                '--ignore-rules', '--in', neutral,
-                               '-t', toolset,
+                               '-t', self.policy.get('research_toolset', 'web'),
                                '--max-turns', str(turns), '--run-budget', str(seconds)]
+                    if not research:
+                        command = [str(self.hermes_root / '.venv/bin/python3'),
+                                   str(self.root / 'factory/hermes_write_task.py'),
+                                   '--hermes-root', str(self.hermes_root),
+                                   '--query-file', str(directory / 'prompt.txt'),
+                                   '--model', self.policy['model'], '--max-turns', str(turns),
+                                   '--run-budget', str(seconds)]
                     if self.policy.get('provider'):
                         command.extend(['--provider', self.policy['provider']])
                     with w.session_marker(argparse.Namespace(max_turns=turns, run_budget=seconds)):
@@ -203,6 +207,8 @@ class ModelTasks:
                 measured['elapsed_seconds'] = round(time.monotonic() - started, 3)
                 measured['completion_exit_code'] = result.returncode
                 write_json(directory / 'usage.json', measured)
+                if not research and measured.get('tool_results') != 0:
+                    raise TaskFailure('Write-only task unexpectedly executed tools')
                 main_tasks = [task for task in measured['tasks'] if task['task'] in (None, '')]
                 if not main_tasks or any(task['model'] != self.policy['model'] for task in main_tasks):
                     raise TaskFailure('Recorded inference route differs from the configured model')

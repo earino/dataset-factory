@@ -67,11 +67,15 @@ Model tasks receive stage-specific context and structured outputs:
 Malformed or failed model results are bounded failures. Model prose cannot waive
 checks, alter budgets, authorize itself, or substitute for measured results.
 Use the existing supported Hermes runtime rather than inventing an agent runtime.
-Research, construction and semantic review use only the supported web-reading
-toolset. Construction can consult field documentation; it has no coordinator
-filesystem, shell, worker-launch or publishing tool. Each task remains turn/time
-bounded. A local resolver accepting an unknown no-tool name is not evidence that
-the hosted gateway accepts it; the deployed gateway rejected that initial choice.
+Research and semantic review use the supported web-reading toolset. Construction
+and JSON-format repair are write-only, using the supplied evidence and exact
+previous proposal. A small adapter calls the installed Hermes Python constructor
+with an explicit empty tool list, because its CLI argument parser substitutes
+default tools for empty input. It preserves native turn/time bounds and accounting;
+it does not implement another agent runtime. Recorded tool execution in a write-only
+task is a failure. An unknown toolset alias is never used. Live six-turn repairs
+spent every turn on documentation reads without producing code; increasing that
+limit did not fix the missing writing capacity.
 
 ## Dataset acceptance and standing publication policy
 
