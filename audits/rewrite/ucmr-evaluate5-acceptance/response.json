@@ -1,0 +1,14 @@
+{
+  "verdict": "accept",
+  "reason": "The construction matches the stated rules and the two prior repair items are resolved. The code now counts blank CollectionDate rows before first-sample selection (`counts['missing_date']`) and reports them, and the access_recipe now specifies the SampleEventCode-aware exact-key join that the code implements. The population is one earliest entry-point PFOA/PFOS sample per PWS; the target is sign '=' and numeric value >= 0.004 ug/L; current-sample result fields are excluded from features; UCMR 3 priors are aggregated by PWS; additional-data responses are attached only through the exact available sample key; fixed half-open windows, the December 2023/2024 embargo, and the 234 excluded first samples are counted. All supplied source checks pass, including the independent csv-module label recomputation, and the EPA documentation confirms the MRL, result-sign, EP, size, water-type, date, and additional-data definitions. EPA's public-domain basis applies to the EPA text records used; the remaining issues are disclosed research limitations rather than unresolved construction errors.",
+  "findings": [],
+  "limitations": [
+    "Historical operational availability of system attributes and prior UCMR 3 results is assumed, not proven; feature_evidence marks these features 'assumed' and training_label_timing is 'unverified', so the source.reason's 'were available' is best read as 'treated as pre-sample'.",
+    "Additional-data responses are undated self-reports; exact event-key attachment reduces cross-event mixing but does not prove availability at the decision instant, as prediction_time and the source limitations state.",
+    "First-sample selection excludes 234 systems whose earliest sample falls in the December 2023/2024 embargo or outside the windows; later in-window samples for those systems are not represented.",
+    "UCMR 5 is occurrence monitoring at entry points, not compliance or MCL monitoring; the label is one entry-point sample per system, and results below 0.004 ug/L are censored.",
+    "The final UCMR 5 file includes samples through 2026-06, beyond the occurrence page's 2023-2025 collection text; the holdout follows the observed data through 2026-06-30.",
+    "The evaluation is on 3,769 public 2024 eval rows with no holdout scoring or uncertainty interval; full-model AUC 0.7856 is an observed protocol result, not a universal ceiling. For UCMR 3 systems with only non-detects, the prior maximum uses the maximum reported MRL as a censoring bound, not an observed concentration.",
+    "EPA's 17 U.S.C. \u00a7105 public-domain basis is U.S. domestic; non-U.S. reuse requires local assessment. The ZIPs contain PDF documentation, while the derived CSV uses only the EPA text records."
+  ]
+}
