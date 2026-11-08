@@ -1339,3 +1339,36 @@ The manifest population now matches the saved corrected description.
 [Binding report](../audits/rewrite/new-source-outcomes/ucmr5-build-8-binding-verification.json).
 No local CSV download was used. This is construction/evaluation/packaging evidence,
 not semantic acceptance or public-consumer verification. Those remain next.
+
+## Repair scope and recipe propagation — 2026-11-08 20:20 UTC
+
+[Resume state](../audits/rewrite/ucmr-build8-resumed-run/resume-state.md) confirms
+`46c2794` deployed, worker collected at 20:10:04 and deleted at 20:10:17. UCMR
+review started after collection; source-15 discovery used the worker wait and did
+not displace a ready review. No scheduling defect was established or patched.
+The earlier cutoff wording that source-15 was unadmitted was imprecise; retained
+runtime evidence explains its actual progression.
+
+[Review 4](../audits/rewrite/ucmr-evaluate4-review/response.json) affirms target,
+units, population selection, exact event-key joins, splits and independent label
+audit. It requests two repairs: the population claims missing dates were counted
+when only nonempty unparseable dates were counted; initial access_recipe text
+still describes the older three-key join. Neither finding establishes a bad
+split/label. Correct the false reporting claim or measure the count, and correct
+the recipe. Do not invent a new historical-date requirement.
+
+A demonstrated interface gap prevented access_recipe corrections from propagating.
+The repair response can now supply `source_access_recipe` (description only), with
+its old text retained in history. Download URLs, rights and frozen task fields
+remain separate. A repair can omit unchanged top-level construction fields; saved
+code/references are reused, the merged proposal is checkpointed and fully validated.
+If quality changes it remains a complete descriptor, avoiding a new patch language.
+The format-repair path preserves partial fields instead of inventing missing code.
+No semantic verdict is overridden and normal full-artifact checks still run.
+
+Tests exercise a metadata-only repair of the actual build-8 response through the
+driver to bundle assembly, unchanged builder/references, recipe propagation/history,
+source URL preservation and invalid repair refusal. All 17 engine tests pass locally.
+Scout paused the tick at a safe boundary at 20:19:51, retaining cleanup. UCMR
+build-9 has not started; source-15's already-running construction is allowed to
+finish and preserve its result. The tested correction will deploy before resuming.

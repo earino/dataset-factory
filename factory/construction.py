@@ -25,9 +25,24 @@ pypdf==5.4.0
 FILES = ('source_io.py', 'dataset_run.py', 'dataset_package.py', 'get_dataset.py')
 
 
+def merge_repair(previous, response):
+    """Omitted top-level construction fields retain their exact saved values."""
+    if previous is None:
+        return response
+    allowed = {'build_py', 'quality', 'references', 'construction_notes', 'source_access_recipe'}
+    if not isinstance(response, dict) or not response or set(response) - allowed:
+        raise FactoryError('Repair must return changed construction fields only')
+    return {**copy.deepcopy(previous), **copy.deepcopy(response)}
+
+
 def describe_task(source, response):
     """Carry construction's corrected descriptions into review and the package."""
     updated = copy.deepcopy(source)
+    if 'source_access_recipe' in response:
+        recipe = response['source_access_recipe']
+        if not isinstance(recipe, str) or not recipe.strip():
+            raise FactoryError('Source access recipe must be nonempty text')
+        updated.setdefault('construction', {})['access_recipe'] = recipe
     quality = response['quality']
     descriptions = quality.get('task', {})
     if not isinstance(descriptions, dict):

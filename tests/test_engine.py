@@ -26,6 +26,51 @@ def source():
 
 
 class EngineTests(unittest.TestCase):
+    def test_metadata_only_repair_reuses_real_builder_and_reaches_bundle(self):
+        evidence = Path(__file__).resolve().parents[1] / 'audits/rewrite'
+        prior = json.loads((evidence / 'ucmr-build8-resumed-run/construction-response.json').read_text())
+        manifest = json.loads((evidence / 'new-source-outcomes/ucmr5-build-8-package-manifest.json').read_text())
+        original = {'task': manifest['task'], 'source': manifest['source'],
+                    'construction': {'access_recipe': 'Old three-key join'}}
+        quality = copy.deepcopy(prior['quality'])
+        quality['task']['population'] = 'Same frozen population; missing dates excluded, count not claimed'
+        repair = {'quality': quality, 'source_access_recipe': 'Use exact event key when present; unmatched rows stay missing'}
+        model = Mock(); model.run.return_value = repair
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_json(root / 'config/local.json', {'enabled': True, 'cleanup_configured': True})
+            write_json(root / 'skills/dataset-qualification/fixtures/corrected/quality.json', {})
+            harness = root / 'harness/task_template'; harness.mkdir(parents=True)
+            for name in ('train.py', 'validate.py', 'validate.sh'): (harness / name).write_text('# fixture')
+            data = {'source': original, 'construction': prior}
+            with patch.dict(os.environ, {'FACTORY_BENCHMARK_ROOT': str(harness.parent)}), \
+                    patch('factory.engine.construction.assemble', side_effect=FactoryError('Stop at bundle')) as assemble, \
+                    patch('factory.engine.worker.launch') as launch:
+                result = Driver(root, {'worker': {}}, model=model).execute(
+                    {'stage': 'build', 'data': data}, {'id': 'repair'}, lambda value: None)
+            self.assertEqual('retry', result['status'])
+            bundled_source, bundled_response = assemble.call_args.args[2:4]
+            self.assertEqual(prior['build_py'], bundled_response['build_py'])
+            self.assertEqual(prior['references'], bundled_response['references'])
+            self.assertEqual(repair['source_access_recipe'], bundled_source['construction']['access_recipe'])
+            self.assertEqual(quality['task']['population'], bundled_source['task']['population'])
+            self.assertEqual(original['source'], bundled_source['source'])
+            self.assertEqual('Old three-key join', original['construction']['access_recipe'])
+            self.assertEqual(original['construction'], data['source_description_history'][0]['previous_construction'])
+            self.assertEqual(prior['build_py'], data['construction']['build_py'])
+            launch.assert_not_called()
+
+    def test_partial_repair_does_not_hide_invalid_fields_or_mutate_saved_proposal(self):
+        from factory.construction import merge_repair, validate, describe_task
+        prior = {'build_py': 'def build(output, cache): pass', 'quality': {'target': 'original'}}
+        merged = merge_repair(prior, {'quality': {}})
+        self.assertEqual(prior['build_py'], merged['build_py'])
+        self.assertEqual('original', prior['quality']['target'])
+        with self.assertRaises(FactoryError): validate(merged)
+        for response in ({}, {'source': {'urls': ['https://other.invalid']}}):
+            with self.assertRaises(FactoryError): merge_repair(prior, response)
+        with self.assertRaises(FactoryError): describe_task(source(), {'quality': {}, 'source_access_recipe': ''})
+
     def test_repaired_descriptions_reach_source_without_changing_frozen_task(self):
         from factory.construction import describe_task
         original = source()

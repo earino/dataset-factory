@@ -130,7 +130,7 @@ class Driver:
                 if isinstance(failure, dict) and failure.get('stage') == 'build':
                     cached = self.root / '.factory/model-tasks' / failure.get('attempt', 'absent') / 'response.json'
                     if cached.is_file() and cached.stat().st_size <= 256 * 1024:
-                        previous = read_json(cached)
+                        previous = construction.merge_repair(previous, read_json(cached))
                         text_draft = None
                         data.pop('construction_text_draft', None)
                         try:
@@ -154,12 +154,18 @@ class Driver:
                 prompt = (task_prompts.construction_json_repair(text_draft['response'], text_draft['failure'])
                           if text_draft else task_prompts.construction(data['source'], example, failure, previous))
                 response = self.model.run(attempt['id'], prompt, construction=True)
+                response = construction.merge_repair(previous, response)
+                data['construction_draft'] = response
+                save(data)
                 construction.validate(response)
                 described = construction.describe_task(data['source'], response)
                 if described['task'] != data['source']['task']:
                     data.setdefault('task_description_history', []).append(
                         {'attempt': attempt['id'], 'previous_task': data['source']['task']})
-                    data['source'] = described
+                if described.get('construction') != data['source'].get('construction'):
+                    data.setdefault('source_description_history', []).append(
+                        {'attempt': attempt['id'], 'previous_construction': data['source'].get('construction')})
+                data['source'] = described
                 data.update(construction=response, construction_attempt=attempt['id'])
                 data.pop('construction_draft', None)
                 data.pop('construction_text_draft', None)
