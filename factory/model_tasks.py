@@ -8,6 +8,7 @@ from contextlib import closing
 import json
 import os
 from pathlib import Path
+import re
 import sqlite3
 import subprocess
 import tempfile
@@ -23,6 +24,21 @@ class BudgetWait(FactoryError):
 
 class TaskFailure(FactoryError):
     pass
+
+
+def startup_diagnostic(stderr):
+    """Keep bounded failure text while removing credential-like material."""
+    text = str(stderr)[-8000:]
+    for name, value in os.environ.items():
+        if len(value) >= 4 and re.search(r'TOKEN|SECRET|PASSWORD|API_KEY', name, re.I):
+            text = text.replace(value, '[redacted]')
+    text = re.sub(r'https?://[^\s<>]+', '[url]', text)
+    text = re.sub(r'(?i)\bBearer\s+\S+', 'Bearer [redacted]', text)
+    text = re.sub(r'''(?i)(["']?(?:token|api_key|password|secret|authorization)["']?\s*[:=]\s*)("[^"]*"|'[^']*'|[^\s,}]+)''',
+                  r'\1[redacted]', text)
+    text = re.sub(r'\b(?:sk-|hf_|ghp_|github_pat_)[A-Za-z0-9_-]+', '[redacted]', text)
+    text = re.sub(r'[A-Za-z0-9_+/=-]{32,}', '[opaque-value]', text)
+    return text[-4000:]
 
 
 def parse_response(text):
@@ -42,13 +58,25 @@ def parse_response(text):
     return value
 
 
-def usage(db_path, before):
+def runtime_session(stderr):
+    # The installed quiet CLI emits this automation field after syncing the
+    # gateway's session ID. A separate oneshot outside our mutex is not ours.
+    matches = re.findall(r'^session_id: ([A-Za-z0-9_-]+)\s*$', str(stderr), re.M)
+    return matches[-1] if matches else None
+
+
+def usage(db_path, before, session_id=None):
     """Read actual session accounting; price fields are not actual spend."""
     with closing(sqlite3.connect(Path(db_path).resolve().as_uri() + '?mode=ro', uri=True)) as db:
         created = {r[0] for r in db.execute("SELECT id FROM sessions WHERE source='oneshot'")} - set(before)
-        if len(created) != 1:
-            raise TaskFailure(f'Expected one model session; observed {len(created)} new sessions')
-        sid = created.pop()
+        if session_id is not None:
+            if session_id not in created:
+                raise TaskFailure('CLI session identity is not a new recorded oneshot session')
+            sid = session_id
+        else:
+            if len(created) != 1:
+                raise TaskFailure(f'Expected one model session; observed {len(created)} new sessions')
+            sid = created.pop()
         rows = db.execute('SELECT task,model,billing_provider,api_call_count,input_tokens,output_tokens,'
                           'cache_read_tokens,cache_write_tokens FROM session_model_usage WHERE session_id=?',
                           (sid,)).fetchall()
@@ -96,8 +124,11 @@ class ModelTasks:
                 seconds = min(int(self.policy['task_seconds']), int(limits['session_max_minutes']) * 60)
                 if min(turns, seconds) < 1:
                     raise BudgetWait('Configured task limits disallow inference')
-                toolset = self.policy['research_toolset'] if research else '__none__'
-                expected = ['web_search', 'web_extract'] if research else []
+                # Both source interpretation and code generation may read public
+                # documentation. Use the supported web-only gateway capability;
+                # an invented unknown toolset is not a portable no-tool API.
+                toolset = self.policy['research_toolset']
+                expected = ['web_search', 'web_extract']
                 probe = ('from model_tools import get_tool_definitions as g; '
                          'd=g(enabled_toolsets=[' + repr(toolset) + '],quiet_mode=True); '
                          'assert sorted(x.get("function",x)["name"] for x in d)==sorted(' + repr(expected) + ')')
@@ -118,7 +149,7 @@ class ModelTasks:
                                'chat', '--oneshot', '-Q', '--query-file', str(directory / 'prompt.txt'),
                                '--source', 'oneshot', '--model', self.policy['model'],
                                '--ignore-rules', '--in', neutral,
-                               '-t', self.policy['research_toolset'] if research else '__none__',
+                               '-t', toolset,
                                '--max-turns', str(turns), '--run-budget', str(seconds)]
                     if self.policy.get('provider'):
                         command.extend(['--provider', self.policy['provider']])
@@ -129,25 +160,24 @@ class ModelTasks:
                         except subprocess.TimeoutExpired as exc:
                             raise TaskFailure('Model task exceeded its wall-clock limit') from exc
                 if result.returncode:
-                    # Parser errors are useful and precede credentials/provider
-                    # requests. Do not persist arbitrary provider stderr/tokens.
+                    # Preserve the startup failure, not just its missing session.
+                    # Raw provider stderr is never persisted.
                     parser_error = [line for line in result.stderr.splitlines()
                                     if 'error: unrecognized arguments:' in line or 'error: argument ' in line]
-                    failure = {'exit_code': result.returncode, 'parser_error': parser_error[-2:]}
+                    failure = {'exit_code': result.returncode, 'parser_error': parser_error[-2:],
+                               'diagnostic': startup_diagnostic(result.stderr)}
                     try:
-                        write_json(directory / 'usage.json', usage(self.db, before))
+                        write_json(directory / 'usage.json', usage(self.db, before, runtime_session(result.stderr)))
                     except TaskFailure as exc:
                         failure['accounting'] = str(exc)
                     write_json(directory / 'failure.json', failure)
                     raise TaskFailure('Model invocation failed: ' + json.dumps(failure))
-                measured = usage(self.db, before)
+                measured = usage(self.db, before, runtime_session(result.stderr))
                 measured['elapsed_seconds'] = round(time.monotonic() - started, 3)
                 write_json(directory / 'usage.json', measured)
                 main_tasks = [task for task in measured['tasks'] if task['task'] in (None, '')]
                 if not main_tasks or any(task['model'] != self.policy['model'] for task in main_tasks):
                     raise TaskFailure('Recorded inference route differs from the configured model')
-                if not research and measured['tool_results']:
-                    raise TaskFailure('A no-tool construction task executed tools')
                 response_text = w.strip_footer(result.stdout)
                 if len(response_text.encode()) < 256 * 1024:
                     (directory / 'response.txt').write_text(response_text)

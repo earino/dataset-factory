@@ -65,6 +65,21 @@ Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
   Two queue slots are seeded; actual source discovery/build results are still pending.
 - Next: verify deployed scheduler/model/worker operation, repair actual runtime failures,
   and observe two materially different sources through public consumer verification.
+- First deployed discovery completed in 296.3 seconds/11 model calls, selecting
+  USACE National Inventory of Dams. No artifact or scientific result yet.
+- Actual startup defect: hosted gateway rejects `__none__` as an unknown toolset,
+  although local `get_tool_definitions` returns an empty list. Two construction
+  attempts failed before session creation. The replacement now uses the already
+  working web-only toolset for construction too; no new runtime or permission gate.
+  Bounded, redacted stderr is retained for future startup failures.
+- A second discovery encountered a provider model-not-found error; Scout's one-turn
+  diagnostic probe overlapped a subsequent accounting window. Both failures remain
+  evidence; no claim of successful research from those attempts. Tick `07d6f8be3783`
+  paused at 12:35:32 UTC for this repair; independent cleanup remains active.
+- Accounting now prefers the quiet CLI's actual `session_id:` stderr field, verified
+  as a new recorded oneshot session, instead of assuming no unrelated session can
+  start during the task. This directly addresses the observed concurrent diagnostic
+  probe. Exact model route/usage checks remain; no manufactured usage records.
 
 ## Milestones
 
