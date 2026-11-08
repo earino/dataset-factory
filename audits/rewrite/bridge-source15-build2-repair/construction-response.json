@@ -1,0 +1,360 @@
+{
+  "build_py": "from __future__ import annotations\n\nimport csv\nimport io\nimport pathlib\nimport zipfile\nfrom collections import Counter\nfrom datetime import date\n\nfrom source_io import fetch\n\nTARGET = 'poor_at_next_inspection'\nTIME_COL = 'snapshot_datetime'\nID_COL = 'bridge_id'\nFEATURES = [\n    'state_code',\n    'deck_rating',\n    'superstructure_rating',\n    'substructure_rating',\n    'culvert_rating',\n    'channel_rating',\n    'lowest_component_rating',\n    'year_built',\n    'bridge_age_years',\n    'months_since_inspection',\n    'numeric_component_count',\n    'culvert_applicable',\n]\nCOLUMNS = [ID_COL, TIME_COL] + FEATURES + [TARGET]\nSPLIT_FOR_YEAR = {2018: 'train', 2019: 'train', 2020: 'eval', 2021: 'holdout'}\nSPLIT_WINDOWS = {\n    'train': (None, '2020-01-01T00:00:00.000'),\n    'eval': ('2020-01-01T00:00:00.000', '2021-01-01T00:00:00.000'),\n    'holdout': ('2021-01-01T00:00:00.000', None),\n}\nYEAR_URL = 'https://www.fhwa.dot.gov/bridge/nbi/disclaim.cfm?nbiYear={year}hwybronlyonefile&nbiZip=zip'\nRATING_FIELDS = ('deck_rating', 'superstructure_rating', 'substructure_rating', 'culvert_rating')\nREC_FIELDS = (\n    'state_code',\n    'structure_number',\n    'record_type',\n    'year_built',\n    'deck_rating',\n    'superstructure_rating',\n    'substructure_rating',\n    'channel_rating',\n    'culvert_rating',\n    'inspection_date',\n    'cat23',\n)\nALIASES = {\n    'state_code': ('STATE_CODE_001', 'STATE_CODE', 'STATE'),\n    'structure_number': ('STRUCTURE_NUMBER_008', 'STRUCTURE_NUMBER'),\n    'record_type': ('RECORD_TYPE_005A', 'RECORD_TYPE'),\n    'year_built': ('YEAR_BUILT_027', 'YEAR_BUILT'),\n    'deck_rating': ('DECK_COND_058', 'DECK_CONDITION_058', 'DECK_CONDITION'),\n    'superstructure_rating': ('SUPERSTR_COND_059', 'SUPERSTRUCTURE_COND_059', 'SUPERSTRUCTURE_CONDITION_059', 'SUPERSTRUCTURE_CONDITION'),\n    'substructure_rating': ('SUBSTRUC_COND_060', 'SUBSTRUCTURE_COND_060', 'SUBSTRUCTURE_CONDITION_060', 'SUBSTRUCTURE_CONDITION'),\n    'channel_rating': ('CHANNEL_COND_061', 'CHANNEL_CONDITION_061', 'CHANNEL_CONDITION'),\n    'culvert_rating': ('CULVERT_COND_062', 'CULVERT_CONDITION_062', 'CULVERT_CONDITION'),\n    'inspection_date': ('INSPECT_DATE_090', 'INSPECTION_DATE_090', 'INSPECTION_DATE'),\n    'cat23': ('LOWEST_COND_023', 'LOWEST_CONDITION_023', 'LOWEST_COND', 'LOWEST_CONDITION', 'CAT23'),\n}\n\n\ndef _norm(value):\n    return ''.join(ch for ch in value.upper() if ch.isalnum())\n\n\ndef _snapshot_date(year):\n    return date(year, 6, 15)\n\n\ndef _snapshot_text(year):\n    return str(year) + '-06-15T00:00:00.000'\n\n\ndef _month_index(value):\n    return value.year * 12 + value.month\n\n\ndef _parse_mmyy(value):\n    s = (value or '').strip()\n    if len(s) == 4 and s.isdigit():\n        month = int(s[0:2])\n        yy = int(s[2:4])\n        if 1 <= month <= 12:\n            year = 2000 + yy if yy < 50 else 1900 + yy\n            return date(year, month, 1)\n    if len(s) == 6 and s.isdigit():\n        year = int(s[0:4])\n        month = int(s[4:6])\n        if 1 <= month <= 12:\n            return date(year, month, 1)\n    return None\n\n\ndef _numeric_ratings(rec):\n    nums = []\n    bad = []\n    for field in RATING_FIELDS:\n        token = rec[field].strip()\n        if token in ('', 'N'):\n            continue\n        if token.isdigit() and 0 <= int(token) <= 9:\n            nums.append(int(token))\n        else:\n            bad.append(token)\n    return nums, bad\n\n\ndef _parse_fixed(line):\n    if len(line) < 435:\n        return None\n    return {\n        'state_code': line[0:3].strip(),\n        'structure_number': line[3:18].strip(),\n        'record_type': line[18:19].strip(),\n        'year_built': line[156:160].strip(),\n        'deck_rating': line[258:259].strip(),\n        'superstructure_rating': line[259:260].strip(),\n        'substructure_rating': line[260:261].strip(),\n        'channel_rating': line[261:262].strip(),\n        'culvert_rating': line[262:263].strip(),\n        'inspection_date': line[286:290].strip(),\n        'cat23': line[434:435].strip(),\n    }\n\n\ndef _select_member(path):\n    with zipfile.ZipFile(path) as archive:\n        infos = [info for info in archive.infolist() if not info.is_dir() and info.file_size > 0]\n        if not infos:\n            raise AssertionError('selected archive has no nonempty file member; path ' + str(path))\n        member = max(infos, key=lambda info: info.file_size).filename\n        with archive.open(member) as handle:\n            first = handle.readline().decode('latin-1', errors='replace').rstrip(chr(13) + chr(10))\n    return member, first\n\n\ndef _header_indices(headers):\n    normed = {}\n    for index, header in enumerate(headers):\n        key = _norm(header)\n        if key and key not in normed:\n            normed[key] = index\n    mapping = {}\n    missing = []\n    for field in REC_FIELDS:\n        found = None\n        for alias in ALIASES[field]:\n            key = _norm(alias)\n            if key in normed:\n                found = normed[key]\n                break\n        if found is None:\n            missing.append(field)\n        else:\n            mapping[field] = found\n    return mapping, missing\n\n\ndef _iter_records(path, member, mode, header_map):\n    with zipfile.ZipFile(path) as archive:\n        with archive.open(member) as raw:\n            text = io.TextIOWrapper(raw, encoding='latin-1', newline='')\n            if mode == 'header':\n                reader = csv.reader(text, delimiter=',', quotechar=chr(39))\n                next(reader, None)\n                width = max(header_map.values()) + 1\n                for row in reader:\n                    if len(row) < width:\n                        continue\n                    yield {field: row[index].strip() for field, index in header_map.items()}\n            else:\n                for line in text:\n                    line = line.rstrip(chr(13) + chr(10))\n                    if not line:\n                        continue\n                    rec = _parse_fixed(line)\n                    if rec is not None:\n                        yield rec\n\n\ndef _record_check(checks, name, observed, expected, passed, context=None, kind=None):\n    item = {\n        'check': name,\n        'observed': str(observed),\n        'expected': str(expected),\n        'passed': bool(passed),\n    }\n    if kind is not None:\n        item['kind'] = kind\n    checks.append(item)\n    if not passed:\n        parts = [\n            'source check failed',\n            name,\n            'observed value ' + str(observed),\n            'expected ' + str(expected),\n        ]\n        if context is not None:\n            parts.append('selected archive member ' + str(context.get('member')))\n            parts.append('observed headers ' + str(context.get('headers')))\n            parts.append('missing names ' + str(context.get('missing')))\n        raise AssertionError('; '.join(parts)[:4000])\n\n\ndef _make_row(state, structure, year, inspection, rec, low, nums):\n    yb = rec['year_built'].strip()\n    age = ''\n    if len(yb) == 4 and yb.isdigit() and 1800 <= int(yb) <= year:\n        age = year - int(yb)\n    return {\n        ID_COL: 'nbi|' + state + '|' + structure + '|' + str(year),\n        TIME_COL: _snapshot_text(year),\n        'state_code': state,\n        'deck_rating': rec['deck_rating'].strip(),\n        'superstructure_rating': rec['superstructure_rating'].strip(),\n        'substructure_rating': rec['substructure_rating'].strip(),\n        'culvert_rating': rec['culvert_rating'].strip(),\n        'channel_rating': rec['channel_rating'].strip(),\n        'lowest_component_rating': low,\n        'year_built': yb,\n        'bridge_age_years': age,\n        'months_since_inspection': _month_index(_snapshot_date(year)) - _month_index(inspection),\n        'numeric_component_count': len(nums),\n        'culvert_applicable': 1 if rec['culvert_rating'].strip().isdigit() else 0,\n    }\n\n\ndef build(output, cache):\n    output = pathlib.Path(output)\n    cache = pathlib.Path(cache)\n    (output / 'public').mkdir(parents=True, exist_ok=True)\n    (output / 'private').mkdir(parents=True, exist_ok=True)\n\n    checks = []\n    rows = {'train': [], 'eval': [], 'holdout': []}\n    pending = {}\n    assigned = set()\n    stats = {\n        'records': 0,\n        'record_types': Counter(),\n        'missing_key': 0,\n        'missing_key_sample': None,\n        'bad_candidate_inspection': 0,\n        'bad_pending_inspection': 0,\n        'future_snapshot_inspection': 0,\n        'old_inspection': 0,\n        'no_numeric_current': 0,\n        'already_poor': 0,\n        'bad_rating_tokens': 0,\n        'rating_tokens': Counter(),\n        'cat23_checked': 0,\n        'cat23_mismatch': 0,\n        'cat23_sample': None,\n        'identity_changed': 0,\n        'unlabelable_next': 0,\n        'emitted': Counter(),\n        'positives': Counter(),\n        'feature_nonempty': Counter(),\n    }\n\n    for year in range(2018, 2025):\n        url = YEAR_URL.format(year=year)\n        fetched = fetch(url, cache, 'nbi_' + str(year) + 'hwybronlyonefile.zip')\n        if hasattr(fetched, 'path'):\n            path = pathlib.Path(fetched.path)\n        elif isinstance(fetched, (tuple, list)):\n            path = pathlib.Path(fetched[0])\n        else:\n            path = pathlib.Path(fetched)\n        if not zipfile.is_zipfile(path):\n            preview = ''\n            try:\n                with path.open('rb') as handle:\n                    preview = handle.read(200).decode('latin-1', errors='replace')\n            except OSError:\n                preview = 'unreadable download'\n            _record_check(\n                checks,\n                str(year) + ' annual download is a ZIP archive',\n                'path ' + str(path) + '; preview ' + repr(preview),\n                'a valid zip archive holding the annual NBI highway bridge file',\n                False,\n                {'member': None, 'headers': None, 'missing': []},\n            )\n        member, first = _select_member(path)\n        _record_check(\n            checks,\n            str(year) + ' archive member is selected',\n            'member ' + member + '; first line length ' + str(len(first)),\n            'one nonempty member containing NBI highway bridge records',\n            True,\n        )\n        upper = first.upper()\n        if ',' in first and ('STATE_CODE' in upper or 'STRUCTURE_NUMBER' in upper):\n            mode = 'header'\n        elif len(first) >= 400:\n            mode = 'fixed'\n        elif ',' in first:\n            mode = 'comma_no_header'\n        else:\n            mode = 'fixed'\n\n        context = {'member': member, 'headers': None, 'missing': []}\n        header_map = {}\n        if mode == 'header':\n            headers = next(csv.reader([first], delimiter=',', quotechar=chr(39)))\n            header_map, missing = _header_indices(headers)\n            context['headers'] = headers\n            context['missing'] = missing\n            _record_check(\n                checks,\n                str(year) + ' delimited header carries the required NBI items',\n                'member ' + member + '; observed header count ' + str(len(headers)) + '; observed headers ' + repr(headers) + '; missing field names ' + repr(missing),\n                'every required NBI item has a matching header name for state, structure number, record type, year built, items 58, 59, 60, 61, 62, item 90 and the lowest condition code',\n                len(missing) == 0,\n                context,\n            )\n        elif mode == 'fixed':\n            _record_check(\n                checks,\n                str(year) + ' archive member holds fixed width NBI records',\n                'member ' + member + '; first line length ' + str(len(first)),\n                'first record at least 435 characters so items 58 to 62, 90 and the lowest condition code are addressable',\n                len(first) >= 435,\n                context,\n            )\n        else:\n            _record_check(\n                checks,\n                str(year) + ' archive member is parseable',\n                'member ' + member + '; first line preview ' + repr(first[:300]),\n                'a delimited header row or fixed width NBI records',\n                False,\n                context,\n            )\n\n        for rec in _iter_records(path, member, mode, header_map):\n            stats['records'] += 1\n            rt = rec['record_type'].strip()\n            stats['record_types'][rt] += 1\n            state = rec['state_code'].strip()\n            structure = rec['structure_number'].strip()\n            if not state or not structure:\n                stats['missing_key'] += 1\n                if stats['missing_key_sample'] is None:\n                    stats['missing_key_sample'] = (member, state, structure)\n                continue\n            if rt != '1':\n                continue\n            key = (state, structure)\n            if key in pending:\n                p = pending[key]\n                current_yb = rec['year_built'].strip()\n                if p['year_built'] and current_yb and p['year_built'] != current_yb:\n                    pending.pop(key, None)\n                    stats['identity_changed'] += 1\n                    continue\n                inspection = _parse_mmyy(rec['inspection_date'])\n                if inspection is None:\n                    stats['bad_pending_inspection'] += 1\n                    continue\n                if _month_index(inspection) > _month_index(p['snapshot']):\n                    tokens = [rec[field].strip() for field in RATING_FIELDS]\n                    stats['rating_tokens'].update(tokens)\n                    nums, bad = _numeric_ratings(rec)\n                    if bad:\n                        stats['bad_rating_tokens'] += len(bad)\n                        continue\n                    if not nums:\n                        pending.pop(key, None)\n                        stats['unlabelable_next'] += 1\n                        continue\n                    target = 1 if min(nums) <= 4 else 0\n                    row = dict(p['row'])\n                    row[TARGET] = target\n                    split = p['split']\n                    rows[split].append(row)\n                    stats['emitted'][split] += 1\n                    stats['positives'][split] += target\n                    for field in FEATURES:\n                        if row[field] != '':\n                            stats['feature_nonempty'][field] += 1\n                    pending.pop(key, None)\n                continue\n            if key in assigned:\n                continue\n            if year not in SPLIT_FOR_YEAR:\n                continue\n            inspection = _parse_mmyy(rec['inspection_date'])\n            if inspection is None:\n                stats['bad_candidate_inspection'] += 1\n                continue\n            snap = _snapshot_date(year)\n            age_months = _month_index(snap) - _month_index(inspection)\n            if age_months < 0:\n                stats['future_snapshot_inspection'] += 1\n                continue\n            if age_months > 24:\n                stats['old_inspection'] += 1\n                continue\n            tokens = [rec[field].strip() for field in RATING_FIELDS]\n            stats['rating_tokens'].update(tokens)\n            nums, bad = _numeric_ratings(rec)\n            if bad:\n                stats['bad_rating_tokens'] += len(bad)\n                continue\n            if not nums:\n                stats['no_numeric_current'] += 1\n                continue\n            low = min(nums)\n            if low < 5:\n                stats['already_poor'] += 1\n                continue\n            cat = rec['cat23'].strip()\n            stats['cat23_checked'] += 1\n            if cat != str(low):\n                stats['cat23_mismatch'] += 1\n                if stats['cat23_sample'] is None:\n                    stats['cat23_sample'] = (member, cat, low, state, structure)\n            assigned.add(key)\n            row = _make_row(state, structure, year, inspection, rec, low, nums)\n            pending[key] = {\n                'split': SPLIT_FOR_YEAR[year],\n                'snapshot': snap,\n                'year_built': rec['year_built'].strip(),\n                'row': row,\n            }\n\n    unresolved = len(pending)\n    for split in rows:\n        rows[split].sort(key=lambda row: (row[TIME_COL], row[ID_COL]))\n\n    paths = {\n        'train': output / 'public' / 'train.csv',\n        'eval': output / 'public' / 'eval.csv',\n        'holdout': output / 'private' / 'holdout.csv',\n    }\n    for split in ('train', 'eval', 'holdout'):\n        with paths[split].open('w', newline='', encoding='utf-8') as handle:\n            writer = csv.DictWriter(handle, fieldnames=COLUMNS)\n            writer.writeheader()\n            for row in rows[split]:\n                writer.writerow(row)\n\n    all_rows = rows['train'] + rows['eval'] + rows['holdout']\n\n    _record_check(\n        checks,\n        'annual archives yielded raw NBI records',\n        'raw record count ' + str(stats['records']),\n        'at least one raw NBI record across the 2018 to 2024 annual files',\n        stats['records'] > 0,\n    )\n    _record_check(\n        checks,\n        'NBI join keys are complete',\n        'records missing an identity key ' + str(stats['missing_key']) + '; sample ' + repr(stats['missing_key_sample']),\n        'every retained record carries a state code and a structure number',\n        stats['missing_key'] == 0,\n    )\n    _record_check(\n        checks,\n        'highway bridge record type is present',\n        'record type counts ' + repr(dict(stats['record_types'])),\n        'record type 1 present; other record type codes are counted without aborting the build',\n        stats['record_types'].get('1', 0) > 0,\n    )\n\n    allowed_tokens = {'', 'N', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}\n    bad_tokens = [token for token in stats['rating_tokens'] if token not in allowed_tokens]\n    _record_check(\n        checks,\n        'component and channel rating tokens use the NBI 0 to 9 or N domain',\n        'observed tokens ' + repr(dict(stats['rating_tokens'])) + '; out of domain tokens ' + repr(bad_tokens[:20]),\n        'NBI condition ratings are the digits 0 through 9 or N; blank only where the field is structurally absent',\n        len(bad_tokens) == 0 and stats['bad_rating_tokens'] == 0,\n    )\n    _record_check(\n        checks,\n        'inspection dates parse as NBI month and year',\n        'unparsed candidate inspection dates ' + str(stats['bad_candidate_inspection']) + '; unparsed later inspection dates ' + str(stats['bad_pending_inspection']),\n        'item 90 is the four character MMYY month and year code',\n        stats['bad_candidate_inspection'] == 0,\n    )\n    _record_check(\n        checks,\n        'lowest condition code equals the minimum numeric component rating for candidate rows',\n        'candidates compared ' + str(stats['cat23_checked']) + '; mismatch count ' + str(stats['cat23_mismatch']) + '; sample ' + repr(stats['cat23_sample']),\n        'the published lowest condition code is the smallest numeric value among items 58, 59, 60 and 62 ignoring N',\n        stats['cat23_checked'] > 0 and stats['cat23_mismatch'] == 0,\n    )\n\n    lows = [int(row['lowest_component_rating']) for row in all_rows if str(row['lowest_component_rating']).isdigit()]\n    min_low = min(lows) if lows else None\n    _record_check(\n        checks,\n        'population excludes bridges already Poor at the snapshot',\n        'minimum shipped lowest component rating ' + str(min_low) + '; records excluded as already Poor ' + str(stats['already_poor']),\n        'every shipped snapshot has a minimum numeric component rating of at least 5',\n        min_low is not None and min_low >= 5,\n    )\n\n    target_values = sorted(set(int(row[TARGET]) for row in all_rows))\n    _record_check(\n        checks,\n        'target is binary and only observed inspection outcomes are labelled',\n        'target values ' + repr(target_values) + '; later records without a numeric rating dropped ' + str(stats['unlabelable_next']),\n        'values are 0 or 1 and a later record with no numeric component rating is dropped rather than labelled negative',\n        len(target_values) > 0 and set(target_values).issubset({0, 1}),\n    )\n\n    ids = [row[ID_COL] for row in all_rows]\n    duplicates = len(ids) - len(set(ids))\n    _record_check(\n        checks,\n        'bridge cohort identifiers are unique',\n        'identifier count ' + str(len(ids)) + '; duplicate count ' + str(duplicates),\n        'one observation per bridge at its earliest eligible cohort',\n        duplicates == 0,\n    )\n\n    split_counts = {split: len(rows[split]) for split in ('train', 'eval', 'holdout')}\n    _record_check(\n        checks,\n        'all three frozen splits have rows',\n        'split row counts ' + repr(split_counts),\n        'train from cohort years 2018 and 2019, eval from 2020 and holdout from 2021 are all nonempty',\n        all(split_counts[split] > 0 for split in ('train', 'eval', 'holdout')),\n    )\n\n    empty_features = [field for field in FEATURES if stats['feature_nonempty'][field] == 0]\n    _record_check(\n        checks,\n        'declared features are populated rather than silent empty columns',\n        'features with no nonempty value ' + repr(empty_features) + '; nonempty counts ' + repr(dict(stats['feature_nonempty'])),\n        'each shipped feature has at least one nonempty value',\n        len(empty_features) == 0,\n    )\n\n    bad_window = 0\n    for split in ('train', 'eval', 'holdout'):\n        start, end = SPLIT_WINDOWS[split]\n        for row in rows[split]:\n            stamp = row[TIME_COL]\n            if start is not None and stamp < start:\n                bad_window += 1\n            if end is not None and stamp >= end:\n                bad_window += 1\n    _record_check(\n        checks,\n        'rows fall inside their fixed half open split windows',\n        'rows outside their window ' + str(bad_window),\n        'train before 2020, eval during 2020 and holdout from 2021 onward',\n        bad_window == 0,\n    )\n\n    positive_counts = {split: stats['positives'][split] for split in ('train', 'eval', 'holdout')}\n    _record_check(\n        checks,\n        'frozen splits contain positive outcomes',\n        'positive counts ' + repr(positive_counts),\n        'at least one positive outcome in each split',\n        all(positive_counts[split] > 0 for split in ('train', 'eval', 'holdout')),\n    )\n\n    numeric_tokens = [int(token) for token in stats['rating_tokens'] if token.isdigit()]\n    rating_min = min(numeric_tokens) if numeric_tokens else None\n    rating_max = max(numeric_tokens) if numeric_tokens else None\n    _record_check(\n        checks,\n        'NBI condition ratings use the published 0 to 9 scale',\n        'smallest rating ' + str(rating_min) + '; largest rating ' + str(rating_max),\n        'FHWA NBI component condition ratings run from 0 through 9 rating points',\n        rating_min is not None and rating_min >= 0 and rating_max <= 9,\n        kind='unit',\n    )\n\n    months = [int(row['months_since_inspection']) for row in all_rows if str(row['months_since_inspection']).isdigit()]\n    months_min = min(months) if months else None\n    months_max = max(months) if months else None\n    _record_check(\n        checks,\n        'snapshot inspection age window is 0 through 24 months',\n        'smallest inspection age ' + str(months_min) + '; largest inspection age ' + str(months_max),\n        'the population requires the item 90 inspection month within 24 months before the June 15 snapshot',\n        months_min is not None and months_min >= 0 and months_max <= 24,\n        kind='unit',\n    )\n\n    _record_check(\n        checks,\n        'right censored and unlabelable records do not enter any split',\n        'unresolved pending bridges ' + str(unresolved) + '; later records dropped for missing numeric ratings ' + str(stats['unlabelable_next']) + '; shipped rows ' + str(len(all_rows)),\n        'only bridges with a later observed numeric inspection are shipped and every shipped target is 0 or 1',\n        len(all_rows) > 0 and all(row[TARGET] in (0, 1) for row in all_rows),\n    )\n\n    return checks\n",
+  "quality": {
+    "name": "nbi-bridge-poor-transition",
+    "target": "poor_at_next_inspection",
+    "positive_label": 1,
+    "time_column": "snapshot_datetime",
+    "event_key_column": "snapshot_datetime",
+    "id_columns": [
+      "bridge_id"
+    ],
+    "features": [
+      "state_code",
+      "deck_rating",
+      "superstructure_rating",
+      "substructure_rating",
+      "culvert_rating",
+      "channel_rating",
+      "lowest_component_rating",
+      "year_built",
+      "bridge_age_years",
+      "months_since_inspection",
+      "numeric_component_count",
+      "culvert_applicable"
+    ],
+    "carry_columns": [],
+    "label_source_columns": [
+      "DECK_COND_058",
+      "SUPERSTR_COND_059",
+      "SUBSTRUC_COND_060",
+      "CULVERT_COND_062"
+    ],
+    "post_hoc_columns": [
+      "next_inspection_date",
+      "next_lowest_component_rating"
+    ],
+    "high_cardinality_columns": [
+      "bridge_id",
+      "snapshot_datetime"
+    ],
+    "measurements": [
+      {
+        "column": "deck_rating",
+        "frame": "NBI item 58; 0 to 9 numeric or N for not applicable",
+        "unit": "rating point"
+      },
+      {
+        "column": "superstructure_rating",
+        "frame": "NBI item 59; 0 to 9 numeric or N",
+        "unit": "rating point"
+      },
+      {
+        "column": "substructure_rating",
+        "frame": "NBI item 60; 0 to 9 numeric or N",
+        "unit": "rating point"
+      },
+      {
+        "column": "culvert_rating",
+        "frame": "NBI item 62; 0 to 9 numeric or N",
+        "unit": "rating point"
+      },
+      {
+        "column": "channel_rating",
+        "frame": "NBI item 61; 0 to 9 numeric or N",
+        "unit": "rating point"
+      },
+      {
+        "column": "lowest_component_rating",
+        "frame": "minimum numeric value among items 58, 59, 60 and 62 in the snapshot record",
+        "unit": "rating point"
+      },
+      {
+        "column": "bridge_age_years",
+        "frame": "cohort year minus item 27 year built when the year built value is usable",
+        "unit": "years"
+      },
+      {
+        "column": "months_since_inspection",
+        "frame": "June 15 snapshot month minus the item 90 MMYY inspection month, at month precision",
+        "unit": "months"
+      }
+    ],
+    "split_windows": {
+      "train": {
+        "start": null,
+        "end": "2020-01-01T00:00:00.000"
+      },
+      "eval": {
+        "start": "2020-01-01T00:00:00.000",
+        "end": "2021-01-01T00:00:00.000"
+      },
+      "holdout": {
+        "start": "2021-01-01T00:00:00.000",
+        "end": null
+      }
+    },
+    "splits": {
+      "train": "public/train.csv",
+      "eval": "public/eval.csv",
+      "holdout": "private/holdout.csv"
+    },
+    "task": {
+      "decision_user": "A state or local bridge program manager deciding which Fair bridges to program for preservation, repair or replacement before the next inspection cycle.",
+      "question": "At the annual NBI snapshot, which currently Good or Fair highway bridges will be classified Poor at their next recorded inspection?",
+      "population": "Highway bridge records with item 5A record type 1 in the annual file for cohort year Y, whose item 90 MMYY inspection month is no later than the June 15 snapshot and no more than 24 months earlier, whose numeric applicable component ratings (items 58, 59, 60, 62) are all at or above 5, and for which a later record with an inspection month strictly after the June 15 snapshot exists in the files for Y+1 through 2024. Records with no numeric component rating are dropped; records already Poor are excluded and counted. A bridge contributes once, at its earliest eligible cohort, and a change in item 27 year built between snapshots drops the pair.",
+      "prediction_time": "June 15 of cohort year Y, the administrative date on which FHWA treats that annual NBI file as final. FHWA publishes shortly after that date and the exact publication day is not verified, so this is an administrative annual cutoff used as the decision instant, not a measured publication timestamp. Only fields from the same annual record are used.",
+      "outcome_horizon": "The bridge's next recorded inspection strictly after the June 15 snapshot, observed in annual files Y+1 through 2024. Bridges whose next inspection is never observed, or whose later record carries no numeric component rating, are right censored and dropped rather than labelled negative.",
+      "usefulness": "The label is a later inspection outcome that does not exist in the snapshot record, while the current ratings, the published lowest condition code and the age fields do exist, so a model cannot copy the answer. This release tests the condition, rating applicability, inspection timing, age and state identity portion of the original question. Material and design, size, traffic, network role, load capacity, geometry, deck system and scour groups were not shipped because their exact fixed offsets and header names were not independently verified in the supplied evidence; omitting them is preferable to fabricating values, and this is stated as a coverage limitation rather than as a completed test of the broad feature question.",
+      "simple_references": "Always negative base rate share of eligible bridges that stay non Poor; one field heuristic using the current lowest component rating of 5 versus 6; age decade rate using item 27; state level majority or mean rate using item 1; logistic model on current ratings plus age only.",
+      "features": [
+        {
+          "name": "state_code",
+          "meaning": "Item 1 state code of the reporting agency; categorical identity control, not a condition measurement.",
+          "availability": "Present in the same annual snapshot record at the decision instant.",
+          "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+        },
+        {
+          "name": "deck_rating",
+          "meaning": "Item 58 deck condition rating on the 0 to 9 scale; N marks a structurally absent field and is retained as not applicable, never converted to zero.",
+          "availability": "Recorded at the snapshot inspection and present in the year Y annual file.",
+          "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+        },
+        {
+          "name": "superstructure_rating",
+          "meaning": "Item 59 superstructure condition rating on the 0 to 9 scale; N is retained as not applicable.",
+          "availability": "Recorded at the snapshot inspection and present in the year Y annual file.",
+          "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+        },
+        {
+          "name": "substructure_rating",
+          "meaning": "Item 60 substructure condition rating on the 0 to 9 scale; N is retained as not applicable.",
+          "availability": "Recorded at the snapshot inspection and present in the year Y annual file.",
+          "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+        },
+        {
+          "name": "culvert_rating",
+          "meaning": "Item 62 culvert condition rating on the 0 to 9 scale; N is expected for bridges that are not culverts.",
+          "availability": "Recorded at the snapshot inspection and present in the year Y annual file.",
+          "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+        },
+        {
+          "name": "channel_rating",
+          "meaning": "Item 61 channel and channel protection condition rating on the 0 to 9 scale; N is retained as not applicable.",
+          "availability": "Recorded at the snapshot inspection and present in the year Y annual file.",
+          "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+        },
+        {
+          "name": "lowest_component_rating",
+          "meaning": "Minimum numeric value among snapshot items 58, 59, 60 and 62; matches the published lowest condition code for candidate rows.",
+          "availability": "Derived only from snapshot ratings; no later inspection value enters this feature.",
+          "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+        },
+        {
+          "name": "year_built",
+          "meaning": "Item 27 four digit year built from the same annual record; blank where the source value is unusable, never filled with a guess.",
+          "availability": "Inventory attribute carried in the year Y annual file.",
+          "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+        },
+        {
+          "name": "bridge_age_years",
+          "meaning": "Cohort year minus item 27 year built when the year built value is plausible; blank otherwise.",
+          "availability": "Derived at the decision instant from the same annual record.",
+          "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+        },
+        {
+          "name": "months_since_inspection",
+          "meaning": "Whole months between the June 15 snapshot month and the item 90 MMYY inspection month; month precision only, and the population bounds it to 0 through 24.",
+          "availability": "Known at the decision instant at month precision.",
+          "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+        },
+        {
+          "name": "numeric_component_count",
+          "meaning": "Count of applicable component ratings in items 58, 59, 60 and 62 that carry a numeric value in the snapshot; a count of applicability, not a condition score.",
+          "availability": "Derived from the same annual snapshot record.",
+          "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+        },
+        {
+          "name": "culvert_applicable",
+          "meaning": "Flag set to 1 when item 62 carries a numeric culvert rating in the snapshot and 0 otherwise; records that this component is structurally applicable.",
+          "availability": "Derived from the same annual snapshot record.",
+          "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+        }
+      ]
+    },
+    "timing": {
+      "features": {
+        "period": "annual",
+        "published_days_after_period_end": null,
+        "source_kind": "administrative_record"
+      },
+      "observations": [
+        {
+          "period": "2018",
+          "period_end": "2018-06-15"
+        },
+        {
+          "period": "2019",
+          "period_end": "2019-06-15"
+        },
+        {
+          "period": "2020",
+          "period_end": "2020-06-15"
+        },
+        {
+          "period": "2021",
+          "period_end": "2021-06-15"
+        },
+        {
+          "period": "2022",
+          "period_end": "2022-06-15"
+        },
+        {
+          "period": "2023",
+          "period_end": "2023-06-15"
+        },
+        {
+          "period": "2024",
+          "period_end": "2024-06-15"
+        }
+      ],
+      "prediction_instant": {
+        "citation": "FHWA states the data for public highway bridges is considered final on June 15 of each calendar year and is published on the website shortly thereafter; the exact publication day is not verified.",
+        "days_after_period_end": null,
+        "kind": "administrative_record",
+        "period": "annual"
+      },
+      "row_selection": {
+        "fields": [
+          "record_type_005a",
+          "inspection_date_090",
+          "deck_rating_058",
+          "superstructure_rating_059",
+          "substructure_rating_060",
+          "culvert_rating_062",
+          "year_built_027"
+        ],
+        "latest_period_used": "annual",
+        "rule": "Keep highway bridge records with record type 1 whose item 90 MMYY inspection month is no later than the June 15 snapshot and no more than 24 months earlier, with at least one numeric rating among items 58, 59, 60 and 62 and no numeric rating at or below 4; require a later record strictly after the snapshot to observe the outcome. This records unverified event time availability for a current vintage reconstruction, not a historical forecasting claim."
+      }
+    },
+    "evaluation_contract": {
+      "access": "isolated_rows",
+      "use": "retrospective_research",
+      "training_label_timing": "unverified",
+      "vintage": {
+        "kind": "current_snapshot",
+        "evidence": "FHWA annual archives downloaded now; FHWA states each year of NBI data may be corrected or updated throughout the year, so these are the latest revisions rather than the exact bytes visible at a historical decision instant."
+      },
+      "selection": {
+        "kind": "prediction_time",
+        "evidence": "Eligibility uses only annual snapshot fields: record type 1, item 90 within 24 months before June 15, at least one numeric component rating and no numeric component rating at or below 4. The label uses a later inspection record, so the population is conditioned on a later observed inspection, which is recorded here as an availability limitation rather than a forecasting guarantee.",
+        "rule": "Keep highway bridge records with record type 1 whose item 90 MMYY inspection month is no later than the June 15 snapshot and no more than 24 months earlier, requiring a later record strictly after the snapshot for the outcome."
+      },
+      "cross_row_audit": {
+        "auxiliary_files_review": "Only the three declared CSV outputs are written; no fixture labels, answer scaffolds or auxiliary evaluation files are produced.",
+        "probes": [],
+        "rationale": "Each row is one independent bridge cohort observation and no cross row join is required at evaluation time."
+      },
+      "feature_evidence": {
+        "bridge_id": {
+          "availability": "Constructed from state code, structure number and cohort year; stable within this release and opaque beyond it.",
+          "source": "FHWA NBI items 1 and 8; https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+          "status": "assumed"
+        },
+        "snapshot_datetime": {
+          "availability": "Cohort date fixed to June 15 from the FHWA finalization statement; the exact publication day is not verified.",
+          "source": "https://www.fhwa.dot.gov/bridge/nbi/ascii.cfm",
+          "status": "assumed"
+        },
+        "state_code": {
+          "availability": "Item 1 in the same annual record; an agency identity control, not a performance measurement.",
+          "source": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+          "status": "assumed"
+        },
+        "deck_rating": {
+          "availability": "Item 58 in the same annual snapshot record; N is retained as not applicable and is not imputed as zero. Blank is not zero.",
+          "source": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+          "status": "assumed"
+        },
+        "superstructure_rating": {
+          "availability": "Item 59 in the same annual snapshot record; N is retained as not applicable.",
+          "source": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+          "status": "assumed"
+        },
+        "substructure_rating": {
+          "availability": "Item 60 in the same annual snapshot record; N is retained as not applicable.",
+          "source": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+          "status": "assumed"
+        },
+        "culvert_rating": {
+          "availability": "Item 62 in the same annual snapshot record; N marks a non culvert bridge and is retained as not applicable.",
+          "source": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+          "status": "assumed"
+        },
+        "channel_rating": {
+          "availability": "Item 61 in the same annual snapshot record; N is retained as not applicable.",
+          "source": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+          "status": "assumed"
+        },
+        "lowest_component_rating": {
+          "availability": "Derived only from snapshot items 58, 59, 60 and 62; no future inspection values enter the feature.",
+          "source": "Derived from https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+          "status": "assumed"
+        },
+        "year_built": {
+          "availability": "Item 27 in the same annual record; blank when the source value is unusable and never filled with a guess.",
+          "source": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+          "status": "assumed"
+        },
+        "bridge_age_years": {
+          "availability": "Derived from cohort year and item 27; blank when year built is unusable.",
+          "source": "Derived from https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+          "status": "assumed"
+        },
+        "months_since_inspection": {
+          "availability": "Derived from the June 15 snapshot and item 90 month year; month precision only, so a June inspection after June 15 is conservatively treated as not strictly after the snapshot.",
+          "source": "Derived from https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+          "status": "assumed"
+        },
+        "numeric_component_count": {
+          "availability": "Count of numeric applicable component ratings in the snapshot; a count of applicability, not a condition score.",
+          "source": "Derived from https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+          "status": "assumed"
+        },
+        "culvert_applicable": {
+          "availability": "Flag for a numeric item 62 culvert rating in the snapshot; records applicability rather than condition.",
+          "source": "Derived from https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+          "status": "assumed"
+        }
+      },
+      "limitations": [
+        "Current vintage reconstruction: FHWA states annual NBI data may be corrected or updated throughout the year, so the downloads are the latest revisions and not necessarily the exact bytes available at a historical decision instant.",
+        "No full row historical availability ledger exists; feature availability and the absence of later revisions are assumed, not verified, and the training label timing is therefore unverified.",
+        "The supplied evidence gives exact fixed positions only for items 1, 8, 5A, 27, 58, 59, 60, 61, 62, 90 and the lowest condition code. Material and design, size, traffic, network role, load capacity, geometry, deck system and scour groups were not shipped because guessing their offsets or header names would fabricate values; this limits the broad feature question without altering the population, label or splits.",
+        "The population requires a later recorded inspection with numeric component ratings; bridges without one are right censored and absent, so the observed transition rate is conditioned on inspection timing that agencies themselves influence.",
+        "Item 90 is four characters; the supplied construction prose called it a YYYYMM code, which cannot fit four positions. It is parsed as the NBI MMYY month and year, with six digit input accepted defensively.",
+        "Inspection date comparisons use month precision, so a June inspection after June 15 is conservatively treated as not strictly after the snapshot.",
+        "State submitted NBI records can carry state law interests even though the federal dataset is designated public domain at the federal level; attribution and upstream rights are preserved.",
+        "Condition ratings are inspector judgments with documented state level variation; no inter rater or between state correction is applied.",
+        "The label uses the lowest of four component ratings, so culvert and non culvert structures are pooled; culvert applicability is exposed so evaluation can separate them."
+      ]
+    },
+    "external_threshold": {
+      "source": "FHWA Good and Fair versus Poor classification, where a lowest rating at or below 4 is Poor",
+      "unit": "NBI condition rating point",
+      "value": 4
+    },
+    "expected_duplicate_ids": 0,
+    "features_documented_at": "prediction_time"
+  },
+  "references": {
+    "persistence_column": null,
+    "persistence_direction": 1,
+    "entity_columns": [
+      "state_code"
+    ]
+  },
+  "source_access_recipe": "Download the single file highway bridge archive for each year 2018 through 2024 from https://www.fhwa.dot.gov/bridge/nbi/disclaim.cfm?nbiYear=<YEAR>hwybronlyonefile&nbiZip=zip (the 23 U.S.C. 409 interstitial forwards to https://www.fhwa.dot.gov/bridge/nbi/<YEAR>hwybronlyonefile.zip). Each archive holds one text member; select the largest nonempty member. The member is comma delimited with a single quote text qualifier and a header row on current vintages, but fixed width 445 character records also occur, so sniff the first line: treat it as a delimited header when it contains commas and a state code or structure number name, otherwise parse fixed positions from format.cfm (item 1 at characters 1 to 3, item 8 at 4 to 18, item 5A at 19, item 27 at 157 to 160, item 58 at 259, item 59 at 260, item 60 at 261, item 61 at 262, item 62 at 263, item 90 at 287 to 290, lowest condition code at 435). Item 90 is a four character MMYY month and year, not six characters. Normalise to one record per (state code, structure number) per annual file, validate that the lowest condition code equals the minimum numeric value among items 58, 59, 60 and 62 ignoring N, then build one observation per bridge by joining the year Y snapshot to the earliest later file whose record has an item 90 month strictly after the June 15 snapshot. Drop bridges whose identity (state code, structure number, year built) changes between snapshots.",
+  "construction_notes": "Descriptor repair for the reported build stage failure. The prior quality.task.features list used five grouped names (component_ratings, rating_applicability, age, inspection_cycle, ownership) that are not the shipped feature columns, which is what the gate rejected as feature descriptions naming non existing features. The replacement lists exactly one entry per declared feature column, twelve distinct names matching FEATURES, and the shipped CSV headers are unchanged. No target, population, feature selection or split was changed in response to any score, and the holdout was not inspected.\n\nSource parsing repairs, all evidence based rather than guessing: added the publisher header spellings SUPERSTR_COND_059, SUBSTRUC_COND_060, LOWEST_COND_023 and LOWEST_COND to the alias table, because the delimited header uses those abbreviated stems while the fixed positions use items 59, 60 and the lowest condition code. Added an explicit ZIP validity guard that fails with the local path and a bounded preview instead of raising a bare archive error, and a positive check recording the selected archive member and its first line length. Header and join key failures still raise with the selected member, the observed headers and the missing field names, bounded to 4000 characters, so a repair attempt has the evidence it needs.\n\nCorrected reporting claim: the item 90 field is four characters and is the NBI MMYY month and year; the earlier construction prose called it a YYYYMM code, which cannot fit. The parser already read month and year from four characters and now the recipe and notes state it, with six digit input accepted defensively. The prediction instant is described as the June 15 administrative finalization cutoff with an unverified publication day, not as a measured publication timestamp; no reporting period or lag values were invented, so timing keeps null period and lag fields with source_kind administrative_record.\n\nLabel and population rules are unchanged and fixed before evaluation: record type 1, item 90 within 0 through 24 months before June 15, at least one numeric component rating and none at or below 4, and a later record strictly after the snapshot with a numeric component rating. Records with no numeric next rating are dropped and counted, never labelled negative. Records already Poor are counted and excluded without aborting the build, and record type codes other than 1 are counted without aborting. The lowest condition code is checked against the recomputed minimum for candidate rows only, so the check does not require the whole download to agree.\n\nMissing semantic evidence, stated honestly: exact fixed positions and header names for material and design, size, traffic, network role, load capacity, geometry, deck system and scour were not independently verified in the supplied research, so those features were not shipped rather than fabricated. label_source_columns now name the actual publisher fields DECK_COND_058, SUPERSTR_COND_059, SUBSTRUC_COND_060 and CULVERT_COND_062 read from the later record, replacing invented suffixed names. Persistence references are null with direction 1 because no persistence score column exists; state_code is offered only as a train only identity and calendar reference. The access recipe text was refreshed to document the delimited versus fixed width sniff, the abbreviated header stems, and the four character MMYY item 90; download URLs, terms and task rules are unchanged. One sample check remains a unit check on the published 0 to 9 rating scale and one on the 0 through 24 month inspection window; both are computed from shipped rows."
+}
