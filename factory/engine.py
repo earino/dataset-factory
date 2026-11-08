@@ -268,9 +268,11 @@ class Driver:
 
 
 def seed(root, policy):
+    from .audit_model_session import wrapper
     store = Store(root)
     store.reconcile_misrouted_reviews()
     store.reconcile_feature_descriptions()
+    store.resume_admitted_tasks(lambda: wrapper(root).run_gate()[0])
     rows = store.listing()
     pending = sum(c['stage'] in STAGES for c in rows)
     focuses = ('Public infrastructure or environmental operations, with independent observations',

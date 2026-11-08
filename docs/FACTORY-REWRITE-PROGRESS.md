@@ -22,6 +22,25 @@ stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
 
+## 2026-11-08 22:03 UTC — recheck admission after the policy correction
+
+`51792d8` passed [exact CI](https://github.com/earino/dataset-factory/actions/runs/42527555609)
+and is deployed. Scout confirmed build-7 had started at 21:47:01, but its
+budget refusal saved a one-hour wait until `2026-11-08T22:47:01.738Z`.
+Admission was now available; that retained delay still prevented the task from
+starting. No model call had occurred and no candidate was manually advanced.
+
+The controller now rechecks admission for waiting tasks with a created model-task
+directory but no prompt, call-attempt marker or response. If the existing gate
+allows work, only the due time changes; the same attempt and stage resume.
+Paid tasks, unrelated waits, and denied/unavailable admission remain untouched.
+The actual model path still rechecks admission under its existing lock. This
+removes a demonstrated idle hour after admission changes without increasing
+limits or replaying calls. Focused tests check denial, unavailable accounting,
+unchanged history/identity/stage, and exclusion of already paid tasks.
+Validation: 955 clean-checkout tests passed, 13 skipped; 31 focused tests and
+the rule inventory passed.
+
 ## 2026-11-08 21:54 UTC — correct development session admission
 
 The next bridge attempt had not made a model call. Scout's live check found

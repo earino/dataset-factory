@@ -7,6 +7,32 @@ from factory.state import Store
 
 
 class PipelineTests(unittest.TestCase):
+    def test_admission_change_resumes_unstarted_task_without_advancing_or_replaying(self):
+        from unittest.mock import Mock
+        tmp = tempfile.TemporaryDirectory(); self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name); store = Store(root)
+        for name in ('blocked', 'paid'):
+            store.add(name, {})
+            attempt = store.begin(name)
+            folder = root / '.factory/model-tasks' / attempt['id']; folder.mkdir(parents=True)
+            if name == 'paid': (folder / 'attempt.json').write_text('{}')
+            store.finish(attempt['id'], {'status':'waiting','reason':'Admission held','delay':3600})
+        history = store.attempts()
+        denied = Mock(return_value=False)
+        self.assertEqual([], store.resume_admitted_tasks(denied)); denied.assert_called_once()
+        self.assertEqual([], store.eligible())
+        unavailable = Mock(side_effect=RuntimeError('Accounting unavailable'))
+        self.assertEqual([], store.resume_admitted_tasks(unavailable))
+        self.assertEqual([], store.eligible())
+        allowed = Mock(return_value=True)
+        self.assertEqual(['blocked'], store.resume_admitted_tasks(allowed)); allowed.assert_called_once()
+        self.assertEqual(['blocked'], [c['id'] for c in store.eligible()])
+        self.assertEqual(history, store.attempts())
+        self.assertEqual(history[0]['id'], store.begin('blocked')['id'])
+        self.assertEqual('discover', store.get('blocked')['stage'])
+        allowed.reset_mock()
+        self.assertEqual([], store.resume_admitted_tasks(allowed)); allowed.assert_not_called()
+
     def setUp(self):
         tmp = tempfile.TemporaryDirectory(); self.addCleanup(tmp.cleanup)
         self.root = Path(tmp.name); self.store = Store(self.root)

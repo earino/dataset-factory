@@ -147,6 +147,31 @@ class Store:
                                (encoded(data), time.time(), 'Saved proposal passes corrected feature contract', row['id']))
                     break
 
+    def resume_admitted_tasks(self, admitted):
+        """Recheck a pre-call admission wait without changing its attempt or stage."""
+        with self.connect() as db:
+            waiting = []
+            for row in db.execute("""SELECT c.id,a.id AS attempt,a.result FROM candidates c
+                    JOIN attempts a ON a.candidate=c.id AND a.stage=c.stage
+                    WHERE a.status='running' AND c.next_run>?""", (time.time(),)):
+                folder = self.root / '.factory/model-tasks' / identifier(row['attempt'])
+                # ModelTasks creates this directory before admission, and writes
+                # attempt.json before calling the model. Never replay paid work.
+                if (json.loads(row['result']).get('status') == 'waiting' and folder.is_dir()
+                        and not any((folder / name).exists() for name in
+                                    ('attempt.json', 'prompt.txt', 'response.json', 'response.txt'))):
+                    waiting.append(row['id'])
+            try:
+                ready = bool(waiting) and admitted()
+            except (RuntimeError, OSError, ValueError):
+                # Unavailable admission cannot wake model work or prevent
+                # already-running workers from being reconciled this tick.
+                ready = False
+            if ready:
+                db.executemany('UPDATE candidates SET next_run=0 WHERE id=?', [(key,) for key in waiting])
+                return waiting
+        return []
+
     def eligible(self, now=None):
         now = time.time() if now is None else now
         # Resume existing attempts first, then finish releases/reviews before
