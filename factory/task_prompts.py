@@ -139,9 +139,13 @@ This is the write-only phase: no tools are available. Use the supplied source
 research, field evidence, previous code and failure diagnostics. Produce the
 complete code proposal now; do not repeat source discovery or claim to have read
 additional documentation. State missing semantic evidence honestly in construction_notes.
-Return ONLY JSON {"build_py":"complete Python source", "quality":{...},
+Return ONLY a JSON object. For a first construction use:
+{"build_py":"complete Python source", "quality":{...},
 "references":{"persistence_column":null,"persistence_direction":1,"entity_columns":[]},
 "construction_notes":"source interpretation and checks"}.
+When previous_construction is supplied, return only changed top-level fields.
+Do not repeat unchanged quality or references for a download-code repair. Keep
+references, construction_notes and source_access_recipe outside quality.
 
 API: define build(output: pathlib.Path, cache: pathlib.Path). The controller calls it
 once. Write public/train.csv, public/eval.csv, private/holdout.csv under output.

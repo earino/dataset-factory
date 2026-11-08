@@ -27,6 +27,17 @@ FILES = ('source_io.py', 'dataset_run.py', 'dataset_package.py', 'get_dataset.py
 
 def merge_repair(previous, response):
     """Omitted top-level construction fields retain their exact saved values."""
+    if isinstance(response, dict):
+        response = copy.deepcopy(response)
+        quality = response.get('quality')
+        if isinstance(quality, dict):
+            # These are response-envelope fields, not quality declarations.
+            # The model sometimes nests them one object too deep.
+            for name in ('references', 'construction_notes', 'source_access_recipe'):
+                if name in quality:
+                    if name in response and response[name] != quality[name]:
+                        raise FactoryError('Conflicting construction response field: ' + name)
+                    response[name] = quality.pop(name)
     if previous is None:
         return response
     allowed = {'build_py', 'quality', 'references', 'construction_notes', 'source_access_recipe'}

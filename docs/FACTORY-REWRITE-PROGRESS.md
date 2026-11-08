@@ -22,6 +22,39 @@ stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
 
+## 2026-11-08 22:18 UTC — preserve the paid archive-access repair
+
+The admission recheck worked in production: build-7 began at 22:05:31 UTC,
+14 seconds after the tick resumed, under its original attempt identity.
+It used two calls, 21,602 input / 36,783 output tokens, zero tools, 216.1 seconds.
+The model repaired the actual download code, but emitted 59,101 bytes of malformed
+JSON and the exhausted task allowance deferred the candidate again. Evidence:
+`audits/rewrite/bridge-build7-truncation/`; Scout export `520d4b0` passed
+[exact CI](https://github.com/earino/dataset-factory/actions/runs/42529261404).
+
+Exact-byte inspection shows a complete build_py value that tries the direct
+archive first. The response lacks one final object brace, and places references,
+construction_notes and source_access_recipe inside quality. Appending that brace
+parses the output; moving those three known envelope fields to their declared
+positions preserves every supplied value and leaves code bytes unchanged.
+The resulting proposal passes current construction/task-description validation.
+
+The parser now recovers only this final-object-delimiter case, after a complete
+nested object; unfinished values/strings and other syntax failures still fail.
+Construction normalization restores the three envelope fields, refusing conflicting
+copies. A one-time deterministic reconciliation reuses such a saved paid proposal
+only for a matching attempt-limit JSON deferral after normal validation. It retains
+all attempts, counts and prior worker failure evidence. This does not accept an
+artifact: another worker, full qualification, evaluation and semantic review remain.
+
+The repair prompt no longer starts with an unconditional demand for every response
+field: first constructions need the full object; repairs omit unchanged descriptors
+and references. Reduced live output is not yet demonstrated. Focused tests use the
+actual saved output, check code/metadata preservation and zero new model calls,
+and confirm malformed values, conflicting metadata and repeat recovery are refused.
+Validation: 957 clean-checkout tests passed, 13 skipped; 39 focused tests and the
+rule inventory passed.
+
 ## 2026-11-08 22:03 UTC — recheck admission after the policy correction
 
 `51792d8` passed [exact CI](https://github.com/earino/dataset-factory/actions/runs/42527555609)

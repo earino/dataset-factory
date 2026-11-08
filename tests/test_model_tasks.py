@@ -11,6 +11,13 @@ from factory.model_tasks import ModelTasks, TaskFailure, parse_response, usage, 
 
 
 class ModelTaskTests(unittest.TestCase):
+    def test_final_object_brace_recovery_never_completes_values_or_other_syntax(self):
+        self.assertEqual({'a': {'b': 2}}, parse_response('{"a":{"b":2}'))
+        for text in ('{"a":12', '{"a":"unfinished', '{"a":', '{"a":{"b":2',
+                     '{"a":{} "b":{}}', '{"a":{}},', '[{"a":{}}'):
+            with self.subTest(text=text), self.assertRaises(TaskFailure):
+                parse_response(text)
+
     def test_exit_one_retains_construction_or_negative_research_but_not_acceptance(self):
         from factory.common import write_json, read_json
         with tempfile.TemporaryDirectory() as tmp:

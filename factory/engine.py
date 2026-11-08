@@ -122,8 +122,9 @@ class Driver:
             else:
                 example = read_json(self.root / 'skills/dataset-qualification/fixtures/corrected/quality.json')
                 previous = data.get('construction_draft') or data.get('construction')
-                recovery = data.get('feature_contract_recovery', {})
-                recovering = recovery and recovery.get('used') is False
+                recovery = next((data[key] for key in ('feature_contract_recovery', 'json_closure_recovery')
+                                 if data.get(key, {}).get('used') is False), {})
+                recovering = bool(recovery)
                 failure = data.get('failure')
                 text_draft = None if recovering else data.get('construction_text_draft')
                 # A parsed model response can fail the construction contract
@@ -173,7 +174,7 @@ class Driver:
                     data.setdefault('construction_reuse', []).append(
                         {'attempt': attempt['id'], 'from_attempt': (recovery['from_attempt'] if recovering
                                                                   else prior_failure.get('attempt')),
-                         'reason': 'Saved proposal passes corrected feature-description contract'})
+                         'reason': recovery.get('reason', 'Saved proposal passes corrected feature-description contract')})
                 else:
                     response = self.model.run(attempt['id'], prompt, construction=True)
                 response = construction.merge_repair(previous, response)
@@ -272,6 +273,7 @@ def seed(root, policy):
     store = Store(root)
     store.reconcile_misrouted_reviews()
     store.reconcile_feature_descriptions()
+    store.reconcile_completed_json()
     store.resume_admitted_tasks(lambda: wrapper(root).run_gate()[0])
     rows = store.listing()
     pending = sum(c['stage'] in STAGES for c in rows)

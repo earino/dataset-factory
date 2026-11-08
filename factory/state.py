@@ -147,6 +147,48 @@ class Store:
                                (encoded(data), time.time(), 'Saved proposal passes corrected feature contract', row['id']))
                     break
 
+    def reconcile_completed_json(self):
+        """Reuse a paid construction deferred solely for its missing final brace."""
+        from . import construction
+        from .model_tasks import parse_response
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            for row in db.execute("SELECT * FROM candidates WHERE stage='deferred'").fetchall():
+                data = json.loads(row['data'])
+                if data.get('json_closure_recovery'):
+                    continue
+                last = db.execute('SELECT * FROM attempts WHERE candidate=? ORDER BY started DESC,id DESC LIMIT 1',
+                                  (row['id'],)).fetchone()
+                result = json.loads(last['result']) if last else {}
+                if (not last or last['stage'] != 'build' or last['status'] != 'retry'
+                        or result.get('retry_scope', 'task') != 'task'
+                        or not result.get('reason', '').startswith('Model response is not JSON:')
+                        or row['reason'] != 'Attempt limit reached: ' + result['reason']):
+                    continue
+                cached = self.root / '.factory/model-tasks' / identifier(last['id']) / 'response.txt'
+                if not cached.is_file() or cached.stat().st_size >= 256 * 1024:
+                    continue
+                raw = cached.read_text().strip()
+                try:
+                    json.loads(raw)
+                    continue  # A valid response is not this parser-recovery class.
+                except json.JSONDecodeError as exc:
+                    if not (exc.pos == len(raw) and raw.startswith('{') and raw.endswith('}')):
+                        continue
+                try:
+                    proposal = construction.merge_repair(
+                        data.get('construction_draft') or data.get('construction'), parse_response(raw))
+                    construction.validate(proposal)
+                    construction.describe_task(data['source'], proposal)
+                except (FactoryError, ValueError, KeyError, TypeError):
+                    continue
+                data['construction_draft'] = proposal
+                data['json_closure_recovery'] = {'from_attempt': last['id'], 'used': False,
+                    'previous_reason': row['reason'], 'reconciled_at': time.time(),
+                    'reason': 'Recovered missing final object brace; normalized construction envelope'}
+                db.execute("UPDATE candidates SET stage='build',data=?,updated=?,next_run=0,reason=? WHERE id=?",
+                           (encoded(data), time.time(), 'Saved construction recovered from final-brace failure', row['id']))
+
     def resume_admitted_tasks(self, admitted):
         """Recheck a pre-call admission wait without changing its attempt or stage."""
         with self.connect() as db:

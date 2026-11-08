@@ -54,7 +54,14 @@ def parse_response(text):
     try:
         value = json.loads(text)
     except json.JSONDecodeError as exc:
-        raise TaskFailure(f'Model response is not JSON: {exc.msg} at line {exc.lineno}, column {exc.colno}') from exc
+        try:
+            # Recover only a missing final object delimiter after a complete
+            # nested object. Never finish a string, scalar, key or other token.
+            if not (exc.pos == len(text) and text.startswith('{') and text.endswith('}')):
+                raise ValueError('Not a final object delimiter')
+            value = json.loads(text + '}')
+        except ValueError:
+            raise TaskFailure(f'Model response is not JSON: {exc.msg} at line {exc.lineno}, column {exc.colno}') from exc
     if not isinstance(value, dict):
         raise TaskFailure('Model response must be an object')
     return value
@@ -200,7 +207,8 @@ class ModelTasks:
                     if result.returncode == 1 and construction and 'accounting' not in failure:
                         from .construction import validate
                         try:
-                            proposal = validate(parse_response(w.strip_footer(result.stdout)))
+                            from .construction import merge_repair
+                            proposal = validate(merge_repair(None, parse_response(w.strip_footer(result.stdout))))
                             failure['usable_construction_proposal'] = True
                         except (FactoryError, ValueError, TypeError, KeyError):
                             pass

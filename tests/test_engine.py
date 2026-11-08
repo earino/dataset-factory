@@ -26,6 +26,59 @@ def source():
 
 
 class EngineTests(unittest.TestCase):
+    def test_paid_bridge_final_brace_failure_recovers_code_and_envelope_without_a_model(self):
+        from factory.construction import describe_task, merge_repair
+        from factory.model_tasks import parse_response
+        evidence = Path(__file__).resolve().parents[1] / 'audits/rewrite'
+        original = json.loads((evidence / 'bridge-source15-build1/discovery-response.json').read_text())
+        prior = json.loads((evidence / 'bridge-deferral-state/build3-response.json').read_text())
+        raw = (evidence / 'bridge-build7-truncation/response.txt').read_text()
+        decoded = parse_response(raw)
+        with self.assertRaises(json.JSONDecodeError): json.loads(raw)
+        recovered = merge_repair(prior, decoded)
+        self.assertEqual(decoded['build_py'], recovered['build_py'])
+        for key in ('references','construction_notes','source_access_recipe'):
+            self.assertEqual(decoded['quality'][key], recovered[key])
+            self.assertNotIn(key, recovered['quality'])
+        with self.assertRaises(FactoryError):
+            merge_repair(prior, {**decoded, 'construction_notes':'Conflicting top-level note'})
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); store = Store(root)
+            data = {'source':describe_task(original, prior), 'construction':prior,
+                    'feature_contract_recovery':{'used':True}}
+            store.add('bridge', data); store.finish(store.begin('bridge')['id'], {'status':'done'})
+            for i in range(7):
+                attempt = store.begin('bridge')
+                reason = 'Model response is not JSON: Expecting delimiter'
+                if i == 6:
+                    paid = attempt['id']
+                    path = root / '.factory/model-tasks' / paid; path.mkdir(parents=True)
+                    (path / 'response.txt').write_text(raw)
+                store.finish(attempt['id'], {'status':'retry','reason':reason,
+                    'retry_scope':'worker' if i == 5 else 'task'}, max_attempts=100 if i < 6 else 5)
+            history = store.attempts('bridge')
+            store.reconcile_completed_json()
+            self.assertEqual('build', store.get('bridge')['stage'])
+            self.assertEqual(history, store.attempts('bridge'))
+            write_json(root / 'config/local.json', {'enabled':True,'cleanup_configured':True})
+            write_json(root / 'skills/dataset-qualification/fixtures/corrected/quality.json', {})
+            harness = root / 'harness/task_template'; harness.mkdir(parents=True)
+            for name in ('train.py','validate.py','validate.sh'): (harness/name).write_text('# fixture')
+            model = Mock(); model.run.side_effect = AssertionError('Reuse paid source repair')
+            attempt = store.begin('bridge')
+            with patch.dict(os.environ, {'FACTORY_BENCHMARK_ROOT':str(harness.parent)}), \
+                    patch('factory.engine.construction.assemble', side_effect=FactoryError('Stop at bundle')) as assemble:
+                result = Driver(root, {'worker':{}}, model=model).execute(
+                    store.get('bridge'), attempt, lambda data:store.save(attempt['id'],data))
+            model.run.assert_not_called()
+            actual_source, actual_proposal = assemble.call_args.args[2:4]
+            self.assertEqual(recovered, actual_proposal)
+            self.assertEqual(recovered['source_access_recipe'], actual_source['construction']['access_recipe'])
+            self.assertEqual(paid, store.get('bridge')['data']['construction_reuse'][0]['from_attempt'])
+            store.finish(attempt['id'], result, max_attempts=5)
+            store.reconcile_completed_json()
+            self.assertEqual('deferred', store.get('bridge')['stage'])
+
     def test_deferred_pre_worker_name_and_json_failures_reuse_latest_valid_proposal_once(self):
         evidence = Path(__file__).resolve().parents[1] / 'audits/rewrite'
         original = json.loads((evidence / 'bridge-source15-build1/discovery-response.json').read_text())
