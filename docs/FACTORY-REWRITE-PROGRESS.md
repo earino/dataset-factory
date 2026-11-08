@@ -557,6 +557,22 @@ The source-9 export and redaction diagnosis passed CI
 ([source evidence](https://github.com/earino/dataset-factory/actions/runs/42497896732),
 [diagnosis](https://github.com/earino/dataset-factory/actions/runs/42498439282)).
 
+### Keep complete negative judgments without repeated research (16:20 UTC)
+
+The first live NLRB terms repair returned a structured `defer` verdict explaining
+that it could not establish applicable readable terms. Hermes exited 1 after the
+session, so the adapter discarded the negative outcome and started another
+research attempt. The next version retains a complete `defer` or `reject` with a
+nonempty reason and measured requested-model usage on exit 1. Such an outcome can
+only stop the candidate; `ready` and `accept` still require exit 0. Malformed
+responses and missing reasons remain task failures. Existing task bounds apply.
+Tests exercise negative retention and refusal of positive or incomplete results.
+This change removes an observed repeated search; it does not establish that the
+NLRB data lack redistribution rights or that the source is scientifically unsuitable.
+
+The diagnostic-wording change `e129c9a` passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42498708037).
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;

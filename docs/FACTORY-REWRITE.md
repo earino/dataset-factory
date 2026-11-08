@@ -50,8 +50,10 @@ spans occur in order. Semantic applicability remains part of source review.
 An exit-1 runtime wrap-up may supply usable construction code. Retain it only
 when its JSON/AST/descriptor contract and measured requested-model route pass;
 record the nonzero exit and still require every artifact check and semantic
-review. This is proposal reuse, never publication acceptance. Nonzero research
-or review calls remain failures.
+review. This is proposal reuse, never publication acceptance. A nonzero research
+or review call may retain a complete negative `defer`/`reject` verdict with a reason
+and verified model usage, avoiding another search for the same negative outcome.
+Positive `ready`/`accept` verdicts still require a zero exit.
 
 A small SQLite store owns operational candidate/attempt/job/artifact state. Git
 holds code, source evidence and compact exported results, not live transactional

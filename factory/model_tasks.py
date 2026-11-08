@@ -202,6 +202,18 @@ class ModelTasks:
                             failure['usable_construction_proposal'] = True
                         except (FactoryError, ValueError, TypeError, KeyError):
                             pass
+                    if result.returncode == 1 and research and 'accounting' not in failure:
+                        # A completed negative judgment needs no repeated research.
+                        # It can only defer/reject; ready/accept still require exit 0.
+                        try:
+                            negative = parse_response(w.strip_footer(result.stdout))
+                            if (negative.get('verdict') in ('defer', 'reject')
+                                    and isinstance(negative.get('reason'), str)
+                                    and negative['reason'].strip()):
+                                proposal = negative
+                                failure['usable_negative_verdict'] = True
+                        except TaskFailure:
+                            pass
                     write_json(directory / 'failure.json', failure)
                     if proposal is None:
                         raise TaskFailure('Model invocation failed: ' + json.dumps(failure))

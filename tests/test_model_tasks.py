@@ -11,7 +11,7 @@ from factory.model_tasks import ModelTasks, TaskFailure, parse_response, usage, 
 
 
 class ModelTaskTests(unittest.TestCase):
-    def test_exit_one_retains_only_a_complete_construction_proposal(self):
+    def test_exit_one_retains_construction_or_negative_research_but_not_acceptance(self):
         from factory.common import write_json, read_json
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -28,7 +28,7 @@ class ModelTaskTests(unittest.TestCase):
             proposal = {'build_py': 'def build(output, cache):\n    pass\n', 'references': {}, 'quality': quality}
             measured = {'tasks': [{'task': '', 'model': 'requested'}], 'tool_results': 0}
             model = ModelTasks(root, {'model': 'requested', 'research_toolset': 'web', 'code_turns': 6,
-                                     'task_seconds': 300}, hermes_home=root)
+                                     'research_turns': 12, 'task_seconds': 300}, hermes_home=root)
             with patch('factory.model_tasks.wrapper', return_value=w), \
                     patch('factory.model_tasks.subprocess.run') as preflight, \
                     patch('factory.model_tasks.usage', return_value=measured):
@@ -41,6 +41,18 @@ class ModelTaskTests(unittest.TestCase):
                 with self.assertRaises(TaskFailure): model.run('review', 'review prompt')
                 w.run_agent.return_value = subprocess.CompletedProcess('hermes', 1, '{"error":"gave up"}', '')
                 with self.assertRaises(TaskFailure): model.run('failed', 'builder', construction=True)
+                for verdict in ('defer', 'reject'):
+                    negative = {'verdict': verdict, 'reason': 'No readable applicable source terms'}
+                    w.run_agent.return_value = subprocess.CompletedProcess('hermes', 1, json.dumps(negative), '')
+                    self.assertEqual(negative, model.run(verdict, 'terms review', research=True))
+                    self.assertTrue(read_json(root / '.factory/model-tasks' / verdict /
+                                              'failure.json')['usable_negative_verdict'])
+                for verdict in ('ready', 'accept'):
+                    positive = {'verdict': verdict, 'reason': 'claimed success', 'findings': []}
+                    w.run_agent.return_value = subprocess.CompletedProcess('hermes', 1, json.dumps(positive), '')
+                    with self.assertRaises(TaskFailure): model.run(verdict, 'review', research=True)
+                w.run_agent.return_value = subprocess.CompletedProcess('hermes', 1, '{"verdict":"defer"}', '')
+                with self.assertRaises(TaskFailure): model.run('missing-reason', 'review', research=True)
             folder = root / '.factory/model-tasks/produced'
             self.assertTrue(read_json(folder / 'failure.json')['usable_construction_proposal'])
             self.assertEqual(1, read_json(folder / 'usage.json')['completion_exit_code'])
