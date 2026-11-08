@@ -80,6 +80,18 @@ Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
   as a new recorded oneshot session, instead of assuming no unrelated session can
   start during the task. This directly addresses the observed concurrent diagnostic
   probe. Exact model route/usage checks remain; no manufactured usage records.
+- Adapter repair `71a1b05a389a91c671772f9dee685c967ba44514` passed **915 clean-clone
+  tests, 13 skipped**, and [exact-commit CI](https://github.com/earino/dataset-factory/actions/runs/42481365780).
+  Sent Scout the exact hash and instruction to resume the existing queue at 12:43 UTC.
+  Progress checkpoint `2c87ae88819ad97d88bae44c32732544e98a14fc` also passed
+  [CI](https://github.com/earino/dataset-factory/actions/runs/42480221748).
+- Scout confirmed repaired revision deployed and tick resumed at 12:44 UTC.
+  Original discovery response/usage and startup failures are preserved under
+  `audits/rewrite/cutover/`. Scout evidence branch `c9d3661` passed
+  [CI](https://github.com/earino/dataset-factory/actions/runs/42481681445).
+  Integration clarifies that source inspection of empty-tool mapping did not
+  prove the classic CLI accepts an empty string end-to-end; the replacement
+  deliberately uses the observed working web-only capability.
 
 ## Milestones
 

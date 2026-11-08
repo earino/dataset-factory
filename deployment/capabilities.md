@@ -2,6 +2,15 @@
 
 ## Runtime update — 2026-11-08
 
+Replacement factory live observations (12:21–12:36 UTC): the `web` toolset works
+through the hosted gateway; the first scheduled discovery completed in 296.3 seconds
+and 11 model calls. The gateway **rejects `__none__`** before creating a session.
+The historical local empty-definition probe below is not an end-to-end capability.
+Replacement construction uses the supported web-only toolset too, with bounded
+turns/time and no host-operation tools. Quiet CLI stderr exposes `session_id:` for
+unambiguous accounting. A provider model-not-found failure was also observed; it
+does not establish that the source is unsuitable. See `docs/FACTORY-REWRITE-PROGRESS.md`.
+
 Scout reports Hermes **0.23.0** at `/opt/hermes`; its install stamp names upstream
 `2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19` (distance zero, clean; no `.git` directory).
 The six source files in `audits/resilience/2026-11-07-r5-runtime-capability.json`
