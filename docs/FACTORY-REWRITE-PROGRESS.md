@@ -95,6 +95,30 @@ Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 
 ## Milestones
 
+### First deployed construction cycle (12:48–12:55 UTC)
+
+- Scout reports construction task `rw-4fa4bc1fda01-build-3` completed in 218.6 s,
+  3 model calls, about 15.1k input / 43.8k output tokens. Worker 175132504
+  launched from the sole live ledger at 12:48:13 UTC (EUR 0.16 reservation).
+- Worker exited 1, not OOM, after 161.3 s. Its five durable staging assets are
+  in release 438244578 of `earino/dataset-factory-staging`. Codex directly read
+  the manifest and `failure.json`: the generated vocabulary assertion omitted
+  the source's `Not Available` condition value. No qualification, measurement,
+  or publication was accepted.
+- The controller collected the failure, reconciled provider absence, retained
+  diagnostics, and deferred the candidate. Source 2 also exhausted discovery
+  attempts on invalid JSON; the scheduler seeded source 3 without intervention.
+- Retry accounting defect: two pre-worker startup failures consumed the first
+  source's construction allowance. Task and worker failures now have separate
+  three-failure bounds. A narrowly scoped deployment correction preserves the
+  original SQLite row and candidate snapshot, classifies the observed worker
+  failure, and reopens only that candidate for ordinary bounded repair.
+- Provider absence was observed before the recorded collection timestamp;
+  the precise deletion origin is not established. All failed-worker artifacts
+  were durably recovered, so this is not evidence of lost construction output.
+- No successful real dataset release yet. Semantic review and both public
+  consumer checks remain outstanding.
+
 | Milestone | Implemented | Local tests | CI | Deployed evidence |
 | --- | --- | --- | --- | --- |
 | Controller and state | Implemented | Restart, retry, lock, queue tests | Passed | — |

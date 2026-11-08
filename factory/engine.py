@@ -103,7 +103,7 @@ class Driver:
             return result
         if result['status'] == 'lost':
             data['failure'] = result; save(data)
-            return {'status': 'retry', 'reason': result['reason']}
+            return {'status': 'retry', 'retry_scope': 'worker', 'reason': result['reason']}
         record = worker.load_record(self.root, attempt['id'])
         api = worker.github(config)
         if not result['ok']:
@@ -117,7 +117,8 @@ class Driver:
             save(data)
             if diagnostics.get('failure.json', {}).get('error') == 'TermsEvidenceError':
                 return {'status': 'reject', 'reason': 'Publisher terms evidence could not support the source claim'}
-            return {'status': 'retry', 'reason': 'Construction/qualification failed; artifacts preserved and worker deleted'}
+            return {'status': 'retry', 'retry_scope': 'worker',
+                    'reason': 'Construction/qualification failed; artifacts preserved and worker deleted'}
         data['evidence'] = {name: worker_artifacts.collect_json(self.root, record, 'output/' + name, api)
                             for name in ('MANIFEST.json', 'qualification.json', 'evaluation.json', 'source-checks.json', 'SOURCES.json', 'LICENSE-EVIDENCE.json')}
         save(data)

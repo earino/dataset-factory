@@ -124,17 +124,27 @@ class Store:
         status = outcome['status']
         if status not in ('done', 'waiting', 'retry', 'reject', 'defer'):
             raise FactoryError('Unknown operation outcome')
+        scope = outcome.get('retry_scope', 'task')
+        if scope not in ('task', 'worker'):
+            raise FactoryError('Unknown retry scope')
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             attempt = db.execute('SELECT * FROM attempts WHERE id=?', (attempt_id,)).fetchone()
             if not attempt or attempt['status'] != 'running':
                 raise FactoryError('Cannot finish an inactive attempt')
             stage = attempt['stage']
+            # Model/startup failures and real construction failures have separate
+            # bounded allowances. Ordinals remain unique history, not a counter
+            # of how many times the builder has actually run.
+            failures = 1 + sum(json.loads(row['result']).get('retry_scope', 'task') == scope
+                               for row in db.execute(
+                                   "SELECT result FROM attempts WHERE candidate=? AND stage=? AND status='retry'",
+                                   (attempt['candidate'], stage)))
             if status == 'done':
                 stage = NEXT[stage]
             elif status == 'reject':
                 stage = 'rejected'
-            elif status == 'defer' or (status == 'retry' and attempt['ordinal'] >= max_attempts):
+            elif status == 'defer' or (status == 'retry' and failures >= max_attempts):
                 stage = 'deferred'
             reason = outcome.get('reason', '')
             if stage == 'deferred' and status == 'retry':

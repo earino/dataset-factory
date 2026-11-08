@@ -50,6 +50,42 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual('build', self.store.get('example')['stage'])
         self.assertNotIn('replacement', self.store.get('example')['data'])
 
+    def test_startup_failures_do_not_exhaust_worker_repair_allowance(self):
+        self.store.finish(self.store.begin('example')['id'], {'status': 'done'})
+        for _ in range(2):
+            result = self.store.finish(self.store.begin('example')['id'], {'status': 'retry'})
+        for number in range(3):
+            attempt = self.store.begin('example')
+            result = self.store.finish(attempt['id'], {'status': 'retry', 'retry_scope': 'worker'})
+            self.assertEqual('deferred' if number == 2 else 'build', result['stage'])
+        self.assertEqual(5, attempt['ordinal'])
+        self.assertEqual(6, len(self.store.attempts()))  # includes discovery
+
+    def test_initial_deployment_correction_preserves_evidence_and_only_runs_once(self):
+        import runpy
+        from factory.common import write_json
+        recover = runpy.run_path(str(Path(__file__).resolve().parents[1] /
+                                     'audits/rewrite/recover_initial_build.py'))['recover']
+        self.store.add('source-000001', {})
+        self.store.finish(self.store.begin('source-000001')['id'], {'status': 'done'})
+        for ordinal in range(1, 4):
+            attempt = self.store.begin('source-000001')
+            if ordinal < 3:
+                write_json(self.root / '.factory/model-tasks' / attempt['id'] / 'failure.json',
+                           {'exit_code': 1, 'accounting': 'Expected one model session; observed 0 new sessions'})
+            else:
+                self.store.save(attempt['id'], {'construction_attempt': attempt['id']})
+                write_json(self.root / 'jobs' / (attempt['id'] + '.json'),
+                           {'status': 'deleted', 'result': {'exit_code': 1}})
+            self.store.finish(attempt['id'], {'status': 'retry'})
+        self.assertEqual('deferred', self.store.get('source-000001')['stage'])
+        self.assertEqual('corrected', recover(self.root)['status'])
+        self.assertEqual('already-corrected', recover(self.root)['status'])
+        self.assertEqual('build', self.store.get('source-000001')['stage'])
+        receipt = self.root / '.factory/initial-build-retry-correction.json'
+        self.assertIn('deferred', receipt.read_text())
+        self.assertEqual(4, len(self.store.attempts('source-000001')))
+
     def test_no_transition_without_explicit_outcome_and_published_is_terminal(self):
         for expected in ('build', 'evaluate', 'publish', 'published'):
             attempt = self.store.begin('example')

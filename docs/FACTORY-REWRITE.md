@@ -29,6 +29,10 @@ replacement. Demonstrated defects relevant to the new path must be fixed.
 `discover -> build -> evaluate -> publish -> published`; substantive failures go
 to bounded repair or rejection, transient failures to bounded retry. Budget/access
 waits are resumable and explicit. One candidate's rejection cannot stall others.
+Task failures and completed construction-worker failures each have the configured
+three-failure allowance. A model startup failure does not consume a worker repair;
+attempt identities and all failure evidence remain durable. Resource and spending
+limits still apply across both categories.
 
 A small SQLite store owns operational candidate/attempt/job/artifact state. Git
 holds code, source evidence and compact exported results, not live transactional
