@@ -1,0 +1,165 @@
+{
+  "verdict": "ready",
+  "reason": "USACE's National Inventory of Dams (NID) public feature service is a directly queryable, no-account, one-row-per-dam register of ~92,628 U.S. dams with an agency-assigned 5-level condition rating plus the assessment date. A binary screening label (Poor/Unsatisfactory vs Fair/Satisfactory) has ~9k positives nationally, and 12,208 dams were assessed on/after 2024-01-01 with poor-rated dams spread across 38 states, so a chronological train/eval/holdout split is viable without a single agency dominating. Rows are independent (one assessment per dam in this snapshot), which removes the lag/rolling-history leakage problem that a monitoring panel would create. The BTS/NTAD metadata record for the same dataset states it is an unrestricted U.S. Government work, so redistribution is clean; the only caveat is that features come from a current-vintage 2026 snapshot rather than an as-of-assessment extract.",
+  "dataset_id": "nid-dam-condition-screening",
+  "title": "Predicting poor or unsatisfactory condition ratings for U.S. dams from structural and hazard attributes at the time of assessment",
+  "source": {
+    "publisher": "U.S. Army Corps of Engineers (USACE), National Inventory of Dams; distributed in the National Transportation Atlas Database by the Bureau of Transportation Statistics (BTS)",
+    "urls": [
+      "https://geospatial.sec.usace.army.mil/dls/rest/services/NID/National_Inventory_of_Dams_Public_Service/FeatureServer/0/query"
+    ],
+    "documentation_url": "https://www.transtats.bts.gov/NTADmetadata/Automated/USDOT_BTS_NTAD_Dams.xml",
+    "terms_url": "https://www.transtats.bts.gov/NTADmetadata/Automated/USDOT_BTS_NTAD_Dams.xml",
+    "license": "Public domain - U.S. Government work under 17 U.S.C. \u00a7 101; NTAD metadata declares it \"not protected by any U.S. copyrights\" and \"available for unrestricted public use\"",
+    "terms_excerpt": "This NTAD dataset is a work of the United States government as defined in 17 U.S.C. \u00a7 101 and as such are not protected by any U.S. copyrights. This work is available for unrestricted public use.",
+    "attribution": "Acknowledgment of the U.S. Army Corps of Engineers (USACE) https://nid.sec.usace.army.mil/# and the Bureau of Transportation Statistics (BTS) [distributor].",
+    "citation": "",
+    "redistribution": true
+  },
+  "task": {
+    "question": "Given only the physical, hydraulic, ownership and downstream-hazard attributes recorded for a dam, will the regulating agency rate its condition as Poor or Unsatisfactory at the upcoming condition assessment?",
+    "decision_user": "A state or federal dam-safety program deciding which non-federal dams to inspect or review first, and which owners to contact about remedial work, before committing scarce inspection capacity.",
+    "prediction_time": "The date the condition assessment was recorded (CONDITION_ASSESS_DATE), treated as the instant just before the field inspection and rating that produced the label. Only register facts about the structure, its purpose, ownership and downstream hazard are used; nothing from the inspection itself.",
+    "target": "y = 1 if CONDITION_ASSESSMENT is 'Poor' or 'Unsatisfactory'; y = 0 if it is 'Fair' or 'Satisfactory'. Records with 'Not Rated' or a blank rating are excluded from the labelled population, not assigned a negative label.",
+    "outcome_horizon": "Contemporaneous: the rating assigned at that single assessment event (no forward window). Each dam contributes exactly one row, so there is no repeated-measures horizon.",
+    "features": [
+      {
+        "name": "YEAR_COMPLETED",
+        "meaning": "Four-digit year the original main dam structure was completed; age at assessment is derived as assessment year minus this value.",
+        "availability": "Structural fact fixed at construction, recorded in the register before any inspection.",
+        "evidence_url": "https://geospatial.sec.usace.army.mil/dls/rest/services/NID/National_Inventory_of_Dams_Public_Service/FeatureServer/0/query?where=1%3D1&outFields=*&resultRecordCount=2&f=json"
+      },
+      {
+        "name": "DAM_HEIGHT, DAM_LENGTH, NID_HEIGHT",
+        "meaning": "Height (ft), crest length (ft) and rounded NID height of the embankment/structure.",
+        "availability": "As-built geometry, present in the register before assessment.",
+        "evidence_url": "https://files.hawaii.gov/dbedt/op/gis/data/NID_Hawaii_DataDictionary_20231127.pdf"
+      },
+      {
+        "name": "NID_STORAGE, MAX_STORAGE, NORMAL_STORAGE, SURFACE_AREA",
+        "meaning": "Reservoir storage at NID/ maximum / normal pool (acre-ft) and reservoir surface area (acres) - impoundment scale.",
+        "availability": "Reservoir geometry, known before assessment.",
+        "evidence_url": "https://files.hawaii.gov/dbedt/op/gis/data/NID_Hawaii_DataDictionary_20231127.pdf"
+      },
+      {
+        "name": "DRAINAGE_AREA",
+        "meaning": "Upstream catchment area feeding the reservoir (sq mi); drives spillway design flood exposure.",
+        "availability": "Site characteristic from the register.",
+        "evidence_url": "https://geospatial.sec.usace.army.mil/dls/rest/services/NID/National_Inventory_of_Dams_Public_Service/FeatureServer/0/query?where=1%3D1&outFields=*&resultRecordCount=2&f=json"
+      },
+      {
+        "name": "PRIMARY_DAM_TYPE, DAM_TYPES, CORE_TYPES, FOUNDATIONS",
+        "meaning": "Construction type (Earth, Concrete, Gravity, Rockfill, etc.), core and foundation material codes.",
+        "availability": "Design/as-built classification, pre-assessment.",
+        "evidence_url": "https://files.hawaii.gov/dbedt/op/gis/data/NID_Hawaii_DataDictionary_20231127.pdf"
+      },
+      {
+        "name": "SPILLWAY_TYPE, SPILLWAY_WIDTH, MAX_DISCHARGE",
+        "meaning": "Controlled/uncontrolled/none spillway, width (ft) and rated discharge capacity (cfs).",
+        "availability": "Design capacity, pre-assessment.",
+        "evidence_url": "https://files.hawaii.gov/dbedt/op/gis/data/NID_Hawaii_DataDictionary_20231127.pdf"
+      },
+      {
+        "name": "HAZARD_POTENTIAL",
+        "meaning": "Downstream consequence class (High/Significant/Low/Undetermined) - an assigned consequence rating, not a condition rating.",
+        "availability": "Set by the regulating agency from downstream exposure, independent of structural condition.",
+        "evidence_url": "https://files.hawaii.gov/dbedt/op/gis/data/NID_Hawaii_DataDictionary_20231127.pdf"
+      },
+      {
+        "name": "PRIMARY_PURPOSE, PURPOSES",
+        "meaning": "Primary and all current reservoir purposes (Irrigation, Hydroelectric, Flood Control, Water Supply, Recreation, Tailings, etc.).",
+        "availability": "Operational purpose, pre-assessment.",
+        "evidence_url": "https://files.hawaii.gov/dbedt/op/gis/data/NID_Hawaii_DataDictionary_20231127.pdf"
+      },
+      {
+        "name": "PRIMARY_OWNER_TYPE, OWNER_TYPES",
+        "meaning": "Federal / State / Local / Public Utility / Private ownership class.",
+        "availability": "Ownership record, pre-assessment; not the owner's name.",
+        "evidence_url": "https://files.hawaii.gov/dbedt/op/gis/data/NID_Hawaii_DataDictionary_20231127.pdf"
+      },
+      {
+        "name": "STATE, PRIMARY_SOURCE_AGENCY, COUNTYSTATE",
+        "meaning": "Jurisdiction and the agency that supplies the record - controls for differing state rating practice and reporting intensity.",
+        "availability": "Administrative fact, pre-assessment.",
+        "evidence_url": "https://geospatial.sec.usace.army.mil/dls/rest/services/NID/National_Inventory_of_Dams_Public_Service/FeatureServer/0/query?where=1%3D1&outFields=*&resultRecordCount=2&f=json"
+      },
+      {
+        "name": "LATITUDE, LONGITUDE",
+        "meaning": "Dam centerline coordinates (NAD83 decimal degrees) - climate, seismicity and regional practice proxy.",
+        "availability": "Location, pre-assessment.",
+        "evidence_url": "https://files.hawaii.gov/dbedt/op/gis/data/NID_Hawaii_DataDictionary_20231127.pdf"
+      }
+    ],
+    "population": "One row per main dam structure: IS_ASSOCIATED_STRUCTURE = 'No' (excludes saddle dams/dikes that duplicate a parent dam's attributes), CONDITION_ASSESSMENT in {'Poor','Unsatisfactory','Fair','Satisfactory'}, CONDITION_ASSESS_DATE not null, YEAR_COMPLETED between 1800 and the assessment year, DAM_HEIGHT > 0 and NID_STORAGE > 0. Excluded entirely: 'Not Rated' (36,539 records), blank ratings, and the 1,839 rated records lacking an assessment date.",
+    "split_policy": "Chronological on CONDITION_ASSESS_DATE with fixed, frozen boundaries: train = assessment date <= 2023-12-31; eval = 2024-01-01 to 2024-12-31; holdout = assessment date >= 2025-01-01. No embargo interval is required because the snapshot holds one assessment per dam, so no dam appears in two splits; the entity-disjointness that an embargo would buy is already structural. Boundaries are fixed before any model is fit and are not tuned.",
+    "usefulness": "The label is an agency judgement recorded after a field inspection; it is not a field that can be copied from an input. Reproducing it requires combining age, size, type, spillway capacity and consequence class, and the residual is genuinely informative for triage. A model that only learns which states rate harshly is a distinct, checkable failure mode rather than the task itself, since jurisdiction is an explicit control and a state-base-rate baseline is required.",
+    "simple_references": "Majority class (Fair+Satisfactory, ~74% of labelled dams); hazard-potential base rates (High/Significant/Low) and state base rates fitted on train only; a single-feature age logistic; a size-only (NID_STORAGE) logistic. Any model must beat the best of these on the fixed eval split before it is worth reporting."
+  },
+  "evidence": [
+    {
+      "url": "https://www.transtats.bts.gov/NTADmetadata/Automated/USDOT_BTS_NTAD_Dams.xml",
+      "claim": "BTS/NTAD metadata for the NID mirror declares unrestricted public-use status, requires acknowledgment of USACE and BTS, and documents the field set and the data dictionary DOI.",
+      "quote": "This NTAD dataset is a work of the United States government as defined in 17 U.S.C. \u00a7 101 and as such are not protected by any U.S. copyrights. This work is available for unrestricted public use."
+    },
+    {
+      "url": "https://www.transtats.bts.gov/NTADmetadata/Automated/USDOT_BTS_NTAD_Dams.xml",
+      "claim": "The record specifies the required credit line verbatim.",
+      "quote": "Acknowledgment of the U.S. Army Corps of Engineers (USACE) https://nid.sec.usace.army.mil/# and the Bureau of Transportation Statistics (BTS) [distributor]."
+    },
+    {
+      "url": "https://geospatial.sec.usace.army.mil/dls/rest/services/NID/National_Inventory_of_Dams_Public_Service/FeatureServer/0/query?where=1%3D1&outFields=*&resultRecordCount=2&f=json",
+      "claim": "The public feature service exposes the needed fields with real values, including CONDITION_ASSESSMENT, CONDITION_ASSESS_DATE, IS_ASSOCIATED_STRUCTURE, OPERATIONAL_STATUS and LAST_INSPECTION_DATE; two returned rows are CA00358 ('Fair') and CA00361 ('Satisfactory').",
+      "quote": "\"NIDID\":\"CA00358\" ... \"CONDITION_ASSESSMENT\":\"Fair\",\"CONDITION_ASSESS_DATE\":1787659200000"
+    },
+    {
+      "url": "https://geospatial.sec.usace.army.mil/dls/rest/services/NID/National_Inventory_of_Dams_Public_Service/FeatureServer/0/query?where=1%3D1&returnCountOnly=true&f=json",
+      "claim": "The service returns 92,628 records, one per dam/associated structure, confirming a tractable single-file scale.",
+      "quote": "{\"count\":92628}"
+    },
+    {
+      "url": "https://geospatial.sec.usace.army.mil/dls/rest/services/NID/National_Inventory_of_Dams_Public_Service/FeatureServer/0/query?where=CONDITION_ASSESSMENT%3D%27Poor%27&returnCountOnly=true&f=json",
+      "claim": "7,910 records are rated Poor; Unsatisfactory 1,135; Fair 12,694; Satisfactory 12,907; Not Rated 36,539 (counts obtained from separate identical count queries).",
+      "quote": "{\"count\":7910}"
+    },
+    {
+      "url": "https://geospatial.sec.usace.army.mil/dls/rest/services/NID/National_Inventory_of_Dams_Public_Service/FeatureServer/0/query?where=CONDITION_ASSESSMENT%20IN%20(%27Poor%27%2C%27Unsatisfactory%27)%20AND%20IS_ASSOCIATED_STRUCTURE%3D%27No%27&returnCountOnly=true&f=json",
+      "claim": "8,994 main dams (excluding saddle dams) carry a Poor or Unsatisfactory rating - the positive-event pool for the binary label.",
+      "quote": "{\"count\":8994}"
+    },
+    {
+      "url": "https://geospatial.sec.usace.army.mil/dls/rest/services/NID/National_Inventory_of_Dams_Public_Service/FeatureServer/0/query?where=CONDITION_ASSESS_DATE%3E%3DDATE%20%272024-01-01%27&returnCountOnly=true&f=json",
+      "claim": "12,208 records have an assessment date on/after 2024-01-01, and 7,884 on/after 2025-01-01, so both eval and holdout windows have real volume.",
+      "quote": "{\"count\":12208}"
+    },
+    {
+      "url": "https://geospatial.sec.usace.army.mil/dls/rest/services/NID/National_Inventory_of_Dams_Public_Service/FeatureServer/0/query?where=CONDITION_ASSESSMENT%3D%27Poor%27%20AND%20CONDITION_ASSESS_DATE%3E%3DDATE%20%272024-01-01%27&outStatistics=%5B%7B%22statisticType%22%3A%22count%22%2C%22onStatisticField%22%3A%22NIDID%22%2C%22outStatisticFieldName%22%3A%22n%22%7D%5D&groupByFieldsForStatistics=STATE&orderByFields=n%20DESC&f=json",
+      "claim": "Poor ratings recorded since 2024 are spread across ~38 states (Nebraska 349, North Carolina 236, Kentucky 185, Massachusetts 179, New Jersey 172 ... Oregon 1), so the latest window is not a single agency's bulk update.",
+      "quote": "\"STATE\":\"Nebraska\",\"N\":349 ... \"STATE\":\"Oregon\",\"N\":1"
+    },
+    {
+      "url": "https://files.hawaii.gov/dbedt/op/gis/data/NID_Hawaii_DataDictionary_20231127.pdf",
+      "claim": "A republished NID data dictionary gives the verbatim definition of the condition rating field and its five values, plus definitions of every other field used here.",
+      "quote": "Condition Assessment | Condition | Assessment that best describes the condition of the dam based on available information. Satisfactory; Fair; Poor; Unsatisfactory; Not Rated."
+    },
+    {
+      "url": "https://files.hawaii.gov/dbedt/op/gis/data/NID_Hawaii_DataDictionary_20231127.pdf",
+      "claim": "The dictionary defines the operational-status field as remediation activity tied to the condition assessment, which is why it is excluded as a label-determining quantity.",
+      "quote": "Operational Status ... Normal Operations; Under Investigation, Planning, Permitting, or Design for Remediation; Under Remediation; Enforcement Pending/Ongoing; Not Applicable."
+    }
+  ],
+  "construction": {
+    "format": "JSON/GeoJSON pages from an ArcGIS REST feature service rendered into one tidy CSV: one row per dam, ~70 attribute columns, no geometry needed (keep LATITUDE/LONGITUDE as plain columns).",
+    "access_recipe": "Page the layer with GET https://geospatial.sec.usace.army.mil/dls/rest/services/NID/National_Inventory_of_Dams_Public_Service/FeatureServer/0/query?where=1%3D1&outFields=<comma-separated field list>&returnGeometry=false&resultOffset=<n>&resultRecordCount=2000&f=geojson, incrementing resultOffset until a page returns fewer than 2000 features; concatenate and parse with json/pandas. Note f=csv is rejected by this service (HTTP 400 'Output format not supported'), so geojson or json is required. Send a normal User-Agent header and retry with backoff - the host intermittently failed DNS/SSRF checks during research. Persist the raw page responses and a SHA-256 of each so the build is reproducible against a changing snapshot; record the retrieved-at timestamp. Then apply the population filter, derive age_at_assessment = assessment_year - YEAR_COMPLETED, one-hot the categorical code fields by splitting on ', ' and ';', and write train/eval/holdout CSVs from the frozen date boundaries.",
+    "expected_size": "Observed 92,628 records nationally (count query). Expect roughly 32-33k eligible labelled rows after dropping 'Not Rated'/blank ratings and the 1,839 rated-but-undated records (34,646 carry one of the four ratings total; 40,681 carry an assessment date), with ~8,900 positives. A 2,000-row GeoJSON page is a few MB, so the full pull is on the order of tens of MB and ~47 requests.",
+    "source_examples": "Documented and observed values: CONDITION_ASSESSMENT in {Satisfactory, Fair, Poor, Unsatisfactory, Not Rated}; IS_ASSOCIATED_STRUCTURE in {Yes, No}; OWNER_TYPES/PRIMARY_OWNER_TYPE e.g. 'Private'; PRIMARY_DAM_TYPE e.g. 'Concrete', 'Earth' with DAM_TYPES 'Concrete, Gravity'; SPILLWAY_TYPE in {Controlled, Uncontrolled, None}; HAZARD_POTENTIAL in {High, Significant, Low, Undetermined}; dates arrive as epoch milliseconds (CONDITION_ASSESS_DATE 1787659200000) and must be converted, not compared as-is."
+  },
+  "limitations": [
+    "Current-vintage snapshot: attributes (height, storage, type, hazard class, even YEAR_COMPLETED's neighbours) are as recorded in the 2026 register, not as they stood at each historical assessment date. This is retrospective research and does not demonstrate what an operator would actually have had on hand in, say, 2019.",
+    "No dam appears twice, so the dataset cannot support any within-dam change modelling; the task is a cross-sectional screen, not a deterioration forecast.",
+    "The label is a regulatory judgement that varies by state program; jurisdiction is both a legitimate control and a potential shortcut, so state/agency base-rate baselines are mandatory to interpret any gain.",
+    "60% of records are 'Not Rated' or blank, and rating coverage is itself an artefact of agency practice, so the labelled population is a non-random subset of U.S. dams and performance will not transfer to unrated dams without further argument.",
+    "Condition ratings are coarse and partly judgemental; inter-rater and inter-agency reliability is not published, so some irreducible label noise is expected.",
+    "The public service occasionally refused requests during research (HTTP 400 on f=csv, intermittent DNS/SSRF failures). The build must retry and checksum pages; if the host becomes unavailable the dataset cannot be rebuilt as specified.",
+    "Deliberately excluded to avoid label leakage: CONDITION_ASSESSMENT, CONDITION_ASSESS_DATE (split key), OPERATIONAL_STATUS (defined in terms of remediation triggered by the rating), LAST_INSPECTION_DATE (the same inspection event), DATA_UPDATED, and YEARS_MODIFIED (modifications can postdate the assessment)."
+  ]
+}
