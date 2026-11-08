@@ -130,6 +130,9 @@ declared ID, time, feature and carry-column names. Nothing renames columns for y
 No metrics, training, qualification or packaging in this function. Return a nonempty
 list of source checks: [{"check":"what was checked", "observed":"actual value",
 "expected":"publisher evidence or rule", "passed":true}]. Assert failures.
+When a field or join-key check fails, include the observed headers, missing names,
+and selected archive member in the exception message, bounded to 4000 characters.
+The repair receives this message; a generic assertion hides the evidence it needs.
 Keep public field names and expected values in separate check properties, with
 descriptive diagnostic strings. The hosted runtime misclassifies PWS_TYPE_CODE
 followed by an equals sign in prose as a password assignment and can remove

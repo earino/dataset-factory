@@ -759,6 +759,45 @@ A ledger regression verifies that 45M recorded development tokens remain visible
 and do not block normal operation after expiry, while a new 40M normal-operation
 session at the deadline does trigger the normal ceiling. All 31 budget tests pass.
 
+### Six-hour checkpoint and deployed gate (17:11 UTC)
+
+The six-hour user update reported zero completed replacement publications and
+uncertain completion within the remaining two hours. Acceptance criteria remain
+unchanged. Work remains focused on actual source outcomes and their demonstrated
+failures.
+
+Scout confirms 08b28f5 deployed at 17:02:53 UTC, with the scheduled tick resumed
+at 17:03 and runtime inventory passing. At 17:03:12, RCRA source-11 was deferred
+after its third worker failure; no manual reopening occurred. CMS source-12 was
+entering normal terms repair after the captured 403. Source-13 has identity
+`rw-2ce60e8ae8f7`; its exact research outcome is not yet retained here. Scout's
+message describes both a build-stage queue and a just-started discovery process,
+so it is not evidence of completed construction. Provider count was zero at that
+snapshot, with the CMS ledger mid-transition. Reserved worker budget was EUR
+10.30 of 20.00. These are timestamped observations, not current-state guarantees.
+
+Development accounting commit 999e076 passed 934 tests in a clean checkout
+(13 skipped) and [exact-commit CI](https://github.com/earino/dataset-factory/actions/runs/42503361418).
+Deployment was requested at the next free process/flock boundary. Its deployment
+and subsequent source outcomes remain to be confirmed.
+
+### UCMR 5 first construction and useful repair diagnostics (17:15 UTC)
+
+Source-13 is `ucmr5-first-sample-pfas`. Its first worker completed in 36.0 seconds
+and failed on missing additional-data concepts or join keys. Terms capture passed.
+Staging release 438394116 and manifest 724624851 bind the preserved failure and
+licence-evidence reports in `audits/rewrite/new-source-outcomes/ucmr5-build-1-*`.
+Report sizes and SHA256 digests were verified against that manifest. The source
+archive was inspected in memory without retrieving the dataset.
+
+The builder recorded missing-name details in a local check list, but raised only
+a generic exception before returning that list. Consequently, automatic repair
+receives neither the missing names nor the actual headers. The construction prompt
+now requires bounded observed headers, missing names and the selected archive
+member in schema-failure messages. No source mapping, target, candidate state or
+acceptance check was changed. The normal bounded repair remains responsible for
+resolving the actual schema from evidence.
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;
