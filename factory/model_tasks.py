@@ -158,6 +158,19 @@ class ModelTasks:
                         try:
                             result = w.run_agent(command, seconds + 30, fd)
                         except subprocess.TimeoutExpired as exc:
+                            stderr = exc.stderr or ''
+                            if isinstance(stderr, bytes):
+                                stderr = stderr.decode('utf-8', errors='replace')
+                            failure = {'error': 'timeout', 'limit_seconds': seconds + 30,
+                                       'diagnostic': startup_diagnostic(stderr)}
+                            try:
+                                measured = usage(self.db, before, runtime_session(stderr))
+                                measured.update(elapsed_seconds=round(time.monotonic() - started, 3),
+                                                partial=True, outcome='timeout')
+                                write_json(directory / 'usage.json', measured)
+                            except TaskFailure as accounting:
+                                failure['accounting'] = str(accounting)
+                            write_json(directory / 'failure.json', failure)
                             raise TaskFailure('Model task exceeded its wall-clock limit') from exc
                 if result.returncode:
                     # Preserve the startup failure, not just its missing session.
@@ -165,7 +178,8 @@ class ModelTasks:
                     parser_error = [line for line in result.stderr.splitlines()
                                     if 'error: unrecognized arguments:' in line or 'error: argument ' in line]
                     failure = {'exit_code': result.returncode, 'parser_error': parser_error[-2:],
-                               'diagnostic': startup_diagnostic(result.stderr)}
+                               'diagnostic': startup_diagnostic(result.stderr),
+                               'response_diagnostic': startup_diagnostic(result.stdout)}
                     try:
                         write_json(directory / 'usage.json', usage(self.db, before, runtime_session(result.stderr)))
                     except TaskFailure as exc:

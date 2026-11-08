@@ -6,6 +6,11 @@ Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 
 ## Current work
 
+- **Latest observed state (13:14 UTC):** deployed `931f617`, scheduler resumed,
+  source 1 reopened by the recorded deployment correction, source 3 at build,
+  source 4 at discovery. One failed real worker collected and cleaned; zero
+  accepted or published replacement datasets. Two complete public runs remain
+  the critical path. Earlier entries below retain the implementation history.
 - Base: `1e6aa8207a5f39b0b30d473fe30081b23764a0ff` (latest Scout failure closeout).
 - Branch: `codex/factory-rewrite`; worktree `/private/tmp/factory-rewrite-worktree`.
 - Specification committed at `8eafdd924432cd7f7be95eeb3e16230389dddac4`;
@@ -129,22 +134,40 @@ Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 
 | Milestone | Implemented | Local tests | CI | Deployed evidence |
 | --- | --- | --- | --- | --- |
-| Controller and state | Implemented | Restart, retry, lock, queue tests | Passed | — |
-| Mechanical worker lifecycle | Implemented | Collection, cleanup, recovery, upload integration | Passed | — |
-| Model tasks and evaluation | Implemented | Source replay, qualification/package/consumer tests | Passed | Discovery pilot only |
+| Controller and state | Implemented | Restart, retry, lock, queue tests | Passed | Scheduled queue advancement, exclusive lock, failed candidate replaced |
+| Mechanical worker lifecycle | Implemented | Collection, cleanup, recovery, upload integration | Passed | Failed worker collected/cleaned with preserved evidence |
+| Model tasks and evaluation | Implemented | Source replay, qualification/package/consumer tests | Passed | Discovery and code generation; full evaluation/review pending |
 | Automatic publication | Implemented | Two-platform transfer, anonymous loading, retry, exact qualification | Passed | — |
-| Cutover and unattended acceptance | Deployed | Lock/legacy guard tests | Passed | Scheduled 12:21 tick, overlapping tick refused; compact export pending |
+| Cutover and unattended acceptance | Deployed | Lock/legacy guard tests | Passed | Scheduled ticks, legacy schedules disabled, controlled real-source fetch retry/cache replay |
 
 ## Acceptance evidence
 
-A1: deployed controller/lock observed; job restart acceptance pending.
-A2: worker lifecycle software checks passed; live outcome pending.
-A3: live discovery pilot recorded; deployed build/review pending.
-A4–A6: real-source publication, consumer and recovery acceptance pending.
+A1: deployed controller/lock observed; separate scheduled ticks resumed the same
+worker identity through collection. Forced-interruption demonstration not claimed.
+A2: failed worker collected/cleaned without model bookkeeping; successful worker
+advancement remains pending.
+A3: live discovery and code generation recorded; semantic review pending.
+A4–A5: two complete real-source publications and consumer verification pending.
+The source-1 deployment correction is explicit state migration, so its later
+success alone will not prove an untouched end-to-end autonomous run.
+A6: failed candidates deferred and the queue refilled; the deployed source-fetch
+helper recovered from an explicitly injected 503, fetched real HTTPS metadata,
+then replayed cached bytes without network. Receipts are in
+`audits/rewrite/correction-deploy/`; organic source outage recovery is not claimed.
 A7: Scout reports scheduled execution, legacy paths paused and cleanup active;
-compact repository receipt export pending.
+compact receipts are preserved under `audits/rewrite/cutover/` and subsequent exports.
 A8: implementation and evidence shipped with passing exact-commit CI; final
 acceptance/sign-off remains open. No completed dataset release claimed.
+
+Latest verification: format-repair change `9e778d7` passed 918 clean-clone tests
+(13 skipped) and [CI](https://github.com/earino/dataset-factory/actions/runs/42483088563).
+Recovery demonstration `931f617` passed [CI](https://github.com/earino/dataset-factory/actions/runs/42483341561).
+Scout's correction export passed [CI](https://github.com/earino/dataset-factory/actions/runs/42484030195).
+The observed construction timeout now also preserves measured partial usage and
+bounded redacted failure diagnostics; clean clone passed 919 tests (13 skipped).
+Allowance at 13:14 UTC: EUR 11.78 worker reservation remaining; measured rolling
+inference usage 35.76M/40M tokens (stop fraction 0.95 still applies). Dollar spend
+remains unknown; no spending limits were changed.
 
 ## Known findings relevant to implementation
 
