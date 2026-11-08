@@ -22,6 +22,34 @@ stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
 
+## 2026-11-08 23:20 UTC — canonical event declarations without changing the gate
+
+The Federal Register declaration-only build-2 retained the exact leaking builder
+hash and failed qualification again (328.4 seconds; release 438585034 / manifest
+725487727). The only remaining mechanical failure was the blank period-selection
+field. This is separate from the demonstrated label leak, which still needs code
+repair. `ec553f4` passed [exact CI](https://github.com/earino/dataset-factory/actions/runs/42533992340).
+
+The declared record is administrative, current-vintage retrospective research;
+its contract explicitly says label timing is unverified and lists limitations.
+It uses calendar-day event resolution (`D`, day zero) while declaring no source
+reporting period. The existing gate represents that same unverified event scope
+with null period/lag fields. Construction now canonicalizes these equivalent
+representations deterministically before building the immutable job bundle.
+This avoids another model/worker cycle to invent a period marker or zero-day lag.
+
+The conversion is restricted to that explicit unverified administrative-event
+scope, no observed lag evidence, no positive publication lag, and no source
+reporting period. Statistical releases, historical forecasting, known positive
+lags, observed lag evidence, and explicit future-period selection are untouched.
+No row dates, target, features or split boundaries change. The gate/version itself
+is unchanged and still reports availability as **unverified**. Full qualification,
+known-code leakage repair and semantic review remain required. Unit checks use
+the real failed descriptor and confirm the unchanged gate's intended event branch,
+along with the protected failure cases.
+Validation: 960 clean-checkout tests passed, 13 skipped; 42 focused tests and
+the rule inventory passed. No gate/receipt version change is needed.
+
 ## 2026-11-08 23:12 UTC — demonstrated Federal Register label exposure
 
 Source-16 (`fr-proposed-rule-finalization`) build-1 produced CSVs on a real worker

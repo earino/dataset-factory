@@ -48,12 +48,34 @@ def merge_repair(previous, response):
                     if name in response and response[name] != quality[name]:
                         raise FactoryError('Conflicting construction response field: ' + name)
                     response[name] = quality.pop(name)
-    if previous is None:
-        return response
-    allowed = {'build_py', 'quality', 'references', 'construction_notes', 'source_access_recipe'}
-    if not isinstance(response, dict) or not response or set(response) - allowed:
-        raise FactoryError('Repair must return changed construction fields only')
-    return {**copy.deepcopy(previous), **copy.deepcopy(response)}
+    if previous is not None:
+        allowed = {'build_py', 'quality', 'references', 'construction_notes', 'source_access_recipe'}
+        if not isinstance(response, dict) or not response or set(response) - allowed:
+            raise FactoryError('Repair must return changed construction fields only')
+        response = {**copy.deepcopy(previous), **copy.deepcopy(response)}
+    if isinstance(response, dict) and isinstance(response.get('quality'), dict):
+        canonicalize_event_timing(response['quality'])
+    return response
+
+
+def canonicalize_event_timing(quality):
+    """Calendar-day event resolution is not a measured period-publication lag."""
+    timing = quality.get('timing', {}); contract = quality.get('evaluation_contract', {})
+    if not isinstance(timing, dict) or not isinstance(contract, dict):
+        return
+    features = timing.get('features', {}); instant = timing.get('prediction_instant', {})
+    vintage = contract.get('vintage', {})
+    if not all(isinstance(v, dict) for v in (features, instant, vintage)):
+        return
+    if (features.get('source_kind') == 'administrative_record' and features.get('period') is None
+            and instant.get('kind') == 'event_time' and instant.get('period') in (None, 'D')
+            and features.get('published_days_after_period_end') in (None, 0)
+            and instant.get('days_after_period_end') in (None, 0) and not timing.get('observations')
+            and contract.get('use') == 'retrospective_research'
+            and contract.get('training_label_timing') == 'unverified'
+            and vintage.get('kind') in ('current_snapshot', 'mixed') and contract.get('limitations')):
+        instant.update(period=None, days_after_period_end=None)
+        features['published_days_after_period_end'] = None
 
 
 def describe_task(source, response):

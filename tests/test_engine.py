@@ -26,6 +26,39 @@ def source():
 
 
 class EngineTests(unittest.TestCase):
+    def test_event_timing_canonicalization_preserves_material_timing_checks(self):
+        from factory.construction import merge_repair
+        from tests.test_timing_gate import checks
+        repo = Path(__file__).resolve().parents[1]
+        quality = json.loads((repo / 'audits/rewrite/fr-build1-rate-exposure/quality.json').read_text())
+        original = copy.deepcopy(quality)
+        for lag in (None, 0):
+            supplied = copy.deepcopy(quality)
+            supplied['timing']['features']['published_days_after_period_end'] = lag
+            result = merge_repair(None, {'quality':supplied})['quality']
+            self.assertIsNone(result['timing']['prediction_instant']['period'])
+            self.assertIsNone(result['timing']['prediction_instant']['days_after_period_end'])
+            self.assertIsNone(result['timing']['features']['published_days_after_period_end'])
+            self.assertEqual(original['task'], result['task'])
+            self.assertEqual(original['evaluation_contract'], result['evaluation_contract'])
+            timing_checks = checks(result)
+            self.assertTrue(timing_checks['timing.event_feature_availability_unverified']['ok'])
+            self.assertTrue(timing_checks['timing.event_selection_declared']['ok'])
+        self.assertEqual(original, quality)
+        for change in ('historical','statistical','late_feature','measured'):
+            with self.subTest(change=change):
+                supplied = copy.deepcopy(quality)
+                if change == 'historical': supplied['evaluation_contract']['use'] = 'historical_forecasting'
+                if change == 'statistical': supplied['timing']['features']['source_kind'] = 'statistical_release'
+                if change == 'late_feature': supplied['timing']['features']['published_days_after_period_end'] = 14
+                if change == 'measured': supplied['timing']['observations'] = [{'period_end':'2020-01-01','published':'2020-01-02'}]
+                self.assertEqual(supplied, merge_repair(None, {'quality':supplied})['quality'])
+        supplied = copy.deepcopy(quality)
+        supplied['timing']['row_selection']['latest_period_used'] = 'M+1'
+        result = merge_repair({'quality':supplied}, {'construction_notes':'A code-only repair'})
+        self.assertEqual('M+1', result['quality']['timing']['row_selection']['latest_period_used'])
+        self.assertFalse(checks(result['quality'])['timing.selection_uses_only_available_data']['ok'])
+
     def test_demonstrated_code_defect_repairs_automatically_and_cannot_publish(self):
         from factory.construction import assemble, known_defect
         repo = Path(__file__).resolve().parents[1]
