@@ -37,7 +37,7 @@ increases, source resurrection or validation exceptions are planned. If the crit
 remain unmet at 19:07, wind down new work safely, retain cleanup/resumable state and
 report the missing evidence and estimated additional effort.
 
-## Acceptance evidence at the current deployment
+## Acceptance evidence — 2026-11-08 16:38 UTC
 
 This is an interim assessment, not completion sign-off.
 
@@ -50,10 +50,19 @@ This is an interim assessment, not completion sign-off.
 | A5: trustworthy consumable releases | Full-artifact checks rejected defective artifacts; package/consumer implementation tested in software. | Accepted reproducible releases, measured usefulness, and anonymous full-file verification on both platforms. |
 | A6: automatic recovery | Failed candidates defer/refill; durable staging recovered after provider absence; [controlled transient-fetch recovery](../audits/rewrite/live_fetch_recovery.py) exercised against a real publisher. | Complete successful recovery evidence alongside the end-to-end path; controlled injection is not an organic outage claim. |
 | A7: unattended production | Scheduled script-only ticks observed; three legacy launch/follow-up schedules paused; independent cleanup retained. | Retain final deployed configuration and unattended successful outcome. |
-| A8: shipped, checked, signed off | Main pushed through `05fab28`, exact-commit CI green; progress and raw evidence retained. | Final criterion-by-criterion sign-off after the missing real outcomes. |
+| A8: shipped, checked, signed off | Implementation pushed through `e2441df`, exact-commit CI green; Scout confirms it deployed at 16:37:29 UTC, scheduler resumed at 16:38. Progress and raw evidence retained. | Final criterion-by-criterion sign-off after the missing real outcomes. |
 
 ## Current work
 
+- **Latest confirmed deployment (16:38 UTC):** Scout reports `e2441df` deployed
+  at 16:37:29 UTC and the scheduler resumed. This includes negative-verdict reuse,
+  the source-rights clarification, 600-second task bound and population-scoped
+  construction checks. Its [exact-commit CI passed](https://github.com/earino/dataset-factory/actions/runs/42500521034).
+  Source 11 RCRA remains in ordinary build repair after the second worker's header
+  failure; source 12 is retrying discovery after non-JSON output. Zero replacement
+  datasets have passed the full publication path. Scout reports worker reservations
+  of EUR 9.98/20.00 (81 reservations), leaving EUR 10.02. The development token
+  exemption remains active until 19:07 UTC. Historical observations follow.
 - **Earlier deployment (14:50:19 UTC):** Scout reports `05fab28` deployed and
   the script-only tick resumed. Its [exact-commit CI passed](https://github.com/earino/dataset-factory/actions/runs/42491352932).
   The clean checkout passed 926 tests (13 skipped). No replacement dataset has
@@ -651,6 +660,30 @@ needed boundary if the preceding deployment had already resumed, avoiding a
 separate pause solely for this prompt change.
 Scout confirmed at 16:37 UTC that 64a1113 had merged with task_seconds=600;
 applying e2441df and resuming the tick were in progress at that observation.
+
+### Parse complete fenced JSON without repeating research (16:44 UTC)
+
+Source 12's retained discovery response is complete JSON inside a bare Markdown
+code fence. The parser accepted only fences labelled json, so it rejected this
+response at line 1, column 1. Removing the wrapper makes the exact retained bytes
+pass both JSON parsing and the existing source contract. This is a format correction,
+not evidence that the dataset is scientifically qualified or ready to publish.
+
+The parser now accepts one complete bare or JSON-labelled outer code block, with
+normal line endings. It still rejects missing closing fences, trailing prose,
+multiple objects/blocks, malformed JSON and non-object responses. A regression
+check uses the actual CMS response, alongside malformed-wrapper cases.
+
+The failed fenced attempt recorded 11 API calls, 149,751 input and 28,609 output
+tokens over 304.4 seconds. Scout reports that discover-3 repeated research and
+advanced with an unfenced response; those duplicate-attempt costs are not measured
+by this usage file. The supplied queue snapshot still shows the earlier discover
+failure, so its bytes alone do not prove that later advancement. Evidence is kept
+in `audits/rewrite/source12-discover2-nonjson/`; no live task was rerun manually.
+The source is CMS nursing-home inspections, materially different from EPA RCRA.
+
+The preceding RCRA evidence commit e520032 passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42500974752).
 
 ## Known findings relevant to implementation
 

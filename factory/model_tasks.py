@@ -45,8 +45,10 @@ def parse_response(text):
     text = text.strip()
     if text.startswith('Warning: Unknown toolsets: __none__\n'):
         text = text.split('\n', 1)[1].strip()
-    if text.startswith('```json\n') and text.endswith('```'):
-        text = text[8:-3].strip()
+    lines = text.splitlines()
+    if (len(lines) >= 3 and lines[0].strip().lower() in ('```', '```json')
+            and lines[-1].strip() == '```'):
+        text = '\n'.join(lines[1:-1]).strip()
     if len(text.encode()) >= 256 * 1024:
         raise TaskFailure('Model response exceeds compact report limit')
     try:

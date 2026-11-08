@@ -106,6 +106,18 @@ class ModelTaskTests(unittest.TestCase):
 
     def test_structured_response_and_malformed_failure(self):
         self.assertEqual(parse_response('```json\n{"verdict":"ready"}\n```'), {'verdict': 'ready'})
+        for opening in ('```', '```json', '```JSON'):
+            self.assertEqual(parse_response(opening + '\r\n{"verdict":"ready"}\r\n```'),
+                             {'verdict': 'ready'})
+        recorded = (Path(__file__).resolve().parents[1] /
+                    'audits/rewrite/source12-discover2-nonjson/response.txt').read_text()
+        self.assertEqual(parse_response(recorded)['dataset_id'],
+                         'nursing-home-next-survey-harm-citation')
+        for raw in ('```\n{"verdict":"ready"}',
+                    '```\n{"verdict":"ready"}\n```\nextra',
+                    '```\n{}\n```\n```\n{}\n```'):
+            with self.assertRaises(TaskFailure):
+                parse_response(raw)
         self.assertEqual(parse_response('Warning: Unknown toolsets: __none__\n{"ok":true}'), {'ok': True})
         for raw in ('ready', '[]', '{"code":"' + 'x' * (256 * 1024) + '"}'):
             with self.assertRaises(TaskFailure):
