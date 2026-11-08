@@ -4,9 +4,38 @@ Specification: [FACTORY-REWRITE.md](FACTORY-REWRITE.md).
 Goal tool confirmed **active** at kickoff 2026-11-08 11:07:00 UTC.
 Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 
+## Acceptance evidence at the current deployment
+
+This is an interim assessment, not completion sign-off.
+
+| Criterion | Observed evidence | Remaining |
+| --- | --- | --- |
+| A1: one durable controller | Scheduled tick, exclusive-lock busy result, durable attempt/job identities across deployments; [cutover](../audits/rewrite/cutover/) and [first cycle](../audits/rewrite/first-cycle/). | Confirm the successful path also resumes from its recorded checkpoints. No forced-process-kill claim. |
+| A2: mechanical worker outcomes | Real failed workers were staged, collected and deleted without model follow-up; [worker reports](../audits/rewrite/new-source-outcomes/). | Observe a successful construction worker advancing automatically. |
+| A3: bounded inexpensive model | Recorded requested route performed real discovery and generated builders; exact prompts, responses and usage retained. | Verify write-only construction and successful semantic review in the deployed path. |
+| A4: two complete real sources | Multiple real sources attempted; STATS19 reached full qualification, which failed. | Two sources through public publication without manual state edits. Deployment replays alone do not establish this. |
+| A5: trustworthy consumable releases | Full-artifact checks rejected defective artifacts; package/consumer implementation tested in software. | Accepted reproducible releases, measured usefulness, and anonymous full-file verification on both platforms. |
+| A6: automatic recovery | Failed candidates defer/refill; durable staging recovered after provider absence; [controlled transient-fetch recovery](../audits/rewrite/live_fetch_recovery.py) exercised against a real publisher. | Complete successful recovery evidence alongside the end-to-end path; controlled injection is not an organic outage claim. |
+| A7: unattended production | Scheduled script-only ticks observed; three legacy launch/follow-up schedules paused; independent cleanup retained. | Retain final deployed configuration and unattended successful outcome. |
+| A8: shipped, checked, signed off | Main pushed through `05fab28`, exact-commit CI green; progress and raw evidence retained. | Final criterion-by-criterion sign-off after the missing real outcomes. |
+
 ## Current work
 
-- **Latest observed state (13:14 UTC):** deployed `931f617`, scheduler resumed,
+- **Latest deployment (14:50:19 UTC):** Scout reports `05fab28` deployed and
+  the script-only tick resumed. Its [exact-commit CI passed](https://github.com/earino/dataset-factory/actions/runs/42491352932).
+  The clean checkout passed 926 tests (13 skipped). No replacement dataset has
+  passed all gates or been published. STATS19 reached full-artifact qualification
+  and failed four checks, documented below; the next repair uses the corrected
+  finalizer and focused diagnostics. The write-only adapter is deployed but its
+  first successful live use is still pending observation.
+- Source 6's SBA discovery omitted attribution fields entirely; this was not an
+  explicitly empty credit. The next bounded discovery selected openFDA recall
+  enforcement reports and advanced to construction. Exact responses are retained
+  under `audits/rewrite/source-6-attribution/`. No evidence requirement was relaxed.
+  Scout's export and correction both passed CI
+  ([export](https://github.com/earino/dataset-factory/actions/runs/42491580661),
+  [correction](https://github.com/earino/dataset-factory/actions/runs/42491611081)).
+- **Earlier observation (13:14 UTC):** deployed `931f617`, scheduler resumed,
   source 1 reopened by the recorded deployment correction, source 3 at build,
   source 4 at discovery. One failed real worker collected and cleaned; zero
   accepted or published replacement datasets. Two complete public runs remain

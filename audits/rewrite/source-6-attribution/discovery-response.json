@@ -1,0 +1,188 @@
+{
+  "verdict": "ready",
+  "reason": "SBA's 7(a) & 504 FOIA product is a single direct CSV download per decade with a publisher-issued field dictionary, ~690k loan approvals for FY2000-FY2009, and a loan-level outcome (ChargeOffDate) that can be turned into a fully resolved 60-month binary label without any cross-row or macro join. Every candidate predictor is an application/approval attribute documented in that dictionary; the only excluded fields are the ones that define or postdate the outcome. Licensing is the publisher's own 'U.S. Government Works' designation, no account or agreement is required, and the FY2000-FY2009 cohort is old enough that no loan is right-censored at the 2026-09-30 snapshot.",
+  "dataset_id": "sba-7a-corporate-chargeoff-60m",
+  "title": "Will a U.S. SBA 7(a) term loan to a company be charged off within 60 months of approval?",
+  "source": {
+    "publisher": "U.S. Small Business Administration (Office of Capital Access)",
+    "urls": [
+      "https://data.sba.gov/sites/default/files/uploaded_resources/FOIA_7a_FY2000_FY2009_asof_260930.csv",
+      "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+    ],
+    "documentation_url": "https://data.sba.gov/dataset/7a-504-foia",
+    "terms_url": "https://data.sba.gov/dataset/7a-504-foia",
+    "license": "U.S. Government Works (public domain)",
+    "terms_excerpt": "U.S. Government Works",
+    "attribution": "",
+    "citation": "",
+    "redistribution": true
+  },
+  "task": {
+    "question": "At the moment SBA approves a 7(a) term loan to a corporation or partnership, will that loan be charged off within 60 months of the approval date?",
+    "decision_user": "A lender's small-business credit desk (or SBA guaranty pricing/oversight staff) deciding whether to originate or how to price a guaranteed term loan, using only what is on the application and approval record.",
+    "prediction_time": "The approval date (ApprovalDate), i.e. the instant the guaranty is granted and terms are fixed; no post-approval information exists at that instant.",
+    "target": "Binary: 1 if ChargeOffDate is present and ChargeOffDate <= ApprovalDate + 60 months; 0 otherwise (including loans charged off after month 60 and loans still active or paid in full). Rows with a missing or non-positive ChargeOffDate - ApprovalDate interval are dropped as inconsistent.",
+    "outcome_horizon": "60 months from ApprovalDate. Because the cohort stops at FY2009 (approvals on or before 2009-09-30), every 60-month window closed by 2014-09-30, well before the 2026-09-30 extract date, so the label is uncensored for the whole population.",
+    "features": [
+      {
+        "name": "gross_approval",
+        "meaning": "Total loan amount approved (USD); measures exposure size.",
+        "availability": "Set at approval, recorded on the loan record.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "sba_guaranteed_approval",
+        "meaning": "Dollar amount of SBA's guaranty; with gross_approval gives the guaranty share, a proxy for how much risk SBA vs the lender carried.",
+        "availability": "Fixed at approval.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "term_months",
+        "meaning": "Scheduled loan term in months; long terms imply real-estate/equipment collateral and slower amortization.",
+        "availability": "Fixed at approval.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "initial_interest_rate",
+        "meaning": "Total initial rate (base plus spread) at approval; encodes pricing of perceived risk and the rate environment.",
+        "availability": "Fixed at approval by definition.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "fixed_or_variable",
+        "meaning": "Fixed/variable rate indicator; floating-rate borrowers absorb rate shocks.",
+        "availability": "Set at approval.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "naics_2",
+        "meaning": "Two-digit NAICS sector of the borrower, derived from NaicsCode.",
+        "availability": "Reported on the application at approval.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "naics_6",
+        "meaning": "Six-digit NAICS industry code (categorical, high-cardinality; use with smoothing or grouping).",
+        "availability": "Reported on the application at approval.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "franchise_flag",
+        "meaning": "Whether the borrower is a franchisee (FranchiseCode populated).",
+        "availability": "Recorded on the loan at approval.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "project_state",
+        "meaning": "State where the financed project is located; captures regional demand and lender coverage.",
+        "availability": "Fixed at approval.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "congressional_district",
+        "meaning": "Congressional district of the project (categorical).",
+        "availability": "Fixed at approval.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "business_type",
+        "meaning": "Borrower legal form (Individual / Partnership / Corporation); the population filter keeps Partnership and Corporation.",
+        "availability": "Stated on the application.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "business_age",
+        "meaning": "Categorical band describing how old the business was; the single strongest ex-ante survival signal likely available.",
+        "availability": "Stated on the application at approval.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "jobs_supported",
+        "meaning": "Jobs created plus retained as projected by the lender on the application; a scale/quality proxy, self-reported and unaudited.",
+        "availability": "Application-time estimate, so available at approval, but noisy.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "collateral_flag",
+        "meaning": "Whether the lender reported the loan as collateral-backed.",
+        "availability": "Recorded at approval.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "processing_method",
+        "meaning": "Program channel (e.g. PLP, SBX, 7AG) reflecting delegated underwriting authority and loan purpose.",
+        "availability": "Fixed at approval.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      },
+      {
+        "name": "approval_fy_quarter",
+        "meaning": "Fiscal year and quarter of approval, used for calendar controls and for the split boundaries.",
+        "availability": "Derived from ApprovalDate, known at the decision instant.",
+        "evidence_url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx"
+      }
+    ],
+    "population": "7(a) approvals with ApprovalDate from 2000-10-01 through 2009-09-30 (ApprovalFY 2001-2009 mapped to the file's FY2000-FY2009 range), RevolverStatus = 0 (term loans only, so a fixed 60-month horizon is meaningful), and BusinessType in {Corporation, Partnership}. Eligibility uses only application/approval attributes, with one disclosed exception: loans whose recorded LoanStatus is CANCLD or COMMIT (never disbursed) are dropped because no credit exposure ever existed; that is a label-availability filter, and LoanStatus is not used as a feature.",
+    "split_policy": "Fixed chronological boundaries on ApprovalDate: train = approvals 2000-10-01 to 2004-09-30 (FY2001-FY2004, 286,811 approvals before filtering); eval = 2004-10-01 to 2006-09-30 (FY2005-FY2006, 193,191); holdout = 2006-10-01 to 2009-09-30 (FY2007-FY2009, 210,331). No embargo: no feature references another loan, a lender history or a macro series, and each label is computed solely from that loan's own approval and charge-off dates, so overlapping calendar outcome windows across splits cannot leak. The holdout deliberately spans the 2007-2009 credit shock as an out-of-time stress test; that shift is part of the frozen design and must not be re-cut after seeing results.",
+    "usefulness": "The label is not a column: it must be derived from the interval between ApprovalDate and ChargeOffDate, and the 60-month truncation forces an explicit, fully resolved outcome definition rather than copying a status code. The task asks whether ex-ante application attributes (term, size, guaranty share, sector, business age, collateral, channel, pricing) carry enough signal to rank guaranteed small-business credit risk, which is a real underwriting and guaranty-pricing decision, and the 2007-2009 holdout tests whether pre-crisis signals survive a regime change.",
+    "simple_references": "Majority-class rate (charge-off is a minority outcome, so accuracy alone is uninformative); base rate by approval fiscal year; base rate by (2-digit NAICS x term bucket); base rate by processing method. Persistence is undefined here because rows are independent loans rather than a panel, so year and sector base rates are the only meaningful trivial controls."
+  },
+  "evidence": [
+    {
+      "url": "https://data.sba.gov/dataset/7a-504-foia",
+      "claim": "The dataset is published as direct per-decade CSV files with an accompanying dictionary, refreshed quarterly, with no registration.",
+      "quote": "There are four files for the 7(a) loan program that segment the data by decade."
+    },
+    {
+      "url": "https://data.sba.gov/dataset/7a-504-foia",
+      "claim": "The publisher designates the license as U.S. Government Works and gives the identifier SBA-OHA-2016-08-001.",
+      "quote": "U.S. Government Works"
+    },
+    {
+      "url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+      "claim": "ChargeOffDate exists as a loan-level field, which is what makes a time-bounded label constructible.",
+      "quote": "Date SBA charged off loan (if applicable)"
+    },
+    {
+      "url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+      "claim": "LoanStatus codes include an EXEMPT code for undisclosed active loans, so status must not be used as a naive binary label.",
+      "quote": "The status of loans that have been disbursed but have not been cancelled, paid in full, or charged off are exempt from disclosure under FOIA Exemption 4"
+    },
+    {
+      "url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+      "claim": "The lender name field is a current-assignee field, not an approval-time attribute, so lender identity is excluded from the feature set.",
+      "quote": "Name of the bank that the loan is currently assigned to"
+    },
+    {
+      "url": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+      "claim": "Term versus revolver is documented, supporting restriction to term loans.",
+      "quote": "Indicator of whether a loan is a term loan or revolving line of credit (0=Term, 1=Revolver)"
+    },
+    {
+      "url": "https://data.sba.gov/sites/default/files/distribution/SBA-OCA-CKAN-002/monthlyyearlyactivity-7a-504-202510-1991-to-present.xlsx",
+      "claim": "Approval volumes by fiscal year (43,748 in FY2000 through 41,288 in FY2009, 690,333 in total) size the file and the splits.",
+      "quote": "Fiscal Year,Program,Approved Loans,Approved Dollars,Approved SBA Guaranty Amount"
+    },
+    {
+      "url": "https://data.sba.gov/sites/default/files/uploaded_resources/FOIA_7a_FY2000_FY2009_asof_260930.csv",
+      "claim": "The CSV URL on the publisher page is live and returns a file larger than 50 MiB, confirming a real, large, directly fetchable download.",
+      "quote": ""
+    }
+  ],
+  "construction": {
+    "format": "train.csv / eval.csv / holdout.csv, header row, one row per loan approval, UTF-8, no index column; ISO-8601 dates; derived columns gross_approval, sba_guaranteed_approval, term_months, initial_interest_rate, fixed_or_variable, naics_2, naics_6, franchise_flag, project_state, congressional_district, business_type, business_age, jobs_supported, collateral_flag, processing_method, approval_fy, approval_quarter, plus approval_date and target.",
+    "access_recipe": "Read the dataset page, take the current link matching 'FOIA - 7(a)(FY2000-FY2009)' (the filename embeds the snapshot date, e.g. FOIA_7a_FY2000_FY2009_asof_260930.csv, and changes each quarter - never hardcode it), fetch with curl/requests, and stream-parse with the csv module or pandas read_csv(chunksize=200000) rather than a single in-memory read. Drop BorrName, BorrStreet, BorrCity, BorrZip, BankName, BankStreet, BankCity, BankState, BankZip, BankFDICNumber, BankNCUANumber at read time. Verify the header against the dictionary field names before use and log any unmatched column; parse ApprovalDate and ChargeOffDate as dates (some rows may have empty ChargeOffDate).",
+    "expected_size": "690,333 7(a) approvals across FY2000-FY2009 per SBA's own activity report; the observed upstream CSV exceeds 50 MiB (the extractor rejected it on that limit), estimated 400-800 MB uncompressed. After the term-loan and corporate/partnership filters the release is estimated at 300,000-400,000 rows and roughly 40-60 MB total across three CSVs; base rate expected in the 10-20% range but must be measured, not assumed.",
+    "source_examples": "Documented enumerations to assert on ingest: LoanStatus in {CANCLD, CHGOFF, COMMIT, EXEMPT, PIF}; RevolverStatus in {0, 1}; BusinessType in {Individual, Partnership, Corporation}; ProcessingMethod codes such as 7AG, PLP, SBX, EXP, CAI per the dictionary's own list; ApprovalFY should equal the federal fiscal year of ApprovalDate (Oct-Sep), which is the cheapest integrity check for the split boundaries."
+  },
+  "limitations": [
+    "ChargeOffDate records SBA's administrative charge-off action, not the first missed payment; the extract carries no delinquency or payment-history field, so the timing of default is unobserved and the 60-month cut is a bound on administrative action, not on default.",
+    "The file is a 2026-09-30 vintage: any later corrections to a 2001 loan are baked in, and values that may have been amended (e.g. project location) are as-currently-recorded, so this is a current-vintage retrospective and does not prove what a 2001 underwriter literally saw.",
+    "No loan performance time series is available, so the task is a single static snapshot prediction per loan and cannot support dynamic or survival modeling.",
+    "Borrower name and street/zip fields exist upstream; they are dropped and the population is restricted to corporate/partnership borrowers, but that restriction does not fully guarantee the absence of sole-trader personal records, so derived features only (never names or addresses) should be published.",
+    "BusinessAge and JobsSupported are lender self-reported and explicitly unaudited by SBA, so they add measurement noise rather than clean business characteristics.",
+    "Lender identity is excluded because the file's lender name is the current assignee; a genuinely approval-time lender feature would require a different extract, so lender risk appetite is unmodeled.",
+    "The label ignores restructurings, secondary-market sales and loans that were extended rather than charged off, and treats a charge-off in month 61 as a negative, which understates slow-developing defaults by design.",
+    "Only 7(a) is used (504 excluded), and the FY2009 cohort is small (41,288 approvals), which weakens the last holdout year.",
+    "The publisher's U.S. Government Works designation requires no attribution and permits redistribution, but no warranty of accuracy is given (\"as is\"); CC0 applies only to whatever this project adds, not to the upstream records."
+  ]
+}
