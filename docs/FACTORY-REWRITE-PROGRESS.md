@@ -1316,3 +1316,26 @@ normal usage. This follows the operator's development exemption without inventin
 a new deadline or raising worker allowances. Two ledger regressions cover resumed
 usage/closure and invalid-window refusal; all 33 budget tests pass locally.
 Runtime deployment and saved-result inspection remain pending at this entry.
+
+## Saved UCMR build-8 executed — 2026-11-08 20:07 UTC
+
+Resumed accounting commit `46c2794` passed 946 tests (13 skipped) in a clean
+checkout and [exact-commit CI](https://github.com/earino/dataset-factory/actions/runs/42517889649).
+Scout exported the intact paid construction in `19fbc5b`, whose
+[CI passed](https://github.com/earino/dataset-factory/actions/runs/42518189664).
+[Saved response and usage](../audits/rewrite/ucmr-build8-resumed-run/) show
+27,082 input / 35,409 output tokens, two calls, zero tool results, 208.7 seconds;
+that work finished during the prior run's wind-down and was reused, not regenerated.
+The response passes construction validation; the deployed description function
+propagates its corrected population and all feature meanings.
+
+The resumed worker succeeded in 61.0 seconds, exit 0, no OOM. Staging release
+438490129 / manifest asset 725056408 contains the new package
+`v-93f486e9bff11b10`, artifact
+`8b7b4f29f264cc9c3bb20b321927e48e0752f8cc097dd36a511f690eedda6e89`.
+Full qualification 1.6.1 passed. The independently retrieved compact reports match
+staging digests; all 33 package bindings and the exact-artifact receipt verify.
+The manifest population now matches the saved corrected description.
+[Binding report](../audits/rewrite/new-source-outcomes/ucmr5-build-8-binding-verification.json).
+No local CSV download was used. This is construction/evaluation/packaging evidence,
+not semantic acceptance or public-consumer verification. Those remain next.
