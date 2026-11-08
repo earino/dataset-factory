@@ -29,3 +29,17 @@ source for the next bounded repair or a focused research task.
 Worker-failure allowance: build-6 and build-8 are worker-scope failure
 1 and 2 of 5; model-task failures are counted separately. No manual
 edits; the ordinary repair cycle continues with this diagnostic.
+
+ADDENDUM 22:44Z: REUSE VERIFIED (operator): build-8's build.py SHA
+exactly matches the saved build-7 code - the recovered paid bytes were
+reused with no model call. Direct /bridge/nbi/2018hwybronlyonefile.zip
+returns HTTP 404; the disclaim page still serves the stale link.
+Classification: bounded SOURCE-ACCESS RESEARCH is needed (not another
+write-only repair guess) to locate the live 2018 NBI archive (the
+Socrata dataset behind terms_url is a candidate source). Per operator
+instruction, new tick admissions PAUSED at 22:43:5xZ at a safe
+boundary; the in-flight rw-ba904118ba27-build-1 construction (source-16,
+a fresh candidate - not a bridge repair) is preserved and will land on
+disk; cleanup remains active. Operator is adding a small generic
+access-research phase before code repair for observed HTTP access
+failures; no source-specific controller, no manual candidate edits.
