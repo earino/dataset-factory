@@ -1,0 +1,154 @@
+"""Small transactional operational store; research/code remain in Git."""
+from contextlib import contextmanager
+import json
+from pathlib import Path
+import sqlite3
+import time
+
+from .common import FactoryError, identifier
+
+STAGES = ('discover', 'build', 'evaluate', 'publish')
+NEXT = dict(zip(STAGES, (*STAGES[1:], 'published')))
+
+
+def encoded(value):
+    return json.dumps(value, sort_keys=True, allow_nan=False, separators=(',', ':'))
+
+
+class Store:
+    def __init__(self, root):
+        self.root = Path(root).resolve()
+        folder = self.root / '.factory'
+        if folder.is_symlink():
+            raise FactoryError('Operational directory must not be a symlink')
+        folder.mkdir(exist_ok=True)
+        self.path = folder / 'pipeline.sqlite3'
+        if self.path.is_symlink():
+            raise FactoryError('Operational database must not be a symlink')
+        with self.connect() as db:
+            db.executescript('''
+                CREATE TABLE IF NOT EXISTS candidates (
+                    id TEXT PRIMARY KEY, stage TEXT NOT NULL, data TEXT NOT NULL,
+                    created REAL NOT NULL, updated REAL NOT NULL,
+                    next_run REAL NOT NULL DEFAULT 0, reason TEXT NOT NULL DEFAULT '');
+                CREATE TABLE IF NOT EXISTS attempts (
+                    id TEXT PRIMARY KEY, candidate TEXT NOT NULL REFERENCES candidates(id),
+                    stage TEXT NOT NULL, ordinal INTEGER NOT NULL, status TEXT NOT NULL,
+                    started REAL NOT NULL, finished REAL, result TEXT NOT NULL DEFAULT '{}',
+                    UNIQUE(candidate, stage, ordinal));
+                CREATE UNIQUE INDEX IF NOT EXISTS one_running_attempt
+                    ON attempts(candidate) WHERE status = 'running';
+            ''')
+
+    @contextmanager
+    def connect(self):
+        db = sqlite3.connect(self.path, timeout=10)
+        db.row_factory = sqlite3.Row
+        db.execute('PRAGMA foreign_keys=ON')
+        try:
+            with db:
+                yield db
+        finally:
+            db.close()
+
+    @staticmethod
+    def candidate(row):
+        return {**dict(row), 'data': json.loads(row['data'])} if row else None
+
+    def add(self, candidate_id, data):
+        identifier(candidate_id)
+        stamp = time.time()
+        with self.connect() as db:
+            prior = db.execute('SELECT * FROM candidates WHERE id=?', (candidate_id,)).fetchone()
+            if prior:
+                # An add retry cannot overwrite a progressed candidate.
+                return self.candidate(prior)
+            db.execute('INSERT INTO candidates(id,stage,data,created,updated) VALUES(?,?,?,?,?)',
+                       (candidate_id, 'discover', encoded(data), stamp, stamp))
+        return self.get(candidate_id)
+
+    def get(self, candidate_id):
+        with self.connect() as db:
+            return self.candidate(db.execute('SELECT * FROM candidates WHERE id=?', (candidate_id,)).fetchone())
+
+    def listing(self):
+        with self.connect() as db:
+            return [self.candidate(row) for row in db.execute('SELECT * FROM candidates ORDER BY created,id')]
+
+    def eligible(self, now=None):
+        now = time.time() if now is None else now
+        # Finish existing attempts first, then older eligible work. Waiting tasks
+        # yield through next_run instead of blocking all other candidates.
+        with self.connect() as db:
+            rows = db.execute('''SELECT c.* FROM candidates c
+                LEFT JOIN attempts a ON a.candidate=c.id AND a.status='running'
+                WHERE c.stage IN ('discover','build','evaluate','publish') AND c.next_run<=?
+                ORDER BY CASE WHEN a.id IS NULL THEN 1 ELSE 0 END, c.updated, c.id''', (now,))
+            return [self.candidate(row) for row in rows]
+
+    def begin(self, candidate_id):
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            candidate = db.execute('SELECT * FROM candidates WHERE id=?', (candidate_id,)).fetchone()
+            if not candidate or candidate['stage'] not in STAGES:
+                raise FactoryError('Candidate is not actionable')
+            prior = db.execute("SELECT * FROM attempts WHERE candidate=? AND status='running'",
+                               (candidate_id,)).fetchone()
+            if prior:
+                if prior['stage'] != candidate['stage']:
+                    raise FactoryError('Attempt and candidate stages disagree')
+                return dict(prior)
+            ordinal = db.execute('SELECT COUNT(*) FROM attempts WHERE candidate=? AND stage=?',
+                                 (candidate_id, candidate['stage'])).fetchone()[0] + 1
+            # Job identifiers use this stable attempt identity, including after a restart.
+            import hashlib
+            prefix = hashlib.sha256(candidate_id.encode()).hexdigest()[:12]
+            attempt_id = f'rw-{prefix}-{candidate["stage"]}-{ordinal}'
+            db.execute('INSERT INTO attempts(id,candidate,stage,ordinal,status,started) VALUES(?,?,?,?,?,?)',
+                       (attempt_id, candidate_id, candidate['stage'], ordinal, 'running', time.time()))
+            return dict(db.execute('SELECT * FROM attempts WHERE id=?', (attempt_id,)).fetchone())
+
+    def save(self, attempt_id, data):
+        """Checkpoint operation identities before any external side effect."""
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            attempt = db.execute('SELECT * FROM attempts WHERE id=?', (attempt_id,)).fetchone()
+            if not attempt or attempt['status'] != 'running':
+                raise FactoryError('Attempt is not running')
+            db.execute('UPDATE candidates SET data=?,updated=? WHERE id=?',
+                       (encoded(data), time.time(), attempt['candidate']))
+
+    def finish(self, attempt_id, outcome, *, max_attempts=3, now=None):
+        stamp = time.time() if now is None else now
+        status = outcome['status']
+        if status not in ('done', 'waiting', 'retry', 'reject', 'defer'):
+            raise FactoryError('Unknown operation outcome')
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            attempt = db.execute('SELECT * FROM attempts WHERE id=?', (attempt_id,)).fetchone()
+            if not attempt or attempt['status'] != 'running':
+                raise FactoryError('Cannot finish an inactive attempt')
+            stage = attempt['stage']
+            if status == 'done':
+                stage = NEXT[stage]
+            elif status == 'reject':
+                stage = 'rejected'
+            elif status == 'defer' or (status == 'retry' and attempt['ordinal'] >= max_attempts):
+                stage = 'deferred'
+            reason = outcome.get('reason', '')
+            if stage == 'deferred' and status == 'retry':
+                reason = 'Attempt limit reached: ' + reason
+            delay = max(0, float(outcome.get('delay', 30 if status == 'waiting' else 60)))
+            db.execute('UPDATE candidates SET stage=?,updated=?,next_run=?,reason=? WHERE id=?',
+                       (stage, stamp, stamp + delay if status in ('waiting', 'retry') else 0,
+                        reason, attempt['candidate']))
+            db.execute('UPDATE attempts SET status=?,finished=?,result=? WHERE id=?',
+                       ('running' if status == 'waiting' else status,
+                        None if status == 'waiting' else stamp, encoded(outcome), attempt_id))
+        return self.get(attempt['candidate'])
+
+    def attempts(self, candidate_id=None):
+        with self.connect() as db:
+            rows = db.execute('SELECT * FROM attempts' + (' WHERE candidate=?' if candidate_id else '')
+                              + ' ORDER BY started,id', (candidate_id,) if candidate_id else ())
+            return [{**dict(row), 'result': json.loads(row['result'])} for row in rows]

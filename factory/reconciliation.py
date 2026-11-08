@@ -7,12 +7,73 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import time
 
 from . import worker
 from .cloud import Cloud
 from .common import FactoryError, identifier, locked, utcnow, write_json
 
 VERSION = '1.0.0'
+
+
+def advance_worker(root, job_id, config, *, job_file=None, cloud=None, api=None):
+    """Finish newly completed work without a model or Git commit prerequisite.
+
+    Existing worker records are the transport journal. The pipeline records the
+    resulting outcome transactionally. Every external mutation is restartable.
+    """
+    root = Path(root); cloud = cloud or Cloud()
+    record = worker.reconcile(root, job_id, config, cloud)
+    if record['status'] == 'creation-unresolved':
+        return {'status': 'waiting', 'reason': 'Reconciling worker creation', 'delay': 30}
+    if record['status'] != 'deleted' and record['expires'] <= time.time():
+        record = worker.destroy(root, job_id, config, cloud)
+    if record['status'] == 'deleted':
+        provider_absent(cloud, record)
+        if not record.get('result'):
+            from .worker_artifacts import recover
+            report = recover(root, record, api or worker.github(config))
+            if report is None:
+                return {'status': 'lost', 'reason': 'Worker expired before durable upload', 'job_id': job_id}
+            record.update(result=report, collected_at=utcnow().isoformat())
+            write_json(root / 'jobs' / (job_id + '.json'), record)
+    else:
+        if record['status'] != 'collected':
+            if record['status'] in ('provisioning', 'creation-unresolved'):
+                if job_file is None:
+                    raise FactoryError('Bootstrap recovery requires the original job file')
+                from .common import read_json
+                path = Path(job_file)
+                worker.resume(root, job_id, config, cloud,
+                              bundle=worker.source_bundle(path, read_json(path)))
+            try:
+                report = worker.collect(root, job_id, config, cloud)
+            except FactoryError:
+                # A failed upload leaves a compact local report. Re-dispatch only
+                # the uploader, never reconstruction, and let expiry bound loss.
+                from .common import read_json
+                local = root / '.factory' / job_id / 'result.json'
+                failed = read_json(local) if local.is_file() else {}
+                retries = record.get('pipeline_upload_retries', 0)
+                if failed.get('job_id') != job_id or failed.get('uploaded') is not False:
+                    raise
+                if retries < 2 and record['expires'] > time.time() + 180:
+                    record['pipeline_upload_retries'] = retries + 1
+                    write_json(root / 'jobs' / (job_id + '.json'), record)
+                    worker.retry_upload(root, job_id, config, cloud)
+                return {'status': 'waiting', 'reason': 'Upload recovery; expiry bounds retries', 'delay': 60}
+            if report.get('status') == 'running':
+                return {'status': 'waiting', 'reason': 'Worker running', 'delay': 30}
+            record = worker.load_record(root, job_id)
+        # Collection verified durable uploads; delete immediately, even on failure.
+        record = worker.destroy(root, job_id, config, cloud)
+        provider_absent(cloud, record)
+    report = terminal(record, job_id, config)
+    worker.verify_preserved_report(record, report, api or worker.github(config))
+    write_json(root / '.factory' / job_id / 'handled',
+               {'by': 'pipeline', 'job_id': job_id, 'exit_code': report['exit_code']})
+    return {'status': 'complete', 'job_id': job_id, 'ok': report['exit_code'] == 0,
+            'report': report, 'cleanup_verified': True}
 
 
 def sha(data):
@@ -57,7 +118,7 @@ def terminal(record, job_id, config):
 
 def provider_absent(cloud, record):
     job_id = record['job']['id']; project = record['project']; server_id = record['server_id']
-    if cloud.server(server_id) is not None:
+    if server_id is not None and cloud.server(server_id) is not None:
         raise FactoryError('Recorded worker still exists at the provider')
     if any(s.get('labels', {}).get('job') == job_id for s in cloud.list_resources('servers', project)):
         raise FactoryError('A worker with this job label still exists')

@@ -330,8 +330,8 @@ def publish(base, job, report, client=None):
     sha = digest(manifest)
     asset = client.ensure_asset(release["id"], manifest, "manifest.json", 0, manifest.stat().st_size, sha)
     # Keep the coordinator copy compact; full paths/reconstruction are in the manifest.
-    compact = [{key: a[key] for key in ("id", "size", "sha256")} for a in uploaded]
-    compact.append({"id": asset["id"], "size": asset["size"], "sha256": sha})
+    compact = [{key: a[key] for key in ("id", "name", "size", "sha256")} for a in uploaded]
+    compact.append({"id": asset["id"], "name": "manifest.json", "size": asset["size"], "sha256": sha})
     return {"uploaded": True, "repo": repo, "release_id": release["id"], "release_url": release["html_url"],
             "manifest_url": asset["browser_download_url"], "assets": compact,
             "skipped_empty": [logical for logical, _ in skipped_empty]}
