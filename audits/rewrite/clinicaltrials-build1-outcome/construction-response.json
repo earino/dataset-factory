@@ -1,0 +1,254 @@
+{
+  "build_py": "import hashlib\nimport json\nfrom collections import Counter\nfrom datetime import date\nfrom pathlib import Path\nfrom urllib.parse import urlencode\n\nimport pandas as pd\n\nfrom source_io import fetch\n\nBASE_URL = 'https://clinicaltrials.gov/api/v2/studies'\nFIELDS = ['NCTId', 'OverallStatus', 'StudyFirstPostDate', 'StudyType', 'Phase', 'Allocation', 'InterventionModel', 'Masking', 'PrimaryPurpose', 'LeadSponsorClass', 'Condition', 'ConditionBrowseBranch', 'InterventionType', 'InterventionName', 'ArmGroupLabel', 'HealthyVolunteers', 'Sex', 'MinimumAge', 'MaximumAge', 'IsFdaRegulatedDrug', 'IsFdaRegulatedDevice', 'StartDate']\nFEATURES = ['phase', 'allocation', 'intervention_model', 'masking', 'primary_purpose', 'lead_sponsor_class', 'n_conditions', 'condition_mesh_branch', 'n_interventions', 'intervention_types', 'n_arms', 'healthy_volunteers', 'sex', 'age_bounds', 'is_fda_regulated', 'start_month']\nID_COL = 'nct_id'\nTIME_COL = 'first_post_date'\nTARGET = 'terminated'\nOUTPUT_COLUMNS = [ID_COL, TIME_COL] + FEATURES + [TARGET]\nEXPECTED_COUNTS = {'COMPLETED': 105978, 'TERMINATED': 13817}\nPOP_START = date(2008, 1, 1)\nPOP_END = date(2017, 1, 1)\nTRAIN_START = date(2008, 1, 1)\nTRAIN_END = date(2013, 1, 1)\nEVAL_START = date(2013, 1, 1)\nEVAL_END = date(2015, 1, 1)\nHOLDOUT_START = date(2015, 1, 1)\nHOLDOUT_END = date(2017, 1, 1)\nMAX_PAGES = 500\n\n\ndef _bounded(message):\n    return str(message)[:4000]\n\n\ndef _field_failure(prefix, observed_headers, missing, extra=None):\n    parts = [prefix, 'observed_headers: ' + repr(observed_headers), 'missing_required_names: ' + repr(missing), 'selected_archive_member: N/A (JSON API; no archive member selected)']\n    if extra:\n        parts.append('extra_names: ' + repr(extra))\n    return _bounded('; '.join(parts))\n\n\ndef _deep(obj, *path):\n    value = obj\n    for key in path:\n        if not isinstance(value, dict):\n            return None\n        value = value.get(key)\n    return value\n\n\ndef _norm(value):\n    if value is None:\n        return None\n    if isinstance(value, bool):\n        return 'YES' if value else 'NO'\n    text = str(value).strip()\n    return text if text else None\n\n\ndef _tri(value):\n    if value is None:\n        return None\n    if isinstance(value, bool):\n        return value\n    text = str(value).strip().lower()\n    if text in ('true', 'yes', 'y', '1'):\n        return True\n    if text in ('false', 'no', 'n', '0'):\n        return False\n    return None\n\n\ndef _tri_label(value):\n    if value is True:\n        return 'YES'\n    if value is False:\n        return 'NO'\n    return 'UNKNOWN'\n\n\ndef _parse_date(value):\n    text = _norm(value)\n    if text is None:\n        return None\n    head = text[:10]\n    parts = head.split('-')\n    if len(parts) != 3:\n        return None\n    try:\n        year_value = int(parts[0])\n        month_value = int(parts[1])\n        day_value = int(parts[2])\n        return date(year_value, month_value, day_value)\n    except ValueError:\n        return None\n\n\ndef _parse_month(value):\n    text = _norm(value)\n    if text is None:\n        return None\n    parts = text[:7].split('-')\n    if len(parts) != 2:\n        return None\n    if len(parts[0]) != 4 or len(parts[1]) != 2:\n        return None\n    try:\n        year_value = int(parts[0])\n        month_value = int(parts[1])\n    except ValueError:\n        return None\n    if month_value < 1 or month_value > 12:\n        return None\n    return (year_value, month_value)\n\n\ndef _age_years(value):\n    text = _norm(value)\n    if text is None:\n        return None\n    lowered = text.lower()\n    if lowered.startswith('n/a'):\n        return None\n    number = ''\n    for character in text:\n        if character.isdigit() or character == '.':\n            number += character\n        elif number:\n            break\n        else:\n            break\n    if not number:\n        return None\n    try:\n        amount = float(number)\n    except ValueError:\n        return None\n    remainder = text[len(number):].strip().lower()\n    if remainder.startswith('year'):\n        factor = 1.0\n    elif remainder.startswith('month'):\n        factor = 1.0 / 12.0\n    elif remainder.startswith('week'):\n        factor = 1.0 / 52.1775\n    elif remainder.startswith('day'):\n        factor = 1.0 / 365.25\n    elif remainder.startswith('hour'):\n        factor = 1.0 / 8766.0\n    elif remainder == '':\n        factor = 1.0\n    else:\n        factor = None\n    if factor is None:\n        return None\n    return amount * factor\n\n\ndef _record_status(record):\n    return _deep(record, 'protocolSection', 'statusModule', 'overallStatus')\n\n\ndef _study_url(status, token):\n    params = {\n        'filter.advanced': 'AREA[StudyFirstPostDate]RANGE[2008-01-01,2016-12-31] AND AREA[StudyType]INTERVENTIONAL',\n        'filter.overallStatus': status,\n        'pageSize': 1000,\n        'fields': ','.join(FIELDS),\n        'countTotal': 'true',\n    }\n    if token is not None:\n        params['pageToken'] = token\n    return BASE_URL + '?' + urlencode(params)\n\n\ndef _fetch_status(status, cache):\n    rows = []\n    total = None\n    token = None\n    seen = set()\n    for page_number in range(MAX_PAGES):\n        if token is not None:\n            if token in seen:\n                raise AssertionError(_bounded('Repeated pagination token for status ' + status + '; selected_archive_member: N/A (JSON API).'))\n            seen.add(token)\n        url = _study_url(status, token)\n        digest = hashlib.sha1((token or 'start').encode('utf-8')).hexdigest()[:12]\n        name = 'ctgov_v2_' + status.lower() + '_' + str(page_number).zfill(5) + '_' + digest + '.json'\n        local_path = Path(fetch(url, cache, name))\n        try:\n            with local_path.open('r', encoding='utf-8') as handle:\n                payload = json.load(handle)\n        except Exception as exc:\n            raise AssertionError(_bounded('Could not parse cached API page for status ' + status + '; local_file: ' + str(local_path) + '; selected_archive_member: N/A (JSON API); parser_error: ' + repr(exc))) from exc\n        studies = payload.get('studies')\n        if not isinstance(studies, list):\n            raise AssertionError(_bounded('API page lacks studies list for status ' + status + '; observed_keys: ' + repr(list(payload.keys())) + '; selected_archive_member: N/A (JSON API).'))\n        if total is None:\n            raw_total = payload.get('totalCount')\n            if raw_total is None:\n                raise AssertionError(_bounded('API page lacks totalCount for status ' + status + '; observed_keys: ' + repr(list(payload.keys())) + '; selected_archive_member: N/A (JSON API).'))\n            total = int(raw_total)\n        rows.extend(studies)\n        next_token = payload.get('nextPageToken')\n        if not next_token:\n            break\n        token = next_token\n    else:\n        raise AssertionError(_bounded('Pagination exceeded maximum pages for status ' + status + '; selected_archive_member: N/A (JSON API).'))\n    if total is None:\n        raise AssertionError(_bounded('No totalCount collected for status ' + status + '; selected_archive_member: N/A (JSON API).'))\n    if len(rows) != total:\n        raise AssertionError(_bounded('Fetched row count differs from API totalCount for status ' + status + '; observed_fetched_rows: ' + str(len(rows)) + '; observed_totalCount: ' + str(total) + '; selected_archive_member: N/A (JSON API).'))\n    bad_statuses = Counter()\n    for record in rows:\n        observed_status = _record_status(record)\n        if observed_status != status:\n            bad_statuses[str(observed_status)] += 1\n    if bad_statuses:\n        raise AssertionError(_bounded('Status filter mismatch for ' + status + '; observed_status_counts: ' + repr(dict(bad_statuses)) + '; selected_archive_member: N/A (JSON API).'))\n    return rows, total\n\n\ndef _condition_mesh_branch(record):\n    labels = []\n    derived = record.get('derivedSection') or {}\n    browse = derived.get('conditionBrowseModule') or {}\n    for key in ('browseBranches', 'browseBranchesStudy'):\n        raw = browse.get(key)\n        if raw is None:\n            continue\n        items = raw if isinstance(raw, list) else [raw]\n        for item in items:\n            if isinstance(item, dict):\n                label = _norm(item.get('name'))\n                if label is None:\n                    label = _norm(item.get('term'))\n                if label is None:\n                    label = _norm(item.get('abbrev'))\n                if label is None:\n                    label = _norm(item.get('branch'))\n            else:\n                label = _norm(item)\n            if label is not None:\n                labels.append(label)\n    if not labels:\n        for key in ('conditionMeshTerm', 'meshes'):\n            raw = browse.get(key)\n            if raw is None:\n                continue\n            items = raw if isinstance(raw, list) else [raw]\n            for item in items:\n                if isinstance(item, dict):\n                    label = _norm(item.get('branch'))\n                    if label is None:\n                        label = _norm(item.get('treeBranch'))\n                    if label is not None:\n                        labels.append(label)\n    if not labels:\n        protocol = record.get('protocolSection') or {}\n        conditions_block = protocol.get('conditionsModule') or {}\n        raw = conditions_block.get('conditionMeshTerm')\n        if raw is not None:\n            items = raw if isinstance(raw, list) else [raw]\n            for item in items:\n                if isinstance(item, dict):\n                    label = _norm(item.get('branch'))\n                    if label is None:\n                        label = _norm(item.get('treeBranch'))\n                    if label is not None:\n                        labels.append(label)\n    if not labels:\n        return None\n    return '|'.join(sorted(set(labels)))\n\n\ndef _parse_record(record):\n    protocol = record.get('protocolSection') or {}\n    ident = protocol.get('identificationModule') or {}\n    status_block = protocol.get('statusModule') or {}\n    design = protocol.get('designModule') or {}\n    sponsor_block = protocol.get('sponsorCollaboratorsModule') or {}\n    conditions_block = protocol.get('conditionsModule') or {}\n    arms_block = protocol.get('armsInterventionsModule') or {}\n    eligibility_block = protocol.get('eligibilityModule') or {}\n    oversight_block = protocol.get('oversightModule') or {}\n    nct_id = _norm(ident.get('nctId'))\n    if nct_id is None:\n        raise AssertionError(_field_failure('Missing NCT ID join key in fetched record', list(record.keys()), ['protocolSection.identificationModule.nctId']))\n    overall = _norm(status_block.get('overallStatus'))\n    if overall not in ('COMPLETED', 'TERMINATED'):\n        raise AssertionError(_bounded('Unexpected terminal status in fetched record for ' + str(nct_id) + '; observed_status: ' + repr(overall) + '; expected: COMPLETED or TERMINATED; selected_archive_member: N/A (JSON API).'))\n    first_post_raw = _deep(status_block, 'studyFirstPostDateStruct', 'date')\n    if first_post_raw is None:\n        first_post_raw = status_block.get('studyFirstPostDate')\n    first_post = _parse_date(first_post_raw)\n    if first_post is None:\n        raise AssertionError(_field_failure('Missing or invalid first-post date for ' + str(nct_id), list(status_block.keys()), ['studyFirstPostDateStruct.date']))\n    if first_post < POP_START or first_post >= POP_END:\n        raise AssertionError(_bounded('First-post date outside frozen population for ' + str(nct_id) + '; observed_date: ' + str(first_post_raw) + '; expected_window: 2008-01-01 through 2016-12-31; selected_archive_member: N/A (JSON API).'))\n    raw_phases = design.get('phases')\n    if raw_phases is None:\n        raw_phases = design.get('phase')\n    phase_values = []\n    if isinstance(raw_phases, list):\n        for item in raw_phases:\n            label = _norm(item)\n            if label is not None:\n                phase_values.append(label.upper())\n    elif raw_phases is not None:\n        label = _norm(raw_phases)\n        if label is not None:\n            phase_values.append(label.upper())\n    phase = '|'.join(sorted(set(phase_values))) if phase_values else None\n    design_info = design.get('designInfo') or {}\n    allocation = _norm(design_info.get('allocation'))\n    intervention_model = _norm(design_info.get('interventionModel'))\n    masking_info = design_info.get('maskingInfo') or {}\n    masking = _norm(masking_info.get('masking'))\n    if masking is None:\n        masking = _norm(design_info.get('masking'))\n    primary_purpose = _norm(design_info.get('primaryPurpose'))\n    lead_sponsor = sponsor_block.get('leadSponsor') or {}\n    lead_sponsor_class = _norm(lead_sponsor.get('class'))\n    raw_conditions = conditions_block.get('conditions')\n    if isinstance(raw_conditions, list):\n        n_conditions = len(raw_conditions)\n    elif raw_conditions is not None:\n        n_conditions = 1\n    else:\n        n_conditions = None\n    condition_mesh_branch = _condition_mesh_branch(record)\n    raw_interventions = arms_block.get('interventions')\n    n_interventions = None\n    intervention_types = None\n    if isinstance(raw_interventions, list):\n        n_interventions = len(raw_interventions)\n        type_values = []\n        for item in raw_interventions:\n            if isinstance(item, dict):\n                label = _norm(item.get('type'))\n            else:\n                label = _norm(item)\n            if label is not None:\n                type_values.append(label.upper())\n        if type_values:\n            intervention_types = '|'.join(sorted(set(type_values)))\n    elif raw_interventions is not None:\n        n_interventions = 1\n        if isinstance(raw_interventions, dict):\n            label = _norm(raw_interventions.get('type'))\n        else:\n            label = _norm(raw_interventions)\n        if label is not None:\n            intervention_types = label.upper()\n    raw_arms = arms_block.get('armGroups')\n    if isinstance(raw_arms, list):\n        n_arms = len(raw_arms)\n    elif raw_arms is not None:\n        n_arms = 1\n    else:\n        n_arms = None\n    healthy_flag = _tri(eligibility_block.get('healthyVolunteers'))\n    if healthy_flag is True:\n        healthy_volunteers = 'YES'\n    elif healthy_flag is False:\n        healthy_volunteers = 'NO'\n    else:\n        healthy_volunteers = _norm(eligibility_block.get('healthyVolunteers'))\n    sex = _norm(eligibility_block.get('sex'))\n    minimum_age = _norm(eligibility_block.get('minimumAge'))\n    maximum_age = _norm(eligibility_block.get('maximumAge'))\n    if minimum_age is None and maximum_age is None:\n        age_bounds = None\n    else:\n        min_years = _age_years(minimum_age)\n        max_years = _age_years(maximum_age)\n        if min_years is not None:\n            pediatric = 'YES' if min_years < 18.0 else 'NO'\n        elif max_years is not None:\n            pediatric = 'YES' if max_years < 18.0 else 'NO'\n        else:\n            pediatric = 'UNKNOWN'\n        age_bounds = 'min:' + (minimum_age if minimum_age is not None else 'UNKNOWN') + ';max:' + (maximum_age if maximum_age is not None else 'UNKNOWN') + ';pediatric:' + pediatric\n    drug_flag = _tri(oversight_block.get('isFdaRegulatedDrug'))\n    device_flag = _tri(oversight_block.get('isFdaRegulatedDevice'))\n    if drug_flag is None and device_flag is None:\n        is_fda_regulated = None\n    else:\n        is_fda_regulated = 'drug:' + _tri_label(drug_flag) + ';device:' + _tri_label(device_flag)\n    start_raw = _deep(status_block, 'startDateStruct', 'date')\n    if start_raw is None:\n        start_raw = status_block.get('startDate')\n    start_month = None\n    start_ym = _parse_month(start_raw)\n    if start_ym is not None:\n        start_month = (first_post.year * 12 + first_post.month) - (start_ym[0] * 12 + start_ym[1])\n    target_value = 1 if overall == 'TERMINATED' else 0\n    return {\n        ID_COL: nct_id,\n        TIME_COL: first_post.isoformat(),\n        'phase': phase,\n        'allocation': allocation,\n        'intervention_model': intervention_model,\n        'masking': masking,\n        'primary_purpose': primary_purpose,\n        'lead_sponsor_class': lead_sponsor_class,\n        'n_conditions': n_conditions,\n        'condition_mesh_branch': condition_mesh_branch,\n        'n_interventions': n_interventions,\n        'intervention_types': intervention_types,\n        'n_arms': n_arms,\n        'healthy_volunteers': healthy_volunteers,\n        'sex': sex,\n        'age_bounds': age_bounds,\n        'is_fda_regulated': is_fda_regulated,\n        'start_month': start_month,\n        TARGET: target_value,\n    }\n\n\ndef build(output: Path, cache: Path):\n    output = Path(output)\n    cache = Path(cache)\n    checks = []\n    records = []\n    totals = {}\n    for status in ('COMPLETED', 'TERMINATED'):\n        rows, total = _fetch_status(status, cache)\n        totals[status] = total\n        records.extend(rows)\n        expected = EXPECTED_COUNTS[status]\n        passed = total == expected and len(rows) == total\n        checks.append({\n            'check': 'publisher total count and fetched rows for ' + status,\n            'observed': 'totalCount ' + str(total) + ' and fetched rows ' + str(len(rows)),\n            'expected': 'supplied publisher snapshot count ' + str(expected) + ' with fetched rows equal to totalCount',\n            'passed': passed,\n        })\n        if not passed:\n            raise AssertionError(_bounded('Publisher count check failed for ' + status + '; observed_totalCount: ' + str(total) + '; fetched_rows: ' + str(len(rows)) + '; expected_totalCount: ' + str(expected) + '; selected_archive_member: N/A (JSON API).'))\n    parsed = []\n    for record in records:\n        parsed.append(_parse_record(record))\n    df = pd.DataFrame(parsed, columns=OUTPUT_COLUMNS)\n    for column in ('n_conditions', 'n_interventions', 'n_arms', 'start_month'):\n        df[column] = pd.to_numeric(df[column], errors='coerce').astype('Int64')\n    df[TARGET] = df[TARGET].astype('int64')\n    df = df.sort_values([TIME_COL, ID_COL], kind='mergesort').reset_index(drop=True)\n    observed_headers = list(df.columns)\n    missing = [name for name in OUTPUT_COLUMNS if name not in observed_headers]\n    extra = [name for name in observed_headers if name not in OUTPUT_COLUMNS]\n    header_ok = not missing and not extra\n    checks.append({\n        'check': 'output columns exactly match declared ID, time, features and target',\n        'observed': repr(observed_headers),\n        'expected': repr(OUTPUT_COLUMNS),\n        'passed': header_ok,\n    })\n    if not header_ok:\n        raise AssertionError(_field_failure('Output header check failed', observed_headers, missing, extra))\n    unique_targets = sorted(int(item) for item in df[TARGET].dropna().unique().tolist())\n    target_ok = df[TARGET].notna().all() and all(item in (0, 1) for item in unique_targets)\n    checks.append({\n        'check': 'target is binary with no missing labels',\n        'observed': 'unique_target_values ' + repr(unique_targets) + ' and missing_count ' + str(int(df[TARGET].isna().sum())),\n        'expected': 'values restricted to 0 and 1 with zero missing labels',\n        'passed': target_ok,\n    })\n    if not target_ok:\n        raise AssertionError(_field_failure('Target binary check failed', observed_headers, [TARGET]))\n    duplicate_count = int(df[ID_COL].duplicated().sum())\n    duplicate_ok = duplicate_count == 0\n    checks.append({\n        'check': 'NCT ID join key has no duplicates',\n        'observed': 'duplicate_count ' + str(duplicate_count),\n        'expected': 'zero duplicate NCT IDs because each study contributes one row',\n        'passed': duplicate_ok,\n    })\n    if not duplicate_ok:\n        sample_ids = df.loc[df[ID_COL].duplicated(keep=False), ID_COL].head(20).tolist()\n        raise AssertionError(_field_failure('Duplicate NCT ID join-key check failed; duplicate_count: ' + str(duplicate_count) + '; sample_ids: ' + repr(sample_ids), observed_headers, [ID_COL]))\n    coverage = {feature: int(df[feature].notna().sum()) for feature in FEATURES}\n    empty_features = [feature for feature in FEATURES if coverage[feature] == 0]\n    coverage_ok = not empty_features\n    checks.append({\n        'check': 'every declared feature has source-backed non-null coverage',\n        'observed': repr(coverage),\n        'expected': 'each declared feature has at least one non-null value; missing values remain empty and are not zero-filled',\n        'passed': coverage_ok,\n    })\n    if not coverage_ok:\n        raise AssertionError(_field_failure('Declared feature coverage check failed; observed_non_null_counts: ' + repr(coverage), observed_headers, empty_features))\n    dates = pd.to_datetime(df[TIME_COL], errors='coerce')\n    bad_date_count = int(dates.isna().sum())\n    pop_start_ts = pd.Timestamp(POP_START)\n    pop_end_ts = pd.Timestamp(POP_END)\n    outside_count = int(((dates < pop_start_ts) | (dates >= pop_end_ts)).sum())\n    time_ok = bad_date_count == 0 and outside_count == 0\n    observed_min = dates.min().date().isoformat() if dates.notna().any() else 'none'\n    observed_max = dates.max().date().isoformat() if dates.notna().any() else 'none'\n    checks.append({\n        'check': 'time join key and frozen population date range',\n        'observed': 'bad_date_count ' + str(bad_date_count) + ', outside_count ' + str(outside_count) + ', minimum ' + observed_min + ', maximum ' + observed_max,\n        'expected': 'valid ISO dates in the half-open window 2008-01-01 through 2017-01-01',\n        'passed': time_ok,\n    })\n    if not time_ok:\n        raise AssertionError(_field_failure('Time join-key and population date check failed; bad_date_count: ' + str(bad_date_count) + '; outside_count: ' + str(outside_count) + '; observed_minimum: ' + observed_min + '; observed_maximum: ' + observed_max, observed_headers, [TIME_COL]))\n    start_values = df['start_month'].dropna()\n    if len(start_values) == 0:\n        start_min = 'none'\n        start_max = 'none'\n        non_integer_count = 0\n    else:\n        start_min = str(start_values.min())\n        start_max = str(start_values.max())\n        non_integer_count = int((start_values.astype('float64') % 1.0 != 0.0).sum())\n    unit_ok = len(start_values) > 0 and non_integer_count == 0\n    checks.append({\n        'check': 'start_month has whole calendar-month units',\n        'kind': 'unit',\n        'observed': 'non_null ' + str(len(start_values)) + ', minimum ' + start_min + ', maximum ' + start_max + ', non_integer_count ' + str(non_integer_count),\n        'expected': 'integer calendar-month differences; zero means the start month equals the first-post month; missing stays empty',\n        'passed': unit_ok,\n    })\n    if not unit_ok:\n        raise AssertionError(_bounded('Start-month unit check failed; observed_non_null: ' + str(len(start_values)) + '; observed_minimum: ' + start_min + '; observed_maximum: ' + start_max + '; non_integer_count: ' + str(non_integer_count) + '; selected_archive_member: N/A (JSON API).'))\n    train_mask = (dates >= pd.Timestamp(TRAIN_START)) & (dates < pd.Timestamp(TRAIN_END))\n    eval_mask = (dates >= pd.Timestamp(EVAL_START)) & (dates < pd.Timestamp(EVAL_END))\n    holdout_mask = (dates >= pd.Timestamp(HOLDOUT_START)) & (dates < pd.Timestamp(HOLDOUT_END))\n    assigned = train_mask | eval_mask | holdout_mask\n    unassigned_count = int((~assigned).sum())\n    split_counts = {'train': int(train_mask.sum()), 'eval': int(eval_mask.sum()), 'holdout': int(holdout_mask.sum())}\n    split_ranges = {}\n    for split_name, split_mask in (('train', train_mask), ('eval', eval_mask), ('holdout', holdout_mask)):\n        part = dates[split_mask]\n        if len(part) == 0:\n            split_ranges[split_name] = 'empty'\n        else:\n            split_ranges[split_name] = part.min().date().isoformat() + '..' + part.max().date().isoformat()\n    split_ok = unassigned_count == 0 and all(value > 0 for value in split_counts.values())\n    checks.append({\n        'check': 'fixed half-open chronological split windows cover every row',\n        'observed': 'counts ' + repr(split_counts) + ', ranges ' + repr(split_ranges) + ', unassigned_count ' + str(unassigned_count),\n        'expected': 'train 2008-01-01 through 2012-12-31, eval 2013-01-01 through 2014-12-31, holdout 2015-01-01 through 2016-12-31',\n        'passed': split_ok,\n    })\n    if not split_ok:\n        raise AssertionError(_bounded('Split window check failed; observed_counts: ' + repr(split_counts) + '; observed_ranges: ' + repr(split_ranges) + '; unassigned_count: ' + str(unassigned_count) + '; selected_archive_member: N/A (JSON API).'))\n    sample_rows = df.loc[df[ID_COL] == 'NCT01533376']\n    sample_present = len(sample_rows) == 1\n    if sample_present:\n        sample = sample_rows.iloc[0]\n        sample_target = int(sample[TARGET])\n        sample_phase = _norm(sample['phase'])\n        sample_sponsor = _norm(sample['lead_sponsor_class'])\n        sample_ok = sample_target == 1 and sample_phase == 'PHASE1' and sample_sponsor == 'OTHER'\n        sample_observed = 'target ' + str(sample_target) + ', phase ' + repr(sample_phase) + ', lead_sponsor_class ' + repr(sample_sponsor)\n    else:\n        sample_ok = False\n        sample_observed = 'row_count ' + str(len(sample_rows))\n    checks.append({\n        'check': 'concrete publisher example NCT01533376',\n        'observed': sample_observed,\n        'expected': 'target 1, phase PHASE1, lead_sponsor_class OTHER',\n        'passed': sample_ok,\n    })\n    if not sample_ok:\n        if not sample_present:\n            raise AssertionError(_field_failure('Concrete source example row is missing', observed_headers, ['NCT01533376']))\n        raise AssertionError(_bounded('Concrete source example check failed; observed_values: ' + sample_observed + '; expected: target 1, phase PHASE1, lead_sponsor_class OTHER; selected_archive_member: N/A (JSON API).'))\n    train_df = df.loc[train_mask].copy()\n    eval_df = df.loc[eval_mask].copy()\n    holdout_df = df.loc[holdout_mask].copy()\n    public_dir = output / 'public'\n    private_dir = output / 'private'\n    public_dir.mkdir(parents=True, exist_ok=True)\n    private_dir.mkdir(parents=True, exist_ok=True)\n    train_path = public_dir / 'train.csv'\n    eval_path = public_dir / 'eval.csv'\n    holdout_path = private_dir / 'holdout.csv'\n    train_df.to_csv(train_path, index=False)\n    eval_df.to_csv(eval_path, index=False)\n    holdout_df.to_csv(holdout_path, index=False)\n    written_headers = {}\n    for path in (train_path, eval_path, holdout_path):\n        frame = pd.read_csv(path, nrows=0)\n        written_headers[str(path)] = list(frame.columns)\n    headers_ok = all(header == OUTPUT_COLUMNS for header in written_headers.values())\n    checks.append({\n        'check': 'written CSV headers are identical and exact',\n        'observed': repr(written_headers),\n        'expected': repr(OUTPUT_COLUMNS),\n        'passed': headers_ok,\n    })\n    if not headers_ok:\n        observed = written_headers[str(train_path)]\n        missing = [name for name in OUTPUT_COLUMNS if name not in observed]\n        extra = [name for name in observed if name not in OUTPUT_COLUMNS]\n        raise AssertionError(_field_failure('Written CSV header check failed', observed, missing, extra))\n    return checks\n",
+  "quality": {
+    "name": "clinicaltrials-early-termination",
+    "target": "terminated",
+    "positive_label": 1,
+    "time_column": "first_post_date",
+    "event_key_column": "first_post_date",
+    "features": [
+      "phase",
+      "allocation",
+      "intervention_model",
+      "masking",
+      "primary_purpose",
+      "lead_sponsor_class",
+      "n_conditions",
+      "condition_mesh_branch",
+      "n_interventions",
+      "intervention_types",
+      "n_arms",
+      "healthy_volunteers",
+      "sex",
+      "age_bounds",
+      "is_fda_regulated",
+      "start_month"
+    ],
+    "id_columns": [
+      "nct_id"
+    ],
+    "carry_columns": [],
+    "label_source_columns": [
+      "overallStatus"
+    ],
+    "post_hoc_columns": [
+      "overallStatus",
+      "completionDate",
+      "enrollmentCount",
+      "enrollmentType",
+      "whyStopped"
+    ],
+    "measurements": [
+      {
+        "column": "n_conditions",
+        "frame": "count of conditionsModule.conditions entries present in the registration record",
+        "unit": "conditions"
+      },
+      {
+        "column": "n_interventions",
+        "frame": "count of armsInterventionsModule.interventions entries present in the registration record",
+        "unit": "interventions"
+      },
+      {
+        "column": "n_arms",
+        "frame": "count of armsInterventionsModule.armGroups entries present in the registration record",
+        "unit": "arms"
+      },
+      {
+        "column": "start_month",
+        "frame": "calendar-month difference from statusModule.startDateStruct to statusModule.studyFirstPostDateStruct; both use month precision",
+        "unit": "months"
+      },
+      {
+        "column": "age_bounds",
+        "frame": "eligibilityModule.minimumAge and maximumAge plus a pediatric flag derived from the minimum or maximum age",
+        "unit": "encoded age-bounds string"
+      },
+      {
+        "column": "first_post_date",
+        "frame": "statusModule.studyFirstPostDateStruct published date",
+        "unit": "ISO date"
+      }
+    ],
+    "high_cardinality_columns": [
+      "nct_id",
+      "first_post_date",
+      "condition_mesh_branch",
+      "age_bounds"
+    ],
+    "features_documented_at": "prediction_time",
+    "split_windows": {
+      "train": {
+        "start": "2008-01-01T00:00:00.000",
+        "end": "2013-01-01T00:00:00.000"
+      },
+      "eval": {
+        "start": "2013-01-01T00:00:00.000",
+        "end": "2015-01-01T00:00:00.000"
+      },
+      "holdout": {
+        "start": "2015-01-01T00:00:00.000",
+        "end": "2017-01-01T00:00:00.000"
+      }
+    },
+    "splits": {
+      "train": "public/train.csv",
+      "eval": "public/eval.csv",
+      "holdout": "private/holdout.csv"
+    },
+    "expected_duplicate_ids": 0,
+    "task": {
+      "prediction_time": "The public first-posting date of the registration record in statusModule.studyFirstPostDateStruct, before any enrollment result or completion status exists.",
+      "question": "At the instant a trial record first becomes public on ClinicalTrials.gov, will that interventional trial eventually be recorded as TERMINATED (stopped early) rather than COMPLETED?",
+      "decision_user": "A trial portfolio manager or research funder deciding which newly registered studies get accrual support, site monitoring or a design review before enrollment starts."
+    },
+    "timing": {
+      "features": {
+        "source_kind": "administrative_record",
+        "period": null,
+        "published_days_after_period_end": null
+      },
+      "observations": [],
+      "prediction_instant": {
+        "kind": "record_publication",
+        "citation": "statusModule.studyFirstPostDateStruct; the registration record is public at this date",
+        "days_after_period_end": null,
+        "period": null
+      },
+      "row_selection": {
+        "fields": [
+          "studyFirstPostDate",
+          "studyType",
+          "overallStatus"
+        ],
+        "rule": "Include INTERVENTIONAL records with studyFirstPostDate from 2008-01-01 through 2016-12-31 and overallStatus at the 2026-11-08 snapshot equal to COMPLETED or TERMINATED; drop all other statuses and label TERMINATED as 1 and COMPLETED as 0."
+      }
+    },
+    "evaluation_contract": {
+      "access": "isolated_rows",
+      "selection": {
+        "kind": "prediction_time",
+        "evidence": "Population eligibility uses INTERVENTIONAL study type, the first-post window, and registration fields only. The terminal status at the 2026-11-08 snapshot is used solely to assign or drop the label; active and unknown statuses are excluded."
+      },
+      "training_label_timing": "unverified",
+      "use": "retrospective_research",
+      "vintage": {
+        "kind": "current_snapshot",
+        "evidence": "Records read on 2026-11-08; design and status values are current-vintage and historical availability at first posting is not proven."
+      },
+      "cross_row_audit": {
+        "auxiliary_files_review": "Only public/train.csv, public/eval.csv and private/holdout.csv are written; no auxiliary label or answer-scaffold files are produced.",
+        "probes": [],
+        "rationale": "Each NCT ID contributes one isolated registration row; no cross-row features and no later-row label leakage."
+      },
+      "feature_evidence": {
+        "nct_id": {
+          "source": "ClinicalTrials.gov API v2 identificationModule.nctId; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "stable registry identifier present in each study record",
+          "status": "verified"
+        },
+        "first_post_date": {
+          "source": "ClinicalTrials.gov API v2 statusModule.studyFirstPostDateStruct; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "public first-posting date used for the event key and split windows",
+          "status": "verified"
+        },
+        "phase": {
+          "source": "ClinicalTrials.gov API v2 designModule.phases; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record field; presence at the historical first posting is assumed from the registration schema, not proven by the current snapshot",
+          "status": "assumed"
+        },
+        "allocation": {
+          "source": "ClinicalTrials.gov API v2 designModule.designInfo.allocation; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record field; historical registration-time presence is assumed",
+          "status": "assumed"
+        },
+        "intervention_model": {
+          "source": "ClinicalTrials.gov API v2 designModule.designInfo.interventionModel; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record field; historical registration-time presence is assumed",
+          "status": "assumed"
+        },
+        "masking": {
+          "source": "ClinicalTrials.gov API v2 designModule.designInfo.maskingInfo.masking; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record field; historical registration-time presence is assumed",
+          "status": "assumed"
+        },
+        "primary_purpose": {
+          "source": "ClinicalTrials.gov API v2 designModule.designInfo.primaryPurpose; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record field; historical registration-time presence is assumed",
+          "status": "assumed"
+        },
+        "lead_sponsor_class": {
+          "source": "ClinicalTrials.gov API v2 sponsorCollaboratorsModule.leadSponsor.class; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record field; historical registration-time presence is assumed",
+          "status": "assumed"
+        },
+        "n_conditions": {
+          "source": "ClinicalTrials.gov API v2 conditionsModule.conditions; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record field; count at historical registration is assumed",
+          "status": "assumed"
+        },
+        "condition_mesh_branch": {
+          "source": "ClinicalTrials.gov API v2 derivedSection.conditionBrowseModule.browseBranches derived from condition MeSH terms; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current derived field; historical assignment is assumed and missing branches remain empty",
+          "status": "assumed"
+        },
+        "n_interventions": {
+          "source": "ClinicalTrials.gov API v2 armsInterventionsModule.interventions; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record field; count at historical registration is assumed",
+          "status": "assumed"
+        },
+        "intervention_types": {
+          "source": "ClinicalTrials.gov API v2 armsInterventionsModule.interventions[].type; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record field; historical registration-time presence is assumed",
+          "status": "assumed"
+        },
+        "n_arms": {
+          "source": "ClinicalTrials.gov API v2 armsInterventionsModule.armGroups; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record field; count at historical registration is assumed",
+          "status": "assumed"
+        },
+        "healthy_volunteers": {
+          "source": "ClinicalTrials.gov API v2 eligibilityModule.healthyVolunteers; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record field; historical registration-time presence is assumed",
+          "status": "assumed"
+        },
+        "sex": {
+          "source": "ClinicalTrials.gov API v2 eligibilityModule.sex; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record field; historical registration-time presence is assumed",
+          "status": "assumed"
+        },
+        "age_bounds": {
+          "source": "ClinicalTrials.gov API v2 eligibilityModule.minimumAge and maximumAge; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record fields; historical registration-time presence is assumed",
+          "status": "assumed"
+        },
+        "is_fda_regulated": {
+          "source": "ClinicalTrials.gov API v2 oversightModule.isFdaRegulatedDrug and isFdaRegulatedDevice; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record fields; historical registration-time presence is assumed",
+          "status": "assumed"
+        },
+        "start_month": {
+          "source": "ClinicalTrials.gov API v2 statusModule.startDateStruct combined with studyFirstPostDateStruct; https://clinicaltrials.gov/data-api/about-api/study-data-structure",
+          "availability": "current record field; the start date can be amended and historical exactness is assumed",
+          "status": "assumed"
+        }
+      },
+      "limitations": [
+        "Current-vintage snapshot read on 2026-11-08; design fields may be amended after first posting, so real-time availability at the decision instant is unverified.",
+        "Records not COMPLETED or TERMINATED at snapshot are dropped; this censors active and unknown studies and does not label them negative.",
+        "Termination is self-reported with variable lag, and some trials stopped early may be filed as COMPLETED, adding label noise.",
+        "No enrollment, completion date, why-stopped, results or outcome fields are used as inputs; they are post-outcome.",
+        "No persistence reference applies because each NCT ID appears once.",
+        "Condition mesh branch relies on the API derived browse branch; missing branches remain empty and are not imputed.",
+        "Age bounds and start_month preserve missing values; missing is not zero.",
+        "This is a retrospective risk-triage benchmark, not a causal or operational decision tool."
+      ]
+    }
+  },
+  "references": {
+    "persistence_column": null,
+    "persistence_direction": 1,
+    "entity_columns": []
+  },
+  "construction_notes": "Uses two keyless ClinicalTrials.gov API v2 status sweeps for INTERVENTIONAL records first posted 2008-01-01 through 2016-12-31, paged with nextPageToken and a field-limited JSON request. One row per NCT ID. The target column is terminated, exactly matching quality.target; ID is nct_id; time and event key are first_post_date. Only declared ID, time, feature and target columns are written; no carry columns are declared. The published snapshot counts are checked against API totalCount and against fetched rows. The concrete publisher example NCT01533376 is checked for TERMINATED, PHASE1 and lead sponsor class OTHER. Feature coverage is checked so unresolved fields cannot ship as empty columns; missing values are left empty rather than zero-filled. Historical availability at the first-post instant is not proven by the 2026-11-08 current-vintage snapshot, so all feature-availability entries except the ID and time fields are marked assumed. Condition mesh branch uses the derived condition browse branch because the raw MeSH term list does not expose a top-level branch directly; if that derived field is absent, the coverage check fails with observed headers and missing names instead of fabricating branches. start_month is the integer calendar-month gap from statusModule.startDateStruct to studyFirstPostDateStruct, matching the supplied feature meaning about start month precision and the posting gap. No threshold is used. No persistence reference applies because each study appears once. No additional documentation was read; field names and semantics come from the supplied source evidence and the API data-structure field names. The builder writes only output and cache, and does not train, score, package, select features from holdout or change the frozen task."
+}
