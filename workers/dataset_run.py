@@ -4,6 +4,7 @@ import csv
 import hashlib
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import runpy
@@ -20,6 +21,39 @@ except ImportError:
 
 def write(path, value):
     path.write_text(json.dumps(value, indent=2, allow_nan=False) + '\n')
+
+
+def persistence_predictions(training, validation, prior, direction=1):
+    """Training-only range reference, with an explicit prior for absent history."""
+    def number(value):
+        if value is None or value == '':
+            return None
+        value = float(value)
+        if math.isnan(value):
+            return None
+        if not math.isfinite(value):
+            raise ValueError('Persistence reference contains an infinite value')
+        return value
+    train = [number(v) for v in training]
+    observed = [v for v in train if v is not None]
+    values = [number(v) for v in validation]
+    lo, hi = (min(observed), max(observed)) if observed else (None, None)
+    usable = lo is not None and hi > lo
+    predictions = []
+    for value in values:
+        if value is None or not usable:
+            predictions.append(prior)
+        else:
+            p = min(1., max(0., (value - lo) / (hi - lo)))
+            predictions.append(1 - p if direction == -1 else p)
+    return predictions, {
+        'training_observed_rows': len(observed), 'training_missing_rows': len(train) - len(observed),
+        'validation_missing_rows': sum(v is None for v in values),
+        'prior_fallback_rows': sum(v is None or not usable for v in values),
+        'training_min': lo, 'training_max': hi, 'direction': direction,
+        'fallback_probability': prior,
+        'uninformative_training_range': not usable,
+        'method': 'Training min/max ranking; missing history or no varying training range uses training label prior. Not fitted calibration.'}
 
 
 def finalize(extract, descriptor, source):
@@ -110,14 +144,13 @@ def evaluate(extract, workspace, out, quality, references):
         prior = float(train[target].mean())
         scores['calendar_identity'] = np.array([totals[k][0] / totals[k][1] if k in totals else prior for k in keys_eval])
         persistence = references.get('persistence_column')
+        persistence_details = None
         if persistence is not None:
             if persistence not in quality['features'] or persistence == target:
                 raise ValueError('Persistence must use a declared available feature')
-            lo, hi = float(train[persistence].min()), float(train[persistence].max())
-            if not np.isfinite([lo, hi]).all() or hi <= lo:
-                raise ValueError('Persistence reference is degenerate')
-            p = np.clip((pd.to_numeric(validation[persistence]).to_numpy() - lo) / (hi - lo), 0, 1)
-            scores['persistence'] = 1 - p if references.get('persistence_direction') == -1 else p
+            predictions, persistence_details = persistence_predictions(
+                train[persistence], validation[persistence], prior, references.get('persistence_direction', 1))
+            scores['persistence'] = np.asarray(predictions)
         def metrics(mask):
             labels = y[mask]
             return {name: {'auc': float(roc_auc_score(labels, p[mask])) if len(set(labels)) == 2 else None,
@@ -131,7 +164,7 @@ def evaluate(extract, workspace, out, quality, references):
                   'majority_accuracy': float(np.mean(y == int(prior >= .5))),
                   'calendar_identity_unseen_rows': sum(k not in totals for k in keys_eval),
                   'persistence': 'Not applicable; see construction notes' if persistence is None else
-                      'Ranking feature; probabilities normalized by training min/max, not fitted calibration',
+                      persistence_details,
                   'limitations': ['No uncertainty interval; observed differences do not establish universal headroom'],
                   'runner_files': {name: sha(workspace / name) for name in ('train.py', 'validate.py', 'validate.sh')}}
         write(out / 'evaluation.json', result)

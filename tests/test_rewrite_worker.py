@@ -24,6 +24,29 @@ class Response(io.BytesIO):
 
 
 class RewriteWorkerTests(unittest.TestCase):
+    def test_persistence_missing_history_keeps_rows_and_uses_training_prior(self):
+        predictions, details = dataset_run.persistence_predictions(
+            [None, 2., 6., float('nan')], [None, 0., 4., 10., float('nan')], .25, -1)
+        self.assertEqual([.25, 1., .5, 0., .25], predictions)
+        self.assertEqual(2, details['prior_fallback_rows'])
+        self.assertEqual(2, details['training_missing_rows'])
+        self.assertEqual((2., 6.), (details['training_min'], details['training_max']))
+        self.assertFalse(details['uninformative_training_range'])
+
+    def test_persistence_absent_or_constant_training_history_is_explicitly_uninformative(self):
+        for training in ([None, float('nan')], [3., None, 3.]):
+            with self.subTest(training=training):
+                predictions, details = dataset_run.persistence_predictions(training, [None, 1., 8.], .75, -1)
+                self.assertEqual([.75, .75, .75], predictions)
+                self.assertEqual(3, details['prior_fallback_rows'])
+                self.assertTrue(details['uninformative_training_range'])
+
+    def test_persistence_invalid_values_do_not_become_missing_history(self):
+        for bad in ('not a concentration', float('inf'), -float('inf')):
+            with self.subTest(bad=bad):
+                with self.assertRaises(ValueError):
+                    dataset_run.persistence_predictions([0., 1.], [bad], .5)
+
     def test_finalize_counts_agree_with_existing_gate_for_long_event_keys(self):
         with tempfile.TemporaryDirectory() as tmp:
             extract = Path(tmp) / 'extract'

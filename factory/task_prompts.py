@@ -85,6 +85,10 @@ An applicable statutory public-domain basis does not require a publisher licence
 grant. Verify its application to these specific records with official legal and
 source evidence, including third-party rights and territorial limits. A government
 domain alone is insufficient; do not invent a worldwide dedication.
+An HTTP 403/404 is an access failure, not evidence about reuse rights. If the
+worker cannot fetch the terms or documentation URL, find an accessible official
+alternative for that document. Repeating the same blocked URL with a different
+quote does not repair access, even if your web tool can read it through a proxy.
 Keep the dataset, download URLs, prediction task, features and split policy fixed.
 Return verdict "defer" if readable compatible terms cannot be established.
 Otherwise return ONLY JSON {"verdict":"ready", "reason":"what was corrected",

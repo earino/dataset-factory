@@ -814,6 +814,37 @@ has completed. The prompt change instructs future builders to expose schema
 details; it does not retroactively add absent headers to the first failure.
 No replacement publication has yet been observed.
 
+### Preserve missing-history rows in the reference baseline
+
+Inspection of UCMR5's digest-verified construction proposal found that its selected
+`prior_ucmr3_max_pfoa_pfos` reference explicitly permits missing history. The
+evaluator previously passed missing predictions to metrics that reject them,
+and rejected constant training ranges outright. This defect was found from the
+actual proposal and evaluator code before a qualified UCMR artifact reached it;
+it is not a claim that the current worker failed at evaluation. The small proposal
+excerpt and its source-archive identity are retained with the other UCMR evidence.
+
+The reference now uses the training-label prior for missing history or an absent/
+constant training range. It retains every validation row, leaves source features
+unchanged, and reports missing counts, fallback counts, training range and whether
+that range was informative. Available values still use the existing training-only
+min/max ranking; reverse direction does not reverse the fallback prior. Invalid
+text and infinite values still fail. This changes a baseline's handling of absent
+history, not source qualification, acceptance thresholds or dataset selection.
+Three regressions cover missing observations, out-of-training-range values,
+reverse direction, absent/constant training ranges and invalid inputs. All 11
+rewrite-worker tests pass; runtime source inventory passes.
+The full clean-checkout suite passes 937 tests (13 skipped).
+
+CMS build-2 also completed at 17:25 UTC: the unchanged terms URL again returned
+403 after 32.4 seconds. Its source proposal changed, while the builder hash stayed
+the same, confirming reuse of the paid construction code. Release 438400893,
+manifest 724655938 and digest-verified failure are retained as `cms-build-2-*`.
+The terms-repair prompt now distinguishes worker access from reuse rights and
+asks for an accessible official alternative after a 403/404. Changing the quote
+on the same blocked URL cannot fix the observed access failure. No particular
+replacement URL or legal conclusion is supplied by the controller.
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;
