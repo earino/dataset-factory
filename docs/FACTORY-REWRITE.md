@@ -44,8 +44,8 @@ attempt identities and all failure evidence remain durable. Resource and spendin
 limits still apply across both categories.
 Construction has six model turns; research has twelve. Model tasks have a
 ten-minute wall-clock bound within the existing session allowance. Live discovery
-and construction calls hit the former 330-second outer limit while still producing
-their response; successful write calls also approached that limit. More time for
+and construction calls hit the former 330-second outer limit; a discovery response
+was cut off mid-JSON and successful write calls approached that limit. More time for
 one response avoids restarting paid work; attempt limits remain unchanged.
 Licence excerpts are matched against captured publisher bytes,
 normalizing HTML spacing and honoring explicit omissions only when all verbatim

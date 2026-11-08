@@ -612,8 +612,27 @@ calls took roughly 247–318 seconds. The change addresses measured truncation a
 repeated work; it does not add attempts, turns, tools or acceptance exceptions.
 Its effect on successful live completion remains to be observed.
 
+Scout confirmed in Telegram that 1b951b6 deployed at 16:27:52 UTC and the tick resumed.
+Commit 64a1113 passed [CI](https://github.com/earino/dataset-factory/actions/runs/42500214846);
+its next-boundary deployment is requested, not yet confirmed.
+
 Source-rights clarification e2544e8 passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42500043837).
+
+### Scope construction checks to the frozen task (16:33 UTC)
+
+Inspection of the digest-verified RCRA source bundle shows the frozen population
+explicitly requires FOUND_VIOLATION in Y/N. The generated builder nevertheless
+asserted that the entire raw evaluation table contained only Y/U/N/blank before
+applying that population filter (build.py lines 116–117). The observed R therefore
+stopped construction even though it cannot enter the specified task.
+
+The construction prompt now distinguishes checks on included records and their
+transformations from an unnecessary exhaustive domain assertion on excluded data.
+Explicitly excluded codes are counted, not silently recoded or made negative.
+Unexpected values affecting included records still require evidence or failure.
+The task, population, target and artifact gate remain fixed. No live candidate
+proposal or state was edited. This corrects an observed generated constraint.
 
 ## Known findings relevant to implementation
 

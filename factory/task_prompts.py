@@ -136,7 +136,13 @@ followed by an equals sign in prose as a password assignment and can remove
 Python closing quotes. Use words in those messages, preserving the actual field
 references and filtering logic. Never reconstruct redacted credentials.
 Use the publisher's actual field semantics, not a guessed schema. Concrete source
-examples should be checked, but never ship fixture labels or answer scaffolds as
+examples should be checked. Validate the rows and transformations used by the
+frozen task; do not require the entire download to contain only codes the task uses.
+If the frozen population explicitly excludes a code, record its count without
+aborting solely because it exists elsewhere in the source. Unknown outcomes must
+never become negative labels. Unexpected values affecting included rows still need
+an evidenced interpretation or a failure. Keep the population and label rules fixed.
+Never ship fixture labels or answer scaffolds as
 features or auxiliary evaluation files. Missing data is not zero. Freeze thresholds
 on training rows only unless an external standard defines them. No use of holdout
 for choosing target, features, thresholds or splits. Do not change the agreed task
