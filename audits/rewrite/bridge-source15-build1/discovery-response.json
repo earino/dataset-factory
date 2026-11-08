@@ -1,0 +1,157 @@
+{
+  "verdict": "ready",
+  "reason": "FHWA's National Bridge Inventory (NBI) is directly downloadable as annual fixed-width/comma-delimited archives with a published record-format data dictionary, and it supports a forward-looking, leakage-safe binary task: given a bridge's full record at one annual snapshot (June 15 of year Y), predict whether its NEXT recorded inspection will classify it Poor (lowest component rating \u22644). Using only the snapshot's own fields and one observation per bridge (earliest cohort) avoids panel/lag leakage, is tractable on one worker (7 archives, ~52-55 MB zipped each, ~620k records per year), and rests on an explicit U.S. Government public-domain designation on DOT's own data portal, with the state-submitted-data caveat stated as a limitation.",
+  "dataset_id": "nbi-bridge-poor-transition",
+  "title": "Will a Fair-condition U.S. highway bridge be rated Poor at its next routine inspection? Forward condition deterioration from the National Bridge Inventory",
+  "source": {
+    "publisher": "U.S. Department of Transportation, Federal Highway Administration (FHWA), Office of Bridges and Structures",
+    "urls": [
+      "https://www.fhwa.dot.gov/bridge/nbi/disclaim.cfm?nbiYear=2018hwybronlyonefile&nbiZip=zip",
+      "https://www.fhwa.dot.gov/bridge/nbi/disclaim.cfm?nbiYear=2020hwybronlyonefile&nbiZip=zip",
+      "https://www.fhwa.dot.gov/bridge/nbi/disclaim.cfm?nbiYear=2021hwybronlyonefile&nbiZip=zip",
+      "https://www.fhwa.dot.gov/bridge/nbi/disclaim.cfm?nbiYear=2024hwybronlyonefile&nbiZip=zip"
+    ],
+    "documentation_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+    "terms_url": "https://data.transportation.gov/Roadways-and-Bridges/National-Bridge-Inventory-NBI-/uack-gist/about_data",
+    "license": "Public Domain U.S. Government",
+    "terms_excerpt": "Public Domain U.S. Government",
+    "attribution": "No attribution is required by the publisher; recommended credit: Federal Highway Administration, National Bridge Inventory (NBI)",
+    "citation": "",
+    "redistribution": true
+  },
+  "task": {
+    "question": "At the annual NBI snapshot, which currently Good-or-Fair highway bridges will be classified Poor at their next recorded inspection, and does design, traffic, geometry and inspection-cycle information add signal beyond the current condition rating?",
+    "decision_user": "A state or local bridge program manager deciding which Fair bridges to program for preservation, repair or replacement before the next inspection cycle.",
+    "prediction_time": "June 15 of cohort year Y, the date FHWA treats that year's NBI file as final; only fields present in that same annual record are used.",
+    "target": "1 if the lowest numeric value among item 58 (deck), 59 (superstructure), 60 (substructure) and 62 (culvert) in the bridge's next inspection record after the snapshot is <= 4, i.e. FHWA 'Poor'; 0 if the lowest numeric value is >= 5. Records where no component carries a numeric rating are dropped, not labelled.",
+    "outcome_horizon": "The bridge's next recorded inspection after the June 15 snapshot, normally 12-36 months later (NBIS routine cycle is 24 months), observed in the annual files for Y+1 through 2024; earlier or later next-inspections beyond that window are treated as censored and dropped.",
+    "features": [
+      {
+        "name": "component_ratings",
+        "meaning": "Item 58 deck, 59 superstructure, 60 substructure, 62 culvert NBI condition ratings on the 0-9 scale at the snapshot inspection ('N' where not applicable)",
+        "availability": "Recorded at the bridge's most recent inspection and present in the year-Y annual file at the decision instant; these are the current-state inputs, never the future record",
+        "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+      },
+      {
+        "name": "material_and_design",
+        "meaning": "Item 43A kind of material/design and 43B design/construction type of the main spans (e.g. prestressed concrete, steel girder, timber)",
+        "availability": "Inventory attribute in the same annual record; changes only when the structure is replaced",
+        "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+      },
+      {
+        "name": "age",
+        "meaning": "Item 27 year built and item 106 year reconstructed",
+        "availability": "Inventory attribute present at the decision instant",
+        "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+      },
+      {
+        "name": "size",
+        "meaning": "Item 49 structure length (m), 48 length of maximum span (m), 45 main-unit spans, 46 approach spans, CAT29 deck area",
+        "availability": "Measured/derived attributes in the same annual record",
+        "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+      },
+      {
+        "name": "traffic_exposure",
+        "meaning": "Item 29 average daily traffic, 109 average daily truck traffic percent, 114 future ADT",
+        "availability": "Administrative estimate carried in the annual record; item 30 gives the ADT year, which may precede the snapshot and is retained as a feature-quality flag",
+        "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+      },
+      {
+        "name": "network_role",
+        "meaning": "Item 26 functional class of inventory route, 104 highway system of inventory route (NHS), 42A type of service on the bridge",
+        "availability": "Inventory classification in the same annual record",
+        "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+      },
+      {
+        "name": "load_capacity",
+        "meaning": "Item 31 design load, 64 operating rating, 66 inventory rating (metric tons)",
+        "availability": "Computed by the agency from the design and reported with the inspection record",
+        "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+      },
+      {
+        "name": "geometry",
+        "meaning": "Item 51 roadway width curb-to-curb, 52 deck width out-to-out, 34 skew, 28A lanes on structure",
+        "availability": "Measured inventory attributes in the same annual record",
+        "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+      },
+      {
+        "name": "deck_system",
+        "meaning": "Item 107 deck structure type, 108A wearing surface type, 108C deck protection",
+        "availability": "Inventory attribute in the same annual record",
+        "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+      },
+      {
+        "name": "waterway_and_scour",
+        "meaning": "Item 61 channel/channel protection rating and 113 scour-critical code",
+        "availability": "Recorded at the inspection and carried in the annual record",
+        "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+      },
+      {
+        "name": "ownership",
+        "meaning": "Item 1 state code, 21 maintenance responsibility, 22 owner",
+        "availability": "Administrative fields in the same annual record; used as categorical controls and for the state-mean baseline",
+        "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+      },
+      {
+        "name": "inspection_cycle",
+        "meaning": "Item 90 inspection date and 91 designated inspection frequency (months)",
+        "availability": "Known at the decision instant and defines the exposure window",
+        "evidence_url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm"
+      }
+    ],
+    "population": "Bridge records with item 5A record type '1' (highway bridge) in the year-Y annual file, whose item 90 inspection date falls within 24 months before the snapshot, whose applicable component ratings (58/59/60/62) are numeric with lowest value >= 5 (FHWA Good or Fair, so not already Poor at the decision instant), and for which a further record with an inspection date strictly after the June 15 snapshot of year Y exists in the files for Y+1 through 2024.",
+    "split_policy": "Cohort years frozen in advance: train Y = 2018 and 2019, eval Y = 2020, holdout Y = 2021. Each bridge contributes at most one observation, assigned to its earliest eligible cohort, so no bridge identity, and therefore no shared inspection history, spans two splits. No lag, rolling-window, prior-inspection-sequence or state-year aggregate features are constructed, so no additional embargo is required; the only time boundary is the cohort snapshot date, and every label uses an inspection strictly later than it.",
+    "usefulness": "The label is a future inspection outcome roughly one cycle out, not any field that exists in the input record: the snapshot already contains today's ratings and FHWA's derived current-condition code (CAT23), so a model cannot 'copy' the answer. Because the population is restricted to non-Poor bridges, the interesting discrimination is among Fair bridges (rating 5 vs 6), which is precisely the group a bridge program must triage with limited funds; design, traffic, geometry, deck system and inspection-cycle attributes can plausibly separate the ones that cross the Poor threshold from those that hold.",
+    "simple_references": "Always-negative base rate (share of eligible bridges that stay non-Poor); one-field heuristic using the current lowest component rating (5 vs 6) as the sole predictor; age-bucket rate (decade of item 27); state-level majority/mean rate using item 1; and a logistic model on current ratings plus age only, to show what structural and traffic features add on top of condition history."
+  },
+  "evidence": [
+    {
+      "url": "https://data.transportation.gov/Roadways-and-Bridges/National-Bridge-Inventory-NBI-/uack-gist/about_data",
+      "claim": "DOT's official data portal page for dataset DOT-693 states the licence as public domain and links each year's single-file archive, including 2018, 2020, 2021 and 2024.",
+      "quote": "Public Domain U.S. Government"
+    },
+    {
+      "url": "https://www.fhwa.dot.gov/bridge/nbi/ascii.cfm",
+      "claim": "FHWA publishes one annual NBI archive per year, treats the file as final on June 15, and documents the download and record-format links used here.",
+      "quote": "The data for public highway bridges is considered final on June 15th of each calendar year and is published on this website shortly thereafter."
+    },
+    {
+      "url": "https://www.fhwa.dot.gov/bridge/nbi/format.cfm",
+      "claim": "The record format gives item-by-item character positions in the 445-character record and defines the derived lowest-condition field, so fields can be parsed and the label rebuilt from raw items.",
+      "quote": "Lowest Condition Code* (lowest value of Items 58, 59, 60, and 62.)"
+    },
+    {
+      "url": "https://www.fhwa.dot.gov/BRIDGE/britab.cfm",
+      "claim": "FHWA's Good/Fair/Poor definition is the authority for the binary label and shows that ratings 5 and 6 (Fair) are the population just above the Poor threshold.",
+      "quote": "If the lowest rating is greater than or equal to 7, the bridge is classified as Good; if it is less than or equal to 4, the classification is Poor."
+    },
+    {
+      "url": "https://www.usa.gov/government-copyright",
+      "claim": "The federal public-domain basis is 17 U.S.C. 101/105, and the designation explicitly does not extend to state and local government works, which is the third-party-rights limit for state-submitted NBI rows.",
+      "quote": "The U.S. government work designation does not apply to works of state and local governments."
+    },
+    {
+      "url": "https://www.fhwa.dot.gov/bridge/nbi/disclaim.cfm?nbiYear=2019hwybronlyonefile&nbiZip=zip",
+      "claim": "The download interstitial imposes an evidentiary-use notice under 23 U.S.C. 409 rather than a licence condition, and forwards to the direct zip for that year.",
+      "quote": "shall not be subject to discovery or admitted into evidence in a federal or state court proceeding"
+    }
+  ],
+  "construction": {
+    "format": "ZIP archives containing one comma-delimited text file of NBI highway-bridge records (also available as fixed-width 445-character records); comma separated with a single quote as the text qualifier, per the year download pages.",
+    "access_recipe": "Download the single-file highway-bridge archive for each year 2018-2024 from https://www.fhwa.dot.gov/bridge/nbi/disclaim.cfm?nbiYear=<YEAR>hwybronlyonefile&nbiZip=zip (accept the 23 U.S.C. 409 interstitial; it forwards to https://www.fhwa.dot.gov/bridge/nbi/<YEAR>hwybronlyonefile.zip). Unzip, sniff whether the first line is a header, and if not parse by the fixed positions in format.cfm (item 1 at 1-3, 8 at 4-18, 90 at 287-290, 58 at 259, 59 at 260, 60 at 261, 62 at 263). Normalise to one row per (state_code, structure_number, inspection_date) with the item columns above, validate that CAT23 equals the min of the numeric 58/59/60/62 values, then build one observation per bridge by joining the year-Y snapshot to the earliest later file whose record has item 90 strictly after the June 15 snapshot. Drop bridges whose identity (state + structure number + year built) changes between snapshots.",
+    "expected_size": "Seven archives for 2018-2024, each 52-55 MB zipped per the year download pages (about 380 MB total) and roughly 275 MB uncompressed per year at 445 bytes per record; annual highway-bridge record counts are 616,096 (2018), 617,084 (2019), 619,622 (2021) and 621,581 (2023) as listed on those pages, so about 4.3 million raw records and on the order of 1-1.5 million eligible single-transition observations across cohorts.",
+    "source_examples": "Documented checks to assert during construction: item 5A record type is '1' for the retained highway-bridge file; item 58/59/60 ratings take values 0-9 and 'N'; item 62 is 'N' for non-culvert bridges; item 90 inspection date is a 4-character YYYYMM code (position 287-290); item 27 year built is 4 numeric characters (position 157-160); CAT23 is a single character at position 435 and must equal min(58,59,60,62) ignoring 'N'."
+  },
+  "limitations": [
+    "Retrospective current-vintage reconstruction: FHWA states each year's data 'may be corrected or updated throughout the year', so the archives downloaded today are the latest revisions, not necessarily the exact bytes an analyst would have seen at the historical decision instant; this is an availability reconstruction, not proof of operational vintage.",
+    "NBI aggregates state, federal and tribal submissions; the federal designation does not extinguish any rights a state may assert in its own records, so upstream rights are preserved and any CC0 dedication applies only to our derived contribution.",
+    "Inspection timing is endogenous: agencies may inspect deteriorated bridges sooner and defer others, so the next-inspection window is informative and bridges whose next inspection falls outside the 2018-2024 file window are right-censored and dropped, which can bias the observed transition rate.",
+    "Condition ratings are inspector judgments recorded under agency quality-control programs, with documented state-level variation; inter-rater and between-state differences are not corrected here.",
+    "Some inputs are administrative rather than measured at inspection (ADT and its year, functional class, owner), and can lag or be revised between snapshots.",
+    "Bridge identity can break: structure numbers are renumbered by some agencies and replaced structures may reuse identifiers, so the join requires the year-built guard and will silently lose some legitimate pairs.",
+    "The label uses the lowest of four component ratings; for culverts item 62 governs while deck/superstructure may be 'N', so the label mixes structural types unless culvert and non-culvert bridges are reported separately.",
+    "FHWA instructs that NBI data not be used for route clearance purposes, and 23 U.S.C. 409 restricts use of these safety-compiled data in litigation; neither affects modelling but both constrain downstream reuse claims.",
+    "The 2026-27 transition to the SNBI record format changes field names and semantics, so the pipeline is frozen to the 2018-2024 Coding-Guide archives and does not extend to future refreshes without remapping.",
+    "Element-level condition data (a separate 2015-2025 XML product) is not used; only the item-level inventory is in scope for this first release."
+  ]
+}
