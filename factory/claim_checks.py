@@ -13,7 +13,7 @@ from .claim_facts import VERSION, canonical, population_claims
 
 DOC_NAMES = {'README.md', 'DATA_DICTIONARY.md', 'RELEASE_NOTES.md', 'VERIFICATION.md',
              'REPRODUCE.md', 'LOADING.md', 'card.md'}
-NEGATION = re.compile(r'\b(?:no|not|never|cannot|without|doesn.t|isn.t|aren.t|not guaranteed)\b', re.I)
+NEGATION = re.compile(r'\b(?:no|not|nothing|never|cannot|without|doesn.t|isn.t|aren.t|not guaranteed)\b', re.I)
 SCORING = re.compile(r'holdout|scor(?:e|ing)|benchmark|runner|evaluated agents?', re.I)
 GUARANTEE = re.compile(r'guarantee\w*|enforc\w*|ensures?|keeps?[^.;]{0,60}outside|'
                        r'(?:stays?|remains?)\s+(?:sealed|outside)|sealed until', re.I)
@@ -65,10 +65,25 @@ def text_claims(text, facts=None):
         for sentence in re.split(r'[\n;]|(?<=[.!?])\s+', text):
             if not re.search(r'prevalence|positive.rate|escape.rate|exceedance.rate|rate.drifts?', sentence, re.I):
                 continue
-            expressions = [(m[1].lower(),m[2]) for m in re.finditer(
-                r'\b(train|eval|holdout)(?:\s+(?:19|20)\d{2}(?:[-–](?:19|20)\d{2})?)?\s*\(?\s*(\d+(?:\.\d+)?)%', sentence,re.I)]
-            expressions += [(m[2].lower(),m[1]) for m in re.finditer(
-                r'(\d+(?:\.\d+)?)%\s*\b(train|eval|holdout)\b',sentence,re.I)]
+            # Bind each literal once. In "holdout (1.87% train -> ...)",
+            # the explicit suffix names train; the opening parenthesis does not
+            # make that first number a second claim about holdout. Conversely,
+            # "train 1.87% eval 1.82%" uses prefix labels throughout.
+            prefix = list(re.finditer(
+                r'\b(train|eval|holdout)(?:\s+(?:19|20)\d{2}(?:[-–](?:19|20)\d{2})?)?\s*\(?\s*(\d+(?:\.\d+)?)%', sentence,re.I))
+            suffix = {m.span(1):m for m in re.finditer(
+                r'(\d+(?:\.\d+)?)%\s*\b(train|eval|holdout)\b',sentence,re.I)}
+            claimed = {}
+            for match in prefix:
+                alternate = suffix.get(match.span(2))
+                separator = sentence[match.end(1):match.start(2)]
+                if alternate and '(' in separator:
+                    claimed[match.span(2)] = (alternate[2].lower(),alternate[1])
+                else:
+                    claimed[match.span(2)] = (match[1].lower(),match[2])
+            for span, match in suffix.items():
+                claimed.setdefault(span,(match[2].lower(),match[1]))
+            expressions = list(claimed.values())
             for split, literal in expressions:
                 decimals = len(literal.split('.')[1]) if '.' in literal else 0
                 observed = facts['splits'][split]['positive_rate']*100

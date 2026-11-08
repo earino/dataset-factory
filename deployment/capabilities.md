@@ -1,5 +1,16 @@
 # Hosted Scout inventory — updated 2026-09-18
 
+## Runtime update — 2026-11-08
+
+Scout reports Hermes **0.23.0** at `/opt/hermes`; its install stamp names upstream
+`2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19` (distance zero, clean; no `.git` directory).
+The six source files in `audits/resilience/2026-11-07-r5-runtime-capability.json`
+match independently fetched upstream bytes and SHA-256 values at that revision.
+Review: `audits/resilience/2026-11-07-r5-upstream-runtime-review.json`.
+The installed `__none__` tool-definition probe returned exactly `[]`; the factory
+repeats this assertion and source comparison before each audit. No live model audit
+is claimed. Model routes, credentials, budgets and schedules were not changed.
+
 ## Runtime update — 2026-10-22
 
 The historical inventory below is retained; these observations supersede its Hermes

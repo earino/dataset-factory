@@ -63,7 +63,7 @@ contradictory pass/block verdicts refuse admission. These checks establish evide
 consistency, not the semantic correctness or completeness of a model's reasoning.
 
 The auditor has no tools. `config/adversarial-runtime.json` must pin a reviewed installed
-runtime. Before each invocation, the existing hosted evaluation's zero-tool resolution is
+runtime. The six-file pin covers CLI context/exit handling, tool selection and agent initialization, including memory/context-tool injection. The source review is recorded in `audits/resilience/2026-11-07-r5-upstream-runtime-review.json`. The policy names the exact accepted source; it does not claim the deployed host already passed readback. Before each invocation, the existing hosted evaluation's zero-tool resolution is
 tested in the installed interpreter. An unknown toolset name alone is not evidence of
 tool isolation. The invocation uses a neutral directory and the reviewed `--ignore-rules`
 path, without preloaded skills or conversation resume. Recorded tool offers/calls and
