@@ -798,6 +798,22 @@ member in schema-failure messages. No source mapping, target, candidate state or
 acceptance check was changed. The normal bounded repair remains responsible for
 resolving the actual schema from evidence.
 
+### Development exemption and schema prompt deployed (17:19 UTC)
+
+Scout exported [the deployment and queue record](../audits/rewrite/c1a072a-deploy/note.md):
+999e076 went live at 17:13:05 UTC, then c1a072a at 17:17:34 UTC, each at a free
+controller boundary with cleanup retained. The latter commit passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42504050660) and 17
+focused engine/model tests. Scout's evidence commit 66e2378 also passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42504276920).
+
+The UCMR5 first worker was reconciled and deleted after its failed result was
+preserved. CMS remained at build, temporarily waiting on the existing active-job
+admission rule. The exported queue is a snapshot, not a claim that its next repair
+has completed. The prompt change instructs future builders to expose schema
+details; it does not retroactively add absent headers to the first failure.
+No replacement publication has yet been observed.
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;
