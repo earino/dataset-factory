@@ -1,0 +1,38 @@
+{
+  "verdict": "repair",
+  "reason": "The label direction/units (sign '=' and >=0.004 ug/L PFOA/PFOS, MRL confirmed in EPA Table 2), the half-open split windows, the one-row-per-PWS dedupe, and the EPA public-domain basis are sound, and the supplied 3,769-row eval result is a real measured result. But the build ships five of the twelve declared features as empty columns because UCMR5_AddtlDataElem.txt is long-format (concepts in rows) and the code only matches header column names; two validation checks are hardcoded to pass, including the one that should have caught this; and prior_ucmr3_max_pfoa_pfos is missing for every system whose UCMR 3 results were all below the reporting level, not only for systems with no UCMR 3 result as documented. The eval AUC therefore does not exercise the advertised additional-data features. These are repairable construction/metadata defects, not a reason to reject the source or label.",
+  "findings": [
+    {
+      "issue": "Five of the twelve declared features (pfas_tested_before, pfas_treatment_before, potential_pfas_sources, potential_source_types, treatment_information) are emitted as empty strings because UCMR5_AddtlDataElem.txt stores concepts as AdditionalDataElement rows, not as header columns.",
+      "evidence": "source-checks.json: 'UCMR 5 additional data element concepts mapped or shipped as missing' observed 'resolved []; unresolved [pfas_tested_before, pfas_treatment_before, potential_pfas_sources, potential_source_types, treatment_information]; mapping {}'; UCMR5_AddtlDataElem.txt header ['PWSID','FacilityID','SamplePointID','SampleEventCode','AdditionalDataElement','Response','IfOtherText']; EPA UCMR 5 Data Summary: July 2026, Table 9, p.18 (https://www.epa.gov/system/files/documents/2023-08/ucmr5-data-summary_0.pdf) defines these concepts as AdditionalDataElement values PFASOccurrence, PFASTreatment, PotentialPFASSources, PotentialPFASSourcesDetail, TreatmentInformation. The builder's _resolve_addtl/_fuzzy only scan header names and its alias list contains non-existent names such as PFASTESTEDBEFORE. The task's features and reason nonetheless advertise these fields as available and used, and the delivered eval full_model AUC 0.7798 was learned without them.",
+      "repair": "Filter UCMR5_AddtlDataElem.txt to rows whose AdditionalDataElement is PFASOccurrence, PFASTreatment, PotentialPFASSources, PotentialPFASSourcesDetail, or TreatmentInformation; concatenate multi-select Response codes per PWSID/FacilityID/SamplePointID (and IfOtherText where applicable); rename to the five feature names; merge; then require non-empty coverage before qualifying. If a concept truly cannot be resolved, remove it from FEATURES, task.features, and the usefulness text instead of shipping an empty column."
+    },
+    {
+      "issue": "Two qualifying checks pass a literal True, so the build cannot fail on the very defects they claim to test.",
+      "evidence": "construction_code: _check(checks, 'UCMR 5 additional data element concepts mapped or shipped as missing', ..., True) and _check(checks, 'Frozen label rule applied to detected rows below the threshold', ..., True). In the same run resolved == [] and all five concepts are unresolved, yet the ADE check reports passed=true; qualification.ok=true therefore does not evidence ADE coverage or the label rule.",
+      "repair": "Compute 'passed' from data: fail when a declared concept has no resolved source or zero non-empty coverage, and assert the label rule by recomputing positives vs sign/value on a sample; never pass a constant."
+    },
+    {
+      "issue": "prior_ucmr3_max_pfoa_pfos is missing whenever a system's UCMR 3 PFOA/PFOS results were all below the UCMR 3 reporting level, not only when the system has no UCMR 3 result, contradicting the stated feature definition.",
+      "evidence": "construction_code: t['detected'] = value.where(sign.eq('='), np.nan), then prior ... detected max, so all-'<' systems produce NaN; evaluation.json persistence shows training_observed_rows 82 vs training_missing_rows 3792 of 3874 and prior_fallback_rows 3714 of 3769, consistent with numeric maxima existing only for detecting systems. Task feature text: 'Maximum prior UCMR 3 PFOA or PFOS result in ug/L; missing when the PWS has no UCMR 3 result.'",
+      "repair": "Emit an explicit prior_ucmr3_monitored/coverage flag; define the maximum for monitored non-detects (0 or a censored value at the UCMR 3 MRL) or state plainly that missing includes censored non-detects; and make the persistence baseline rank non-detect systems instead of treating them as missing history and falling back to the training prior."
+    },
+    {
+      "issue": "The shipped population is not the stated population: first-sample selection happens before window assignment, so systems whose earliest PFOA/PFOS entry-point sample falls in Dec 2023/Dec 2024 or outside 2023-2026 are dropped even when later in-window samples exist.",
+      "evidence": "construction_code: selected = events.drop_duplicates('pwsid', keep='first') precedes the WINDOWS mask and frames assignment; source-checks 'rows outside windows 234'; shipped rows 10,073 vs 10,307 PWSs with UCMR 5 PFAS results in EPA Table 3 (July 2026 summary), i.e. exactly the 234 outside-window rows are lost. The task population states 'PWSs with at least one entry-point sample ... and a PFOA or PFOS analytical result.'",
+      "repair": "Either select the earliest PFOA/PFOS entry-point sample within each frozen window per PWS, or document the effective population ('PWS whose first PFOA/PFOS EP sample date falls in a frozen window') and report the 234 excluded systems and their dates."
+    }
+  ],
+  "limitations": [
+    "Additional-data-element responses are self-reported around the sample event; 'known before the sample' is assumed, not evidenced, and TreatmentInformation could reflect treatment configuration at or after the sample.",
+    "Prior UCMR 3 features come from the 2024-revised archive rather than a ledgered as-of-2023 vintage; the original 2013-2015 results were public earlier, but revision effects on values are unquantified.",
+    "UCMR 3 units and MRLs are never validated in the build; the observed prior maximum range 0.02-7.0 is consistent with ug/L but is not checked in code.",
+    "collection_year is constant within train (2023) and eval (2024) and unseen at eval (calendar_identity_unseen_rows 3769), so it carries no transferable signal and acts as a split tag.",
+    "The 31-day embargo is defined on collection month only; it does not establish that laboratory results were realized before the next period, and the labels are retrospective in any case.",
+    "Holdout contains collection dates through 2026-06-16 although EPA labels the occurrence files 'UCMR 5 (2023-2025)'; whether those are legitimate late/make-up samples or source date-entry errors is unresolved and should be checked against SampleEventCode.",
+    "The 0.7798 AUC covers 3,769 public eval rows only, with no holdout scoring and no uncertainty interval; it is an observed result on this protocol, not a universal ceiling.",
+    "EPA's 17 U.S.C. 105 public-domain basis is U.S. domestic; non-U.S. reuse and any third-party embedded material in the zips (beyond the shipped occurrence records) require separate review.",
+    "Small-system participation is a nationally representative sample, not a census, and the shipped table is unweighted.",
+    "The label is one entry-point sample per system; multi-facility systems can have heterogeneous PFOA/PFOS results not captured by the system-level row."
+  ]
+}
