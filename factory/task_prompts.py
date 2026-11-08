@@ -25,6 +25,10 @@ requested here. Freeze the task and split rules before measuring performance.
 
 Read source terms. Preserve their designation, required attribution and citation.
 CC0 applies only to our contribution; upstream rights are never overwritten.
+An applicable statutory public-domain basis can establish reuse without a publisher
+licence grant. Verify why it covers these specific records, using official legal
+and source evidence; a government domain alone is insufficient. Preserve third-party
+rights and territorial limits. Do not invent a licence or a worldwide dedication.
 If evidence is insufficient, return verdict "defer" with a concrete reason.
 
 Return ONLY a JSON object:
@@ -61,6 +65,9 @@ units, prediction-time feature availability, chronological boundaries, cross-row
 label exposure, source-example checks, licence scope and usefulness. Compare the
 actual code to the stated rules. Do not invent procedural gates. Mechanical checks
 run separately; you cannot waive them. Unknown material claims must be named.
+For statutory public-domain claims, check their application to these records,
+third-party rights and territorial scope; do not require an additional publisher
+licence grant when the evidenced legal basis does not require one.
 When measured results are supplied, interpret them on their stated rows/protocol;
 do not invent scores, infer a universal ceiling, or demand a winning result by tuning.
 Return ONLY JSON {"verdict":"accept"|"repair"|"reject", "reason":"...",
@@ -74,6 +81,10 @@ def repair_terms(source, failure):
 actual terms and documentation. The worker could not capture the documents or
 find the supplied terms quote. A generic licence page does not establish that
 this publisher applied that licence to these data. Do not invent a grant or quote.
+An applicable statutory public-domain basis does not require a publisher licence
+grant. Verify its application to these specific records with official legal and
+source evidence, including third-party rights and territorial limits. A government
+domain alone is insufficient; do not invent a worldwide dedication.
 Keep the dataset, download URLs, prediction task, features and split policy fixed.
 Return verdict "defer" if readable compatible terms cannot be established.
 Otherwise return ONLY JSON {"verdict":"ready", "reason":"what was corrected",

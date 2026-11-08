@@ -106,6 +106,11 @@ shipped features or answer scaffolds; reproducible construction; valid baselines
 and evidence of task usefulness; and consumer loading of the accepted bytes.
 Existing scientific checks are retained or consolidated, not bypassed to ship.
 Unknown semantic concerns lead to repair/rejection, not universal safety claims.
+Readable source-rights evidence can establish an applicable statutory public-domain
+basis; a separate publisher licence grant is not always necessary. Research and
+review must establish applicability to the actual records, preserve third-party
+rights and territorial limits, and avoid treating a government domain as proof.
+The captured-source evidence and all dataset acceptance checks still apply.
 
 Use one immutable artifact manifest and measured results to generate documentation,
 dataset cards and both destination uploads. Source/build/validator identities are

@@ -573,6 +573,35 @@ NLRB data lack redistribution rights or that the source is scientifically unsuit
 The diagnostic-wording change `e129c9a` passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42498708037).
 
+### Source-rights clarification and RCRA outcome (16:31 UTC)
+
+The research prompts now distinguish a publisher licence grant from an applicable
+statutory public-domain basis. The latter needs evidence that it covers the actual
+records, with third-party rights and territorial scope preserved. A government
+website is not sufficient evidence. This corrects the overly narrow interpretation
+seen in the NLRB terms repair; it does not approve or reopen that candidate.
+The [US Copyright Office law reference](https://www.copyright.gov/title17/index.html)
+and [USAGov guidance](https://www.usa.gov/government-copyright) support this distinction
+and its limits. Captured source evidence and final semantic review remain required.
+The change adds no licence framework, exception flag or new acceptance gate.
+
+Source 11, `rcra-cei-violation-finding`, captured its terms successfully but failed
+construction after 41.8 seconds: the observed FOUND_VIOLATION domain included R,
+which the generated code's expected domain omitted. No meaning for R is inferred
+here. The ordinary bounded repair receives that failure; no candidate state or
+label rule was edited manually. Exact manifest, failure and licence-capture bytes
+are preserved under `audits/rewrite/new-source-outcomes/rcra-build-1-*`, with both
+report digests verified against staging manifest asset 724479061 (release 438363329).
+
+The e129c9a deployment at 16:19:12 UTC and its queue snapshot are preserved under
+`audits/rewrite/e129c9a-deploy/`; the export passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42499362741).
+Negative-verdict retention commit 1b951b6 passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42499423893) and 931 clean
+checkout tests (13 skipped); deployment has been requested. Source 9 exhausted
+its bounded attempts and is deferred; source 10 is rejected after terms research.
+No replacement dataset has yet completed qualification and publication.
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;
