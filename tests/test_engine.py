@@ -24,6 +24,23 @@ def source():
 
 
 class EngineTests(unittest.TestCase):
+    def test_malformed_discovery_repairs_retained_response_without_repeating_search(self):
+        calls = []
+        class Model:
+            def run(_, identity, prompt, *, research=False):
+                calls.append((prompt, research))
+                return source()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); store = Store(root)
+            path = root / '.factory/model-tasks/previous/response.txt'
+            path.parent.mkdir(parents=True); path.write_text('{"quoted evidence": invalid}')
+            store.add('candidate', {'failure': {'stage': 'discover', 'attempt': 'previous',
+                                               'reason': 'Model response is not JSON'}})
+            self.assertEqual('done', tick(root, Driver(root, {}, model=Model()))['status'])
+            self.assertFalse(calls[0][1])
+            self.assertIn('quoted evidence', calls[0][0])
+            self.assertEqual('build', store.get('candidate')['stage'])
+
     def test_discovery_advances_once_and_rejects_duplicate_task(self):
         class Model:
             def run(self, *args, **kwargs): return source()

@@ -118,6 +118,14 @@ Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
   were durably recovered, so this is not evidence of lost construction output.
 - No successful real dataset release yet. Semantic review and both public
   consumer checks remain outstanding.
+- Retry correction `ee752b433d40e98e90af06824bbd44d87287b529` passed 917 clean-clone
+  tests (13 skipped) and [CI](https://github.com/earino/dataset-factory/actions/runs/42482888850).
+  Original first-cycle evidence is integrated under `audits/rewrite/first-cycle/`;
+  Scout's export also passed [CI](https://github.com/earino/dataset-factory/actions/runs/42482805116).
+- Exact malformed discovery bytes reveal incorrectly escaped quotes at line 63,
+  column 334. Future discovery retries reuse the retained research in a bounded
+  format-repair task instead of repeating full web discovery. Source validation
+  still follows; successful JSON parsing is not scientific acceptance.
 
 | Milestone | Implemented | Local tests | CI | Deployed evidence |
 | --- | --- | --- | --- | --- |

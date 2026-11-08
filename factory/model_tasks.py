@@ -51,8 +51,8 @@ def parse_response(text):
         raise TaskFailure('Model response exceeds compact report limit')
     try:
         value = json.loads(text)
-    except ValueError as exc:
-        raise TaskFailure('Model response is not JSON') from exc
+    except json.JSONDecodeError as exc:
+        raise TaskFailure(f'Model response is not JSON: {exc.msg} at line {exc.lineno}, column {exc.colno}') from exc
     if not isinstance(value, dict):
         raise TaskFailure('Model response must be an object')
     return value
