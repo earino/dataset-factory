@@ -15,17 +15,17 @@ proof of exact reconstruction. Published data, tags and manifests remain frozen.
 | Work | Status | Acceptance evidence still needed |
 | --- | --- | --- |
 | R6: config-driven admission hold | Shipped in PR #26, merge `16657ab`; exact-commit CI passed; Scout deployment read-back in `d1e6030` below | Hold remains active until R1-R4/A4 acceptance |
-| R1: deterministic label-blind battery, gate 1.6 | Shipped PR #28, merge `94ece4d`; A1 all seven historical cases reproduced and refused, compact evidence independently verified; complete job ledgers on main | A2 first eight comparisons passed without exact-recovery failure in 6171970; remaining 90 configurations pending; hold stays true |
-| R2: scaffold/answer scrubber | Shipped PR #27, merge `a2578ed`; both exact-commit CI workflows passed; deployed/read back by Scout in `fbc8fee` | Worker-generated artifact integration is in R1; full worker A3/A4 pending |
-| R3: measurable claims from bytes | Shipped PR #29 as `3858d4f`; 812 clean-clone tests; exact merge CI green | Full worker A3/A4 evidence pending |
-| R4: source licence evidence and generation | Shipped PR #30 as `00a773d`; 826 clean-clone tests; both exact merge CI runs green | Worker A4 outcomes pending; actual unreadable/conflict captures preserved |
+| R1: deterministic label-blind battery, gate 1.6 | Shipped PR #28, merge `94ece4d`; A1 all seven historical cases reproduced and refused, compact evidence independently verified; complete job ledgers on main | A2 first eight comparisons passed without exact-recovery failure in 6171970; remaining 90 configurations admitted by PR #41 (`3dddc2b`) and handed to Scout after exact CI passed; hold stays true |
+| R2: scaffold/answer scrubber | Shipped PR #27, merge `a2578ed`; both exact-commit CI workflows passed; deployed/read back by Scout in `fbc8fee` | Full-worker A4 scrub reports committed in `0cca3b2`; all four refused |
+| R3: measurable claims from bytes | Shipped PR #29 as `3858d4f`; 812 clean-clone tests; exact merge CI green | Full-worker A4 facts/claims committed in `0cca3b2`; three prose false positives fixed and replayed in PR #40 (`9de5544`) |
+| R4: source licence evidence and generation | Shipped PR #30 as `00a773d`; 826 clean-clone tests; both exact merge CI runs green | A4 licence admission refused all four; actual unreadable/conflict captures preserved |
 | R5: autonomous adversarial audit | Implemented in draft on `codex/adversarial-release-audit`: bounded zero-tool model session, composable feature-only attacks, full staged-worker recheck and content-bound queue admission | Initial 870-test clean clone and both CI runs passed. Runtime source is reviewed and pinned; the final integrated suite/CI and deployed preflight are pending. No real eligible package/model acceptance claimed |
 | Review item 2: publication invariants/rule consolidation | Shipped PR #35 as `c686be9`: strict current-review admission, verified descriptor regression, normative inventory and reconciled publication/licence wording | 836 clean-clone tests and exact merge CI passed; approvals/R5 separate |
 | Review item 3: structured events and generated state | Shipped PR #33 as `817aaa0`, exact CI green | Original 1,364,901 bytes preserved; generated view below 20 KB; Scout deployment readback pending |
 | Review item 4: digest-bound approvals | Pending | Matching approval required at flip, historical evidence with honest gaps |
 | Review item 5: deterministic reconciliation | Shipped PR #34 as `e79b0f1`; 785 clean-clone tests, exact merge CI green | First live bookkeep passed at 20:38Z; ledger-bound live receipt committed in 6171970; replay remains conditional |
 | Review item 6: actor identity | In progress | Codex author on new commits; no history rewrite |
-| A4: four blocked packages through full pipeline | Prepared PR #31 and current-evidence refresh PR #36 (`2d5b79a`), exact merge CI green, 836 clean-clone tests; job 004 pin admitted after A2 cleanup | Full worker outcomes and operator disposition pending; older sealed preparations remain unlaunched |
+| A4: four blocked packages through full pipeline | Prepared PR #31 and current-evidence refresh PR #36 (`2d5b79a`), exact merge CI green, 836 clean-clone tests; job 004 pin admitted after A2 cleanup | Completed job 004 in `0cca3b2`: all nine stages ran for all four, inputs unchanged, none release eligible; 49 compact reports independently matched staging hashes. Dataset disposition remains the operator’s next decision |
 
 Each item gets a separate branch/PR. This ledger is implementation status, not a passing
 audit or permission to publish. Do not treat partial code or synthetic unit fixtures as
@@ -324,7 +324,8 @@ See `docs/AUTONOMOUS-RELEASE-AUDIT.md` for commands, bounds and evidence semanti
 
 The local 870-test suite passes (13 platform skips). New integration cases execute the
 real packaging checks, assembler and worker driver on tiny unit fixtures; they are not
-historical dataset acceptance or a live model run. Runtime activation is deliberately
-fail-closed until the installed source capability is reviewed and pinned. No model or
+historical dataset acceptance or a live model run. Runtime source is reviewed at installed Hermes 0.23.0 commit
+`2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19`; all six upstream files match Scout’s
+installed-source capture. The deployed factory preflight remains to be read back. No model or
 provider setting, allowance or schedule was changed. The existing remediation hold
 blocks paid model audits; known defective packages stop at deterministic prerequisites.

@@ -1,50 +1,51 @@
 {
   "schema_version": 1,
   "reviewer": "Codex",
-  "reviewed_on": "2026-11-07",
-  "upstream_commit": "d923a5eb487a17c0a68801bba9ef0f56c81040a8",
-  "scope": "Read-only review of upstream source, not a fresh installed-host observation or live model audit. Activation also requires Scout installed-source hash agreement and an empty-definition preflight.",
+  "reviewed_on": "2026-11-08",
+  "upstream_commit": "2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19",
+  "scope": "Read-only review of upstream source at the install-stamp commit reported by Scout on Telegram, 2026-11-08. All six downloaded source files match the committed installed-host byte counts and SHA-256 values. The factory preflight must still run on the deployed host; this is not a live model audit.",
   "files": {
     "model_tools.py": {
-      "bytes": 50339,
-      "sha256": "fbb40d0058e3edd6c4e1608b8db9e922aaf38d2c9d0438c3811c6d6b01b45340",
-      "url": "https://github.com/NousResearch/hermes-agent/blob/d923a5eb487a17c0a68801bba9ef0f56c81040a8/model_tools.py"
+      "bytes": 51121,
+      "sha256": "24850d5ce74f7bcf17e58638fc787d6b955bfb89f4980e74b361d7927de74581",
+      "url": "https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/model_tools.py"
     },
     "hermes_cli/main.py": {
-      "bytes": 151085,
-      "sha256": "88a7fc166d3bfaac082d44bbfc36c93b53c50f7508ca96e32206dc3f1edfaa82",
-      "url": "https://github.com/NousResearch/hermes-agent/blob/d923a5eb487a17c0a68801bba9ef0f56c81040a8/hermes_cli/main.py"
+      "bytes": 149925,
+      "sha256": "e1321a2b30d92716b88c72fed3104b79195bc59067fad9f6b0740c3cc54f2f8c",
+      "url": "https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/hermes_cli/main.py"
     },
     "hermes_cli/cli_agent_setup_mixin.py": {
-      "bytes": 47288,
-      "sha256": "8ccc9659e2e393bf7d6214107483cb120640e5eb550964d494596f8b6f1d4d95",
-      "url": "https://github.com/NousResearch/hermes-agent/blob/d923a5eb487a17c0a68801bba9ef0f56c81040a8/hermes_cli/cli_agent_setup_mixin.py"
+      "bytes": 52433,
+      "sha256": "7d3db020acfa411909c4cfac240795950919545be7a302598b72a595db3c7231",
+      "url": "https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/hermes_cli/cli_agent_setup_mixin.py"
     },
     "hermes_cli/cli_single_query.py": {
-      "bytes": 33060,
-      "sha256": "e04e0d839c6382c706b7e4fa52b56dab01a82c1df3bd48787093ae270051b9f4",
-      "url": "https://github.com/NousResearch/hermes-agent/blob/d923a5eb487a17c0a68801bba9ef0f56c81040a8/hermes_cli/cli_single_query.py"
+      "bytes": 32798,
+      "sha256": "ee524db7ce7c6ff1e5e79a8ff47c3c0e8c6b72e37a55364231b9d6e29c6f9903",
+      "url": "https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/hermes_cli/cli_single_query.py"
     },
     "run_agent.py": {
-      "bytes": 87832,
-      "sha256": "2bd45c545c2cf0dec95702e71232f026b1265b54bf234a1c03c8cf83f5236f10",
-      "url": "https://github.com/NousResearch/hermes-agent/blob/d923a5eb487a17c0a68801bba9ef0f56c81040a8/run_agent.py"
+      "bytes": 88895,
+      "sha256": "8f8df32b0a027516c11ec58221d266048d0b76157599aa3934b4348add52a643",
+      "url": "https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/run_agent.py"
     },
     "agent/agent_init.py": {
-      "bytes": 131054,
-      "sha256": "9f8c91db2ae36194dcd0e187d8ef237fd8337ef35b8f4eb22b4faf6cf6575187",
-      "url": "https://github.com/NousResearch/hermes-agent/blob/d923a5eb487a17c0a68801bba9ef0f56c81040a8/agent/agent_init.py"
+      "bytes": 120464,
+      "sha256": "6d3deb12e5b60dd432e474fff4bcd54393d723aaf9b4102ddf99d0e5a25b7109",
+      "url": "https://github.com/NousResearch/hermes-agent/blob/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19/agent/agent_init.py"
     }
   },
   "findings": [
-    "model_tools._select_tool_names starts with an empty set when enabled_toolsets is supplied; unknown __none__ contributes no tools. The runtime preflight still asserts the actual result is [] rather than relying on the name.",
+    "model_tools._select_tool_names starts empty for an explicit enabled_toolsets list; unknown __none__ contributes no tools. Dispatcher-owned Kanban workers can append tools; the factory preflight refuses any HERMES_KANBAN environment and also asserts the resolved definitions equal [].",
     "cli_agent_setup_mixin forwards --ignore-rules to skip_context_files and skip_memory. main._apply_in_dir changes cwd and an inherited TERMINAL_CWD. The invocation uses the chat --oneshot -Q path, not top-level -z.",
-    "run_agent forwards constructor arguments to agent.agent_init. _load_tools filters by enabled_toolsets; _init_memory skips built-in and external memory when skip_memory is true and memory is not explicitly enabled.",
+    "run_agent forwards constructor arguments to agent.agent_init. _load_tools passes enabled_toolsets to get_tool_definitions and the agent tool-surface helper. _init_memory skips built-in and external memory when skip_memory is true and memory is not explicitly enabled.",
     "agent_init._inject_context_engine_tools injects tools only when enabled_toolsets is None or explicitly contains context_engine; the __none__ list satisfies neither condition.",
-    "cli_single_query returns nonzero for interrupted, failed, partial, incomplete or absent results. Post-run session, offered/called tools and usage checks remain necessary; exit zero alone is not sufficient."
+    "cli_single_query delegates result-to-exit mapping to hermes_cli.turn_exit.turn_exit_code. The factory requires zero exit plus exactly one new session, no offered/attempted/executed tools, measured main inference and valid bound JSON; exit zero alone is not sufficient."
   ],
   "limits": [
     "This is not a sandbox against arbitrary malicious runtime modifications or plugins. Six relevant source files are pinned, and each actual invocation repeats the capability assertion and accounting checks.",
     "No provider model identity attestation, no inference request, no package release approval."
-  ]
+  ],
+  "installed_evidence": "audits/resilience/2026-11-07-r5-runtime-capability.json"
 }
