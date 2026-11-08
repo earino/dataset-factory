@@ -4,12 +4,13 @@ Specification: [FACTORY-REWRITE.md](FACTORY-REWRITE.md).
 Goal tool confirmed **active** at kickoff 2026-11-08 11:07:00 UTC.
 Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 
-**Current status (17:42 UTC): incomplete, zero replacement publications.** Latest
-confirmed production is d357930 (17:30:21 UTC). The tested 05cd95e paid-response
-reuse fix is pushed with [green CI](https://github.com/earino/dataset-factory/actions/runs/42505943473)
-and deployment requested. CMS is in bounded terms-access repair; UCMR5 progressed
-past its first schema failure and now needs source-encoding repair. RCRA deferred
-after its allowed worker failures. The full clean-checkout suite passes 938 tests
+**Current status (17:53 UTC): incomplete, zero replacement publications.** Latest
+confirmed production is 286a6fa (17:47:09 UTC, including paid-response reuse and the
+five-failure allowance). UCMR5 build-5 succeeded: construction, full qualification,
+evaluation and packaging completed; all 33 package assets match staged hashes and
+the exact-artifact receipt passes. Its semantic review and public publication
+remain pending. CMS is in bounded terms-access repair. RCRA deferred after its
+then-configured worker failures. The full clean-checkout suite passes 938 tests
 (13 skipped); these do not establish the two-source acceptance criterion.
 
 ## Four-hour checkpoint — 2026-11-08 15:07 UTC
@@ -45,28 +46,27 @@ increases, source resurrection or validation exceptions are planned. If the crit
 remain unmet at 19:07, wind down new work safely, retain cleanup/resumable state and
 report the missing evidence and estimated additional effort.
 
-## Acceptance evidence — 2026-11-08 17:42 UTC
+## Acceptance evidence — 2026-11-08 17:53 UTC
 
 This is an interim assessment, not completion sign-off.
 
 | Criterion | Observed evidence | Remaining |
 | --- | --- | --- |
 | A1: one durable controller | Scheduled tick, exclusive-lock busy result, durable attempt/job identities across deployments; [cutover](../audits/rewrite/cutover/) and [first cycle](../audits/rewrite/first-cycle/). | Confirm the successful path also resumes from its recorded checkpoints. No forced-process-kill claim. |
-| A2: mechanical worker outcomes | Real failed workers were staged, collected and deleted without model follow-up; [worker reports](../audits/rewrite/new-source-outcomes/). | Observe a successful construction worker advancing automatically. |
+| A2: mechanical worker outcomes | Real failed workers were staged, collected and deleted without model follow-up. UCMR5 build-5 now has a successful staged result; [worker reports](../audits/rewrite/new-source-outcomes/). | Confirm successful-worker collection/cleanup and automatic stage advancement. |
 | A3: bounded inexpensive model | Recorded requested route performed real discovery and generated builders; exact prompts, responses and usage retained. | Write-only construction verified in the first-write-only evidence; successful semantic review remains. |
-| A4: two complete real sources | Thirteen sources entered the queue; STATS19 and RCRA reached full qualification and failed. CMS and UCMR5 remain in repair. | Two sources through public publication without manual state edits. Deployment replays alone do not establish this. |
+| A4: two complete real sources | UCMR5 passed full qualification/evaluation/packaging. STATS19 and RCRA failed qualification; CMS remains in repair. | UCMR5 semantic review/publication and a second materially different complete source, without manual state edits. |
 | A5: trustworthy consumable releases | Full-artifact checks rejected defective artifacts; package/consumer implementation tested in software. | Accepted reproducible releases, measured usefulness, and anonymous full-file verification on both platforms. |
 | A6: automatic recovery | Failed candidates defer/refill; durable staging recovered after provider absence; [controlled transient-fetch recovery](../audits/rewrite/live_fetch_recovery.py) exercised against a real publisher. | Complete successful recovery evidence alongside the end-to-end path; controlled injection is not an organic outage claim. |
 | A7: unattended production | Scheduled script-only ticks observed; three legacy launch/follow-up schedules paused; independent cleanup retained. | Retain final deployed configuration and unattended successful outcome. |
-| A8: shipped, checked, signed off | Implementation pushed through `05cd95e`, exact-commit CI green; Scout confirms `d357930` deployed at 17:30:21 UTC. Progress and raw evidence retained. | Confirm latest deployment and produce final criterion-by-criterion sign-off after the missing real outcomes. |
+| A8: shipped, checked, signed off | Implementation pushed through `286a6fa`, exact-commit CI green; Scout confirms it deployed at 17:47:09 UTC with max_attempts=5. Progress and raw evidence retained. | Produce final criterion-by-criterion sign-off after the missing real outcomes. |
 
 ## Current work
 
-- **Latest confirmed deployment:** `d357930` at 17:30:21 UTC; its baseline and
-  source-access corrections passed CI. `05cd95e` is queued for a free controller
-  boundary, preserving any paid in-flight work. Next: inspect ordinary CMS and
-  UCMR5 repair outcomes, then the first full qualification, semantic review and
-  publication receipts. Latest exported reservation snapshot is EUR 10.62/20.00
+- **Latest confirmed deployment:** `286a6fa` at 17:47:09 UTC; Scout confirmed
+  max_attempts=5 and the tick resumed at 17:48. UCMR5 build-5 succeeded afterward.
+  Next: confirm automatic collection/cleanup and semantic review, then inspect
+  publication/consumer receipts and CMS repair. Latest exported reservation snapshot is EUR 10.62/20.00
   at 17:30:37; it is not a live balance. Development-window tokens remain measured
   but excluded from the normal weekly ceiling. Historical observations follow.
 - **Earlier deployment (14:50:19 UTC):** Scout reports `05fab28` deployed and
@@ -919,6 +919,39 @@ and all artifact and semantic checks remain required. It does not reopen termina
 sources or alter their recorded reasons. This deliberately revises the earlier
 plan to keep the initial retry cap unchanged, based on observed progress through
 different failures. It does not promise that more retries will produce acceptance.
+
+### First successful full-artifact build: UCMR5 (17:53 UTC)
+
+Scout confirmed 286a6fa live at 17:47:09 UTC, with the tick resumed at 17:48 and
+max_attempts=5. The existing UCMR5 build-5 worker was preserved through rollout.
+The commit passed [CI](https://github.com/earino/dataset-factory/actions/runs/42506462575)
+and 26 focused controller/worker/engine tests. Its predecessor 05cd95e passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42505943473) and 938
+clean-checkout tests (13 skipped).
+
+UCMR5 build-5 succeeded in 161.0 seconds, exit 0, no OOM. Staging release 438414591
+and manifest 724725535 bind the compact evidence in `new-source-outcomes/ucmr5-build-5-*`.
+Qualification 1.6.1 reports 47 passing checks; all 21 source checks pass. The worker
+ran exact-artifact acceptance before and after evaluation, then packaged the result.
+Independently, the root checked all 33 package-asset digests/sizes against the staging
+inventory, collected only compact metadata, and ran the production
+`qualification_receipt.check(..., external_assets=True)` with no problems. The
+[binding receipt](../audits/rewrite/new-source-outcomes/ucmr5-build-5-binding-verification.json)
+records artifact `d80df819308eae1dd6e1dae2dbe88bc6a07568bf85af843efbb1e3a18a7b252e`
+and package `v-4bf5b4de3232149b`.
+
+Only after that exact-artifact check, the measured public-validation result is
+reported: 3,769 rows, baseline model AUC 0.77976 and Brier 0.06850, versus training
+prior AUC 0.5 and Brier 0.07663. This is retrospective research, not a holdout or
+historical forecasting score. The calendar/identity reference fell back for every
+validation row; the persistence reference used the training prior on 3,714 rows
+with absent history. These limitations prevent treating those controls as strong
+evidence of general headroom. Train/eval/holdout row counts are 3,874/3,769/2,430.
+
+Semantic review, successful-worker cleanup/advancement and public publication are
+not yet confirmed. Scout received the verified result through `/btw`, explicitly
+leaving these steps to the controller; no semantic approval or candidate edit was
+issued. Two complete public datasets remain required.
 
 ## Known findings relevant to implementation
 
