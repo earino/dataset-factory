@@ -42,8 +42,8 @@ RESUME STEPS (in order):
    corrected meanings in quality.task.features (existing format consumed
    by 6ac5f83), then full qualification, fresh semantic review, and
    publication gates - no manual approval shortcut.
-4. source-15+ resume discovery under the 7b77595 ordering (admitted
+3. source-15+ resume discovery under the 7b77595 ordering (admitted
    attempts first, then publication > review > construction >
    discovery, oldest-first). Deferred sources 1-12 require operator
    reopen decisions; rejected sources (5,7,8,10,14) stay closed.
-5. Cleanup sweep and budget accounting continue unchanged.
+4. Cleanup sweep and budget accounting continue unchanged.
