@@ -4,6 +4,37 @@ Specification: [FACTORY-REWRITE.md](FACTORY-REWRITE.md).
 Goal tool confirmed **active** at kickoff 2026-11-08 11:07:00 UTC.
 Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 
+## Four-hour checkpoint — 2026-11-08 15:07 UTC
+
+Reported to the operator at the agreed checkpoint; continuing without awaiting a
+reply. Goal remains active, with four hours until the 19:07 UTC deadline.
+
+The replacement is deployed and running again. Scout confirmed `d16deb5` deployed
+and the tick resumed at approximately 15:05 UTC. Automatic failed-worker handling,
+queue advancement, durable staging recovery and scheduled operation have real
+evidence. Old launch/follow-up production paths remain disabled, cleanup active.
+Both import and repair-context fixes passed 927 tests (13 skipped) in a clean
+checkout. Exact-commit CI passed for
+[`ddbdf59`](https://github.com/earino/dataset-factory/actions/runs/42492642515) and
+[`d16deb5`](https://github.com/earino/dataset-factory/actions/runs/42492795262).
+Scout's measured checkpoint export also passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42492568074).
+
+**Zero replacement datasets have completed the path.** Runtime integration defects
+consumed too much of the first half. STATS19 reached full-artifact qualification
+but failed; rejected bytes were not published. Sources 7 and 8 now lead the queue.
+Successful write-only construction, full qualification/evaluation, semantic review,
+publication and anonymous consumers remain on the critical path. The two-source
+acceptance criterion is unchanged; deployment replays do not substitute for it.
+
+Completion by the deadline remains possible, but is not yet a confident forecast.
+At 15:00:01 UTC, measured headroom was 1,233,486 inference tokens before admission
+stops and EUR 10.82 of worker reservation allowance. The remaining work stays
+focused on actual blockers in the deployed path. No additional projects, allowance
+increases, source resurrection or validation exceptions are planned. If the criteria
+remain unmet at 19:07, wind down new work safely, retain cleanup/resumable state and
+report the missing evidence and estimated additional effort.
+
 ## Acceptance evidence at the current deployment
 
 This is an interim assessment, not completion sign-off.
@@ -21,7 +52,7 @@ This is an interim assessment, not completion sign-off.
 
 ## Current work
 
-- **Latest deployment (14:50:19 UTC):** Scout reports `05fab28` deployed and
+- **Earlier deployment (14:50:19 UTC):** Scout reports `05fab28` deployed and
   the script-only tick resumed. Its [exact-commit CI passed](https://github.com/earino/dataset-factory/actions/runs/42491352932).
   The clean checkout passed 926 tests (13 skipped). No replacement dataset has
   passed all gates or been published. STATS19 reached full-artifact qualification
