@@ -15,9 +15,13 @@ evaluate-3) completed and its artifacts remain in
 
 Queue (post-cutoff): sources 1-12 terminal (deferred at attempt limits or
 rejected on terms evidence); source-13 UCMR at build attempt
-rw-2ce60e8ae8f7-build-8 behind the standing factory remediation hold
+rw-2ce60e8ae8f7-build-8 reporting the legacy remediation-hold text
 ("reopen only after R1-R4 acceptance and recorded reruns of the four
-blocked packages"); source-14 ClinicalTrials REJECTED (not repaired:
+blocked packages") - expected while pipeline_enabled=false, NOT a new
+prerequisite: factory/admission.py require() lines 44-54 bypass that
+legacy hold for recorded running build/publish attempts whenever
+pipeline.enabled(root) is true, and the replacement spec supersedes the
+legacy workflow; source-14 ClinicalTrials REJECTED (not repaired:
 access/renderability failure); source-15 at discover, unadmitted.
 
 Workers: none. Jobs ledger fully reconciled - every job record deleted,
@@ -29,11 +33,12 @@ approved, NOT published (operator instruction; full qualification +
 fresh semantic acceptance/publication remain unproven).
 
 RESUME STEPS (in order):
-1. Operator completes R1-R4 acceptance and the recorded reruns of the
-   four blocked packages to clear the remediation hold.
-2. Set pipeline_enabled=true in /opt/data/dataset-factory/config/local.json
+1. Set pipeline_enabled=true in /opt/data/dataset-factory/config/local.json
    (single flag; the 6ac5f83+ tick resumes admissions automatically).
-3. UCMR source-13 build-8 proceeds: fresh corrected bundle writing the
+   R1-R4 operator acceptance is NOT a replacement resume requirement:
+   with the pipeline enabled, admission.require() bypasses the legacy
+   hold for recorded running attempts, so build-8 proceeds directly.
+2. UCMR source-13 build-8 proceeds: fresh corrected bundle writing the
    corrected meanings in quality.task.features (existing format consumed
    by 6ac5f83), then full qualification, fresh semantic review, and
    publication gates - no manual approval shortcut.
