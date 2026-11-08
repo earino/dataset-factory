@@ -346,6 +346,29 @@ passed 927 tests (13 skipped). Scout's failure export passed
 The preceding status commit `7f02804` also passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42492253325).
 
+### Repair context and remaining allowance (15:00 UTC observation)
+
+Scout's checkpoint export is in `audits/rewrite/checkpoint-1507/`; its contents
+were measured at 15:00:01 UTC, not at the later checkpoint name. Sources 1–4 and
+6 are deferred; source 5 is rejected on unavailable publisher terms; source 7
+has completed discovery and source 8 is in discovery. The tick paused at
+14:59:57 UTC for the import repair; zero provider servers remain and cleanup
+stays active.
+
+Measured inference usage is 36,766,514/40,000,000 rolling-week tokens, with
+1,233,486 before the configured 0.95 admission stop, and 131/200 sessions.
+Worker reservations are EUR 9.18/20.00, leaving EUR 10.82. These are configured
+allowances, not a claim about actual subscription spend. No limits were raised.
+
+Before the import crash, STATS19 build-4 also hit the 64 KiB prompt-size refusal.
+The earlier statement that the two then-existing proposals fit was true of those
+proposals, not a guarantee about subsequent repairs. The adapter's input-size
+bound is now 128 KiB to accommodate the actual builder, semantic descriptor,
+source evidence and bounded diagnostics together. This changes the adapter's
+request-size check only; turn/time limits, inference admission, worker budgets,
+artifact qualification and publication requirements remain unchanged. It does
+not reopen deferred attempts. Focused model-task tests pass.
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;

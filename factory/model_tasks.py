@@ -99,8 +99,10 @@ class ModelTasks:
     def run(self, task_id, prompt, *, research=False, construction=False):
         from .common import identifier
         identifier(task_id)
-        if len(prompt.encode()) > 64 * 1024:
-            raise TaskFailure('Task context exceeds 64 KiB')
+        # Repairs include the accepted-size builder, semantic descriptor and
+        # source evidence. The former 64 KiB bound rejected a real STATS19 repair.
+        if len(prompt.encode()) > 128 * 1024:
+            raise TaskFailure('Task context exceeds 128 KiB')
         directory = self.root / '.factory' / 'model-tasks' / task_id
         directory.mkdir(parents=True, exist_ok=True)
         response_path = directory / 'response.json'
