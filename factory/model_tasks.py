@@ -96,7 +96,7 @@ class ModelTasks:
         self.hermes_root = Path(hermes_root)
         self.db = Path(hermes_home) / 'state.db'
 
-    def run(self, task_id, prompt, *, research=False):
+    def run(self, task_id, prompt, *, research=False, construction=False):
         from .common import identifier
         identifier(task_id)
         if len(prompt.encode()) > 64 * 1024:
@@ -172,6 +172,7 @@ class ModelTasks:
                                 failure['accounting'] = str(accounting)
                             write_json(directory / 'failure.json', failure)
                             raise TaskFailure('Model task exceeded its wall-clock limit') from exc
+                proposal = None
                 if result.returncode:
                     # Preserve the startup failure, not just its missing session.
                     # Raw provider stderr is never persisted.
@@ -184,10 +185,23 @@ class ModelTasks:
                         write_json(directory / 'usage.json', usage(self.db, before, runtime_session(result.stderr)))
                     except TaskFailure as exc:
                         failure['accounting'] = str(exc)
+                    # Hermes can return exit 1 at its iteration cap after a
+                    # complete code proposal. A proposal is not artifact acceptance:
+                    # require its construction contract and the measured route,
+                    # then let the worker qualification and semantic review decide.
+                    if result.returncode == 1 and construction and 'accounting' not in failure:
+                        from .construction import validate
+                        try:
+                            proposal = validate(parse_response(w.strip_footer(result.stdout)))
+                            failure['usable_construction_proposal'] = True
+                        except (FactoryError, ValueError, TypeError, KeyError):
+                            pass
                     write_json(directory / 'failure.json', failure)
-                    raise TaskFailure('Model invocation failed: ' + json.dumps(failure))
+                    if proposal is None:
+                        raise TaskFailure('Model invocation failed: ' + json.dumps(failure))
                 measured = usage(self.db, before, runtime_session(result.stderr))
                 measured['elapsed_seconds'] = round(time.monotonic() - started, 3)
+                measured['completion_exit_code'] = result.returncode
                 write_json(directory / 'usage.json', measured)
                 main_tasks = [task for task in measured['tasks'] if task['task'] in (None, '')]
                 if not main_tasks or any(task['model'] != self.policy['model'] for task in main_tasks):
@@ -195,7 +209,7 @@ class ModelTasks:
                 response_text = w.strip_footer(result.stdout)
                 if len(response_text.encode()) < 256 * 1024:
                     (directory / 'response.txt').write_text(response_text)
-                value = parse_response(response_text)
+                value = proposal if proposal is not None else parse_response(response_text)
                 write_json(response_path, value)
                 return value
         except w.SessionBusy as exc:

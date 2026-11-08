@@ -38,6 +38,11 @@ runs showed that two turns could be exhausted on documentation reads before any
 code response. Licence excerpts are matched against captured publisher bytes,
 normalizing HTML spacing and honoring explicit omissions only when all verbatim
 spans occur in order. Semantic applicability remains part of source review.
+An exit-1 runtime wrap-up may supply usable construction code. Retain it only
+when its JSON/AST/descriptor contract and measured requested-model route pass;
+record the nonzero exit and still require every artifact check and semantic
+review. This is proposal reuse, never publication acceptance. Nonzero research
+or review calls remain failures.
 
 A small SQLite store owns operational candidate/attempt/job/artifact state. Git
 holds code, source evidence and compact exported results, not live transactional

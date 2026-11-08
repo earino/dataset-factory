@@ -19,6 +19,16 @@ Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
   STATS19's quote rejection was reproduced as a formatting defect against the
   actual publisher page and fixed without accepting invented or reordered text.
   HURDAT2's missing target column is an ordinary builder repair, not a gate waiver.
+- **13:49 update:** six-turn/quote fix `d330178` deployed and the tick resumed.
+  HURDAT2 build-4, already in flight under the old cap, exhausted the task allowance
+  and became deferred. Its measured usage and original failure are preserved under
+  `audits/rewrite/hurdat2-build-4/`. Earlier build-2's complete 33,567-character
+  construction response passes the construction descriptor/AST contract locally.
+  The adapter now retains a valid construction proposal even if Hermes exits 1
+  after its iteration-limit wrap-up: measured requested-model usage and the full
+  construction contract are required, and all worker and semantic gates still
+  follow. Research/review responses do not get this exception. No artifact is
+  accepted on the basis of process output alone.
 - Base: `1e6aa8207a5f39b0b30d473fe30081b23764a0ff` (latest Scout failure closeout).
 - Branch: `codex/factory-rewrite`; worktree `/private/tmp/factory-rewrite-worktree`.
 - Specification committed at `8eafdd924432cd7f7be95eeb3e16230389dddac4`;
@@ -184,6 +194,9 @@ Turn/quote fixes passed 920 clean-clone tests (13 skipped). Original worker
 manifests and digest-verified failures are retained in
 `audits/rewrite/third-worker-outcomes/`; the local real-page quote check is a
 transport/format diagnostic, not dataset qualification or publication evidence.
+`d330178` passed [CI](https://github.com/earino/dataset-factory/actions/runs/42486489329).
+Scout's HURDAT2 build-4 export passed [CI](https://github.com/earino/dataset-factory/actions/runs/42486829140).
+Construction-proposal retention passed 921 clean-clone tests (13 skipped).
 
 ## Known findings relevant to implementation
 

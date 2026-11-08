@@ -2,6 +2,7 @@ from contextlib import closing, nullcontext
 from pathlib import Path
 import sqlite3
 import subprocess
+import json
 import tempfile
 import unittest
 from unittest.mock import patch, Mock
@@ -10,6 +11,40 @@ from factory.model_tasks import ModelTasks, TaskFailure, parse_response, usage, 
 
 
 class ModelTaskTests(unittest.TestCase):
+    def test_exit_one_retains_only_a_complete_construction_proposal(self):
+        from factory.common import write_json, read_json
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_json(root / 'config/research-budget.json', {'session_max_turns': 6, 'session_max_minutes': 5})
+            with closing(sqlite3.connect(root / 'state.db')) as db:
+                db.execute('CREATE TABLE sessions(id,source)')
+            w = Mock(); w.SessionBusy = RuntimeError
+            w.admission_lock.return_value = nullcontext(42)
+            w.session_marker.return_value = nullcontext()
+            w.run_gate.return_value = (True, '', '')
+            w.strip_footer.side_effect = lambda value: value
+            quality = read_json(Path(__file__).resolve().parents[1] /
+                                'skills/dataset-qualification/fixtures/corrected/quality.json')
+            proposal = {'build_py': 'def build(output, cache):\n    pass\n', 'references': {}, 'quality': quality}
+            measured = {'tasks': [{'task': '', 'model': 'requested'}]}
+            model = ModelTasks(root, {'model': 'requested', 'research_toolset': 'web', 'code_turns': 6,
+                                     'task_seconds': 300}, hermes_home=root)
+            with patch('factory.model_tasks.wrapper', return_value=w), \
+                    patch('factory.model_tasks.subprocess.run') as preflight, \
+                    patch('factory.model_tasks.usage', return_value=measured):
+                preflight.return_value.returncode = 0
+                w.run_agent.return_value = subprocess.CompletedProcess('hermes', 1, json.dumps(proposal), '')
+                self.assertEqual(proposal, model.run('produced', 'builder', construction=True))
+                # The same exit code and JSON are not enough to accept a review.
+                with self.assertRaises(TaskFailure): model.run('review', 'review prompt')
+                w.run_agent.return_value = subprocess.CompletedProcess('hermes', 1, '{"error":"gave up"}', '')
+                with self.assertRaises(TaskFailure): model.run('failed', 'builder', construction=True)
+            folder = root / '.factory/model-tasks/produced'
+            self.assertTrue(read_json(folder / 'failure.json')['usable_construction_proposal'])
+            self.assertEqual(1, read_json(folder / 'usage.json')['completion_exit_code'])
+            self.assertTrue((folder / 'response.json').is_file())
+            self.assertFalse((root / '.factory/model-tasks/failed/response.json').exists())
+
     def test_timeout_retains_actual_partial_usage_and_diagnostic(self):
         from factory.common import write_json, read_json
         with tempfile.TemporaryDirectory() as tmp:
