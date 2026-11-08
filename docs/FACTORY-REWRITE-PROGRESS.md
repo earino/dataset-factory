@@ -1372,3 +1372,43 @@ source URL preservation and invalid repair refusal. All 17 engine tests pass loc
 Scout paused the tick at a safe boundary at 20:19:51, retaining cleanup. UCMR
 build-9 has not started; source-15's already-running construction is allowed to
 finish and preserve its result. The tested correction will deploy before resuming.
+
+## UCMR accepted; publication started — 2026-11-08 20:43 UTC
+
+`fdaf39b` passed 948 tests (13 skipped) in a clean checkout and
+[exact-commit CI](https://github.com/earino/dataset-factory/actions/runs/42519807541),
+and Scout confirmed its deployment with the tick resumed at approximately 20:25.
+Build-9 completed in 63.7 seconds, exit 0/no OOM, staging release 438502804 /
+manifest asset 725114902. Its full gate 1.6.1 report passes, all 33 manifest assets
+match staging and the exact-artifact receipt verifies. The package is
+`v-4a630108a6e75a6b`, artifact
+`1bf9c8af47a3cd62f65faa7f22efd3fd66ddc1f8ba0fbb0762b391cf6fb04a10`.
+[Binding verification](../audits/rewrite/new-source-outcomes/ucmr5-build-9-binding-verification.json).
+
+The new code counts blank collection dates (observed count zero) and the source
+recipe now describes the exact event-key join. All three CSV hashes are unchanged
+from build-8. New code/metadata/evidence were packaged and fully checked; frozen
+old releases were not edited. The repair model used 132.5 seconds, two calls,
+26,890 input and 26,824 output tokens, zero tools.
+
+**Evidence correction:** Scout's build-9 export note says construction_notes was
+omitted/inherited. The exported construction-response.json actually contains all
+five fields, including new construction_notes describing these two repairs.
+It also returns build_py and references. Therefore this run proves recipe-text
+propagation, not omitted-field reuse in production. Omitted-field reuse is covered
+by the real-proposal driver test only; do not infer a live efficiency result.
+
+[Review 5](../audits/rewrite/ucmr-evaluate5-acceptance/response.json) accepted the
+artifact with zero findings at 20:41:20 UTC (489.2 seconds, six calls, 69,977 input /
+61,933 output tokens, four web results). Both prior findings were confirmed fixed;
+retrospective timing, censoring and population limitations remain explicit.
+The acceptance export [CI passed](https://github.com/earino/dataset-factory/actions/runs/42521441343),
+as did the [repair/state export](https://github.com/earino/dataset-factory/actions/runs/42521539611).
+The controller advanced UCMR to publish; publish-1 was provisioning at 20:42:39.
+No public-consumer success is claimed yet.
+
+Source-15 is National Bridge Inventory: prediction of a Fair-condition bridge
+being rated Poor at its next routine inspection, a materially different domain.
+Its paid response is retained for ordinary repair of a feature-description naming
+failure. The exact proposal/failure is requested before deciding whether any code
+change is justified. No candidate-state reset or new discovery campaign was made.
