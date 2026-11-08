@@ -326,6 +326,26 @@ The counter and diagnostic fixes passed 926 clean-checkout tests (13 skipped).
 Write-only adapter `61b7da1` passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42490660352).
 
+### Write-task startup correction (14:59 UTC)
+
+Both queued write tasks crashed before creating a model session: direct script
+execution put `factory/` on Python's import path, so our `factory/http.py` shadowed
+the standard-library `http` package imported by Hermes. Exact startup failures
+are preserved in `audits/rewrite/write-task-import-shadow/`. Scout reports sources
+4 and 6 deferred after the existing startup-failure allowance; no further state
+reopening was requested. New work is paused for the deployment correction while
+independent cleanup remains active.
+
+The helper now removes only its own script directory from the import path before
+loading installed Hermes. A subprocess test executes the actual script from a
+neutral working directory and loads a CLI module importing `http.client`: it
+reproduced the exact failure before the fix and passes after it. This test proves
+the import correction, not inference or dataset acceptance. The clean checkout
+passed 927 tests (13 skipped). Scout's failure export passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42492433726).
+The preceding status commit `7f02804` also passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42492253325).
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;

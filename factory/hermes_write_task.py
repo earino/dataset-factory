@@ -15,6 +15,10 @@ def run(args):
     os.environ['HERMES_IGNORE_RULES'] = '1'
     os.environ['HERMES_SESSION_SOURCE'] = 'oneshot'
     os.environ['HERMES_SESSION_SOURCE_EXPLICIT'] = '1'
+    # Direct script execution adds factory/ to the import path. Its http.py
+    # must not shadow the stdlib package used by Hermes and its HTTP clients.
+    script_directory = Path(__file__).resolve().parent
+    sys.path[:] = [entry for entry in sys.path if Path(entry).resolve() != script_directory]
     sys.path.insert(0, str(args.hermes_root))
     from cli import HermesCLI, _install_single_query_signal_handlers, _run_single_query_mode, _run_cleanup
     client = HermesCLI(model=args.model, provider=args.provider, toolsets=[],
