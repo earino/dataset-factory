@@ -33,6 +33,11 @@ Task failures and completed construction-worker failures each have the configure
 three-failure allowance. A model startup failure does not consume a worker repair;
 attempt identities and all failure evidence remain durable. Resource and spending
 limits still apply across both categories.
+Construction has six model turns within the same five-minute task bound: live
+runs showed that two turns could be exhausted on documentation reads before any
+code response. Licence excerpts are matched against captured publisher bytes,
+normalizing HTML spacing and honoring explicit omissions only when all verbatim
+spans occur in order. Semantic applicability remains part of source review.
 
 A small SQLite store owns operational candidate/attempt/job/artifact state. Git
 holds code, source evidence and compact exported results, not live transactional

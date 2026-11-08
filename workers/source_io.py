@@ -4,6 +4,7 @@ import html
 from html.parser import HTMLParser
 import json
 from pathlib import Path
+import re
 import time
 import urllib.error
 import urllib.parse
@@ -14,6 +15,28 @@ MAX_BYTES = 1024 * 1024 * 1024
 
 class TermsEvidenceError(ValueError):
     pass
+
+
+def excerpt_match(text, excerpt):
+    # Inline HTML nodes can put whitespace before punctuation during extraction.
+    # Explicit ellipses denote omissions, not invented words: every remaining
+    # verbatim span must occur in order in the preserved publisher document.
+    def normalize(value):
+        value = ' '.join(html.unescape(value).split())
+        return re.sub(r'\s+([,;:.!?])', r'\1', value)
+    text, excerpt = normalize(text), normalize(excerpt)
+    if excerpt and excerpt in text:
+        return 'contiguous'
+    spans = [span.strip() for span in re.split(r'\.{3}|…', excerpt) if span.strip()]
+    if len(spans) < 2:
+        return None
+    offset = 0
+    for span in spans:
+        found = text.find(span, offset)
+        if found < 0:
+            return None
+        offset = found + len(span)
+    return 'ordered-verbatim-spans-with-explicit-omissions'
 
 
 def capture_terms(source, cache):
@@ -34,13 +57,12 @@ def capture_terms(source, cache):
                 def handle_data(self, data): self.parts.append(data)
             parser = Text(); parser.feed(raw.decode('utf-8', errors='replace'))
             text = ' '.join(parser.parts)
-        normalize = lambda value: ' '.join(html.unescape(value).split())
-        excerpt = normalize(source['terms_excerpt'])
-        if not excerpt or excerpt not in normalize(text):
+        match = excerpt_match(text, source['terms_excerpt'])
+        if not match:
             raise TermsEvidenceError('The claimed terms excerpt is absent from the captured publisher document')
         return {'ok': True, 'terms_url': source['terms_url'], 'terms_sha256': sha(terms),
                 'documentation_url': source['documentation_url'], 'documentation_sha256': sha(documentation),
-                'quoted_excerpt': source['terms_excerpt'], 'excerpt_found': True,
+                'quoted_excerpt': source['terms_excerpt'], 'excerpt_found': True, 'excerpt_match': match,
                 'scope': 'Captured publisher bytes and quote presence; semantic applicability reviewed separately'}
     except TermsEvidenceError:
         raise

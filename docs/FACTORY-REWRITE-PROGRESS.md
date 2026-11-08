@@ -11,6 +11,14 @@ Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
   source 4 at discovery. One failed real worker collected and cleaned; zero
   accepted or published replacement datasets. Two complete public runs remain
   the critical path. Earlier entries below retain the implementation history.
+- **13:40 update:** deployed `0ddaeae` at 13:31 UTC. Three real construction
+  workers have now produced durable failure reports (NID, STATS19, HURDAT2);
+  none passed qualification. Two construction model failures were caused by
+  the two-turn allowance being consumed by documentation reads. It is now six
+  turns, still bounded to 300 seconds and the existing global allowances.
+  STATS19's quote rejection was reproduced as a formatting defect against the
+  actual publisher page and fixed without accepting invented or reordered text.
+  HURDAT2's missing target column is an ordinary builder repair, not a gate waiver.
 - Base: `1e6aa8207a5f39b0b30d473fe30081b23764a0ff` (latest Scout failure closeout).
 - Branch: `codex/factory-rewrite`; worktree `/private/tmp/factory-rewrite-worktree`.
 - Specification committed at `8eafdd924432cd7f7be95eeb3e16230389dddac4`;
@@ -168,6 +176,14 @@ bounded redacted failure diagnostics; clean clone passed 919 tests (13 skipped).
 Allowance at 13:14 UTC: EUR 11.78 worker reservation remaining; measured rolling
 inference usage 35.76M/40M tokens (stop fraction 0.95 still applies). Dollar spend
 remains unknown; no spending limits were changed.
+
+`0ddaeae` passed [CI](https://github.com/earino/dataset-factory/actions/runs/42484303994).
+Second-round Scout exports passed [CI](https://github.com/earino/dataset-factory/actions/runs/42485472885)
+and [CI](https://github.com/earino/dataset-factory/actions/runs/42485810110).
+Turn/quote fixes passed 920 clean-clone tests (13 skipped). Original worker
+manifests and digest-verified failures are retained in
+`audits/rewrite/third-worker-outcomes/`; the local real-page quote check is a
+transport/format diagnostic, not dataset qualification or publication evidence.
 
 ## Known findings relevant to implementation
 

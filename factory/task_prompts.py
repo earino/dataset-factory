@@ -35,7 +35,7 @@ Return ONLY a JSON object:
  "title": "descriptive title",
  "source": {"publisher": "...", "urls": ["actual download URL"],
    "documentation_url": "...", "terms_url": "...", "license": "upstream designation",
-   "terms_excerpt": "short exact supporting text", "attribution": "verbatim required credit",
+   "terms_excerpt": "one short contiguous verbatim supporting excerpt, without paraphrase or ellipses", "attribution": "verbatim required credit",
    "citation": "publisher suggested citation or empty if none", "redistribution": true},
  "task": {"question": "...", "decision_user": "...", "prediction_time": "...",
    "target": "precise binary label rule", "outcome_horizon": "...",
@@ -75,6 +75,8 @@ def construction(source, quality_example, failure=None):
     failure = json.dumps(failure, sort_keys=True)[:12000] if failure is not None else None
     return '''Write a small complete Python builder for this real source and frozen task.
 You may use web_search/web_extract to check source field documentation if needed.
+The source research is supplied below. Batch necessary documentation reads and
+leave time for the complete construction response; do not repeat source discovery.
 Return ONLY JSON {"build_py":"complete Python source", "quality":{...},
 "references":{"persistence_column":null,"persistence_direction":1,"entity_columns":[]},
 "construction_notes":"source interpretation and checks"}.

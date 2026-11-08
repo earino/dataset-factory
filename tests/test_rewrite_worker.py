@@ -43,6 +43,14 @@ class RewriteWorkerTests(unittest.TestCase):
         self.assertEqual(1, executor.operation_status({'status': 'failed'})['exit_code'])
         self.assertEqual(137, executor.operation_status({'status': 'failed', 'exit_code': 137})['exit_code'])
 
+    def test_terms_excerpts_allow_html_spacing_and_explicit_omissions_only(self):
+        text = 'You may copy , publish and adapt the Information ; You must acknowledge the source.'
+        quote = 'You may copy, publish ... You must acknowledge the source.'
+        self.assertEqual('ordered-verbatim-spans-with-explicit-omissions', source_io.excerpt_match(text, quote))
+        self.assertIsNone(source_io.excerpt_match(text, quote.replace('may', 'own')))
+        self.assertIsNone(source_io.excerpt_match(text, 'You must acknowledge the source. ... You may copy'))
+        self.assertIsNone(source_io.excerpt_match(text, '...'))
+
     def test_source_transport_retry_preserves_exact_bytes_and_replay(self):
         with tempfile.TemporaryDirectory() as tmp:
             with patch.object(source_io.urllib.request, 'urlopen', side_effect=[

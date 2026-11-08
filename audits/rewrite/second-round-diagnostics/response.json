@@ -1,0 +1,189 @@
+{
+  "verdict": "ready",
+  "reason": "The DfT STATS19 open collision extract is a single directly downloadable CSV (no account, no form, 19-20 MB per year, 97.7 MB for the bundled five-year file) with a published code list, an explicit UK Open Government Licence v3.0 that permits redistribution, no personal identifiers in the open fields, and one row per reported personal-injury collision in Great Britain. Because the prediction target is a post-assessment severity outcome while the candidate inputs are road-environment and timing descriptors recorded for the same collision, chronological year splits are clean and no cross-row or lagged feature is needed; no other source checked (Toronto permits, Chicago permits) combined this level of field documentation, licensing clarity and label cleanliness at comparable download cost.",
+  "dataset_id": "stats19-collision-ksi",
+  "title": "Will a reported road collision in Great Britain involve a killed or seriously injured casualty? Predicting collision severity from road environment and timing at the scene",
+  "source": {
+    "publisher": "UK Department for Transport (Road safety statistics, STATS19)",
+    "urls": [
+      "https://data.dft.gov.uk/road-accidents-safety-data/dft-road-casualty-statistics-collision-last-5-years.csv",
+      "https://data.dft.gov.uk/road-accidents-safety-data/dft-road-casualty-statistics-collision-2025.csv",
+      "https://data.dft.gov.uk/road-accidents-safety-data/dft-road-casualty-statistics-collision-2024.csv",
+      "https://data.dft.gov.uk/road-accidents-safety-data/dft-road-casualty-statistics-collision-2023.csv"
+    ],
+    "documentation_url": "https://www.gov.uk/government/statistical-data-sets/road-safety-open-data",
+    "terms_url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+    "license": "UK Open Government Licence v3.0 (OGL)",
+    "terms_excerpt": "You are free to: copy, publish, distribute and transmit the Information; adapt the Information; exploit the Information commercially and non-commercially ... You must ... acknowledge the source of the Information ... If the Information Provider does not provide a specific attribution statement, you must use the following: Contains public sector information licensed under the Open Government Licence v3.0.",
+    "attribution": "Contains public sector information licensed under the Open Government Licence v3.0. Source: Department for Transport, Road Safety Open Data (STATS19), https://www.gov.uk/government/statistical-data-sets/road-safety-open-data",
+    "citation": "",
+    "redistribution": true
+  },
+  "task": {
+    "question": "Given a personal-injury collision already reported to police in Great Britain, will at least one person involved be killed or seriously injured (KSI), rather than slightly injured?",
+    "decision_user": "A road safety analyst or police collision-recording supervisor deciding which reported collisions to flag for specialist investigation and which road-environment configurations (speed limit, lighting, road class, rurality) to prioritise for engineering treatment.",
+    "prediction_time": "At the moment the collision circumstances are recorded at/after the scene and before casualty severity has been finalised; every input is a property of the road environment or of the timing of the collision, none is an injury assessment.",
+    "target": "collision_severity == 1 (Fatal) or 2 (Serious) -> 1; collision_severity == 3 (Slight) -> 0. Rows with missing or out-of-range severity are dropped, never imputed.",
+    "outcome_horizon": "Final recorded severity for that collision in the STATS19 record (severity may be revised after the event where injury-based reporting is used; the label is the severity in the published final annual file).",
+    "features": [
+      {
+        "name": "speed_limit",
+        "meaning": "Posted speed limit at the collision location in mph",
+        "availability": "Static road attribute in force at the time; recorded on the STATS19 form",
+        "evidence_url": "https://docs.ropensci.org/stats19/articles/stats19.html"
+      },
+      {
+        "name": "light_conditions",
+        "meaning": "Daylight / darkness-lit / darkness-unlit at the time of the collision",
+        "availability": "Pre-existing condition at the moment of the collision",
+        "evidence_url": "https://docs.ropensci.org/stats19/articles/stats19.html"
+      },
+      {
+        "name": "weather_conditions",
+        "meaning": "Weather at the time (fine, rain, snow, fog, etc.)",
+        "availability": "Pre-existing condition at the moment of the collision",
+        "evidence_url": "https://docs.ropensci.org/stats19/articles/stats19.html"
+      },
+      {
+        "name": "road_surface_conditions",
+        "meaning": "Dry / wet / snow / ice surface state",
+        "availability": "Pre-existing condition at the moment of the collision",
+        "evidence_url": "https://docs.ropensci.org/stats19/articles/stats19.html"
+      },
+      {
+        "name": "special_conditions_at_site",
+        "meaning": "Roadworks, temporary signals, mud, etc. present at the site",
+        "availability": "Pre-existing site condition",
+        "evidence_url": "https://docs.ropensci.org/stats19/articles/stats19.html"
+      },
+      {
+        "name": "first_road_class",
+        "meaning": "Motorway / A / B / C / unclassified class of the road",
+        "availability": "Static road classification",
+        "evidence_url": "https://docs.ropensci.org/stats19/articles/stats19.html"
+      },
+      {
+        "name": "road_type",
+        "meaning": "Single carriageway, dual carriageway, one-way, roundabout, slip road",
+        "availability": "Static road layout",
+        "evidence_url": "https://docs.ropensci.org/stats19/articles/stats19.html"
+      },
+      {
+        "name": "urban_or_rural_area",
+        "meaning": "Whether the collision location is classified urban or rural",
+        "availability": "Static area classification",
+        "evidence_url": "https://docs.ropensci.org/stats19/articles/stats19.html"
+      },
+      {
+        "name": "trunk_road_flag",
+        "meaning": "Whether the road is part of the strategic trunk network",
+        "availability": "Static road attribute",
+        "evidence_url": "https://docs.ropensci.org/stats19/articles/stats19.html"
+      },
+      {
+        "name": "police_force",
+        "meaning": "Police force area that recorded the collision (code list in the DfT guide)",
+        "availability": "Known when the collision is recorded; retained as a control for recording practice",
+        "evidence_url": "https://assets.publishing.service.gov.uk/media/6a63900b2dc18ebe4c3b2bc8/dft-road-casualty-statistics-road-safety-open-dataset-data-guide-2025.xlsx"
+      },
+      {
+        "name": "local_authority_ons_district",
+        "meaning": "ONS district code of the collision location",
+        "availability": "Static geography code on the record",
+        "evidence_url": "https://docs.ropensci.org/stats19/articles/stats19.html"
+      },
+      {
+        "name": "hour_of_day / day_of_week / month",
+        "meaning": "Derived from the record's date and time fields",
+        "availability": "Known at the moment of the collision",
+        "evidence_url": "https://docs.ropensci.org/stats19/articles/stats19.html"
+      }
+    ],
+    "population": "All collisions in the DfT collision extract with collision_year in 2021-2025, a valid date and time, and a non-missing collision_severity code in {1,2,3}. Eligibility uses only fields present on the record itself; no filtering on downstream outcome, on casualty rows, or on the presence of other rows. Restriction to 2021-2025 is fixed before any modelling and is driven by the publication vintage, not by observed performance.",
+    "split_policy": "Fixed chronological boundaries: train 2021-01-01 to 2023-12-31, eval 2024-01-01 to 2024-12-31, holdout 2025-01-01 to 2025-12-31. No embargo is required because every feature is same-row and contemporaneous (no lagged, rolling, cumulative or cross-collision features); the split is asserted disjoint at the date level and each collision appears exactly once (key = collision_index, cross-checked with collision_year + collision_ref_no). Boundaries are frozen before any metric is computed.",
+    "usefulness": "The label is a casualty-severity assessment made after the event, while the inputs are the road environment and timing known at the scene, so the task is not a field copy: a model must combine speed limit, lighting, rurality, road class and time-of-day to beat a strong ~75% 'all slight' majority. It has an operational reading (which reported collisions warrant specialist investigation) and an engineering reading (which environment configurations are associated with severe outcomes), and it is deliberately harder than models that are allowed to use casualty counts or vehicle counts.",
+    "simple_references": "Majority class (predict Slight for every collision, ~75% accuracy, AUC 0.5); calendar-only model (month, day of week, hour); identity/geography-only model (police force and local authority district frequency encoding); single-variable rule speed_limit >= 50 mph. These are the controls the release must be compared against before any claim of signal."
+  },
+  "evidence": [
+    {
+      "url": "https://www.gov.uk/government/statistical-data-sets/road-safety-open-data",
+      "claim": "Publisher page describing the record-level collision/vehicle/casualty files and stating only non-sensitive fields are published.",
+      "quote": "Record level files providing data on personal injury road collisions in Great Britain from 1979, the vehicles involved and the consequential casualties."
+    },
+    {
+      "url": "https://www.gov.uk/government/statistical-data-sets/road-safety-open-data",
+      "claim": "Open files exclude sensitive fields such as contributory factors, which are only available on request.",
+      "quote": "This data contains all the non-sensitive fields that can be made public."
+    },
+    {
+      "url": "https://www.gov.uk/government/statistical-data-sets/road-safety-open-data",
+      "claim": "The exact download URLs and sizes used in the access recipe exist and are published by DfT.",
+      "quote": "Road Safety Data - Collisions - last 5 years (CSV, 97.7MB)"
+    },
+    {
+      "url": "https://www.gov.uk/government/statistical-data-sets/road-safety-open-data",
+      "claim": "Per-year files are separately published, enabling the fixed year boundaries.",
+      "quote": "Road Safety Data - Collisions - 2023 (CSV, 19.8MB)"
+    },
+    {
+      "url": "https://www.data.gov.uk/dataset/cb7ae6f0-4be6-4935-9277-47e5ce24a11f/road-accidents-safety-data",
+      "claim": "The catalogue entry designates the upstream licence as OGL.",
+      "quote": "Licence UK Open Government Licence (OGL)"
+    },
+    {
+      "url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "claim": "OGL v3.0 permits redistribution and requires attribution; supplies the default attribution wording.",
+      "quote": "The Licensor grants you a worldwide, royalty-free, perpetual, non-exclusive licence to use the Information subject to the conditions below."
+    },
+    {
+      "url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "claim": "Exact default attribution statement to reproduce.",
+      "quote": "Contains public sector information licensed under the Open Government Licence v3.0."
+    },
+    {
+      "url": "https://assets.publishing.service.gov.uk/media/6a63900b2dc18ebe4c3b2bc8/dft-road-casualty-statistics-road-safety-open-dataset-data-guide-2025.xlsx",
+      "claim": "The DfT code list fixes the severity coding used to build the binary label.",
+      "quote": "collision | collision_severity | 1 | Fatal || collision | collision_severity | 2 | Serious || collision | collision_severity | 3 | Slight"
+    },
+    {
+      "url": "https://assets.publishing.service.gov.uk/media/6a63900b2dc18ebe4c3b2bc8/dft-road-casualty-statistics-road-safety-open-dataset-data-guide-2025.xlsx",
+      "claim": "Collision files carry a unique per-collision key usable for de-duplication.",
+      "quote": "unique value for each collision. The collision_index combines the collision_year and collision_ref_no to form a unique ID."
+    },
+    {
+      "url": "https://docs.ropensci.org/stats19/articles/stats19.html",
+      "claim": "Documented collision-table schema confirming the field names used as features and the raw-integer coding.",
+      "quote": "\"collision_severity\" ... \"number_of_vehicles\" ... \"number_of_casualties\" ... \"speed_limit\" ... \"light_conditions\" ... \"weather_conditions\" ... \"road_surface_conditions\" ... \"special_conditions_at_site\" ... \"urban_or_rural_area\""
+    },
+    {
+      "url": "https://docs.ropensci.org/stats19/articles/stats19.html",
+      "claim": "Observed per-year scale of the collision extract, used for the size estimate.",
+      "quote": "The dataset contains 38 columns (variables) for 104,258 crashes."
+    },
+    {
+      "url": "https://docs.ropensci.org/stats19/articles/stats19.html",
+      "claim": "Independent confirmation that the data are OGL and that the licence must be linked.",
+      "quote": "Data provided under OGL v3.0. Cite the source and link to: www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+    },
+    {
+      "url": "https://www.gov.uk/guidance/road-accident-and-safety-statistics-guidance",
+      "claim": "Provenance of the records: police-recorded STATS19 returns, with sensitive fields withheld from open publication.",
+      "quote": "The road casualty statistics are based on data reported by police using the STATS19 data collection system."
+    }
+  ],
+  "construction": {
+    "format": "CSV, comma separated, one row per collision, coded integer values, no header quoting complications; date as DD/MM/YYYY and time as HH:MM per the data guide.",
+    "access_recipe": "Download the bundled file https://data.dft.gov.uk/road-accidents-safety-data/dft-road-casualty-statistics-collision-last-5-years.csv (97.7 MB) with a plain HTTPS GET, or the per-year files (collision-2021.csv ... collision-2025.csv). Read with pandas.read_csv(dtype=str, keep_default_na=False) so codes such as -1 and '99' are not coerced; parse 'date' with format='%d/%m/%Y' and 'time' as HH:MM, then build hour/month; cast collision_severity to int and map {1,2}->1, {3}->0. Select only the whitelisted columns, drop every '*_historic' duplicate and every adjusted/enhanced severity field. Assert per-year row counts and the presence of collision_year values {2021..2025} and fail loudly otherwise; de-duplicate on collision_index.",
+    "expected_size": "Five-year bundle is 97.7 MB CSV; roughly 95,000-110,000 collisions per year, so approximately 500,000 rows for 2021-2025, with about 44 columns in the collision table. Documented observed examples: 106,004 rows and 44 columns for 2022; 104,258 rows and 38 columns for 2023 in the rOpenSci vignette. Well within a single modest worker.",
+    "source_examples": "Header contains collision_index, collision_year, collision_ref_no, police_force, collision_severity, number_of_vehicles, number_of_casualties, date, day_of_week, time, local_authority_ons_district, first_road_class, road_type, speed_limit, light_conditions, weather_conditions, road_surface_conditions, special_conditions_at_site, urban_or_rural_area, did_police_officer_attend_scene_of_accident, trunk_road_flag, enhanced_collision_severity, collision_injury_based, collision_adjusted_severity_serious, collision_adjusted_severity_slight. Value checks from the DfT guide: collision_severity 1=Fatal, 2=Serious, 3=Slight; day_of_week 1=Sunday, 2=Monday, ...; enhanced_collision_severity uses 1/3/5/6/7 plus -1 for missing. Post-load checks: exactly three distinct collision_severity values, no nulls in date/time, and class balance near 75/25 slight vs KSI."
+  },
+  "limitations": [
+    "Severity is partly a recording artefact: police forces adopted injury-based severity reporting at different times and slight-injury collisions are under-reported, so part of any 'signal' from police_force, time-of-day or district may reflect recording practice rather than injury risk. DfT publishes severity-adjustment variables, but they are derived from the outcome measurement and are therefore excluded from inputs.",
+    "Predicting severity conditional on a collision having been reported is not the same as predicting collision risk; there is no exposure denominator (traffic volume, vehicle kilometres) in this file.",
+    "The open files omit contributory factors and other sensitive fields, which are the most informative pre-outcome variables and are available only to approved researchers, so the feature set is deliberately environment-and-timing only.",
+    "The 2024 STATS19 specification changed several variables; junction_detail, junction_control and pedestrian_crossing are excluded here for cross-year comparability, and remaining code sets should be checked year-by-year against the data guide before modelling.",
+    "Vehicle-level attributes (vehicle type, manoeuvre) live in a separate vehicle table joined on collision_index and are out of scope for the first single-file release; adding them is an extension, not part of this frozen task.",
+    "2021 is a COVID-distorted traffic year; if drift diagnostics show a break, the frozen fallback is to move the training window to 2022-2023 and keep eval 2024 / holdout 2025.",
+    "The bundle is re-issued annually, so construction must pin the vintage (30 July 2026 update) and record file checksums to keep the frozen split reproducible."
+  ]
+}
