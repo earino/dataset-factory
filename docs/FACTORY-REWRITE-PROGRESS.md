@@ -845,6 +845,57 @@ asks for an accessible official alternative after a 403/404. Changing the quote
 on the same blocked URL cannot fix the observed access failure. No particular
 replacement URL or legal conclusion is supplied by the controller.
 
+### Baseline and access-repair corrections deployed (17:32 UTC)
+
+Batch d357930 passed [CI](https://github.com/earino/dataset-factory/actions/runs/42505038554)
+and its final clean checkout passed 937 tests (13 skipped). Scout confirms
+deployment at 17:30:21 UTC; the [deployment record](../audits/rewrite/d357930-deploy/note.md)
+was exported in fc059da, whose [CI](https://github.com/earino/dataset-factory/actions/runs/42505358404)
+also passed. The earlier evidence-only commit 230d86f passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42504636657).
+
+At the 17:30:37 snapshot, UCMR5 build-2's model response had failed JSON parsing
+at line 1, column 42. Its build-3 model task was starting (Hermes child PID 25213).
+CMS remained at build after its second terms access failure. Reserved worker
+budget was EUR 10.62 of 20.00. The failed UCMR response has been requested for
+inspection; the snapshot does not establish that the current task has finished.
+
+### Reuse paid construction text after JSON syntax failures (17:36 UTC)
+
+Scout exported the [UCMR5 build-2 response and usage](../audits/rewrite/ucmr5-build2-syntax/note.md)
+in 45c92af, with passing [CI](https://github.com/earino/dataset-factory/actions/runs/42505574729).
+The recorded call used 313.0 seconds, 17,546 input and 45,217 output tokens across
+one main call plus title generation, with zero tool results. The retained response
+is 45,848 bytes. Local parsing places its error at end-of-input, column 45,849,
+not the earlier queue's column 42. Diagnostic inspection shows a missing object
+closure: `references` and `construction_notes` remain inside `quality`. Its Python
+code parses once the surrounding text is decoded. That is syntax evidence only;
+the code and scientific interpretation have not passed artifact validation.
+
+Previously, this malformed response was retained on disk but omitted from the
+next construction attempt, which instead received the older valid proposal.
+The driver now checkpoints the malformed text and asks the next ordinary bounded
+write-only attempt to correct JSON syntax/nesting while preserving its code and
+claims. It does not add attempts, accept malformed JSON, restart live work, or
+bypass Python/descriptor/full-artifact/semantic checks. Context must fit the
+existing 128 KiB limit. A format-task failure retains the paid draft; a parsed
+proposal takes precedence when later Python/descriptor repair is needed.
+
+The regression uses the retained response to verify exact text reuse, no worker
+launch on a failed format call, retention across retries, successful proposal
+validation before launch, and clearing of the text draft. It uses simulated model
+output only to test this transport boundary, not to accept or edit the live source.
+All 18 focused engine/model tests and the full clean-checkout suite of 938 tests
+(13 skipped) pass. UCMR build-3 was left untouched.
+
+UCMR subsequently launched worker attempt `rw-2ce60e8ae8f7-build-4` automatically.
+It passed the previous header-resolution point but failed reading source rows:
+UTF-8 decoding rejected byte `0xb5` at position 455. Runtime was 35.7 seconds,
+with no OOM. Release 438407058, manifest 724686538 and its digest-verified failure
+are preserved as `ucmr5-build-4-*`. This is an ordinary encoding repair for the
+existing bounded path; no manual code or candidate edit was made. Attempt numbers
+include model-only failures and do not equal the completed-worker failure count.
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;

@@ -123,6 +123,7 @@ class Driver:
                 example = read_json(self.root / 'skills/dataset-qualification/fixtures/corrected/quality.json')
                 previous = data.get('construction_draft') or data.get('construction')
                 failure = data.get('failure')
+                text_draft = data.get('construction_text_draft')
                 # A parsed model response can fail the construction contract
                 # before it becomes an executable proposal. Reuse those paid
                 # bytes as repair input rather than generating from scratch.
@@ -130,18 +131,31 @@ class Driver:
                     cached = self.root / '.factory/model-tasks' / failure.get('attempt', 'absent') / 'response.json'
                     if cached.is_file() and cached.stat().st_size <= 256 * 1024:
                         previous = read_json(cached)
+                        text_draft = None
+                        data.pop('construction_text_draft', None)
                         try:
                             construction.validate(previous)
                         except FactoryError as exc:
                             failure = {**failure, 'reason': str(exc)}
                         data['construction_draft'] = previous
                         save(data)
-                response = self.model.run(attempt['id'], task_prompts.construction(
-                                          data['source'], example, failure, previous),
-                                          construction=True)
+                    elif failure.get('reason', '').startswith('Model response is not JSON'):
+                        raw = cached.with_name('response.txt')
+                        if raw.is_file() and raw.stat().st_size < 128 * 1024:
+                            retained = raw.read_text()
+                            prompt = task_prompts.construction_json_repair(retained, failure['reason'])
+                            if len(prompt.encode()) <= 128 * 1024:
+                                text_draft = {'response': retained, 'failure': failure['reason'],
+                                              'attempt': failure['attempt']}
+                                data['construction_text_draft'] = text_draft
+                                save(data)
+                prompt = (task_prompts.construction_json_repair(text_draft['response'], text_draft['failure'])
+                          if text_draft else task_prompts.construction(data['source'], example, failure, previous))
+                response = self.model.run(attempt['id'], prompt, construction=True)
                 construction.validate(response)
                 data.update(construction=response, construction_attempt=attempt['id'])
                 data.pop('construction_draft', None)
+                data.pop('construction_text_draft', None)
             data.pop('job', None)
             save(data)
         # The replacement queue owns its own priority. Historical packaged records
