@@ -4,15 +4,16 @@ Specification: [FACTORY-REWRITE.md](FACTORY-REWRITE.md).
 Goal tool confirmed **active** at kickoff 2026-11-08 11:07:00 UTC.
 Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 
-**Current status (18:16 UTC): incomplete, zero replacement publications.** Latest
-confirmed production is 75137d7 (18:13:06 UTC, including semantic repair routing). UCMR5 build-5 succeeded: construction, full qualification,
-evaluation and packaging completed; all 33 package assets match staged hashes and
-the exact-artifact receipt passes. Semantic review subsequently found real
-construction/metadata defects and requested repair. The old controller incorrectly
-rejected that repair verdict; the routing correction is deployed as `75137d7`, with exact-commit CI green; live repair is being observed. UCMR is not
-an accepted dataset. CMS is in bounded terms-access repair. RCRA deferred after its
-then-configured worker failures. The full clean-checkout suite passes 941 tests
-(13 skipped); these do not establish the two-source acceptance criterion.
+**Current status (18:32 UTC): incomplete, zero replacement publications.** Latest
+confirmed production is 75137d7 (18:13:06 UTC). UCMR5 build-6 executed the semantic
+repair and passed construction, full qualification, evaluation and packaging;
+all 33 package assets match staging and the exact-artifact receipt passes. The
+previously empty additional-data features now have measured coverage. Fresh
+semantic review and publication remain outstanding. ClinicalTrials.gov has a
+completed construction proposal awaiting its worker. CMS build-4 again failed
+terms capture and was automatically collected/deleted. The clean-checkout suite
+passes 941 tests (13 skipped); this does not establish two-source acceptance.
+The 19:07 UTC cutoff is scheduled; its execution remains to be verified.
 
 ## Four-hour checkpoint — 2026-11-08 15:07 UTC
 
@@ -47,7 +48,7 @@ increases, source resurrection or validation exceptions are planned. If the crit
 remain unmet at 19:07, wind down new work safely, retain cleanup/resumable state and
 report the missing evidence and estimated additional effort.
 
-## Acceptance evidence — 2026-11-08 17:53 UTC
+## Acceptance evidence — 2026-11-08 18:32 UTC
 
 This is an interim assessment, not completion sign-off.
 
@@ -56,20 +57,20 @@ This is an interim assessment, not completion sign-off.
 | A1: one durable controller | Scheduled tick, exclusive-lock busy result, durable attempt/job identities across deployments; [cutover](../audits/rewrite/cutover/) and [first cycle](../audits/rewrite/first-cycle/). | Confirm the successful path also resumes from its recorded checkpoints. No forced-process-kill claim. |
 | A2: mechanical worker outcomes | Failed and successful real workers were staged, collected and deleted without model follow-up. UCMR5 build-5 was deleted at 17:51:16 and advanced to semantic review; [snapshot](../audits/rewrite/snapshot-1757/note.md). | Observe the publication worker on the successful end-to-end path. |
 | A3: bounded inexpensive model | Recorded requested route performed real discovery and generated builders; exact prompts, responses and usage retained. | Write-only construction verified in the first-write-only evidence; successful semantic review remains. |
-| A4: two complete real sources | UCMR5 passed full qualification/evaluation/packaging. STATS19 and RCRA failed qualification; CMS remains in repair. | UCMR5 semantic review/publication and a second materially different complete source, without manual state edits. |
+| A4: two complete real sources | UCMR5 build-6 passed full qualification/evaluation/packaging after semantic repair. ClinicalTrials has a generated builder; CMS remains in terms repair. | UCMR5 semantic review/publication and a second materially different complete source, without manual state edits. |
 | A5: trustworthy consumable releases | Full-artifact checks rejected defective artifacts; package/consumer implementation tested in software. | Accepted reproducible releases, measured usefulness, and anonymous full-file verification on both platforms. |
 | A6: automatic recovery | Failed candidates defer/refill; durable staging recovered after provider absence; [controlled transient-fetch recovery](../audits/rewrite/live_fetch_recovery.py) exercised against a real publisher. | Complete successful recovery evidence alongside the end-to-end path; controlled injection is not an organic outage claim. |
 | A7: unattended production | Scheduled script-only ticks observed; three legacy launch/follow-up schedules paused; independent cleanup retained. | Retain final deployed configuration and unattended successful outcome. |
-| A8: shipped, checked, signed off | Implementation pushed through `286a6fa`, exact-commit CI green; Scout confirms it deployed at 17:47:09 UTC with max_attempts=5. Progress and raw evidence retained. | Produce final criterion-by-criterion sign-off after the missing real outcomes. |
+| A8: shipped, checked, signed off | Implementation `75137d7` deployed at 18:13:06 UTC with exact-commit CI green. Evidence pushed through `48e02a6`, CI green. Progress and raw evidence retained. | Produce final criterion-by-criterion sign-off after the missing real outcomes. |
 
 ## Current work
 
-- **Latest confirmed deployment:** `286a6fa` at 17:47:09 UTC; Scout confirmed
-  max_attempts=5 and the tick resumed at 17:48. UCMR5 build-5 succeeded afterward.
-  Next: confirm automatic collection/cleanup and semantic review, then inspect
-  publication/consumer receipts and CMS repair. Latest exported reservation snapshot is EUR 10.62/20.00
-  at 17:30:37; it is not a live balance. Development-window tokens remain measured
-  but excluded from the normal weekly ceiling. Historical observations follow.
+- **Latest confirmed deployment:** `75137d7` at 18:13:06 UTC. UCMR5 build-6
+  succeeded after automatic repair routing; fresh semantic review and publication
+  remain next. ClinicalTrials construction/worker execution is the second-source
+  path. Latest exported reservation snapshot is EUR 11.10/20.00 at 17:57:25;
+  it is not a live balance. Development-window tokens remain measured but excluded
+  from the normal weekly ceiling. Historical observations follow.
 - **Earlier deployment (14:50:19 UTC):** Scout reports `05fab28` deployed and
   the script-only tick resumed. Its [exact-commit CI passed](https://github.com/earino/dataset-factory/actions/runs/42491352932).
   The clean checkout passed 926 tests (13 skipped). No replacement dataset has
@@ -1073,3 +1074,44 @@ within its six-turn/600-second bounds. Scout is observing that exact process wit
 a bounded read-only wait; no restart or added model-driven schedule was requested.
 The earlier deployment/cutoff evidence commit `0d73a06` also passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42509141563).
+
+### Both construction proposals completed — 18:29 UTC
+
+ClinicalTrials build-1 completed at 18:21:42 UTC: write-only, zero tools,
+259.7 seconds; requested DeepSeek route recorded one main call plus title generation.
+The parsed builder is 27,233 bytes. Its [response and usage](../audits/rewrite/clinicaltrials-build1-outcome/)
+passed export [CI](https://github.com/earino/dataset-factory/actions/runs/42509662901).
+This proves a generated proposal, not successful dataset construction.
+
+UCMR build-6 completed its semantic repair proposal at approximately 18:27 UTC:
+231.6 seconds, zero tools, 35,134-byte parsed builder, previous review findings
+retained. [Response and usage](../audits/rewrite/ucmr-build6-repair/). The proposal
+pivots long-format additional-data elements, computes the formerly constant checks,
+represents prior non-detects using source MRL values, and reports the effective
+population/exclusions. These are proposed corrections, awaiting full worker checks
+and fresh semantic review; they are not accepted scientific claims.
+
+Scout confirms CMS build-4 was automatically collected at 18:22:03 and deleted
+at 18:22:16 UTC. ClinicalTrials had no launch record at 18:27:15, after its
+pre-launch wait on the older worker ledger. No manual queue changes or additional
+model-driven follow-up schedule was used. The controller remains responsible for
+worker admission and advancement.
+
+### Repaired UCMR full worker result — 18:32 UTC
+
+Build-6 succeeded on the real source: exit 0, no OOM, 54.5 seconds; staging release
+438436154, manifest asset 724821692. Gate 1.6.1 passed with no failed checks.
+All 33 package assets match staged sizes/hashes, and the exact-artifact receipt
+passes against the staged inventory:
+[binding verification](../audits/rewrite/new-source-outcomes/ucmr5-build-6-binding-verification.json).
+Artifact `d3f9e077320eedadac890402e3ced0c52c4e9b47887a984eda87ca68648cbeaa`,
+package `v-1590eda10ccee07a`. No CSV or source archive was downloaded locally.
+
+The [source checks](../audits/rewrite/new-source-outcomes/ucmr5-build-6-source-checks.json)
+now record nonempty coverage for every additional-data feature, independent label
+recomputation, UCMR3 MRL/units and the 234 excluded first samples. The pipeline
+performed construction, qualification, evaluation and packaging. Fresh semantic
+review, automatic publication and anonymous consumers remain outstanding.
+The requested-model repair export passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42510148595).
+This is live evidence of repair execution, not acceptance of the resulting dataset.
