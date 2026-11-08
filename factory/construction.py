@@ -1,6 +1,7 @@
 """Assemble the canonical worker pipeline around bounded generated construction."""
 import ast
 import copy
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -23,6 +24,15 @@ pyarrow==19.0.1
 pypdf==5.4.0
 '''
 FILES = ('source_io.py', 'dataset_run.py', 'dataset_package.py', 'get_dataset.py')
+
+
+def known_defect(root, response):
+    """Retained, demonstrated defects in exact construction code, not an approval list."""
+    policy = Path(root) / 'config/known-construction-defects.json'
+    if not policy.is_file():
+        return None
+    digest = hashlib.sha256(response.get('build_py', '').encode()).hexdigest()
+    return next((item for item in read_json(policy)['defects'] if item['code_sha256'] == digest), None)
 
 
 def merge_repair(previous, response):
@@ -136,6 +146,10 @@ def validate(response):
 def assemble(root, job_id, source, response, settings, worker_config):
     root = Path(root)
     validate(response)
+    defect = known_defect(root, response)
+    if defect and not (root / 'jobs' / (job_id + '.json')).exists():
+        from .model_tasks import TaskFailure
+        raise TaskFailure('Known construction defect: ' + defect['issue'] + '; repair: ' + defect['repair'])
     target = root / '.factory/job-sources' / job_id
     if (target / 'job.json').exists():
         return target / 'job.json'

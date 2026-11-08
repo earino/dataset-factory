@@ -22,6 +22,49 @@ stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
 
+## 2026-11-08 23:12 UTC — demonstrated Federal Register label exposure
+
+Source-16 (`fr-proposed-rule-finalization`) build-1 produced CSVs on a real worker
+(331.2 seconds; release 438576749 / manifest 725451210). Qualification failed on
+three declarations: an undeclared high-cardinality agency rate, and inconsistent
+period/lag declarations for administrative-event retrospective research. No score
+from this artifact is accepted or reported as benchmark performance.
+
+Independent inspection found a substantive defect beyond those declarations.
+The exact worker builder (SHA-256 `90abe8066e34fa305dc1858fee90ec5e16635183343dd81053cb7ca5199c5177`)
+updates agency rates using matured labels from **all splits**. Maturity makes them
+available at a later row date but does not prevent that later batch row exposing
+an earlier private target. A bounded audit of the single 217,991-byte holdout
+split found **128 exact earlier-target recoveries, zero mismatches**, using only
+agency, dates, and rate changes; target labels were read only for comparison.
+This is a leakage diagnostic, not AUC, headroom, or artifact qualification.
+No complete dataset was downloaded or retained on the coordinator.
+
+Evidence and a reproduced read-only probe are in
+`audits/rewrite/fr-build1-rate-exposure/`. After 2021-01-01 every pre-holdout
+1096-day window has closed. When one holdout window matures between adjacent
+same-agency rows, the sign of the rate change reveals that binary label. Unique
+RINs therefore do not justify the submitted no-cross-row-history rationale.
+
+A versioned exact-code finding in `config/known-construction-defects.json` now
+feeds ordinary construction repair, prevents a fresh worker launch with that
+known code, returns a repair at evaluation without another model call, and
+refuses new publication if an older acceptance reaches that boundary. Existing
+workers can still be reconciled/collected. The finding is specific to demonstrated
+code, not a new approval process or a universal leakage proof. Changed code still
+needs all ordinary checks/review. The required repair excludes scored labels from
+agency statistics while retaining the maturity cutoff for contributing training
+outcomes; the question, target, population and splits stay fixed.
+
+Construction/review prompts now explicitly cover grouped label histories even
+with unique row IDs. Focused tests verify the known code enters normal repair,
+cannot become a repeated resource wait or launch/publish, and does not cause a
+second judgment call for an already demonstrated defect. Scout was asked to pause
+new admissions/publication at a safe boundary, retaining live work and cleanup.
+Validation: 959 clean-checkout tests passed, 13 skipped; 41 focused tests and
+the rule inventory passed. The retained read-only probe reproduced its 128/0
+exposure finding against the hash-pinned sample.
+
 ## 2026-11-08 22:48 UTC — research changed source access before rewriting code
 
 Build-8's preserved result (release 438569886 / manifest 725418169) shows a

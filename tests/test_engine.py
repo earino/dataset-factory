@@ -26,6 +26,42 @@ def source():
 
 
 class EngineTests(unittest.TestCase):
+    def test_demonstrated_code_defect_repairs_automatically_and_cannot_publish(self):
+        from factory.construction import assemble, known_defect
+        repo = Path(__file__).resolve().parents[1]
+        code = (repo / 'audits/rewrite/fr-build1-rate-exposure/build.py').read_text()
+        quality = json.loads((repo / 'audits/rewrite/fr-build1-rate-exposure/quality.json').read_text())
+        proposal = {'build_py':code,'quality':quality,'references':{}}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_json(root / 'config/known-construction-defects.json',
+                       json.loads((repo / 'config/known-construction-defects.json').read_text()))
+            self.assertIsNotNone(known_defect(root, proposal))
+            self.assertIsNone(known_defect(root, {'build_py':'Different code still needs ordinary checks'}))
+            with self.assertRaisesRegex(FactoryError, 'Known construction defect'):
+                assemble(root, 'bad-code', {}, proposal, {}, {})
+            model = Mock(); model.run.side_effect = AssertionError('Known defect needs no new judgment call')
+            write_json(root / 'config/local.json', {'enabled':True,'cleanup_configured':True})
+            harness = root / 'harness/task_template'; harness.mkdir(parents=True)
+            for name in ('train.py','validate.py','validate.sh'): (harness/name).write_text('# fixture')
+            staged = {'source':{},'construction':proposal,'construction_attempt':'staged',
+                      'job':{'id':'staged','file':'existing-job.json'}}
+            with patch.dict(os.environ, {'FACTORY_BENCHMARK_ROOT':str(harness.parent)}):
+                result = Driver(root, {'worker':{}}, model=model).execute(
+                    {'stage':'build','data':staged}, {'id':'staged'}, lambda value:None)
+            self.assertEqual('retry', result['status'])  # repair, never a repeated resource wait
+            state = {'construction':proposal,'evidence':{'qualification.json':{'ok':True}}}
+            driver = Driver(root, {}, model=model)
+            for _ in range(2):
+                result = driver.evaluate({}, {'id':'review'}, state, lambda value:None)
+                self.assertEqual('repair', result['status'])
+            self.assertEqual(1, len(state['semantic_repairs']))
+            self.assertIn('training labels only', state['pending_semantic_review']['findings'][0]['repair'])
+            with patch('factory.automatic_publication.publish') as publish:
+                self.assertEqual('defer', driver.publish({}, {'id':'publish'}, state, lambda value:None)['status'])
+                publish.assert_not_called()
+            model.run.assert_not_called()
+
     def test_access_research_survives_restart_and_updates_recipe_without_researching_503(self):
         evidence = Path(__file__).resolve().parents[1] / 'audits/rewrite'
         original = json.loads((evidence / 'bridge-source15-build1/discovery-response.json').read_text())

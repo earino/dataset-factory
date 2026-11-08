@@ -155,6 +155,8 @@ class Driver:
                                 save(data)
                 if data.get('pending_semantic_review'):
                     failure = {'latest_failure': failure, 'semantic_review': data['pending_semantic_review']}
+                if previous and (defect := construction.known_defect(self.root, previous)):
+                    failure = {'latest_failure': failure, 'known_construction_defect': defect}
                 access_error = (data.get('pending_access_failure') or
                                 data.get('failure', {}).get('diagnostics', {}).get('failure.json', {}))
                 diagnostic = str(access_error.get('diagnostic', ''))
@@ -262,6 +264,11 @@ class Driver:
         evidence = data['evidence']
         if evidence['qualification.json'].get('ok') is not True:
             return {'status': 'reject', 'reason': 'Full-artifact qualification did not pass'}
+        if defect := construction.known_defect(self.root, data['construction']):
+            review = {'verdict':'repair', 'reason':defect['issue'], 'findings':[defect]}
+            data.update(review=review, review_attempt=attempt['id'])
+            record_semantic_repair(data, review, attempt['id']); save(data)
+            return {'status':'repair', 'reason':defect['issue']}
         compact = {name: evidence[name] for name in ('evaluation.json', 'source-checks.json', 'SOURCES.json', 'LICENSE-EVIDENCE.json')}
         compact['qualification'] = {k: evidence['qualification.json'][k] for k in ('ok', 'gate_version', 'failed_checks')}
         compact['evaluation_contract'] = data['construction']['quality']['evaluation_contract']
@@ -293,6 +300,8 @@ class Driver:
         return {'status': 'done', 'reason': 'Source interpretation and measured usefulness reviewed'}
 
     def publish(self, candidate, attempt, data, save):
+        if defect := construction.known_defect(self.root, data['construction']):
+            return {'status':'defer', 'reason':'Known construction defect requires fresh construction: ' + defect['issue']}
         from .automatic_publication import publish
         return publish(self.root, self.policy, candidate, attempt, data, save)
 
