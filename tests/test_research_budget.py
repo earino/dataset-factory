@@ -169,7 +169,7 @@ class WeeklyTokenBudgetTests(BudgetTestCase):
         ])
         moment = datetime.now(timezone.utc)
         deadline = moment + timedelta(hours=1)
-        config = self.config(allowance_usd=30.0, sessions_per_week=200,
+        config = self.config(allowance_usd=30.0, sessions_per_week=1,
                              weekly_token_budget=40_000_000,
                              development_token_exemption_until=deadline.isoformat())
         active = budget.evaluate(config, moment=moment)
@@ -221,7 +221,7 @@ class WeeklyTokenBudgetTests(BudgetTestCase):
             for name, hours in [('first', 5), ('gap', 3), ('resumed', 1)]:
                 stamp = (moment - timedelta(hours=hours)).timestamp()
                 db.execute('update sessions set started_at=? where id=?', (stamp, name))
-        config = self.config(allowance_usd=30, sessions_per_week=200,
+        config = self.config(allowance_usd=30, sessions_per_week=2,
             weekly_token_budget=40_000_000,
             development_token_exemption_from=(moment - timedelta(hours=6)).isoformat(),
             development_token_exemption_until=(moment - timedelta(hours=4)).isoformat(),
@@ -230,11 +230,25 @@ class WeeklyTokenBudgetTests(BudgetTestCase):
         self.assertTrue(active['allowed'], active['reasons'])
         self.assertTrue(active['development_token_exemption_active'])
         self.assertEqual(100, active['normal_operation_tokens_last_7_days'])
+        self.assertEqual(3, active['runs_last_7_days'])
+        self.assertEqual(5, active['runs_weighted_last_7_days'])
+        self.assertEqual(1, active['normal_operation_runs_weighted_last_7_days'])
+        self.assertEqual(2, active['development_runs_last_7_days'])
         config['development_token_windows'][0]['until'] = moment.isoformat()
         closed = budget.evaluate(config, moment=moment + timedelta(seconds=1))
         self.assertFalse(closed['development_token_exemption_active'])
         self.assertEqual(100, closed['normal_operation_tokens_last_7_days'])
         self.assertEqual(50_000_100, closed['research_tokens_last_7_days'])
+        self.assertTrue(closed['allowed'], closed['reasons'])
+        self.assertEqual(1, closed['normal_operation_runs_last_7_days'])
+        # A new post-development session is counted and reaches the ordinary cap.
+        with sqlite3.connect(self.state_db) as db:
+            db.execute('insert into sessions values (?,?,?)',
+                       ('post-development', 'scout-research', (moment + timedelta(seconds=1)).timestamp()))
+        stopped = budget.evaluate(config, moment=moment + timedelta(seconds=2))
+        self.assertFalse(stopped['allowed'])
+        self.assertEqual(2, stopped['normal_operation_runs_weighted_last_7_days'])
+        self.assertTrue(any('cap 2' in reason for reason in stopped['reasons']))
 
     def test_invalid_resumed_development_window_holds_admission(self):
         config = self.config(allowance_usd=30, development_token_windows=[{'from': 'bad', 'until': None}])
@@ -433,7 +447,7 @@ class RenderTests(BudgetTestCase):
             ("20260919_080000_bbbb", "", 20, 20000, 1000, 0.05, "estimated", "scout-research")])
         make_exec_db(self.exec_db, [(JOB, "completed", 5, None), (JOB, "completed", 10, None)])
         text = budget.digest(self.config(allowance_usd=5.0, research_job_ids=[JOB]))
-        self.assertIn("Sessions this week: 1/3", text)
+        self.assertIn("Sessions this week: 1 measured total; 1/3 weighted normal operation; 0 development", text)
         # two execution rows, one of which ran the session above: ticks are not sessions
         self.assertIn("Scheduler ticks this period: 2", text)
 

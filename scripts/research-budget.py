@@ -392,7 +392,7 @@ def _evaluate(config, moment, late_minutes):
         development_exempt = False
         reasons.append('invalid development token exemption interval')
     if development_exempt:
-        warnings.append(f"Operator-authorized development: weekly token ceiling is not enforced "
+        warnings.append(f"Operator-authorized development: weekly token and session ceilings are not enforced "
                         f"during the recorded development window; usage is still measured")
     if policy not in ("hold", "require_token_budget"):
         reasons.append("unpriced_research_policy is invalid; expected hold or require_token_budget")
@@ -455,10 +455,16 @@ def _evaluate(config, moment, late_minutes):
     over_cap = [entry for entry in sessions if entry["over_cap"]]
     used = len(sessions)
     weighted = used + len(over_cap)
-    if weighted >= cap:
-        detail = f"{used} research session(s) already ran in the last 7 days"
-        if over_cap:
-            detail += (f", {len(over_cap)} of which overshot the "
+    normal_sessions = [entry for entry in sessions if not any(
+        beginning <= datetime.fromisoformat(entry['started_at']) and
+        (expiry is None or datetime.fromisoformat(entry['started_at']) < expiry)
+        for beginning, expiry in development_windows)]
+    normal_over_cap = sum(entry['over_cap'] for entry in normal_sessions)
+    normal_weighted = len(normal_sessions) + normal_over_cap
+    if normal_weighted >= cap and not development_exempt:
+        detail = f"{len(normal_sessions)} normal-operation research session(s) already ran in the last 7 days"
+        if normal_over_cap:
+            detail += (f", {normal_over_cap} of which overshot the "
                        f"{config.get('session_token_cap'):,}-token cap and count double")
         reasons.append(f"{detail} (cap {cap})")
 
@@ -477,6 +483,9 @@ def _evaluate(config, moment, late_minutes):
         "usage": usage,
         "runs_last_7_days": used,
         "runs_weighted_last_7_days": weighted,
+        "normal_operation_runs_last_7_days": len(normal_sessions),
+        "normal_operation_runs_weighted_last_7_days": normal_weighted,
+        "development_runs_last_7_days": used - len(normal_sessions),
         "research_tokens_last_7_days": week_tokens,
         "normal_operation_tokens_last_7_days": normal_tokens,
         "development_tokens_last_7_days": development_tokens,
@@ -541,8 +550,9 @@ def resume_block(config, decision):
             f"usage[{kind}]: {cost_text}, {bucket['calls']} calls, "
             f"{bucket['input_tokens']:,} in / {bucket['output_tokens']:,} out"
         )
-    lines.append(f"sessions in the last 7 days: {decision['runs_last_7_days']}"
-                 f"/{decision['session_cap_per_week']}")
+    lines.append(f"sessions in the last 7 days: {decision['runs_last_7_days']} measured total; "
+                 f"{decision['normal_operation_runs_weighted_last_7_days']}"
+                 f"/{decision['session_cap_per_week']} weighted normal operation")
     if decision.get("weekly_token_budget"):
         token_policy = ("development exemption active" if decision.get("development_token_exemption_active")
                         else "normal-operation ceiling enforced")
@@ -630,16 +640,17 @@ def digest(config, moment=None, root=None):
     # count the same way the cap counts.
     if decision["accounting_available"]:
         lines.append(
-            f"Sessions this week: {decision['runs_last_7_days']}"
-            f"/{decision['session_cap_per_week']}"
-            f" (weighted {decision['runs_weighted_last_7_days']})"
+            f"Sessions this week: {decision['runs_last_7_days']} measured total; "
+            f"{decision['normal_operation_runs_weighted_last_7_days']}"
+            f"/{decision['session_cap_per_week']} weighted normal operation; "
+            f"{decision['development_runs_last_7_days']} development"
         )
     lines.append(f"Scheduler ticks this period: {len(runs)} (includes held ticks that ran no "
                  "session)")
     if decision.get("sessions_over_token_cap"):
         lines.append(
             f"Token cap: {decision['sessions_over_token_cap']} session(s) overshot the "
-            f"{config.get('session_token_cap'):,}-token cap and counted double"
+            f"{config.get('session_token_cap'):,}-token cap (normal-operation overshoots count double)"
         )
     failed = [run for run in runs if str(run["status"]) == "failed" or run["error"]]
     if failed:

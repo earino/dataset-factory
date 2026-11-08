@@ -22,6 +22,25 @@ stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
 
+## 2026-11-08 21:54 UTC — correct development session admission
+
+The next bridge attempt had not made a model call. Scout's live check found
+build-6 collected at 21:45:04 and deleted at 21:45:17, then build-7 held by the
+weekly session-count gate: 185 sessions plus 15 overshoot penalties reached 200.
+No research task was holding the tick. The earlier statement that repair was
+running was premature; it was queued but had not been admitted.
+
+Eduardo's instruction exempts development from normal-operation inference limits
+while preserving worker spending/resource limits. Token accounting honored that
+instruction; session accounting did not. Both now use the same recorded windows.
+Measured total sessions and overshoots stay visible, with separate normal and
+development counts. During development the weekly session ceiling does not stop
+admission; after closure, development sessions remain excluded and new ordinary
+sessions count normally. Configured ceilings, overlap locks, task bounds, dollar
+accounting and all worker limits are unchanged. The 33 budget tests pass, including
+an exhausted ordinary cap during development and resumed enforcement after closure.
+Clean checkout: 954 tests passed, 13 skipped; rule inventory passed.
+
 ## 2026-11-08 21:52 UTC — recovery deployed; actual archive access failure
 
 `b740521` passed [exact CI](https://github.com/earino/dataset-factory/actions/runs/42525699392)
