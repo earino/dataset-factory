@@ -4,22 +4,22 @@ Specification: [FACTORY-REWRITE.md](FACTORY-REWRITE.md).
 Goal tool confirmed **active** at kickoff 2026-11-08 11:07:00 UTC.
 Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 
-**Final timebox status (19:08:46 UTC): incomplete; zero replacement publications.**
-Implementation `6ac5f833ce6a517db1ea15f56776b4f387aab8de` was deployed at
-19:00:03 UTC. New admissions were disabled at 19:06:21 UTC; the scheduled
-19:07 backstop confirmed the same setting. Scout's final inventory reports no
-live model/tick processes, no pending collection, zero worker servers and zero
-primary IPs. Cleanup remains available and legacy launch schedules remain paused.
-The final clean-checkout suite passed 944 tests (13 skipped), and implementation
-CI passed. These results do not satisfy the two-source publication requirement.
-Only evidence preservation and handoff continued after the deadline.
+**Current implementation status (20:51 UTC): incomplete; UCMR accepted,
+publication repair in progress.** The new run was authorized at 19:58:14 UTC
+without a new elapsed-time limit. `fdaf39b` is deployed, 948 clean-checkout tests
+passed (13 skipped), and exact-commit CI passed. Build-9 passed full qualification,
+byte-bound package checks and semantic review. The first publisher transferred
+and verified both private destinations, then failed during the public-release
+step; no anonymous consumer success is established. A small safe failure receipt
+is being added to identify that exact operation. Bridge-inventory deterioration
+is the materially different second-source path; its saved construction is under
+ordinary repair. Detailed current evidence appears in the appended entries below.
 
-UCMR5 build-7 passed full qualification and packaging but its release descriptions
-still need a fresh corrected bundle and semantic acceptance. Build-8's model result
-is preserved, with worker admission stopped by the cutoff. ClinicalTrials ended
-rejected after its terms/access failure; a second successful source is still needed.
-See the [final runtime snapshot](../audits/rewrite/final-cutoff-snapshot/note.md)
-and the closeout/resume record below. There is no completion sign-off.
+The first eight-hour run ended incomplete and was safely wound down; its cutoff
+and final resource inventory remain preserved as historical evidence. The tool's
+stored old goal is still paused and cannot be resumed by the agent's tools;
+Eduardo explicitly authorized continuing this implementation in the current turn.
+This is not a completion sign-off.
 
 ## Revised plan after the timebox — 2026-11-08
 
@@ -1412,3 +1412,22 @@ being rated Poor at its next routine inspection, a materially different domain.
 Its paid response is retained for ordinary repair of a feature-description naming
 failure. The exact proposal/failure is requested before deciding whether any code
 change is justified. No candidate-state reset or new discovery campaign was made.
+
+## First real publication failure — 2026-11-08 20:51 UTC
+
+[Publish-1 manifest and note](../audits/rewrite/ucmr-publish1-failure/) retain the
+199-second worker result. Private GitHub transfer and complete HF file verification
+succeeded. The public-release step raised UploadError, but the helper suppressed
+its stderr and the executor intentionally recorded only the error class. Root
+could not establish the exact failing call from that report. GH was still private;
+anonymous HF metadata read returned 401. The accepted dataset was not changed.
+
+The current upstream HfApi source confirms the existing private=False/dataset call
+signature; no unsupported API-change guess was used. A small helper receipt now
+records the named operation, exception class and optional HTTP status. It does not
+persist error messages, tracebacks, stderr or credentials. Publication stages also
+distinguish HF visibility, GH visibility, GH release and final tag verification.
+Two focused regressions cover structured failure capture and secret-message
+exclusion; all three release-worker tests pass locally. Full clean-checkout and
+CI verification are next. Scout paused new attempts at a safe boundary, preserving
+cleanup and source-15's completed paid repair, so retries need not run blindly.

@@ -4,6 +4,9 @@ import io
 import json
 from pathlib import Path
 import tempfile
+import subprocess
+import sys
+import types
 import unittest
 import urllib.error
 from unittest.mock import patch
@@ -94,7 +97,7 @@ class ReleaseWorkerTests(unittest.TestCase):
                     self.assertEqual(item['sha256'], hashlib.sha256(entry['bytes']).hexdigest())
                     hub['files'][item['target']] = entry['bytes']
                 report['hf_publish'] = {'failures': []}; report['hf_verification'] = {'ok':True,'commit':'5'*40}
-            def control(base, python, token, action, spec, commit='none'):
+            def control(base, python, token, action, spec, commit='none', **kwargs):
                 if action == 'publish':
                     self.assertEqual('5'*40,commit); self.assertIn('MANIFEST.json',hub['files']); hub['public']=True
                 return {'public':hub['public'],'commit':'5'*40,'tag_matches_main':True}
@@ -129,6 +132,42 @@ class ReleaseWorkerTests(unittest.TestCase):
                     self.assertTrue(report['publication']['ok'])
                     self.assertEqual({'github','huggingface'},set(report['publication']['consumers']))
             self.assertEqual(len(payload),len(GitHub.repos['owner/factory-fixture']['assets']))
+
+
+class HubFailureEvidenceTests(unittest.TestCase):
+    def test_helper_reports_only_operation_class_and_http_status(self):
+        class ProviderError(Exception):
+            response = types.SimpleNamespace(status_code=403)
+        api = types.SimpleNamespace(list_repo_refs=lambda *a, **k: (_ for _ in ()).throw(
+            ProviderError('secret token must not appear')))
+        hub = types.ModuleType('huggingface_hub'); hub.HfApi = lambda **kw: api
+        hub.hf_hub_download = lambda *a, **k: None
+        errors = types.ModuleType('huggingface_hub.errors'); errors.RepositoryNotFoundError = FileNotFoundError
+        namespace = {}
+        with patch.dict(sys.modules, {'huggingface_hub':hub, 'huggingface_hub.errors':errors}), \
+                patch.dict('os.environ', {'HF_WRITE_TOKEN':'fixture-secret'}), \
+                patch.object(sys, 'argv', ['helper','publish','owner/repo','dataset','v-tag','commit']), \
+                patch.object(sys, 'excepthook'):
+            with self.assertRaises(ProviderError) as caught:
+                exec(release_publish.HUB_CONTROL, namespace)
+            with patch('sys.stdout', new_callable=io.StringIO) as output:
+                namespace['report_failure'](ProviderError, caught.exception, None)
+        self.assertEqual({'ok':False,'stage':'list-refs','error':'ProviderError','http_status':403},
+                         json.loads(output.getvalue()))
+        self.assertNotIn('secret', output.getvalue())
+
+    def test_worker_retains_safe_helper_details_in_failure_receipt(self):
+        result = subprocess.CompletedProcess([], 1,
+            json.dumps({'ok':False,'stage':'create-tag','error':'HfHubHTTPError','http_status':403}),
+            'secret URL and credential must never be retained')
+        with tempfile.TemporaryDirectory() as tmp, patch.object(release_publish.subprocess, 'run', return_value=result):
+            report = {}
+            with self.assertRaises(upload.UploadError):
+                release_publish.hub_control(Path(tmp),Path('/fixture/python'),'secret','publish',
+                    {'hf_repo':'owner/repo','dataset':'dataset','version':'v-tag'}, 'commit', report=report)
+        self.assertEqual({'action':'publish','exit_code':1,'stage':'create-tag',
+                          'error':'HfHubHTTPError','http_status':403}, report['hub_control'])
+        self.assertNotIn('secret', json.dumps(report))
 
 
 if __name__ == '__main__': unittest.main()

@@ -79,6 +79,13 @@ from huggingface_hub.errors import RepositoryNotFoundError
 from pathlib import Path
 api = HfApi(token=os.environ['HF_WRITE_TOKEN'])
 action, repo, dataset, tag, commit = sys.argv[1:]
+stage = 'repo-info'
+def report_failure(kind, value, traceback):
+    result = {'ok':False, 'stage':stage, 'error':kind.__name__}
+    status = getattr(getattr(value, 'response', None), 'status_code', None)
+    if type(status) is int: result['http_status'] = status
+    print(json.dumps(result))
+sys.excepthook = report_failure
 if action == 'prepare':
     try:
         info = api.repo_info(repo, repo_type='dataset', files_metadata=True)
@@ -93,13 +100,19 @@ if action == 'prepare':
         raise ValueError('Existing Hub repository is not an owned factory release')
     print(json.dumps({'prepared':True,'private':info.private}))
 else:
+    stage = 'list-refs'
     refs = api.list_repo_refs(repo, repo_type='dataset')
     main = next(r.target_commit for r in refs.branches if r.name == 'main')
     tags = {r.name:r.target_commit for r in refs.tags}
+    stage = 'verify-main'
     if main != commit: raise ValueError('Verified Hub main changed')
+    stage = 'verify-existing-tag'
     if tag in tags and tags[tag] != commit: raise ValueError('Preserve existing different Hub tag')
+    stage = 'create-tag'
     if tag not in tags: api.create_tag(repo, tag, revision=commit, repo_type='dataset', exist_ok=False)
+    stage = 'set-public'
     api.update_repo_settings(repo_id=repo, repo_type='dataset', private=False)
+    stage = 'verify-public'
     info = api.repo_info(repo, repo_type='dataset', revision=tag)
     main_info = api.repo_info(repo, repo_type='dataset', revision='main')
     if info.private or info.sha != commit or main_info.sha != commit: raise ValueError('Hub public tag/main mismatch')
@@ -107,11 +120,20 @@ else:
 '''
 
 
-def hub_control(base, python, token, action, spec, commit='none'):
+def hub_control(base, python, token, action, spec, commit='none', *, report=None):
     helper = write_helper(base, '.release-hub.py', HUB_CONTROL)
     result = subprocess.run([str(python), str(helper), action, spec['hf_repo'], spec['dataset'],
                              spec['version'], commit], capture_output=True, text=True,
                             env=hub_env(token), timeout=180)
+    if report is not None:
+        detail = {'action': action, 'exit_code': result.returncode}
+        try:
+            value = json.loads(result.stdout)
+            for key in ('stage', 'error', 'http_status'):
+                if key in value: detail[key] = value[key]
+        except (ValueError, TypeError):
+            pass
+        report['hub_control'] = detail
     if result.returncode:
         raise UploadError('Hub ' + action + ' failed; remote state will be reconciled on retry')
     return json.loads(result.stdout)
@@ -175,7 +197,7 @@ def release_publish(base, job, report):
         raise UploadError('Release package identity differs from accepted manifest')
     commit = commit_files(target, files)
     python = ensure_client(base, report)
-    hub_control(base, python, credentials['hf_write_token'], 'prepare', spec)
+    hub_control(base, python, credentials['hf_write_token'], 'prepare', spec, report=report)
     releases = []
     for page in range(1, 11):
         batch = target.request('GET', prefix + f'/releases?per_page=100&page={page}')
@@ -200,10 +222,13 @@ def release_publish(base, job, report):
                'source_repo': target.repo, 'assets': items}}, report)
     if report['hf_publish']['failures'] or report.get('hf_verification', {}).get('ok') is not True:
         raise UploadError('Private Hub verification failed')
-    report['publication_stage'] = 'publish'
-    hf = hub_control(base, python, credentials['hf_write_token'], 'publish', spec, report['hf_verification']['commit'])
+    report['publication_stage'] = 'huggingface-publish'
+    hf = hub_control(base, python, credentials['hf_write_token'], 'publish', spec, report['hf_verification']['commit'], report=report)
+    report['publication_stage'] = 'github-visibility'
     target.request('PATCH', prefix, {'private': False})
+    report['publication_stage'] = 'github-release'
     target.request('PATCH', prefix + '/releases/' + str(release['id']), {'draft': False})
+    report['publication_stage'] = 'github-tag-verify'
     tag = target.request('GET', prefix + '/git/ref/tags/' + spec['version'])['object']
     main = target.request('GET', prefix + '/git/ref/heads/' + quote(info['default_branch'], safe=''))['object']['sha']
     if tag.get('type') != 'commit' or tag['sha'] != commit or main != commit:
