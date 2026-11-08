@@ -65,6 +65,11 @@ class ModelTaskTests(unittest.TestCase):
             self.assertEqual(1, read_json(folder / 'usage.json')['completion_exit_code'])
             self.assertTrue((folder / 'response.json').is_file())
             self.assertFalse((root / '.factory/model-tasks/failed/response.json').exists())
+            failed = root / '.factory/model-tasks/failed'
+            self.assertEqual(1, read_json(failed / 'usage.json')['completion_exit_code'])
+            self.assertGreaterEqual(read_json(failed / 'usage.json')['elapsed_seconds'], 0)
+            self.assertEqual(read_json(failed / 'failure.json')['elapsed_seconds'],
+                             read_json(failed / 'usage.json')['elapsed_seconds'])
 
     def test_timeout_retains_actual_partial_usage_and_diagnostic(self):
         from factory.common import write_json, read_json

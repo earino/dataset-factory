@@ -10,17 +10,41 @@ UCMR `v-4a630108a6e75a6b` is public on
 and [Hugging Face](https://huggingface.co/datasets/earino/factory-ucmr5-first-sample-pfas).
 The publication worker anonymously verified all 33 files and loaded every split
 on both platforms; root independently fetched identical public manifests without
-authentication. `2963e1f` is deployed; the publication retry succeeded after the
-tag-call correction. The bridge proposal is the second-source path; its literal
-feature-naming failure is corrected in code and the saved proposal can be reused.
-That correction passes 953 clean-checkout tests (13 skipped); deployment and the
-bridge's full worker validation/publication are next. The goal is incomplete.
+authentication. `7e50d10` is deployed; 960 clean-checkout tests pass (13 skipped).
+Bridge source-15 reached its five-worker-failure limit and is deferred, with
+history preserved. Federal Register source-16 build-4 is repairing the absent
+training-agency rate fallback; its latest artifact has not passed qualification.
+BSEE source-17 is queued through normal construction. The goal is incomplete.
 
 The first eight-hour run ended incomplete and was safely wound down; its cutoff
 and final resource inventory remain preserved as historical evidence. The tool's
 stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
+
+## 2026-11-08 23:48 UTC — actual candidate states and failed-call timing
+
+Scout's corrected 23:39 UTC snapshot is preserved in
+`audits/rewrite/snapshot-2340/note.md`. Federal Register build-3 stopped inside
+the builder before qualification: train-only label aggregation is present, but
+agencies without training history receive NaN while the new coverage assertion
+requires a value. Build-4 is the ordinary repair. No score or timing acceptance
+is claimed for build-3. Bridge build-11 exhausted the existing worker-failure
+bound; no reset or manual state advance was made.
+
+The ledger snapshot records 107 November jobs, EUR 14.30 reserved, EUR 5.70
+remaining within the EUR 20 allowance. The EUR 5 release reserve is unchanged;
+only EUR 0.70 remains before the construction budget boundary. These are
+reservation figures, not billed spend. The five-attempt retry bound is separate.
+
+Failed nonzero-exit model invocations now retain measured elapsed seconds in
+both failure and usage records, including the exit code in usage. This closes a
+concrete measurement gap; historical missing timings are not reconstructed or
+called live tasks. The existing failure-path test checks retained measurements.
+Validation: 960 tests passed in a clean checkout (13 skipped), all seven model-task
+tests passed, and the rule inventory passed. Scout snapshot commit
+`cdd9ee255d1ea3f892e3718b84a8770985c783c0` has
+[green exact CI](https://github.com/earino/dataset-factory/actions/runs/42536213560).
 
 ## 2026-11-08 23:20 UTC — canonical event declarations without changing the gate
 

@@ -193,11 +193,15 @@ class ModelTasks:
                     # Raw provider stderr is never persisted.
                     parser_error = [line for line in result.stderr.splitlines()
                                     if 'error: unrecognized arguments:' in line or 'error: argument ' in line]
-                    failure = {'exit_code': result.returncode, 'parser_error': parser_error[-2:],
+                    elapsed = round(time.monotonic() - started, 3)
+                    failure = {'exit_code': result.returncode, 'elapsed_seconds': elapsed,
+                               'parser_error': parser_error[-2:],
                                'diagnostic': startup_diagnostic(result.stderr),
                                'response_diagnostic': startup_diagnostic(result.stdout)}
                     try:
-                        write_json(directory / 'usage.json', usage(self.db, before, runtime_session(result.stderr)))
+                        measured = usage(self.db, before, runtime_session(result.stderr))
+                        measured.update(elapsed_seconds=elapsed, completion_exit_code=result.returncode)
+                        write_json(directory / 'usage.json', measured)
                     except TaskFailure as exc:
                         failure['accounting'] = str(exc)
                     # Hermes can return exit 1 at its iteration cap after a
