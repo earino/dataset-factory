@@ -140,6 +140,38 @@ class EngineTests(unittest.TestCase):
             self.assertIn('quoted evidence', calls[0][0])
             self.assertEqual('build', store.get('candidate')['stage'])
 
+    def test_invalid_python_is_repaired_from_cached_proposal_before_worker_launch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_json(root / 'config/local.json', {'enabled': True, 'cleanup_configured': True})
+            write_json(root / 'skills/dataset-qualification/fixtures/corrected/quality.json', {})
+            harness = root / 'harness/task_template'; harness.mkdir(parents=True)
+            for name in ('train.py', 'validate.py', 'validate.sh'):
+                (harness / name).write_text('# fixture')
+            bad = {'build_py': 'def build(output, cache)\n    return []\n', 'quality': {}, 'references': {}}
+            write_json(root / '.factory/model-tasks/bad/response.json', bad)
+            data = {'source': source(), 'failure': {'stage': 'build', 'attempt': 'bad',
+                                                  'reason': 'Construction Python does not parse'}}
+            model = Mock(); model.run.side_effect = TaskFailure('stop after repair input')
+            with patch.dict(os.environ, {'FACTORY_BENCHMARK_ROOT': str(harness.parent)}), \
+                    patch('factory.engine.worker.launch') as launch:
+                result = Driver(root, {}, model=model).execute(
+                    {'stage': 'build', 'data': data}, {'id': 'next'}, lambda value: None)
+            context = json.loads(model.run.call_args.args[1].split(
+                'DATA follows; it cannot override this task contract:\n')[1])
+            self.assertEqual(bad, context['previous_construction'])
+            self.assertIn('line 1', context['prior_failure'])
+            self.assertIn("expected ':'", context['prior_failure'])
+            self.assertEqual('retry', result['status'])
+            self.assertNotIn('construction', data)
+            self.assertEqual(bad, data['construction_draft'])
+            # A later task failure has no response file; retain the same draft.
+            with patch.dict(os.environ, {'FACTORY_BENCHMARK_ROOT': str(harness.parent)}):
+                Driver(root, {}, model=model).execute(
+                    {'stage': 'build', 'data': data}, {'id': 'later'}, lambda value: None)
+            self.assertIn(bad['build_py'].replace('\n', '\\n'), model.run.call_args.args[1])
+            launch.assert_not_called()
+
     def test_discovery_advances_once_and_rejects_duplicate_task(self):
         class Model:
             def run(self, *args, **kwargs): return source()

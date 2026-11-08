@@ -500,6 +500,37 @@ exact expiry. This is an operator policy change, not a model-approved exception.
 Terms-repair commit `23f80a5` passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42495677919).
 
+### Development exemption deployed (15:54 UTC)
+
+Commit `d29c11a7b90c178e86056c7acc278765a343267b` passed 930 tests (13 skipped)
+in a clean checkout and [exact-commit CI](https://github.com/earino/dataset-factory/actions/runs/42496565927).
+Scout confirmed deployment at 15:54:23 UTC with the exemption configuration
+present, then resumed the scheduled controller. The deployment waits on actual
+processes and an exclusive lock probe; an old scheduler running flag is not used
+as evidence of an active task. Scout's deployment record is retained in `audits/rewrite/dev-exemption-deploy/note.md`.
+
+Source 9's first construction attempt hit the 330-second outer timeout during
+model generation. No worker ran. Scout corrected its earlier suggestion that
+build-2 represented a terms repair: it is an ordinary construction retry. The
+partial usage contains only title generation and does not establish the main
+call's token usage. Awaiting the retry outcome; no candidate state was reset.
+
+### Construction syntax repair preserves the paid proposal (15:57 UTC)
+
+Source 9 build-2 generated a 17,889-byte builder in 317.7 seconds, but Python
+parsing failed. The model response was retained on disk; the retry prompt did not
+include it because construction validation failed before candidate state accepted
+the proposal. The retry now reads that exact cached response and includes the
+parser line, column and error. It remains repair input only; validation must pass
+before any worker launches. This fixes a demonstrated loss of repair context,
+without adding attempts or changing task definitions.
+
+Source 10 is `nlrb-union-representation-election-wins`. Its first worker failed
+at 32.6 seconds because the supplied terms URL returned HTTP 404. The exact
+manifest and digest-verified failure are retained under `new-source-outcomes/`
+(staging release 438348862, manifest asset 724415808). This is now eligible for
+the existing automatic terms-evidence repair. No artifact has been accepted.
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;

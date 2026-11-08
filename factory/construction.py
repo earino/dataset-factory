@@ -31,7 +31,8 @@ def validate(response):
     try:
         tree = ast.parse(code)
     except SyntaxError as exc:
-        raise FactoryError('Construction Python does not parse') from exc
+        raise FactoryError(f'Construction Python does not parse at line {exc.lineno}, '
+                           f'column {exc.offset}: {exc.msg}') from exc
     if not any(isinstance(n, ast.FunctionDef) and n.name == 'build' for n in tree.body):
         raise FactoryError('Construction must define build(output, cache)')
     quality = response.get('quality', {})

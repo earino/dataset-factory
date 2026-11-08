@@ -155,7 +155,9 @@ Kickoff: **2026-11-08 11:07:00 UTC**. Four-hour report: **15:07:00 UTC**.
 Eight-hour deadline: **19:07:00 UTC**. Report at four hours and continue without
 waiting. At deadline, safely wind down, retain resumable state and report unmet
 criteria and estimated effort; do not claim completion or weaken checks.
-Existing worker and inference allowances remain binding independently of elapsed time.
+Worker spending/resource limits and bounded model tasks remain binding. The normal
+weekly inference token ceiling is exempt during this development timebox, as
+explicitly authorized above.
 
 Every change must serve A1-A8 or fix a demonstrated defect on that path. Defer other
 ideas in the progress record. Record justified design changes here explicitly.

@@ -121,11 +121,27 @@ class Driver:
                 data.pop('source_terms_failure', None)
             else:
                 example = read_json(self.root / 'skills/dataset-qualification/fixtures/corrected/quality.json')
+                previous = data.get('construction_draft') or data.get('construction')
+                failure = data.get('failure')
+                # A parsed model response can fail the construction contract
+                # before it becomes an executable proposal. Reuse those paid
+                # bytes as repair input rather than generating from scratch.
+                if isinstance(failure, dict) and failure.get('stage') == 'build':
+                    cached = self.root / '.factory/model-tasks' / failure.get('attempt', 'absent') / 'response.json'
+                    if cached.is_file() and cached.stat().st_size <= 256 * 1024:
+                        previous = read_json(cached)
+                        try:
+                            construction.validate(previous)
+                        except FactoryError as exc:
+                            failure = {**failure, 'reason': str(exc)}
+                        data['construction_draft'] = previous
+                        save(data)
                 response = self.model.run(attempt['id'], task_prompts.construction(
-                                          data['source'], example, data.get('failure'), data.get('construction')),
+                                          data['source'], example, failure, previous),
                                           construction=True)
                 construction.validate(response)
                 data.update(construction=response, construction_attempt=attempt['id'])
+                data.pop('construction_draft', None)
             data.pop('job', None)
             save(data)
         # The replacement queue owns its own priority. Historical packaged records
