@@ -4,7 +4,7 @@
 Runs the five checks that stand between a constructed dataset and a scored claim:
 
   1. leakage        - no shipped column may determine the target
-  2. prediction time- every shipped feature must be knowable when the prediction is made
+  2. prediction time- input availability supports the declared evaluation scope
   3. units / frames - values compared to an external threshold must declare unit and frame
   4. splits         - disjoint, correctly ordered, and carrying enough positives AND enough
                       negatives, judged from the actual rows rather than the declarations
@@ -63,7 +63,7 @@ except ModuleNotFoundError:
     from factory import leakage_battery as battery
     from factory.artifact_scrub import scan_tree
 
-GATE_VERSION = "1.6.0"
+GATE_VERSION = "1.6.1"
 
 MIN_GROUP_FOR_CATEGORICAL = 5
 MIN_EVAL_POSITIVES = 30
@@ -351,10 +351,21 @@ def check_prediction_time(quality: dict, report: Report) -> None:
 
     feature_lag = features.get("published_days_after_period_end")
     instant_lag = instant.get("days_after_period_end")
+    contract = quality.get('evaluation_contract') if isinstance(quality.get('evaluation_contract'), dict) else {}
+    vintage = contract.get('vintage') if isinstance(contract.get('vintage'), dict) else {}
+    event_research = (source_kind == 'administrative_record' and instant.get('period') is None
+                      and contract.get('use') == 'retrospective_research'
+                      and vintage.get('kind') in ('current_snapshot', 'mixed')
+                      and contract.get('training_label_timing') == 'unverified'
+                      and bool(contract.get('limitations')))
+    unverified_event = event_research and feature_lag is None and instant_lag is None and not observations
     numeric = all(isinstance(v, int) and v >= 0 for v in (feature_lag, instant_lag))
-    report.add("timing.features_available_at_instant",
-               numeric and feature_lag <= instant_lag and (not lags or feature_lag >= max(lags)),
-               (f"features publish {feature_lag}d after the period, instant is {instant_lag}d after it"
+    report.add("timing.event_feature_availability_unverified" if unverified_event
+               else "timing.features_available_at_instant",
+               unverified_event or (numeric and feature_lag <= instant_lag and (not lags or feature_lag >= max(lags))),
+               ("Administrative current-vintage retrospective research: event-time availability UNVERIFIED; no period lag invented"
+                if unverified_event else
+                f"features publish {feature_lag}d after the period, instant is {instant_lag}d after it"
                 if numeric else "features or instant do not state a publication lag in days"),
                {"features_lag_days": feature_lag, "instant_lag_days": instant_lag,
                 "measured_lag_days": max(lags) if lags else None})
@@ -367,12 +378,16 @@ def check_prediction_time(quality: dict, report: Report) -> None:
                {"kind": instant.get("kind"), "features_lag_days": feature_lag})
 
     latest = str(selection.get("latest_period_used") or "")
-    report.add("timing.selection_uses_only_available_data",
-               bool(latest) and "+" not in latest,
-               f"row selection declares its latest period as {latest!r}"
+    event_selection = (event_research and not latest and bool(selection.get('fields'))
+                       and bool(selection.get('rule')))
+    report.add("timing.event_selection_declared" if event_selection
+               else "timing.selection_uses_only_available_data",
+               event_selection or (bool(latest) and "+" not in latest),
+               ("Event selection rule declared for retrospective review; prediction-time eligibility is not established"
+                if event_selection else f"row selection declares its latest period as {latest!r}"
                + ("" if latest and "+" not in latest else " - a selection that reaches into a later "
-                  "period (M+1 or beyond) makes the retained population depend on the future"),
-               {"latest_period_used": latest, "fields": selection.get("fields")})
+                  "period (M+1 or beyond) makes the retained population depend on the future")),
+               {"latest_period_used": latest, "fields": selection.get("fields"), 'rule': selection.get('rule')})
 
 
 def check_evaluation_contract(dataset, quality, report, columns_by_split):
@@ -596,6 +611,14 @@ def check_units_and_frames(quality: dict, report: Report) -> None:
                    'No external threshold, so no unit-validation receipt is required')
 
 
+def split_timestamp(value):
+    """Compare ISO dates/timestamps as times, including an optional monthly grain."""
+    value = str(value)
+    if len(value) == 7:
+        value += '-01'
+    return datetime.datetime.fromisoformat(value.replace('Z', '+00:00'))
+
+
 def check_splits(quality: dict, report: Report, columns_by_split: dict) -> None:
     splits = quality.get("splits", {})
     windows = quality.get("split_windows", {})
@@ -723,14 +746,23 @@ def check_splits(quality: dict, report: Report, columns_by_split: dict) -> None:
     if not time_column:
         return
 
-    ranges = {}
+    ranges, parsed_ranges = {}, {}
     for key in keys:
         values = [v for v in columns_by_split[key][1].get(time_column, []) if v]
-        ranges[key] = {"min": min(values), "max": max(values)} if values else None
+        try:
+            minimum = maximum = None
+            for value in values:
+                item = (split_timestamp(value), value)
+                minimum = item if minimum is None or item < minimum else minimum
+                maximum = item if maximum is None or item > maximum else maximum
+            ranges[key] = {"min": minimum[1], "max": maximum[1]} if minimum else None
+            parsed_ranges[key] = (minimum[0], maximum[0]) if minimum else None
+        except (ValueError, TypeError):
+            ranges[key] = None
     report.add("splits.actual_ranges_computed",
                all(ranges[key] for key in keys),
                "row timestamps found for every split" if all(ranges[key] for key in keys)
-               else f"no {time_column} values in {[k for k in keys if not ranges[k]]}",
+               else f"missing or invalid/mixed-timezone {time_column} values in {[k for k in keys if not ranges[k]]}",
                {"ranges": ranges})
     if not all(ranges[key] for key in keys):
         return
@@ -738,8 +770,13 @@ def check_splits(quality: dict, report: Report, columns_by_split: dict) -> None:
     overlaps = []
     for i, left in enumerate(keys):
         for right in keys[i + 1:]:
-            if ranges[left]["min"] <= ranges[right]["max"] and \
-                    ranges[right]["min"] <= ranges[left]["max"]:
+            try:
+                overlap = (parsed_ranges[left][0] <= parsed_ranges[right][1]
+                           and parsed_ranges[right][0] <= parsed_ranges[left][1])
+            except TypeError:
+                overlaps.append(f'{left}/{right} mix timezone-aware and naive timestamps')
+                continue
+            if overlap:
                 overlaps.append(f"{left} [{ranges[left]['min']}..{ranges[left]['max']}] "
                                 f"overlaps {right} [{ranges[right]['min']}..{ranges[right]['max']}]")
     report.add("splits.actual_ranges_disjoint", not overlaps,
@@ -751,12 +788,13 @@ def check_splits(quality: dict, report: Report, columns_by_split: dict) -> None:
         for key in keys:
             start = windows[key].get("start")
             end = windows[key].get("end")
-            if start and ranges[key]["min"] < str(start):
-                outside.append(f"{key} starts {ranges[key]['min']}, before its declared "
-                               f"start {start}")
-            if end and ranges[key]["max"] >= str(end):
-                outside.append(f"{key} reaches {ranges[key]['max']}, at or past its declared "
-                               f"end {end}")
+            try:
+                if start and parsed_ranges[key][0] < split_timestamp(start):
+                    outside.append(f"{key} starts {ranges[key]['min']}, before its declared start {start}")
+                if end and parsed_ranges[key][1] >= split_timestamp(end):
+                    outside.append(f"{key} reaches {ranges[key]['max']}, at or past its declared end {end}")
+            except (ValueError, TypeError):
+                outside.append(f'{key} has invalid or incompatible-timezone split boundaries')
     report.add("splits.rows_within_declared_windows", not outside,
                "every row falls inside its split's declared window" if not outside
                else "; ".join(outside), {"windows": windows, "ranges": ranges})

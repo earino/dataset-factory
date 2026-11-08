@@ -1,7 +1,7 @@
 ---
 name: dataset-qualification
 description: "Use when a constructed dataset is about to be scored or published. Gate for leakage, prediction timing, units/frames, temporal splits and runner compatibility."
-version: 2.1.0
+version: 2.1.1
 license: MIT
 platforms: [linux, macos]
 metadata:
@@ -56,6 +56,18 @@ never ship the audit vectors. Missing/stale receipts refuse downstream acceptanc
 **Run it on the full artifact, where the rows are.** The gate reads rows, so a bounded local
 sample cannot stand in for it; run it and exact-byte `--accept` on the worker. Keep the
 full dataset off the coordinator even when it happens to fit; collect compact evidence.
+
+Gate 1.6.1 compares ISO date/month/timestamp values as times, so a date equals
+midnight on that date. Exclusive end bounds still exclude equal timestamps;
+invalid values or incompatible timezones fail. For explicitly administrative event
+records with current/mixed vintage and retrospective scope, missing period lags
+are recorded as **unverified event-time availability**, not a timing pass. Declare
+`timing.features.source_kind="administrative_record"`, a non-periodic prediction
+instant, and the selection fields/rule; the evaluation contract and semantic review
+still govern applicability and outcome conditioning. This does not excuse known
+late features, statistical-release evidence, future-period selection, historical
+forecasting evidence, or any leakage check. Do not invent zero-day lags to fit a
+periodic descriptor. New receipts require 1.6.1; historical 1.6.0 reports remain evidence.
 
 Make the worker entrypoint's order explicit: **construct → qualify → accept exact
 bytes → score → report**. Stop before scoring on any failed stage. Construction may

@@ -1029,7 +1029,7 @@ Checks: [`factory/leakage_battery.py`](../factory/leakage_battery.py), [`factory
 
 ## 7117fd1ba2dcec7e2166 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:60](../skills/dataset-qualification/SKILL.md#L60).
+Source: [skills/dataset-qualification/SKILL.md:72](../skills/dataset-qualification/SKILL.md#L72).
 
 > Make the worker entrypoint's order explicit: **construct → qualify → accept exact
 > bytes → score → report**. Stop before scoring on any failed stage. Construction may
@@ -1042,7 +1042,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 9288a3d7b0bdacb60973 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:79](../skills/dataset-qualification/SKILL.md#L79).
+Source: [skills/dataset-qualification/SKILL.md:91](../skills/dataset-qualification/SKILL.md#L91).
 
 > Adapt these filenames/arguments to the job bundle; this illustrates ordering, not
 > a replacement runner. `build.py` only constructs files and gate diagnostics.
@@ -1052,7 +1052,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## db339ebc3d5c65dc9b1c — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:116](../skills/dataset-qualification/SKILL.md#L116).
+Source: [skills/dataset-qualification/SKILL.md:128](../skills/dataset-qualification/SKILL.md#L128).
 
 > Every one of these must exist before "qualified" can be claimed. Absence is not a pass:
 
@@ -1060,7 +1060,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## cb8f9a6d2c0e13f25d29 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:141](../skills/dataset-qualification/SKILL.md#L141).
+Source: [skills/dataset-qualification/SKILL.md:153](../skills/dataset-qualification/SKILL.md#L153).
 
 > 1. **Persistence** - the most recent observed value (or last observed label) as the score. This is
 > a reference the model must improve on to support a headroom claim. If the model trails it,
@@ -1074,7 +1074,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## e2a32c1e1e5ba183a8a9 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:186](../skills/dataset-qualification/SKILL.md#L186).
+Source: [skills/dataset-qualification/SKILL.md:198](../skills/dataset-qualification/SKILL.md#L198).
 
 > Audits make artifacts correct; they do not establish task usefulness. If a simple reference
 > beats the tested full model, record **no demonstrated headroom under this protocol**, with both
@@ -1088,7 +1088,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 132fbf4e23888f7c9407 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:194](../skills/dataset-qualification/SKILL.md#L194).
+Source: [skills/dataset-qualification/SKILL.md:206](../skills/dataset-qualification/SKILL.md#L206).
 
 > Specify metrics, split boundaries, target/threshold and comparisons before evaluation. Fit
 > priors and data-derived thresholds on training data only unless a fixed external domain standard
@@ -1101,7 +1101,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## c8aca0ba6b832b748240 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:227](../skills/dataset-qualification/SKILL.md#L227).
+Source: [skills/dataset-qualification/SKILL.md:239](../skills/dataset-qualification/SKILL.md#L239).
 
 > What cannot be measured must be labelled, not argued away. The output of this pass is a short record
 > block (the numbers, the rows they came from, and the conclusion) so a later reader cannot quote the
@@ -1111,7 +1111,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## d722d2f6b5fcbe3b47e9 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:233](../skills/dataset-qualification/SKILL.md#L233).
+Source: [skills/dataset-qualification/SKILL.md:245](../skills/dataset-qualification/SKILL.md#L245).
 
 > A multi-year daily panel is tens of millions of rows before filtering, and the coordinator has a
 > couple of gigabytes. Construction must stream, not accumulate:
@@ -1120,7 +1120,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 5cb4d808a37fc92d27a8 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:236](../skills/dataset-qualification/SKILL.md#L236).
+Source: [skills/dataset-qualification/SKILL.md:248](../skills/dataset-qualification/SKILL.md#L248).
 
 > - **Write each batch to disk; never hold `to_dict("records")`.** A dict per row costs about a
 >   kilobyte, so seven million rows is several gigabytes of overhead before the values themselves.
@@ -1147,7 +1147,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 0ab94c8f4e0f5f3e0461 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:272](../skills/dataset-qualification/SKILL.md#L272).
+Source: [skills/dataset-qualification/SKILL.md:284](../skills/dataset-qualification/SKILL.md#L284).
 
 > - **Unique-valued columns are not leaks by themselves.** An id or a free timestamp reaches
 >   perfect AUC by memorising one row per level; those are reported as `high_cardinality` and
@@ -1161,7 +1161,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 827e4a9eecca60d685e5 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:280](../skills/dataset-qualification/SKILL.md#L280).
+Source: [skills/dataset-qualification/SKILL.md:292](../skills/dataset-qualification/SKILL.md#L292).
 
 > ### 2. Prediction timing - every shipped feature must be knowable when the prediction is made
 
@@ -1169,7 +1169,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 738dbb94b7ff7e145e96 — enforced
 
-Source: [skills/dataset-qualification/SKILL.md:289](../skills/dataset-qualification/SKILL.md#L289).
+Source: [skills/dataset-qualification/SKILL.md:301](../skills/dataset-qualification/SKILL.md#L301).
 
 > Every `quality.json` must carry a `timing` block, and the gate refuses the dataset without one.
 > A passing timing check means the declaration is coherent - it does not mean the build implements
@@ -1181,7 +1181,7 @@ Checks: [`skills/dataset-qualification/scripts/qualify_dataset.py`](../skills/da
 
 ## 1e80b3afa274663fdb7d — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:305](../skills/dataset-qualification/SKILL.md#L305).
+Source: [skills/dataset-qualification/SKILL.md:317](../skills/dataset-qualification/SKILL.md#L317).
 
 > - **`kind`** is `publication`, `period_end` or `event_time`. `period_end` is only admissible when
 >   the feature lag is zero.
@@ -1205,7 +1205,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 8d007898b3113d554ad5 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:331](../skills/dataset-qualification/SKILL.md#L331).
+Source: [skills/dataset-qualification/SKILL.md:343](../skills/dataset-qualification/SKILL.md#L343).
 
 > The rule: **iterate the provider's months, not pairs of qualifying months.** Eligibility reads only
 > `<= M`; the target month is looked up afterwards, solely to compute the label. A missing or
@@ -1216,7 +1216,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 7673608c17cb052295d6 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:345](../skills/dataset-qualification/SKILL.md#L345).
+Source: [skills/dataset-qualification/SKILL.md:357](../skills/dataset-qualification/SKILL.md#L357).
 
 > Then sort every column into available / post-hoc /
 > label source. **Read the column documentation for every field**, not only the suspicious ones:
@@ -1228,7 +1228,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 9b863a5ffe7b5f20a831 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:353](../skills/dataset-qualification/SKILL.md#L353).
+Source: [skills/dataset-qualification/SKILL.md:365](../skills/dataset-qualification/SKILL.md#L365).
 
 > Any value compared against an external threshold must declare its **unit** and its **reference
 > frame**, because a mismatch does not error. It produces a uniform wrong answer that reads like
@@ -1238,7 +1238,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## aafc7fddf0728bcc3c53 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:357](../skills/dataset-qualification/SKILL.md#L357).
+Source: [skills/dataset-qualification/SKILL.md:369](../skills/dataset-qualification/SKILL.md#L369).
 
 > Worked example: a publisher's threshold API with no datum field, compared against the wrong
 > datum, gave zero exceedance at 12 of 12 stations across 4,380 station-days - which looks like
@@ -1251,7 +1251,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## df50020ec833aba384ab — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:364](../skills/dataset-qualification/SKILL.md#L364).
+Source: [skills/dataset-qualification/SKILL.md:376](../skills/dataset-qualification/SKILL.md#L376).
 
 > **Uniform results are a red flag, not a finding.** A split that is all-positive or all-negative
 > is what a unit or frame error looks like, and the gate refuses it.
@@ -1262,7 +1262,7 @@ Checks: [`skills/dataset-qualification/scripts/qualify_dataset.py`](../skills/da
 
 ## 5c5d151b6b1dc61a0cad — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:369](../skills/dataset-qualification/SKILL.md#L369).
+Source: [skills/dataset-qualification/SKILL.md:381](../skills/dataset-qualification/SKILL.md#L381).
 
 > Declarations are not evidence. `quality.json` records split windows, positive counts and
 > clustered event counts; the gate recomputes all of them from the rows and refuses when they
@@ -1272,7 +1272,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 2ec6700398c6301086e1 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:389](../skills/dataset-qualification/SKILL.md#L389).
+Source: [skills/dataset-qualification/SKILL.md:401](../skills/dataset-qualification/SKILL.md#L401).
 
 > - `splits.no_cross_split_entities` - an identifier in two splits is leakage. Hard fail.
 > - `splits.duplicate_entities_within_splits` - the same identifier twice *inside* one split is
@@ -1290,7 +1290,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## f9df114dbc77eee00d52 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:401](../skills/dataset-qualification/SKILL.md#L401).
+Source: [skills/dataset-qualification/SKILL.md:413](../skills/dataset-qualification/SKILL.md#L413).
 
 > "Not declared" is never "fine": missing declarations fail the gate rather than passing silently.
 
@@ -1298,7 +1298,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## c7742f30915138a8f0e4 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:415](../skills/dataset-qualification/SKILL.md#L415).
+Source: [skills/dataset-qualification/SKILL.md:427](../skills/dataset-qualification/SKILL.md#L427).
 
 > | Symptom | Cause | Action |
 > | --- | --- | --- |
@@ -1320,7 +1320,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## f7d11b9e7a37f5601a98 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:459](../skills/dataset-qualification/SKILL.md#L459).
+Source: [skills/dataset-qualification/SKILL.md:471](../skills/dataset-qualification/SKILL.md#L471).
 
 > Follow `docs/PREDICTION-CONTRACT.md` in the project before new construction or release.
 > Read observation time, actual feature availability, label availability and revision/vintage
@@ -1336,7 +1336,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 9dda0d5e82a8d77782c9 — prose-only
 
-Source: [skills/dataset-qualification/SKILL.md:469](../skills/dataset-qualification/SKILL.md#L469).
+Source: [skills/dataset-qualification/SKILL.md:481](../skills/dataset-qualification/SKILL.md#L481).
 
 > New artifacts require `quality.json.evaluation_contract` and the current gate. Older reports
 > remain historical evidence only. Never fill fields with invented evidence to obtain a pass.

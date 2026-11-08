@@ -5,7 +5,7 @@ from pathlib import Path
 from .artifact_scrub import sha256
 from .leakage_battery import VERSION, code_identity, digest, safe_file
 
-GATE_VERSION = '1.6.0'
+GATE_VERSION = '1.6.1'
 MANDATORY = {'battery.exact_recovery','battery.recorded_in_quality','artifacts.no_shipped_answers'}
 
 

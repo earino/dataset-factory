@@ -65,6 +65,11 @@ class ClaimContractTests(unittest.TestCase):
             p=root/'qualification.json';p.write_text(p.read_text()+'\n')
             with self.assertRaisesRegex(ValueError,'qualification'):
                 validate(root,facts)
+            report = json.loads(p.read_text()); report['gate_version'] = '1.6.0'
+            p.write_text(json.dumps(report))
+            self.assertTrue(compute(root, qualification=p, historical=True)['historical_only'])
+            with self.assertRaisesRegex(ValueError, 'passing gate 1.6.1'):
+                compute(root, qualification=p)
 
     def test_failed_gate_cannot_generate_new_claims_receipt(self):
         with tempfile.TemporaryDirectory() as folder:

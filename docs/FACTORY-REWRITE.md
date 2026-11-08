@@ -114,6 +114,11 @@ basis; a separate publisher licence grant is not always necessary. Research and
 review must establish applicability to the actual records, preserve third-party
 rights and territorial limits, and avoid treating a government domain as proof.
 The captured-source evidence and all dataset acceptance checks still apply.
+Gate 1.6.1 corrects date-versus-midnight comparisons and applies the existing
+retrospective policy to explicitly administrative event data without inventing
+reporting periods or publication lags. Such timing is reported as unverified;
+known timing contradictions, historical forecasting requirements, full-artifact
+leakage checks and semantic review remain binding.
 
 Use one immutable artifact manifest and measured results to generate documentation,
 dataset cards and both destination uploads. Source/build/validator identities are

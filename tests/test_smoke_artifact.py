@@ -284,7 +284,7 @@ class GateAcceptanceTests(unittest.TestCase):
         payload = json.loads(self.report.read_text())
         self.assertTrue(payload["ok"],
                         f"failed checks: {payload.get('failed_checks')}")
-        self.assertEqual(payload["gate_version"], "1.6.0")
+        self.assertEqual(payload["gate_version"], "1.6.1")
         self.assertEqual(payload["failed_checks"], [])
 
     def test_02_accept_succeeds_on_qualified_bytes(self):

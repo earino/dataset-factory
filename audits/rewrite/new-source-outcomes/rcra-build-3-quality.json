@@ -1,0 +1,331 @@
+{
+  "carry_columns": [],
+  "evaluation_contract": {
+    "access": "isolated_rows",
+    "cross_row_audit": {
+      "auxiliary_files_review": "Only the three declared row files are produced; no fixture labels, answer scaffolds or auxiliary feature files are emitted.",
+      "probes": [],
+      "rationale": "One earliest CEI per handler identifier and calendar splits prevent any handler from appearing in more than one split; post-outcome violation histories are not shipped."
+    },
+    "feature_evidence": {
+      "activity_location": {
+        "availability": "key carried on the evaluation and facility records; regulator state program code",
+        "source": "EPA ECHO RCRAInfo data element dictionary, https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "verified"
+      },
+      "evaluation_agency": {
+        "availability": "evaluation-row field set when the inspection is assigned, therefore known at the decision instant",
+        "source": "EPA RCRAInfo data element dictionary, https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "verified"
+      },
+      "fed_waste_generator": {
+        "availability": "current RCRA_FACILITIES snapshot applied retrospectively; historical operational value not established",
+        "source": "EPA ECHO RCRAInfo data element dictionary, https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "assumed"
+      },
+      "full_enforcement_codes": {
+        "availability": "current RCRA_FACILITIES snapshot column FULL_ENFORCEMENT applied retrospectively; historical operational value not established",
+        "source": "EPA ECHO RCRAInfo data element dictionary, https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "assumed"
+      },
+      "handler_id": {
+        "availability": "present in the evaluation rows and retained for row identity",
+        "source": "RCRA_EVALUATIONS.csv ID_NUMBER, deduplicated to the earliest CEI per handler",
+        "status": "verified"
+      },
+      "hreport_universe_record": {
+        "availability": "current RCRA_FACILITIES snapshot applied retrospectively; historical operational value not established",
+        "source": "EPA ECHO RCRAInfo data element dictionary, https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "assumed"
+      },
+      "inspection_month": {
+        "availability": "deterministic calendar function of the inspection date",
+        "source": "Derived from EVALUATION_START_DATE documented at https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "verified"
+      },
+      "inspection_start_date": {
+        "availability": "row field EVALUATION_START_DATE, the first day of the inspection or record review",
+        "source": "EPA RCRAInfo data element dictionary, https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "verified"
+      },
+      "latitude83": {
+        "availability": "current RCRA_FACILITIES snapshot applied retrospectively; historical operational value not established",
+        "source": "EPA RCRAInfo data element dictionary, https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "assumed"
+      },
+      "longitude83": {
+        "availability": "current RCRA_FACILITIES snapshot applied retrospectively; historical operational value not established",
+        "source": "EPA RCRAInfo data element dictionary, https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "assumed"
+      },
+      "naics_2digit": {
+        "availability": "current RCRA_NAICS snapshot applied retrospectively; historical operational value not established",
+        "source": "EPA ECHO RCRAInfo data element dictionary, https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "assumed"
+      },
+      "naics_6digit": {
+        "availability": "current RCRA_NAICS snapshot applied retrospectively; primary code is the lexicographically smallest six-digit code when more than one is listed",
+        "source": "EPA ECHO RCRAInfo data element dictionary, https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "assumed"
+      },
+      "naics_code_count": {
+        "availability": "count of distinct six-digit codes in the current snapshot",
+        "source": "Derived from the static RCRA_NAICS.csv file documented at https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "assumed"
+      },
+      "operating_tsdf_codes": {
+        "availability": "current RCRA_FACILITIES snapshot column OPERATING_TSDF applied retrospectively; historical operational value not established",
+        "source": "EPA ECHO RCRAInfo data element dictionary, https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "assumed"
+      },
+      "state_code": {
+        "availability": "current RCRA_FACILITIES snapshot applied retrospectively; historical operational value not established",
+        "source": "EPA ECHO RCRAInfo data element dictionary, https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "assumed"
+      },
+      "transporter": {
+        "availability": "current RCRA_FACILITIES snapshot applied retrospectively; historical operational value not established",
+        "source": "EPA ECHO RCRAInfo data element dictionary, https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "assumed"
+      },
+      "tsdf_process_count": {
+        "availability": "deterministic function of current-vintage registry strings; blank when both strings are blank",
+        "source": "Derived from the RCRA_FACILITIES OPERATING_TSDF and FULL_ENFORCEMENT code strings documented at https://echo.epa.gov/tools/data-downloads/rcrainfo-download-summary",
+        "status": "assumed"
+      }
+    },
+    "limitations": [
+      "Registry attributes are current-vintage weekly-snapshot values applied retrospectively to inspections as far back as 2010; this is retrospective research and does not establish the operational record on the inspection date.",
+      "RCRA_FACILITIES.csv covers handlers in the current reporting universe, so the panel is subject to registry survivorship rather than inspection survivorship.",
+      "FOUND_VIOLATION reflects state coding and inspection intensity as well as facility conduct; state and inspecting agency are available but residual confounding remains and the label is not a uniform national standard.",
+      "The current extract contains a found-violation code outside the publisher-documented Yes, Undetermined and No set. Its meaning is not established; it is excluded as unclassified and never treated as a negative.",
+      "Violation determinations may post-date the inspection by weeks because they can follow sampling results or legal review, so the outcome is short-horizon rather than instantaneous.",
+      "Dropping Undetermined, blank and unclassified found-violation rows is selection on label availability; the build reports those shares because states that code many evaluations that way will be under-represented.",
+      "One earliest CEI per handler approximates independence; handlers whose only in-window CEI falls in an embargo gap are removed from all splits.",
+      "Prior violations, prior evaluations, SNC status and VIOSNC monthly flags are excluded because they are rolling histories of the same target and would create cross-row leakage; their absence caps achievable signal.",
+      "Facility names and street addresses are excluded from features; the released table carries handler identifiers but no names.",
+      "No historical registry vintage ledger or exact publication schedule was available, so feature availability and training label timing remain unverified rather than documented."
+    ],
+    "selection": {
+      "evidence": "EVALUATION_START_DATE is the first day of the inspection, before any site visit, record request or observation",
+      "kind": "prediction_time"
+    },
+    "training_label_timing": "unverified",
+    "use": "retrospective_research",
+    "vintage": {
+      "evidence": "ECHO/RCRAInfo weekly bulk extract; registry attributes are current vintage and are applied retrospectively to inspections as far back as 2010",
+      "kind": "current_snapshot"
+    }
+  },
+  "event_key_column": "inspection_start_date",
+  "expected_duplicate_ids": 0,
+  "external_threshold": null,
+  "features": [
+    "state_code",
+    "activity_location",
+    "fed_waste_generator",
+    "transporter",
+    "hreport_universe_record",
+    "operating_tsdf_codes",
+    "full_enforcement_codes",
+    "tsdf_process_count",
+    "naics_2digit",
+    "naics_6digit",
+    "naics_code_count",
+    "evaluation_agency",
+    "inspection_month",
+    "latitude83",
+    "longitude83"
+  ],
+  "features_documented_at": "prediction_time",
+  "high_cardinality_columns": [
+    "handler_id",
+    "inspection_start_date",
+    "naics_6digit",
+    "latitude83",
+    "longitude83"
+  ],
+  "id_columns": [
+    "handler_id"
+  ],
+  "label_source_columns": [
+    "FOUND_VIOLATION"
+  ],
+  "measurements": [
+    {
+      "column": "inspection_start_date",
+      "frame": "first day of the inspection or record review per EPA RCRAInfo data element dictionary",
+      "unit": "calendar date"
+    },
+    {
+      "column": "latitude83",
+      "frame": "handler site latitude in the ECHO/RCRAInfo registry snapshot",
+      "unit": "decimal degrees"
+    },
+    {
+      "column": "longitude83",
+      "frame": "handler site longitude in the ECHO/RCRAInfo registry snapshot",
+      "unit": "decimal degrees"
+    },
+    {
+      "column": "inspection_month",
+      "frame": "month component of EVALUATION_START_DATE",
+      "unit": "calendar month 1-12"
+    },
+    {
+      "column": "tsdf_process_count",
+      "frame": "distinct letters over the set L, I, B, S and T across the OPERATING_TSDF and FULL_ENFORCEMENT code strings; blank only when both fields are blank",
+      "unit": "count of distinct TSDF process letters"
+    },
+    {
+      "column": "naics_code_count",
+      "frame": "number of unique six-digit NAICS codes listed for the handler in RCRA_NAICS.csv",
+      "unit": "count of distinct six-digit NAICS codes"
+    }
+  ],
+  "name": "rcra-cei-violation-finding",
+  "positive_label": 1,
+  "post_hoc_columns": [
+    "FOUND_VIOLATION",
+    "DATE_VIOLATION_DETERMINED"
+  ],
+  "split_windows": {
+    "eval": {
+      "end": "2024-07-01T00:00:00.000",
+      "start": "2023-07-31T00:00:00.000"
+    },
+    "holdout": {
+      "end": "2025-07-31T00:00:00.000",
+      "start": "2024-07-31T00:00:00.000"
+    },
+    "train": {
+      "end": "2023-07-01T00:00:00.000",
+      "start": "2010-01-01T00:00:00.000"
+    }
+  },
+  "splits": {
+    "train": "public/train.csv",
+    "eval": "public/eval.csv",
+    "holdout": "private/holdout.csv"
+  },
+  "target": "violation_found",
+  "task": {
+    "decision_user": "State or EPA RCRA enforcement program manager allocating scarce inspection capacity, and an inspector preparing the scheduled inspection.",
+    "outcome_horizon": "The finding attached to that single evaluation; the violation determination date is not necessarily the inspection date and may follow sampling or legal review by roughly weeks.",
+    "population": "RCRA_EVALUATIONS.csv rows with EVALUATION_TYPE equal to CEI, a parseable EVALUATION_START_DATE inside one of the three frozen windows, FOUND_VIOLATION in the Yes or No code, and a matching ID_NUMBER plus ACTIVITY_LOCATION in RCRA_FACILITIES.csv; only the earliest qualifying CEI per ID_NUMBER is retained. The current extract also carries an undocumented found-violation code, which is excluded as unclassified rather than mapped to either label.",
+    "prediction_time": "00:00 local time on EVALUATION_START_DATE, the first day of the inspection or record review, before any site visit, record request or observation.",
+    "question": "A hazardous-waste handler is scheduled for a routine RCRA compliance evaluation inspection. Before the inspector arrives, will that inspection record at least one violation?",
+    "simple_references": "Majority class, state base-rate lookup, HREPORT-universe lookup, inspection-month calendar control, and an Operating-TSDF identity control.",
+    "split_policy": "Frozen on EVALUATION_START_DATE: training window starts 2010-01-01 inclusive and ends 2023-07-01 exclusive; evaluation window 2023-07-31 to 2024-07-01; holdout window 2024-07-31 to 2025-07-31; the 30-day gaps after each boundary are excluded; one handler contributes at most one row.",
+    "title": "Will a routine hazardous-waste compliance evaluation inspection find a violation at a U.S. handler?",
+    "usefulness": "The label is not recoverable from registry attributes: the task measures how much violation risk is predictable from facility universe, generator size, industry, state and inspecting agency before a visit."
+  },
+  "threshold_seconds": null,
+  "time_column": "inspection_start_date",
+  "timing": {
+    "features": {
+      "period": "current_weekly_snapshot",
+      "published_days_after_period_end": null
+    },
+    "observations": [],
+    "prediction_instant": {
+      "citation": "EPA RCRAInfo data element dictionary: the evaluation date is the first day of the inspection or record review",
+      "days_after_period_end": null,
+      "kind": "inspection_start",
+      "period": null
+    },
+    "row_selection": {
+      "fields": [
+        "EVALUATION_START_DATE"
+      ],
+      "rule": "earliest CEI per ID_NUMBER within the three frozen half-open windows"
+    }
+  },
+  "unit_validation": {
+    "checks": 2,
+    "mismatches": 0,
+    "source": "source-checks.json: unit checks",
+    "evidence_sha256": "1a771df09a3aec1ef6d7aa71797f5fa830095439bb694f5e492972404b4eff8c"
+  },
+  "positive_events": {
+    "train": {
+      "positives": 42455,
+      "distinct_events": 3411
+    },
+    "eval": {
+      "positives": 1833,
+      "distinct_events": 229
+    },
+    "holdout": {
+      "positives": 1888,
+      "distinct_events": 249
+    }
+  },
+  "adversarial_battery": {
+    "version": "1.0.0",
+    "ok": true,
+    "input_digest": "ab27d9b6bd60520423f45bb0eed3f17135b60318edd01bbae79141b97d684461",
+    "code": {
+      "artifact_scrub.py": "8c663253e691a7b8751f9c853b40a3752a833360caafb1ea8e8f534e64af4b68",
+      "leakage_battery.py": "adbf7ee0aca0012b78cc1f1e4aeb968a23717cae30f66a02e080215e75f830e3",
+      "recovery_recipes.py": "f64c542fcda232169c95ace17421b45275194b934938c0ea4c9b68e6f844ad0e"
+    },
+    "freeze_sha256": "9b0cb53216fd7fd0e77b75ac3e470ac37a235177556031bcb2c391e9ac3eb68e",
+    "all_results_sha256": "d1a7cf8e59b530e55c1cf6a5cc461f88fbee37db5009961b0a7d7c20ee2be33f",
+    "detail_files": {
+      "results-0000.jsonl": {
+        "sha256": "6808cded16d8063a46fadfd582a6294f039ee084056b33217755ab16669beefd",
+        "bytes": 126015
+      }
+    },
+    "exact": [],
+    "failures": [],
+    "flags": [
+      {
+        "name": "lookup_unanimous:activity_location+hreport_universe_record",
+        "kind": "supervised",
+        "split": "eval",
+        "sha256": "96eb25aac20b1ce0fe17a2db53f901a1f51c88d5499a5e0c95e6f6d360975d87",
+        "rows": 4203,
+        "covered": 5,
+        "errors": 0,
+        "auc_covered": 1.0,
+        "auc_full": 0.5011161983421611
+      },
+      {
+        "name": "lookup_unanimous:hreport_universe_record+state_code",
+        "kind": "supervised",
+        "split": "eval",
+        "sha256": "96eb25aac20b1ce0fe17a2db53f901a1f51c88d5499a5e0c95e6f6d360975d87",
+        "rows": 4203,
+        "covered": 5,
+        "errors": 0,
+        "auc_covered": 1.0,
+        "auc_full": 0.5011161983421611
+      }
+    ],
+    "flag_count": 2,
+    "attempted": {
+      "heuristic": 56,
+      "statistical": 172,
+      "supervised": 612
+    },
+    "constant_or_uncovered": {
+      "heuristic": 56,
+      "statistical": 47,
+      "supervised": 257
+    },
+    "scope": {
+      "donors": [
+        "self",
+        "all"
+      ],
+      "exploratory_keys": 8,
+      "exploratory_operands": 8,
+      "max_columns": 128,
+      "scored_labels_read": false,
+      "tokens_per_column": 80,
+      "train_labels": "supervised controls only"
+    }
+  }
+}

@@ -132,6 +132,39 @@ def findings(report) -> dict:
 class GateFixtures(unittest.TestCase):
     """The shipped broken/corrected fixtures."""
 
+    def test_date_rows_match_midnight_bounds_but_not_later_or_exclusive_bounds(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            q = {'splits': {s: s + '.csv' for s in ('train', 'eval', 'holdout')},
+                 'target': 'label', 'positive_label': 1, 'time_column': 'date',
+                 'split_windows': {s: {'start': f'{y}-01-01T00:00:00.000',
+                                        'end': f'{y+1}-01-01T00:00:00.000'}
+                                   for s, y in zip(('train', 'eval', 'holdout'), (2020, 2021, 2022))}}
+            columns = {}
+            for s, y in zip(('train', 'eval', 'holdout'), (2020, 2021, 2022)):
+                (root / q['splits'][s]).touch()
+                columns[s] = (['date', 'label'], {'date': [f'{y}-01-01', f'{y}-12-31'], 'label': ['0', '1']})
+            def check():
+                report = qualify_dataset.Report(root)
+                qualify_dataset.check_splits(q, report, columns)
+                return findings(report)
+            self.assertTrue(check()['splits.rows_within_declared_windows'])
+            q['split_windows']['eval']['start'] = '2021-01-01T01:00:00'
+            self.assertFalse(check()['splits.rows_within_declared_windows'])
+            q['split_windows']['eval']['start'] = '2021-01-01'
+            q['split_windows']['eval']['end'] = '2021-12-31T00:00:00'
+            self.assertFalse(check()['splits.rows_within_declared_windows'])
+            q['split_windows']['eval']['end'] = '2022-01-01'
+            columns['eval'][1]['date'][0] = 'not-a-date'
+            self.assertFalse(check()['splits.actual_ranges_computed'])
+            for s, y in zip(('train', 'eval', 'holdout'), (2020, 2021, 2022)):
+                columns[s][1]['date'] = [f'{y}-01-01T01:00:00+01:00', f'{y}-12-31T00:00:00Z']
+                q['split_windows'][s] = {'start': f'{y}-01-01T00:00:00Z',
+                                         'end': f'{y+1}-01-01T00:00:00Z'}
+            self.assertTrue(check()['splits.rows_within_declared_windows'])
+            columns['holdout'][1]['date'][0] = '2021-12-31T01:00:00+01:00'
+            self.assertFalse(check()['splits.actual_ranges_disjoint'])
+
     def test_selftest_passes(self):
         with contextlib.redirect_stdout(io.StringIO()) as captured:
             code = qualify_dataset.selftest(FIXTURES)

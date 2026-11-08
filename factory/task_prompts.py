@@ -173,6 +173,12 @@ requires training_label_timing="unverified" and explicit limitations; "post_outc
 does not establish when training labels were available. timing.observations contains
 only actual ISO period_end/published dates. Keep unknown dates in assumptions,
 not in date fields, and never invent observations to satisfy a check.
+For administrative event records in current-vintage retrospective research, set
+timing.features.source_kind="administrative_record". If there is no reporting
+period or known lag, use null period/lag values, not invented zero-day publication.
+Declare timing.row_selection.fields and rule; its actual eligibility and any
+outcome conditioning must agree with evaluation_contract.selection. This records
+unverified event-time availability, never a historical forecasting claim.
 For a domain threshold, include real unit/frame checks with kind="unit" in the
 returned source checks; no fabricated receipt.
 Do not include adversarial_battery; the actual gate writes it after inspecting rows.

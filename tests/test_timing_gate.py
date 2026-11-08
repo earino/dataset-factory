@@ -8,6 +8,7 @@ false of the *release*, and the old gate checked only the string.
 Each case below is the shape of a real failure, not a hypothetical.
 """
 import importlib.util
+import json
 import unittest
 from pathlib import Path
 
@@ -47,6 +48,31 @@ def checks(record):
 
 
 class TimingGateTests(unittest.TestCase):
+    def test_event_snapshot_research_does_not_invent_period_lags(self):
+        record = json.loads((ROOT / 'audits/rewrite/new-source-outcomes/rcra-build-3-quality.json').read_text())
+        # The failed real proposal omitted the source type; that is still incomplete.
+        self.assertFalse(checks(record)['timing.features_available_at_instant']['ok'])
+        record['timing']['features']['source_kind'] = 'administrative_record'
+        results = checks(record)
+        self.assertTrue(results['timing.event_feature_availability_unverified']['ok'])
+        self.assertTrue(results['timing.event_selection_declared']['ok'])
+        self.assertNotIn('timing.features_available_at_instant', results)
+        self.assertNotIn('timing.selection_uses_only_available_data', results)
+        record['evaluation_contract']['use'] = 'historical_forecasting'
+        self.assertFalse(checks(record)['timing.features_available_at_instant']['ok'])
+        record['evaluation_contract']['use'] = 'retrospective_research'
+        record['timing']['row_selection']['latest_period_used'] = 'M+1'
+        self.assertFalse(checks(record)['timing.selection_uses_only_available_data']['ok'])
+        record['timing']['features']['published_days_after_period_end'] = 10
+        record['timing']['prediction_instant']['days_after_period_end'] = 0
+        self.assertFalse(checks(record)['timing.features_available_at_instant']['ok'])
+        record['timing']['features']['published_days_after_period_end'] = None
+        record['timing']['prediction_instant']['days_after_period_end'] = None
+        record['timing']['features']['source_kind'] = 'statistical_release'
+        results = checks(record)
+        self.assertFalse(results['timing.features_available_at_instant']['ok'])
+        self.assertFalse(results['timing.publication_lag_measured']['ok'])
+
     def test_a_feature_published_after_a_month_end_instant_is_refused(self):
         """The nhs-ae shape: features land 10 days after the period, the instant is the period end."""
         results = checks(quality(lag=10, instant_kind="period_end", instant_lag=0))

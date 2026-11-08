@@ -49,8 +49,10 @@ def qualification_binding(package, path, *, historical=False):
     passed=(report.get('ok') is True and report.get('failed_checks')==[] and results
             and all(r.get('ok') is True for r in results)
             and mandatory <= {r.get('check') for r in results})
-    if report.get('gate_version')!='1.6.0' or (not historical and not passed):
-        raise ValueError('new package claims require passing gate 1.6 qualification')
+    from .qualification_receipt import GATE_VERSION
+    versions = {'1.6.0', GATE_VERSION} if historical else {GATE_VERSION}
+    if report.get('gate_version') not in versions or (not historical and not passed):
+        raise ValueError(f'new package claims require passing gate {GATE_VERSION} qualification')
     for key in ('train','eval','holdout','meta.json','quality.json'):
         entry=report['artifact'][key]
         if sha256(safe_path(Path(package),entry['file']))!=entry['sha256']:

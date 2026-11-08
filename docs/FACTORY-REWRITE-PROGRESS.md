@@ -685,6 +685,48 @@ The source is CMS nursing-home inspections, materially different from EPA RCRA.
 The preceding RCRA evidence commit e520032 passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42500974752).
 
+### Correct event timing applicability and date comparison (16:54 UTC)
+
+RCRA build-3 reached the full artifact gate after 85.6 seconds. The exact report
+fails three checks: feature availability lag, selection period, and rows within
+split windows. Its manifest, quality descriptor, failure and qualification report
+are retained as `audits/rewrite/new-source-outcomes/rcra-build-3-*`, with report
+bytes verified against staging manifest 724549181 (release 438377548). No scores
+or base rates from this failed artifact are accepted findings.
+
+The window failure compares a date string with midnight on the same date as if
+the date were earlier. Gate 1.6.1 parses ISO month/date/timestamp values and compares
+actual times in linear time. Equal starts pass, equal exclusive ends fail; invalid
+or incompatible timestamps fail. Regression tests also cover timezone-equivalent
+instants and overlapping actual ranges.
+
+The other two findings expose the periodic descriptor being applied to inspection
+records. The existing PREDICTION-CONTRACT already permits retrospective research
+with explicit timing assumptions; it does not require invented publication dates.
+Gate 1.6.1 adds an explicitly unverified event-time result for administrative
+records with current/mixed vintage, non-periodic instants, retrospective scope,
+unverified training-label timing and stated limitations. It records the event
+selection rule without claiming prediction-time eligibility. Known late features,
+statistical-release observations, explicit future-period selection, historical
+forecasting evidence and every leakage check retain their requirements.
+The builder prompt explains the existing administrative-record source type and
+null unknown lags. The unchanged RCRA descriptor still lacks that type and is not
+accepted by the patch. No live proposal or candidate state was edited; new full-row
+qualification and semantic review remain necessary.
+
+New qualification/claim receipts require version 1.6.1. Historical 1.6.0 reports
+remain usable as historical evidence only. The gate selftest passes: broken fixtures
+still fail their expected checks and the corrected fixture passes. Focused date and
+timing regressions pass; the full working-checkout suite passed 933 tests (13 skipped)
+before the final timezone regression addition. The final clean checkout also passed
+933 tests (13 skipped), including the timezone and historical-receipt regressions.
+Runtime inventory, rule inventory, 22 suitability reviews and historical approval
+checks passed. No passing real-artifact receipt is inferred from these tests.
+
+Parser fix d80511b passed [CI](https://github.com/earino/dataset-factory/actions/runs/42501504485)
+and 931 clean-checkout tests (13 skipped). Scout's source-12 evidence export passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42501241367).
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;

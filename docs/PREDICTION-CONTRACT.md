@@ -26,6 +26,14 @@ Retrospective research with stated timing assumptions remains useful. Operationa
 claims require stronger evidence. Neither a high score nor a bounded unsuccessful attack proves
 historical validity or optimal honest-model headroom.
 
+For administrative event records, gate 1.6.1 does not require an invented reporting
+period. A current/mixed-vintage retrospective task may explicitly leave event-time
+availability unverified: set `timing.features.source_kind="administrative_record"`,
+use null period/lag fields when unknown, and state selection fields and rule.
+The report distinguishes this scope declaration from verified timing. Known late
+features, statistical-release lag evidence and explicit future-period selection
+retain their checks. Historical forecasting still requires full-row evidence.
+
 ## Required before new construction
 
 Record the decision/user, prediction instant, outcome horizon and availability, source release
