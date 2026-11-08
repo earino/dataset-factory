@@ -43,22 +43,49 @@ Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 - Deployment uses `config/local.json.pipeline_enabled=true`; legacy admission hold remains
   intact. Only running SQLite build/publish attempts may launch replacement workers.
   Old research and follow-up entrypoints exit without models when the replacement is enabled.
-- Next: finish clean-clone checks, commit/push, verify CI, and coordinate the single-ledger
-  cutover with Scout while retaining the independent cleanup scheduler.
+- Complete-path implementation `b803f7e31ae1bf86cc2064397f59842086345228` passed
+  [CI](https://github.com/earino/dataset-factory/actions/runs/42479249229).
+  Integrated Scout's discovery evidence at `778e97546e23bb0c9ebba1ad8dc765a25ee98739`;
+  clean clone passed **914 tests, 13 skipped**, with bytecode writing enabled, plus
+  doctor/runtime/suitability/historical-approval/rule-inventory/state checks.
+  Both [branch CI](https://github.com/earino/dataset-factory/actions/runs/42479305668)
+  and [main CI](https://github.com/earino/dataset-factory/actions/runs/42479411071) passed.
+- Fast-forward shipped to main at 12:16 UTC. Scout received exact-hash cutover instructions:
+  backup live state, pause three old launch/follow-up schedules, retain cleanup, install
+  the script-only tick, enable replacement locally, and start a fresh unattended queue.
+  Scout confirmed activation at 12:22 UTC: deployed exact hash, runtime inventory
+  128 files/zero problems, prior uncommitted evidence retained in backup and stash.
+- New scheduler `07d6f8be3783`: every minute, `no_agent: true`, script
+  `scout_factory_tick.py`; global script timeout 6000 seconds, shim bound 1200.
+  Legacy jobs `86fe52e55ef9`, `69a5bc676d10`, `98b45d983280` paused at
+  12:19:17–26 UTC. Cleanup `e80975eddd4a` remains active.
+- The **scheduled** 12:21 UTC tick initialized the fresh queue and began bounded
+  discovery `rw-4fa4bc1fda01-discover-1`. Scout's simultaneous manual verification
+  returned `busy`/exit 0, demonstrating the deployed single-controller lock.
+  Two queue slots are seeded; actual source discovery/build results are still pending.
+- Next: verify deployed scheduler/model/worker operation, repair actual runtime failures,
+  and observe two materially different sources through public consumer verification.
 
 ## Milestones
 
 | Milestone | Implemented | Local tests | CI | Deployed evidence |
 | --- | --- | --- | --- | --- |
-| Controller and state | Implemented | Restart, retry, lock, queue tests | Foundation passed; integration pending | — |
-| Mechanical worker lifecycle | Implemented | Collection, cleanup, recovery, upload integration | Foundation passed; integration pending | — |
-| Model tasks and evaluation | Implemented | Source replay, qualification/package/consumer tests | Pending | Discovery pilot only |
-| Automatic publication | Implemented | Two-platform transfer, anonymous loading, retry, exact qualification | Pending | — |
-| Cutover and unattended acceptance | No | — | — | — |
+| Controller and state | Implemented | Restart, retry, lock, queue tests | Passed | — |
+| Mechanical worker lifecycle | Implemented | Collection, cleanup, recovery, upload integration | Passed | — |
+| Model tasks and evaluation | Implemented | Source replay, qualification/package/consumer tests | Passed | Discovery pilot only |
+| Automatic publication | Implemented | Two-platform transfer, anonymous loading, retry, exact qualification | Passed | — |
+| Cutover and unattended acceptance | Deployed | Lock/legacy guard tests | Passed | Scheduled 12:21 tick, overlapping tick refused; compact export pending |
 
 ## Acceptance evidence
 
-A1-A8: pending. No real-data acceptance, publication or deployment claimed.
+A1: deployed controller/lock observed; job restart acceptance pending.
+A2: worker lifecycle software checks passed; live outcome pending.
+A3: live discovery pilot recorded; deployed build/review pending.
+A4–A6: real-source publication, consumer and recovery acceptance pending.
+A7: Scout reports scheduled execution, legacy paths paused and cleanup active;
+compact repository receipt export pending.
+A8: implementation and evidence shipped with passing exact-commit CI; final
+acceptance/sign-off remains open. No completed dataset release claimed.
 
 ## Known findings relevant to implementation
 
