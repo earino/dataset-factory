@@ -210,6 +210,38 @@ class WeeklyTokenBudgetTests(BudgetTestCase):
         self.assertEqual(40_000_000, decision['normal_operation_tokens_last_7_days'])
         self.assertTrue(any('weekly budget' in reason for reason in decision['reasons']))
 
+    def test_resumed_development_window_keeps_prior_window_and_normal_gap(self):
+        moment = datetime.now(timezone.utc)
+        make_state_db(self.state_db, [
+            ('first', 'chat', 1, 25_000_000, 0, 0.0, 'estimated', 'scout-research'),
+            ('gap', 'chat', 1, 100, 0, 0.0, 'estimated', 'scout-research'),
+            ('resumed', 'chat', 1, 25_000_000, 0, 0.0, 'estimated', 'scout-research'),
+        ])
+        with sqlite3.connect(self.state_db) as db:
+            for name, hours in [('first', 5), ('gap', 3), ('resumed', 1)]:
+                stamp = (moment - timedelta(hours=hours)).timestamp()
+                db.execute('update sessions set started_at=? where id=?', (stamp, name))
+        config = self.config(allowance_usd=30, sessions_per_week=200,
+            weekly_token_budget=40_000_000,
+            development_token_exemption_from=(moment - timedelta(hours=6)).isoformat(),
+            development_token_exemption_until=(moment - timedelta(hours=4)).isoformat(),
+            development_token_windows=[{'from': (moment - timedelta(hours=2)).isoformat(), 'until': None}])
+        active = budget.evaluate(config, moment=moment)
+        self.assertTrue(active['allowed'], active['reasons'])
+        self.assertTrue(active['development_token_exemption_active'])
+        self.assertEqual(100, active['normal_operation_tokens_last_7_days'])
+        config['development_token_windows'][0]['until'] = moment.isoformat()
+        closed = budget.evaluate(config, moment=moment + timedelta(seconds=1))
+        self.assertFalse(closed['development_token_exemption_active'])
+        self.assertEqual(100, closed['normal_operation_tokens_last_7_days'])
+        self.assertEqual(50_000_100, closed['research_tokens_last_7_days'])
+
+    def test_invalid_resumed_development_window_holds_admission(self):
+        config = self.config(allowance_usd=30, development_token_windows=[{'from': 'bad', 'until': None}])
+        result = budget.evaluate(config)
+        self.assertFalse(result['allowed'])
+        self.assertIn('invalid development token exemption interval', result['reasons'])
+
 
 class GateTests(BudgetTestCase):
     def test_an_unconfigured_allowance_refuses_to_wake_the_model(self):

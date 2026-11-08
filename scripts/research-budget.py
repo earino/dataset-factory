@@ -124,14 +124,21 @@ def _rows(query, params=(), db=None):
         ) from None
 
 
-def usage_by_kind(config, start, end, *, exclude_session_window=None):
+def usage_by_kind(config, start, end, *, exclude_session_window=None, exclude_session_windows=()):
     """Measured usage in [start, end), split by session kind and by task class."""
     epoch_start, epoch_end = start.timestamp(), end.timestamp()
     exclusion = ''
     parameters = (epoch_start, epoch_end)
+    windows = list(exclude_session_windows)
     if exclude_session_window:
-        exclusion = ' and (s.started_at is null or not (s.started_at >= ? and s.started_at < ?))'
-        parameters += tuple(value.timestamp() for value in exclude_session_window)
+        windows.append(exclude_session_window)
+    for beginning, expiry in windows:
+        if expiry is None:
+            exclusion += ' and (s.started_at is null or s.started_at < ?)'
+            parameters += (beginning.timestamp(),)
+        else:
+            exclusion += ' and (s.started_at is null or not (s.started_at >= ? and s.started_at < ?))'
+            parameters += (beginning.timestamp(), expiry.timestamp())
     rows = _rows(
         "select u.session_id, u.task, u.api_call_count, u.input_tokens, u.output_tokens, "
         "u.estimated_cost_usd, u.cost_status, s.source "
@@ -370,9 +377,23 @@ def _evaluate(config, moment, late_minutes):
         except (ValueError, TypeError, AttributeError):
             development_exempt = False
             reasons.append("invalid development token exemption interval")
+    development_windows = [development_window] if development_window else []
+    try:
+        for window in config.get('development_token_windows', []):
+            beginning = datetime.fromisoformat(window['from'].replace('Z', '+00:00'))
+            expiry = (datetime.fromisoformat(window['until'].replace('Z', '+00:00'))
+                      if window.get('until') is not None else None)
+            if beginning.tzinfo is None or (expiry is not None and
+                    (expiry.tzinfo is None or expiry <= beginning)):
+                raise ValueError('Invalid development interval')
+            development_windows.append((beginning, expiry))
+            development_exempt |= beginning <= moment and (expiry is None or moment < expiry)
+    except (ValueError, TypeError, AttributeError, KeyError):
+        development_exempt = False
+        reasons.append('invalid development token exemption interval')
     if development_exempt:
         warnings.append(f"Operator-authorized development: weekly token ceiling is not enforced "
-                        f"until {development_until}; usage is still measured")
+                        f"during the recorded development window; usage is still measured")
     if policy not in ("hold", "require_token_budget"):
         reasons.append("unpriced_research_policy is invalid; expected hold or require_token_budget")
 
@@ -408,8 +429,8 @@ def _evaluate(config, moment, late_minutes):
     # the cadence outruns what the operator is willing to spend, whatever the cost column says.
     week_usage = usage_by_kind(config, week_start, moment).get("research", {})
     week_tokens = int(week_usage.get("input_tokens", 0)) + int(week_usage.get("output_tokens", 0))
-    normal_usage = (usage_by_kind(config, week_start, moment, exclude_session_window=development_window)
-                    .get('research', {}) if development_window else week_usage)
+    normal_usage = (usage_by_kind(config, week_start, moment, exclude_session_windows=development_windows)
+                    .get('research', {}) if development_windows else week_usage)
     normal_tokens = int(normal_usage.get('input_tokens', 0)) + int(normal_usage.get('output_tokens', 0))
     development_tokens = week_tokens - normal_tokens
     if development_tokens:

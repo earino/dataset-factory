@@ -1300,3 +1300,19 @@ Final runtime evidence was exported by Scout in `1983f07` and corrected in
 `dd737f9`. The original export passed [CI](https://github.com/earino/dataset-factory/actions/runs/42513596675);
 the corrected export and this closeout commit receive exact-commit CI checks before
 the final user report. Runtime code remains `6ac5f83`; these are evidence-only changes.
+
+## New authorized implementation run — 2026-11-08 19:58:14 UTC
+
+Eduardo submitted the revised goal with no new elapsed-time limit. Implementation
+work resumes under `b83c19a`; the goal tool still reports the prior goal paused and
+rejected replacement creation because it is unfinished. This tooling limitation
+was reported; no false completion was recorded. Scout was asked to inspect/export
+saved UCMR build-8 results before new calls or workers, and remains sole launcher.
+
+Development accounting now supports a separately recorded open-ended window while
+preserving the first closed window. Closing the new window retains its session
+usage exclusion after normal operation resumes; the gap between windows remains
+normal usage. This follows the operator's development exemption without inventing
+a new deadline or raising worker allowances. Two ledger regressions cover resumed
+usage/closure and invalid-window refusal; all 33 budget tests pass locally.
+Runtime deployment and saved-result inspection remain pending at this entry.
