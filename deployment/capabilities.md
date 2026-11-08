@@ -14,6 +14,12 @@ admission remain in force. Exact session and worker records are in
 `audits/rewrite/first-write-only/`. The worker rejected unsupported terms evidence;
 this verifies the write capability and failure lifecycle, not a completed release.
 
+A live EPA construction response exposed a hosted redaction false positive:
+`PWS_TYPE_CODE` in a diagnostic assignment was masked before message storage,
+removing Python punctuation. Stored messages cannot recover the original bytes.
+Construction prompts now keep public field names and values separate in diagnostic
+text; secret redaction remains enabled. Evidence: `audits/rewrite/redaction-false-positive/`.
+
 Earlier observations, retained to explain the migration:
 
 Replacement factory live observations (12:21–12:36 UTC): the `web` toolset works

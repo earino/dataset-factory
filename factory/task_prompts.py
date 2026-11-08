@@ -119,6 +119,11 @@ declared ID, time, feature and carry-column names. Nothing renames columns for y
 No metrics, training, qualification or packaging in this function. Return a nonempty
 list of source checks: [{"check":"what was checked", "observed":"actual value",
 "expected":"publisher evidence or rule", "passed":true}]. Assert failures.
+Keep public field names and expected values in separate check properties, with
+descriptive diagnostic strings. The hosted runtime misclassifies PWS_TYPE_CODE
+followed by an equals sign in prose as a password assignment and can remove
+Python closing quotes. Use words in those messages, preserving the actual field
+references and filtering logic. Never reconstruct redacted credentials.
 Use the publisher's actual field semantics, not a guessed schema. Concrete source
 examples should be checked, but never ship fixture labels or answer scaffolds as
 features or auxiliary evaluation files. Missing data is not zero. Freeze thresholds

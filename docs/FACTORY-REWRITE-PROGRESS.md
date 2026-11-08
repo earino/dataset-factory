@@ -531,6 +531,32 @@ manifest and digest-verified failure are retained under `new-source-outcomes/`
 (staging release 438348862, manifest asset 724415808). This is now eligible for
 the existing automatic terms-evidence repair. No artifact has been accepted.
 
+### Hosted output redaction damaged source code (16:12 UTC)
+
+The source 9 export is now retained under `audits/rewrite/source9-parse-failure/`.
+It is an EPA drinking-water violation task. The exact parser error is line 166,
+column 63: an unterminated diagnostic string containing `PWS_TYPE_CODE=***`.
+Scout compared the stored assistant message with captured stdout: both contain
+the same damage. The installed runtime redacts assistant content before storage,
+and its redactor reproduces the false positive on this public field name.
+The original pre-redaction response is unavailable. This corrects the earlier
+attribution of that syntax error solely to model-generated invalid Python.
+
+The construction prompt now asks for separate public field/value properties and
+descriptive diagnostic messages instead of apparent assignments in strings.
+Actual source field references and filtering rules stay fixed. The runtime's
+secret redaction remains enabled and unchanged. This is a narrow response-format
+workaround for an observed integration defect, not a relaxed artifact check.
+Live successful repair is still required. Scout's diagnosis is retained in
+`audits/rewrite/redaction-false-positive/note.md`; its broader cautions are not
+proof that every field containing a secret-like substring is redacted.
+
+Scout confirmed `1f04213` deployed at 16:02:44 UTC. Its clean checkout passed
+931 tests (13 skipped), and [CI passed](https://github.com/earino/dataset-factory/actions/runs/42497468603).
+The source-9 export and redaction diagnosis passed CI
+([source evidence](https://github.com/earino/dataset-factory/actions/runs/42497896732),
+[diagnosis](https://github.com/earino/dataset-factory/actions/runs/42498439282)).
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;
