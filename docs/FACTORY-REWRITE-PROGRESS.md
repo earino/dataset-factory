@@ -28,8 +28,10 @@ publication and anonymous consumers remain on the critical path. The two-source
 acceptance criterion is unchanged; deployment replays do not substitute for it.
 
 Completion by the deadline remains possible, but is not yet a confident forecast.
-At 15:00:01 UTC, measured headroom was 1,233,486 inference tokens before admission
-stops and EUR 10.82 of worker reservation allowance. The remaining work stays
+At the checkpoint I reported 1,233,486 tokens of headroom. That interpretation was
+wrong: the 15:00:01 UTC measurement left **3,233,486 tokens** before the actual
+40M weekly admission ceiling, plus EUR 10.82 of worker reservation allowance.
+Correction recorded at 15:17 UTC below. The remaining work stays
 focused on actual blockers in the deployed path. No additional projects, allowance
 increases, source resurrection or validation exceptions are planned. If the criteria
 remain unmet at 19:07, wind down new work safely, retain cleanup/resumable state and
@@ -244,7 +246,7 @@ Scout's correction export passed [CI](https://github.com/earino/dataset-factory/
 The observed construction timeout now also preserves measured partial usage and
 bounded redacted failure diagnostics; clean clone passed 919 tests (13 skipped).
 Allowance at 13:14 UTC: EUR 11.78 worker reservation remaining; measured rolling
-inference usage 35.76M/40M tokens (stop fraction 0.95 still applies). Dollar spend
+inference usage 35.76M/40M tokens (approximately 4.24M remaining). Dollar spend
 remains unknown; no spending limits were changed.
 
 `0ddaeae` passed [CI](https://github.com/earino/dataset-factory/actions/runs/42484303994).
@@ -295,8 +297,9 @@ code. Both live proposals fit the existing 64 KiB prompt bound even with the ful
 12,000-character failure allowance; model time/turn/spending limits are unchanged.
 
 At 14:07 UTC Scout measured 36,339,072/40,000,000 rolling inference tokens and
-123/200 sessions. The configured 0.95 stop fraction leaves approximately 1.66M
-tokens before admission stops, not the 3.66M difference to the nominal ceiling.
+123/200 sessions, leaving approximately 3.66M tokens. The earlier claim here of
+1.66M headroom incorrectly applied the dollar stop fraction to tokens; corrected
+at 15:17 UTC against the admission code.
 Source 5 had completed discovery; source 6 was retrying malformed discovery JSON.
 Full source-3/4 state exports explicitly distinguish reconstructed before-states
 from observed after-states. These reconstructions are not original snapshots.
@@ -387,7 +390,8 @@ has completed discovery and source 8 is in discovery. The tick paused at
 stays active.
 
 Measured inference usage is 36,766,514/40,000,000 rolling-week tokens, with
-1,233,486 before the configured 0.95 admission stop, and 131/200 sessions.
+3,233,486 before the configured 40M token ceiling, and 131/200 sessions
+(corrected at 15:17 UTC; the original export misapplied the dollar stop fraction).
 Worker reservations are EUR 9.18/20.00, leaving EUR 10.82. These are configured
 allowances, not a claim about actual subscription spend. No limits were raised.
 
@@ -423,6 +427,22 @@ has hit bounded timeouts and continues under its existing allowance.
 
 Four-hour checkpoint commit `69e0ea4` passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42493190422).
+
+### Accounting interpretation correction (15:17 UTC)
+
+Inspection of `scripts/research-budget.py:_evaluate` and the actual `run_gate`
+call established that `stop_fraction=0.95` applies only to priced dollar spend.
+The token gate compares input plus output tokens directly against
+`weekly_token_budget=40,000,000`. It does not stop at 38M. My earlier correction
+to Scout was itself wrong; the 15:00:01 measurement therefore left 3,233,486 tokens,
+not 1,233,486. The user and Scout were notified, and affected prose above corrected.
+The original measured usage export is unchanged. No code or configured limit was
+changed. Source 7's write task used 52,467 input-plus-output tokens, not only its
+6,473 input tokens. Current remaining headroom must still be remeasured after
+subsequent tasks; these figures refer to their stated observations.
+
+The first write-only evidence integration `1d3bc87` passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42493852414).
 
 ## Known findings relevant to implementation
 

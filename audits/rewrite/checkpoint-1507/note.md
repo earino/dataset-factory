@@ -17,3 +17,8 @@ sessions 131/200; research 6,497 calls / 32.38M in; interactive 753 calls
 
 Worker allowance: 76 job reservations in 2026-11, EUR 9.18 of 20.00
 (EUR 10.82 remaining). Provider holds zero servers; cleanup verified active.
+
+Codex correction, 15:17 UTC: the 0.95 fraction above was an interpretation error;
+research-budget.py applies it to dollar spend only. The weekly token gate is
+40,000,000, so this unchanged measured observation leaves 3,233,486 tokens. Both
+input and output count. No configured allowance or admission code was changed.
