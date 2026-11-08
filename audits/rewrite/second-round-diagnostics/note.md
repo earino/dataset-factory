@@ -15,3 +15,20 @@ stats19-collision-ksi (GB road collisions). Deployed 0ddaeae at the
 failed/timed-out tasks). Effective reasoning effort for the factory's
 DeepSeek tasks: config.yaml reasoning_effort: medium (no per-model override,
 no --reasoning flag in the adapter argv).
+
+## Turn-cap diagnosis (confirmed) and source-4 outcome
+
+Both failed construction sessions show the code_turns=2 cap consumed by two
+web_extract field-doc reads, then the iteration-cap nudge:
+- nid-dam build-4 (local-80e14163...): final assistant text is an explicit
+  gave-up message (170 B) with NO construction JSON - retained verbatim in
+  nid-dam-build-4-final-assistant.txt.
+- hurdat2 build-2 (local-0250b247...): despite the cap, the wrap-up DID emit a
+  complete 33,567-char construction JSON (build_py + source URL) - retained
+  verbatim in hurdat2-build-2-final-assistant.txt. The content exists; the
+  attempt failed on the exit-1/accounting path, not missing output. Reusable
+  without new inference.
+- source-000004 (stats19-collision-ksi) build-1: construction task succeeded
+  (build_py produced for DFT road-casualty data), but the controller rejected
+  the source at 13:3xZ - "Publisher terms evidence could not support the
+  source claim". A policy rejection, not a failure; no worker launched.

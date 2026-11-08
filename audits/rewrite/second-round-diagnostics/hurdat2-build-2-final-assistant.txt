@@ -1,0 +1,305 @@
+{
+  "build_py": "from pathlib import Path\nfrom datetime import datetime, timedelta, timezone\nimport math\n\nimport pandas as pd\n\nfrom source_io import fetch\n\nURL = 'https://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2025-092326.txt'\nFILENAME = 'hurdat2-1851-2025-092326.txt'\n\nHORIZON_HOURS = 72\nTS_MIN_KT = 34\nTS_MAX_KT = 63\nHU_KT = 64\nR_EARTH_NM = 3440.065\nYEAR_MIN = 1990\nYEAR_MAX = 2025\nBOUNDARIES = (datetime(2011, 1, 1, tzinfo=timezone.utc),\n              datetime(2018, 1, 1, tzinfo=timezone.utc))\n\nCOLUMNS = [\n    'storm_id', 'decision_time', 'storm_name',\n    'initial_max_wind_kt', 'initial_min_pressure_mb',\n    'latitude_deg_n', 'longitude_deg_w', 'month',\n    'prior_6h_wind_change_kt', 'translation_speed_kt',\n    'translation_heading_deg', 'reached_hurricane_72h',\n]\n\n\ndef _num(text):\n    try:\n        return float(str(text).strip())\n    except (TypeError, ValueError):\n        return None\n\n\ndef _int(text):\n    value = _num(text)\n    return None if value is None else int(value)\n\n\ndef _lat(text):\n    raw = str(text).strip()\n    if len(raw) < 2:\n        return None\n    hemi = raw[-1].upper()\n    value = _num(raw[:-1])\n    if value is None or value <= -99.0 or hemi not in ('N', 'S'):\n        return None\n    return -value if hemi == 'S' else value\n\n\ndef _lon(text):\n    raw = str(text).strip()\n    if len(raw) < 2:\n        return None\n    hemi = raw[-1].upper()\n    value = _num(raw[:-1])\n    if value is None or value <= -999.0 or hemi not in ('E', 'W'):\n        return None\n    return -value if hemi == 'W' else value\n\n\ndef _read_blocks(path):\n    blocks = []\n    current = None\n    count_mismatch = 0\n    bad_lines = 0\n    with open(path, 'r', encoding='utf-8', errors='replace') as handle:\n        for raw in handle:\n            line = raw.strip()\n            if not line:\n                continue\n            if line.startswith('AL'):\n                if current is not None:\n                    if len(current['rows']) != current['count']:\n                        count_mismatch += 1\n                    blocks.append(current)\n                parts = line.split(',')\n                current = {\n                    'id': parts[0].strip(),\n                    'name': parts[1].strip(),\n                    'count': _int(parts[2]) if len(parts) > 2 else None,\n                    'rows': [],\n                }\n                continue\n            if current is None:\n                bad_lines += 1\n                continue\n            parts = [p.strip() for p in line.split(',')]\n            if len(parts) < 8:\n                bad_lines += 1\n                continue\n            date, hhmm = parts[0], parts[1]\n            if len(date) != 8 or len(hhmm) != 4:\n                bad_lines += 1\n                continue\n            try:\n                stamp = datetime(int(date[:4]), int(date[4:6]), int(date[6:8]),\n                                 int(hhmm[:2]), int(hhmm[2:]), tzinfo=timezone.utc)\n            except ValueError:\n                bad_lines += 1\n                continue\n            current['rows'].append({\n                't': stamp,\n                'status': parts[3],\n                'lat': _lat(parts[4]),\n                'lon': _lon(parts[5]),\n                'wind': _int(parts[6]),\n                'pressure': _int(parts[7]),\n            })\n    if current is not None:\n        if len(current['rows']) != current['count']:\n            count_mismatch += 1\n        blocks.append(current)\n    return blocks, count_mismatch, bad_lines\n\n\ndef _gc_nm(lat1, lon1, lat2, lon2):\n    p1 = math.radians(lat1)\n    p2 = math.radians(lat2)\n    dphi = p2 - p1\n    dlam = math.radians(lon2 - lon1)\n    a = math.sin(dphi / 2.0) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dlam / 2.0) ** 2\n    return 2.0 * R_EARTH_NM * math.asin(min(1.0, math.sqrt(a)))\n\n\ndef _bearing(lat1, lon1, lat2, lon2):\n    p1 = math.radians(lat1)\n    p2 = math.radians(lat2)\n    dlam = math.radians(lon2 - lon1)\n    y = math.sin(dlam) * math.cos(p2)\n    x = math.cos(p1) * math.sin(p2) - math.sin(p1) * math.cos(p2) * math.cos(dlam)\n    return (math.degrees(math.atan2(y, x)) + 360.0) % 360.0\n\n\ndef build(output: Path, cache: Path):\n\n    output = Path(output)\n    cache = Path(cache)\n    (output / 'public').mkdir(parents=True, exist_ok=True)\n    (output / 'private').mkdir(parents=True, exist_ok=True)\n\n    path = Path(fetch(URL, cache, FILENAME))\n\n    checks = []\n\n    def record(name, observed, expected, passed, kind=None):\n        entry = {'check': name, 'observed': str(observed),\n                 'expected': str(expected), 'passed': bool(passed)}\n        if kind is not None:\n            entry['kind'] = kind\n        checks.append(entry)\n        if not passed:\n            raise AssertionError(name + ' | observed=' + str(observed) + ' | expected=' + str(expected))\n\n    blocks, count_mismatch, bad_lines = _read_blocks(path)\n\n    record('each storm header declares the number of track rows that follow',\n           'blocks=' + str(len(blocks)) + ' count_mismatches=' + str(count_mismatch),\n           'HURDAT2 header field 3 equals the number of following comma-delimited track records',\n           count_mismatch == 0)\n    record('every non-empty line parses as a header or an 8+ field track record',\n           'unparsed_lines=' + str(bad_lines),\n           '0 unparsed lines',\n           bad_lines == 0)\n\n    ida = None\n    for block in blocks:\n        if block['id'] == 'AL092021':\n            ida = block\n            break\n    ida_obs = 'AL092021 not found'\n    ida_ok = False\n    if ida is not None:\n        track = sorted(ida['rows'], key=lambda r: r['t'])\n        first_ts = None\n        for row in track:\n            if row['status'] == 'TS' and row['wind'] is not None and TS_MIN_KT <= row['wind'] <= TS_MAX_KT:\n                first_ts = row\n                break\n        ida_obs = 'rows=' + str(len(track)) + ' declared=' + str(ida['count'])\n        if first_ts is not None:\n            ida_obs += ' first_ts=' + first_ts['t'].strftime('%Y-%m-%d %H:%M') + ' wind=' + str(first_ts['wind'])\n        ida_ok = (len(track) == ida['count'] and first_ts is not None\n                  and first_ts['t'] == datetime(2021, 8, 26, 18, tzinfo=timezone.utc)\n                  and first_ts['wind'] == 35)\n    record('documented Hurricane Ida example block is reproduced by the parser',\n           ida_obs,\n           'AL092021 with 40 track rows and a 2021-08-26 18:00 UTC TS record of 35 kt (HURDAT2 format document example)',\n           ida_ok)\n\n    rows_out = []\n    embargoed = 0\n    pressure_sentinel_rows = 0\n\n    for block in blocks:\n        track = sorted(block['rows'], key=lambda r: r['t'])\n        dec_idx = None\n        for idx, row in enumerate(track):\n            if row['status'] == 'TS' and row['wind'] is not None and TS_MIN_KT <= row['wind'] <= TS_MAX_KT:\n                dec_idx = idx\n                break\n        if dec_idx is None:\n            continue\n        dec = track[dec_idx]\n        if dec['wind'] is None or dec['lat'] is None or dec['lon'] is None:\n            continue\n        t0 = dec['t']\n        if not (YEAR_MIN <= t0.year <= YEAR_MAX):\n            continue\n        horizon = t0 + timedelta(hours=HORIZON_HOURS)\n\n        label = 0\n        for later in track[dec_idx + 1:]:\n            if later['t'] > horizon:\n                break\n            if later['status'] == 'HU' or (later['wind'] is not None and later['wind'] >= HU_KT):\n                label = 1\n                break\n\n        crosses = False\n        for boundary in BOUNDARIES:\n            if t0 < boundary <= horizon:\n                crosses = True\n                break\n        if crosses:\n            embargoed += 1\n            continue\n\n        if t0.year <= 2010:\n            split = 'train'\n        elif t0.year <= 2017:\n            split = 'eval'\n        else:\n            split = 'holdout'\n\n        wind_change = None\n        speed = None\n        heading = None\n        if dec_idx > 0:\n            prev = track[dec_idx - 1]\n            elapsed_h = (t0 - prev['t']).total_seconds() / 3600.0\n            if 0 < elapsed_h <= 12 and prev['lat'] is not None and prev['lon'] is not None:\n                if prev['wind'] is not None:\n                    wind_change = float(dec['wind'] - prev['wind'])\n                distance = _gc_nm(prev['lat'], prev['lon'], dec['lat'], dec['lon'])\n                speed = distance / elapsed_h\n                if distance > 0:\n                    heading = _bearing(prev['lat'], prev['lon'], dec['lat'], dec['lon'])\n\n        pressure = dec['pressure']\n        if pressure is not None and pressure == -999:\n            pressure_sentinel_rows += 1\n            pressure = None\n\n        rows_out.append({\n            'storm_id': block['id'],\n            'decision_time': t0,\n            'storm_name': block['name'],\n            'initial_max_wind_kt': int(dec['wind']),\n            'initial_min_pressure_mb': None if pressure is None else float(pressure),\n            'latitude_deg_n': float(dec['lat']),\n            'longitude_deg_w': float(dec['lon']),\n            'month': int(t0.month),\n            'prior_6h_wind_change_kt': wind_change,\n            'translation_speed_kt': speed,\n            'translation_heading_deg': heading,\n            'reached_hurricane_72h': int(label),\n            'split': split,\n        })\n\n    record('decision rows restricted to the 1990-2025 study window',\n           'decision_rows=' + str(len(rows_out)) + ' embargoed=' + str(embargoed),\n           'at least one decision row per split year window after the 72 h embargo',\n           len(rows_out) > 0)\n\n    dec = pd.DataFrame(rows_out, columns=COLUMNS + ['split'])\n    dec['decision_time'] = pd.to_datetime(dec['decision_time'], utc=True)\n\n    winds = dec['initial_max_wind_kt']\n    record('TS eligibility band uses the documented 34-63 kt frame',\n           'min=' + str(int(winds.min())) + ' max=' + str(int(winds.max())) + ' rows=' + str(len(winds)),\n           'HURDAT2 field 7 maximum sustained wind in knots (1-min); TS status is 34-63 kt, so every decision row lies inside the band',\n           winds.min() >= TS_MIN_KT and winds.max() <= TS_MAX_KT, kind='unit')\n    record('decision rows sit strictly below the 64 kt hurricane threshold',\n           'max_decision_wind_kt=' + str(int(winds.max())),\n           'HURDAT2 format document: HU - Hurricane intensity (> 64 knots); no eligibility row may already be at hurricane intensity',\n           int(winds.max()) < HU_KT, kind='unit')\n    record('72-hour outcome horizon expressed in hours from the decision instant',\n           'horizon_hours=' + str(HORIZON_HOURS) + ' horizon_seconds=' + str(HORIZON_HOURS * 3600),\n           'lookahead covers track entries with valid time <= decision_time + 72 h (43200 s)',\n           HORIZON_HOURS * 3600 == 259200, kind='unit')\n\n    nans = int(dec['initial_min_pressure_mb'].isna().sum())\n    minus999 = int((dec['initial_min_pressure_mb'] == -999).sum())\n    record('missing central pressure sentinel is carried as missing, never as zero',\n           'sentinel_decision_rows=' + str(pressure_sentinel_rows) + ' shipped_nan=' + str(nans) + ' shipped_minus999=' + str(minus999),\n           'HURDAT2 uses -999 for missing minimum pressure; every sentinel becomes NaN and zero is never substituted',\n           minus999 == 0 and nans == pressure_sentinel_rows)\n\n    lat_min = float(dec['latitude_deg_n'].min())\n    lat_max = float(dec['latitude_deg_n'].max())\n    lon_min = float(dec['longitude_deg_w'].min())\n    lon_max = float(dec['longitude_deg_w'].max())\n    record('hemisphere letters converted to signed degrees',\n           'lat=[' + str(round(lat_min, 1)) + ',' + str(round(lat_max, 1)) + '] lon=[' + str(round(lon_min, 1)) + ',' + str(round(lon_max, 1)) + ']',\n           'HURDAT2 fields 5-6: N positive, W negative; Atlantic tracks fall within 0-90 N and -180-0 E',\n           lat_min >= 0.0 and lat_max <= 90.0 and lon_min >= -180.0 and lon_max <= 0.0)\n\n    duplicates = int(len(dec) - dec['storm_id'].nunique())\n    record('one row per storm block',\n           'rows=' + str(len(dec)) + ' distinct_storm_ids=' + str(int(dec['storm_id'].nunique())) + ' duplicates=' + str(duplicates),\n           'the population is one decision row per storm, so storm_id is unique',\n           duplicates == 0)\n\n    frames = {}\n    for name in ('train', 'eval', 'holdout'):\n        part = dec[dec['split'] == name].drop(columns=['split'])\n        part = part.sort_values(['decision_time', 'storm_id'], kind='mergesort').reset_index(drop=True)\n        frames[name] = part\n\n    train_t = frames['train']['decision_time']\n    eval_t = frames['eval']['decision_time']\n    hold_t = frames['holdout']['decision_time']\n\n    record('fixed chronological split years by decision year',\n           'train=' + str(int(train_t.dt.year.min())) + '-' + str(int(train_t.dt.year.max()))\n           + ' eval=' + str(int(eval_t.dt.year.min())) + '-' + str(int(eval_t.dt.year.max()))\n           + ' holdout=' + str(int(hold_t.dt.year.min())) + '-' + str(int(hold_t.dt.year.max())),\n           'train 1990-2010 inclusive, eval 2011-2017 inclusive, holdout 2018-2025 inclusive',\n           int(train_t.dt.year.min()) >= 1990 and int(train_t.dt.year.max()) <= 2010\n           and int(eval_t.dt.year.min()) >= 2011 and int(eval_t.dt.year.max()) <= 2017\n           and int(hold_t.dt.year.min()) >= 2018)\n\n    train_edge = train_t.max() + timedelta(hours=HORIZON_HOURS)\n    eval_edge = eval_t.max() + timedelta(hours=HORIZON_HOURS)\n    record('embargo removes every label window that would straddle a split boundary',\n           'dropped=' + str(embargoed) + ' train_max_plus_72h=' + train_edge.strftime('%Y-%m-%dT%H:%M')\n           + ' eval_max_plus_72h=' + eval_edge.strftime('%Y-%m-%dT%H:%M'),\n           'no train decision may look forward into 2011-01-01 or later and no eval decision into 2018-01-01 or later',\n           train_edge < BOUNDARIES[0] and eval_edge < BOUNDARIES[1])\n\n    record('splits are non-empty, disjoint and chronologically ordered',\n           'train=' + str(len(frames['train'])) + ' eval=' + str(len(frames['eval'])) + ' holdout=' + str(len(frames['holdout'])),\n           'each split has at least one row and train < eval < holdout in decision_time',\n           len(frames['train']) > 0 and len(frames['eval']) > 0 and len(frames['holdout']) > 0\n           and train_t.max() < eval_t.min() and eval_t.max() < hold_t.min())\n\n    for name in ('train', 'eval', 'holdout'):\n        frame = frames[name]\n        ordered = frame.sort_values(['decision_time', 'storm_id'], kind='mergesort').reset_index(drop=True)\n        same = bool((ordered['storm_id'] == frame['storm_id']).all() and (ordered['decision_time'] == frame['decision_time']).all())\n        record('deterministic row order in ' + name,\n               'rows=' + str(len(frame)) + ' sorted_by_decision_time_then_storm_id=' + str(same),\n               'rows sorted ascending by decision_time then storm_id before writing',\n               same)\n\n    for name, frame in frames.items():\n        out = frame.copy()\n        out['decision_time'] = out['decision_time'].dt.strftime('%Y-%m-%dT%H:%M:%S.000')\n        out = out[COLUMNS]\n        if name == 'holdout':\n            target = output / 'private' / 'holdout.csv'\n        else:\n            target = output / 'public' / (name + '.csv')\n        out.to_csv(target, index=False)\n\n    record('all three CSVs share one header and one target definition',\n           'columns=' + str(len(COLUMNS)) + ' header=' + ','.join(COLUMNS[:4]) + ',...',\n           'identical column list in public/train.csv, public/eval.csv and private/holdout.csv with a 0/1 reached_hurricane_72h column',\n           len(set(tuple(frames[n].columns) for n in frames)) == 1)\n\n    return checks\n",
+  "quality": {
+    "name": "hurdat2-atlantic-ts-to-hurricane-72h",
+    "target": "reached_hurricane_72h",
+    "positive_label": 1,
+    "task": {
+      "question": "At the first tropical-storm-force best-track record of an Atlantic cyclone, will that same cyclone reach hurricane intensity within the next 72 hours?",
+      "prediction_time": "The UTC valid time of the first TS-intensity best-track entry for the storm (HURDAT2 date plus HHMM). Only that entry and earlier entries in the same storm block are read for features; no later track entry is used.",
+      "decision_user": "NHC forecasters and emergency-management duty officers deciding whether to escalate watches and warnings and pre-position coastal resources.",
+      "outcome_horizon": "72 hours after the decision instant.",
+      "population": "Atlantic basin tropical cyclones in HURDAT2 whose first record with status TS and maximum sustained wind 34-63 kt falls in 1990-2025, with valid date, time, latitude, longitude and wind. Decisions whose 72-hour outcome window would cross a fixed split boundary are dropped. One row per storm.",
+      "features": [
+        {
+          "name": "initial_max_wind_kt",
+          "meaning": "Maximum sustained wind on the first TS record, in knots; eligibility restricts it to 34-63 kt.",
+          "availability": "Present on the decision row.",
+          "evidence_url": "https://www.nhc.noaa.gov/data/hurdat/hurdat2-format-atl-1851-2021.pdf"
+        },
+        {
+          "name": "initial_min_pressure_mb",
+          "meaning": "Central pressure on the first TS record, in millibars; -999 denotes missing and is shipped as an empty cell, never as zero.",
+          "availability": "Present on the decision row, sometimes missing as documented.",
+          "evidence_url": "https://www.nhc.noaa.gov/data/hurdat/hurdat2-format-atl-1851-2021.pdf"
+        },
+        {
+          "name": "latitude_deg_n",
+          "meaning": "Latitude of the storm centre at the decision instant, degrees north.",
+          "availability": "Present on the decision row.",
+          "evidence_url": "https://www.nhc.noaa.gov/data/hurdat/hurdat2-format-atl-1851-2021.pdf"
+        },
+        {
+          "name": "longitude_deg_w",
+          "meaning": "Longitude of the storm centre at the decision instant, converted to negative degrees west.",
+          "availability": "Present on the decision row.",
+          "evidence_url": "https://www.nhc.noaa.gov/data/hurdat/hurdat2-format-atl-1851-2021.pdf"
+        },
+        {
+          "name": "month",
+          "meaning": "Calendar month of the decision instant, capturing seasonal climatology.",
+          "availability": "Present on the decision row.",
+          "evidence_url": "https://www.nhc.noaa.gov/data/hurdat/hurdat2-format-atl-1851-2021.pdf"
+        },
+        {
+          "name": "prior_6h_wind_change_kt",
+          "meaning": "Current maximum wind minus the maximum wind of the immediately preceding track record, when that record is within 12 hours; otherwise missing.",
+          "availability": "Computable from earlier rows in the same storm block, never from later rows.",
+          "evidence_url": "https://www.nhc.noaa.gov/data/hurdat/hurdat2-format-atl-1851-2021.pdf"
+        },
+        {
+          "name": "translation_speed_kt",
+          "meaning": "Great-circle translation speed from the prior track position to the current position over elapsed hours, in knots; missing without a usable prior record.",
+          "availability": "Computable from earlier rows in the same storm block.",
+          "evidence_url": "https://www.nhc.noaa.gov/data/hurdat/hurdat2-format-atl-1851-2021.pdf"
+        },
+        {
+          "name": "translation_heading_deg",
+          "meaning": "Initial great-circle bearing from the prior track position to the current position, degrees true; missing without a usable prior record.",
+          "availability": "Computable from earlier rows in the same storm block.",
+          "evidence_url": "https://www.nhc.noaa.gov/data/hurdat/hurdat2-format-atl-1851-2021.pdf"
+        }
+      ]
+    },
+    "features": [
+      "initial_max_wind_kt",
+      "initial_min_pressure_mb",
+      "latitude_deg_n",
+      "longitude_deg_w",
+      "month",
+      "prior_6h_wind_change_kt",
+      "translation_speed_kt",
+      "translation_heading_deg"
+    ],
+    "features_documented_at": "prediction_time",
+    "id_columns": [
+      "storm_id"
+    ],
+    "carry_columns": [
+      "storm_name"
+    ],
+    "high_cardinality_columns": [
+      "decision_time"
+    ],
+    "label_source_columns": [
+      "future_track_status",
+      "future_track_max_wind_kt"
+    ],
+    "post_hoc_columns": [
+      "reached_hurricane_72h"
+    ],
+    "measurements": [
+      {
+        "column": "initial_max_wind_kt",
+        "frame": "HURDAT2 field 7, maximum sustained wind (1-minute estimate) at the decision record",
+        "unit": "knots"
+      },
+      {
+        "column": "initial_min_pressure_mb",
+        "frame": "HURDAT2 field 8, minimum central pressure; -999 is missing",
+        "unit": "millibars"
+      },
+      {
+        "column": "latitude_deg_n",
+        "frame": "HURDAT2 field 5, latitude with N/S hemisphere letter, converted to signed degrees",
+        "unit": "degrees north"
+      },
+      {
+        "column": "longitude_deg_w",
+        "frame": "HURDAT2 field 6, longitude with W/E hemisphere letter, west converted to negative degrees",
+        "unit": "degrees east"
+      },
+      {
+        "column": "month",
+        "frame": "Calendar month of the decision valid time",
+        "unit": "month of year"
+      },
+      {
+        "column": "prior_6h_wind_change_kt",
+        "frame": "Difference between the decision record wind and the preceding record wind when that record is <= 12 h earlier",
+        "unit": "knots"
+      },
+      {
+        "column": "translation_speed_kt",
+        "frame": "Great-circle distance between the preceding and decision positions divided by elapsed hours (1 kt = 1 nm/h, earth radius 3440.065 nm)",
+        "unit": "knots"
+      },
+      {
+        "column": "translation_heading_deg",
+        "frame": "Initial bearing of the great-circle leg from the preceding to the decision position",
+        "unit": "degrees true"
+      },
+      {
+        "column": "reached_hurricane_72h",
+        "frame": "1 if any later record in the same storm block with valid time <= decision_time + 72 h has status HU or wind >= 64 kt; otherwise 0",
+        "unit": "binary"
+      }
+    ],
+    "timing": {
+      "features": {
+        "period": "event",
+        "published_days_after_period_end": null
+      },
+      "prediction_instant": {
+        "kind": "event_valid_time",
+        "citation": "HURDAT2 track record valid time (date plus HHMM, UTC) as defined in the NHC HURDAT2 format document",
+        "period": "event",
+        "days_after_period_end": 0
+      },
+      "row_selection": {
+        "fields": [
+          "date",
+          "time",
+          "status",
+          "max_wind"
+        ],
+        "latest_period_used": "event"
+      },
+      "observations": [
+        {
+          "period": "2021-08-26T18:00",
+          "period_end": "2021-08-26T18:00",
+          "published": "post-season Tropical Cyclone Report; HURDAT2 file vintage 2026-09-23"
+        },
+        {
+          "period": "1851-06-26T06:00",
+          "period_end": "1851-06-26T06:00",
+          "published": "post-storm reanalysis; HURDAT2 file vintage 2026-09-23"
+        }
+      ]
+    },
+    "evaluation_contract": {
+      "use": "retrospective_research",
+      "access": "isolated_rows",
+      "selection": {
+        "kind": "prediction_time",
+        "evidence": "Each row is anchored at the first TS-intensity entry of one storm block; features read only that entry and preceding entries in the same block, and the label reads only later entries of the same block inside 72 hours."
+      },
+      "vintage": {
+        "kind": "current_snapshot",
+        "evidence": "One HURDAT2 1851-2025 file dated 2026-09-23; best-track values are post-storm reanalysis incorporating observations not available in real time, so this is a retrospective study of a current snapshot, not a real-time forecasting claim."
+      },
+      "training_label_timing": "forward_72h_within_same_storm_block",
+      "feature_evidence": {
+        "storm_id": {
+          "source": "HURDAT2 header line field 1 (e.g. AL092021), NHC format document",
+          "availability": "identifier on the decision row; used only as a stable key",
+          "status": "assumed"
+        },
+        "decision_time": {
+          "source": "HURDAT2 track record date and HHMM fields of the first TS entry, NHC format document",
+          "availability": "valid time of the decision record, reused as the time column",
+          "status": "assumed"
+        },
+        "storm_name": {
+          "source": "HURDAT2 header line field 2, NHC format document",
+          "availability": "carried identifier only, not a feature",
+          "status": "assumed"
+        },
+        "initial_max_wind_kt": {
+          "source": "HURDAT2 field 7 maximum sustained wind, NHC format document",
+          "availability": "present on the decision row in the current file; real-time availability at the decision instant is not proven by a post-storm reanalysis file",
+          "status": "assumed"
+        },
+        "initial_min_pressure_mb": {
+          "source": "HURDAT2 field 8 minimum central pressure, NHC format document",
+          "availability": "present or -999 missing on the decision row; real-time availability not proven",
+          "status": "assumed"
+        },
+        "latitude_deg_n": {
+          "source": "HURDAT2 field 5 latitude with N/S letter, NHC format document",
+          "availability": "present on the decision row; real-time availability not proven",
+          "status": "assumed"
+        },
+        "longitude_deg_w": {
+          "source": "HURDAT2 field 6 longitude with W/E letter, NHC format document",
+          "availability": "present on the decision row, sign-converted; real-time availability not proven",
+          "status": "assumed"
+        },
+        "month": {
+          "source": "calendar month of the HURDAT2 valid time",
+          "availability": "derived from the decision row timestamp",
+          "status": "assumed"
+        },
+        "prior_6h_wind_change_kt": {
+          "source": "difference of HURDAT2 field 7 between the decision record and the preceding record in the same block",
+          "availability": "derived only from earlier rows with elapsed <= 12 h; missing otherwise",
+          "status": "assumed"
+        },
+        "translation_speed_kt": {
+          "source": "great-circle displacement between consecutive HURDAT2 positions in the same block",
+          "availability": "derived only from earlier rows with elapsed <= 12 h; missing otherwise",
+          "status": "assumed"
+        },
+        "translation_heading_deg": {
+          "source": "initial bearing between consecutive HURDAT2 positions in the same block",
+          "availability": "derived only from earlier rows with elapsed <= 12 h; missing otherwise",
+          "status": "assumed"
+        }
+      },
+      "cross_row_audit": {
+        "auxiliary_files_review": "Only public/train.csv, public/eval.csv and private/holdout.csv are written; no fixture labels, answer scaffolds or auxiliary evaluation files are shipped.",
+        "probes": [],
+        "rationale": "One row per storm; features come from the decision row and earlier rows of the same block only, and the label from later rows of that block inside 72 hours."
+      },
+      "limitations": [
+        "HURDAT2 is a current-vintage post-storm best track, not the operational record available at the decision instant; later observations and revisions are folded in, so historical real-time feature availability is assumed rather than demonstrated.",
+        "Maximum sustained wind is a one-minute estimate with material uncertainty, especially in earlier or sparsely observed storms; restricting to 1990-2025 reduces but does not remove that heterogeneity.",
+        "Best-track values and even storm classification can change across HURDAT2 vintages, so labels are tied to the downloaded file and must be frozen with its checksum and retrieval date.",
+        "One row per storm removes within-storm row leakage, but storms within a season share climate conditions, so independence across rows is approximate.",
+        "The population is conditional on a storm first reaching tropical-storm intensity; this task does not predict genesis and excludes subtropical storms and other basins.",
+        "Only track and intensity history are used; environmental covariates such as sea-surface temperature, vertical wind shear and mid-level dryness are absent.",
+        "HURDAT2 inserts asynoptic entries for landfall and intensity peaks, so a 72-hour window may contain more than twelve track entries.",
+        "Decisions whose 72-hour window crosses a split boundary are embargoed, slightly reducing the eval and holdout samples."
+      ]
+    },
+    "splits": {
+      "train": "public/train.csv",
+      "eval": "public/eval.csv",
+      "holdout": "private/holdout.csv"
+    },
+    "split_windows": {
+      "train": {
+        "start": null,
+        "end": "2011-01-01T00:00:00.000"
+      },
+      "eval": {
+        "start": "2011-01-01T00:00:00.000",
+        "end": "2018-01-01T00:00:00.000"
+      },
+      "holdout": {
+        "start": "2018-01-01T00:00:00.000",
+        "end": null
+      }
+    },
+    "time_column": "decision_time",
+    "event_key_column": "decision_time",
+    "expected_duplicate_ids": 0,
+    "positive_events": {
+      "train": null,
+      "eval": null,
+      "holdout": null
+    },
+    "external_threshold": {
+      "value": 64,
+      "unit": "knots",
+      "source": "NHC HURDAT2 format document status codes: TS - Tropical storm intensity (34-63 knots); HU - Hurricane intensity (> 64 knots). The 72-hour window is part of the frozen task definition."
+    },
+    "unit_validation": {
+      "checks": 3,
+      "mismatches": 0,
+      "source": "Runtime unit checks on the downloaded HURDAT2 file: 34-63 kt TS band, strict sub-64 kt decision winds, and 72 h = 43200 s horizon; the format-document Ida block is additionally verified against the file."
+    }
+  },
+  "references": {
+    "persistence_column": null,
+    "persistence_direction": 1,
+    "entity_columns": [
+      "month"
+    ]
+  },
+  "construction_notes": "Source is the current NHC Atlantic HURDAT2 text file (hurdat2-1851-2025-092326.txt, 6.8 MB, updated 2026-09-23), fetched through source_io.fetch so the URL and SHA256 are recorded. Parsing follows the publisher format document rather than a guessed schema: a line starting with AL is a header giving storm id, name and the declared number of following track rows; each following line is split on commas and read as date (YYYYMMDD), HHMM UTC, record identifier, status, latitude with N/S, longitude with W/E, maximum wind in knots and minimum pressure in millibars. Wind radii and radius-of-maximum-wind fields are ignored because the file has used both 20- and 21-field layouts across vintages; only the first eight fields are consumed, so both layouts parse. Longitude west of Greenwich is negated. -999 pressure is mapped to NaN, never to zero; missing prior records leave the trend features empty. The decision row is the first entry in the block whose status is TS and whose wind is 34-63 kt, matching the documented TS band; earlier entries in the same block are the only permitted history, and the preceding record must be within 12 hours for wind change, translation speed and heading. The label scans forward only inside the same block up to decision_time + 72 h inclusive and is 1 for status HU or wind >= 64 kt, 0 when the storm dissipates first. Eligibility is 1990-2025 by decision year with one row per storm, so storm_id is unique. Splits are fixed by decision year (train 1990-2010, eval 2011-2017, holdout 2018-2025) with an embargo dropping any decision whose 72-hour window would touch 2011-01-01 or 2018-01-01; holdout rows are never inspected when choosing the target, features, thresholds or splits. Threshold decisions are the documentation-given 64 kt hurricane threshold and the frozen 72-hour horizon, both external standards, so no training-derived cut is needed and none is fitted here. Returned checks assert on real parse and row properties: declared header counts, unparsed lines, the documented AL092021/Ida example block (40 rows, 2021-08-26 18:00 TS at 35 kt), the 34-63 kt band as kind=unit, strict sub-64 kt decision winds, the 72 h = 43200 s horizon, the -999 sentinel conversion, signed-degree coordinate ranges, one row per storm, the split year windows, the embargo, non-empty ordered splits and deterministic ordering. Missing data is preserved as empty cells. references.persistence_column is null because the file contains no precomputed persistence score: the natural persistence baseline here is the constant 'a TS stays a TS' prediction implied by the eligibility rule, which is a rule rather than a numeric score column, so no column is claimed; entity_columns is month, a shipped calendar feature usable for a train-only monthly base-rate reference. positive_events is left null for the controller to fill from the produced CSVs. No metrics, training, qualification or packaging is performed in build().",
+  "source": {
+    "url": "https://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2025-092326.txt"
+  }
+}
