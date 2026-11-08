@@ -1047,3 +1047,29 @@ and excluded from normal-operation charging.
 A compact post-deployment state export was requested to confirm automatic UCMR
 repair routing and identify the current second-source path. No manual queue edit
 or extra worker coordinator is used.
+
+### Automatic semantic repair transition observed — 18:19 UTC
+
+The [18:16 snapshot](../audits/rewrite/snapshot-1816/note.md) confirms UCMR5
+returned to `build` through the deployed reconciliation, with prior attempts
+preserved and fresh construction/review required. Build-6 had not started in that
+snapshot. Source 14 selected `clinicaltrials-gov-early-termination` and reached
+build after its second discovery attempt. These are state transitions, not accepted
+datasets or complete end-to-end runs.
+
+CMS build-4 subsequently staged a durable failure at 18:17:10 UTC, release
+438429615: HTTP 403 in terms capture, 32.5 seconds, exit 1, no OOM. Its
+[manifest](../audits/rewrite/new-source-outcomes/cms-build-4-manifest.json) and
+[hash-verified diagnostic](../audits/rewrite/new-source-outcomes/cms-build-4-failure.json)
+are retained. The snapshot's inference that provider absence meant a launch window
+is not established; durable staging proves this attempt had already finished.
+The normal controller must reconcile it; no manual queue change is warranted.
+
+The snapshot export passed
+[exact-commit CI](https://github.com/earino/dataset-factory/actions/runs/42509271447).
+At 18:20:36 UTC Scout confirmed live ClinicalTrials construction
+`rw-72e1332cd9b8-build-1`, `hermes_write_task.py` PID 30097, elapsed 210 seconds
+within its six-turn/600-second bounds. Scout is observing that exact process with
+a bounded read-only wait; no restart or added model-driven schedule was requested.
+The earlier deployment/cutoff evidence commit `0d73a06` also passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42509141563).
