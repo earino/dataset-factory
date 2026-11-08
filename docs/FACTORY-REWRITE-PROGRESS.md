@@ -486,6 +486,20 @@ messages; this was another successful write-only task, not a qualified dataset.
 Recovery/capability evidence commit `8d3d4d3` passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42494677743).
 
+### Development token policy clarified (15:45 UTC)
+
+Eduardo explicitly stated that the 40,000,000-token weekly limit is for normal
+operation only and must not constrain development. The earlier headroom figures
+remain measurements, but are not development stop conditions. Scout was notified.
+The budget gate now supports the authorized exemption through this timebox's
+19:07 UTC deadline; the normal 40M configuration is preserved. Usage accounting,
+per-task bounds and other configured limits remain active. A test verifies that
+45M measured tokens do not block development and that enforcement resumes at the
+exact expiry. This is an operator policy change, not a model-approved exception.
+
+Terms-repair commit `23f80a5` passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42495677919).
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;

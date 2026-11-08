@@ -162,6 +162,25 @@ class WeeklyTokenBudgetTests(BudgetTestCase):
         decision = budget.evaluate(self.config(allowance_usd=30.0, sessions_per_week=18))
         self.assertTrue(decision["allowed"], decision["reasons"])
 
+    def test_development_exemption_keeps_usage_and_expires_at_deadline(self):
+        make_state_db(self.state_db, [
+            ("development", "chat", 10, 30_000_000, 15_000_000, 0.0, "estimated",
+             "scout-research"),
+        ])
+        moment = datetime.now(timezone.utc)
+        deadline = moment + timedelta(hours=1)
+        config = self.config(allowance_usd=30.0, sessions_per_week=200,
+                             weekly_token_budget=40_000_000,
+                             development_token_exemption_until=deadline.isoformat())
+        active = budget.evaluate(config, moment=moment)
+        self.assertTrue(active["allowed"], active["reasons"])
+        self.assertTrue(active["development_token_exemption_active"])
+        self.assertEqual(45_000_000, active["research_tokens_last_7_days"])
+        expired = budget.evaluate(config, moment=deadline)
+        self.assertFalse(expired["allowed"])
+        self.assertFalse(expired["development_token_exemption_active"])
+        self.assertTrue(any("weekly budget" in reason for reason in expired["reasons"]))
+
 
 class GateTests(BudgetTestCase):
     def test_an_unconfigured_allowance_refuses_to_wake_the_model(self):

@@ -349,6 +349,17 @@ def _evaluate(config, moment, late_minutes):
     warnings = []
     policy = config.get("unpriced_research_policy", "hold")
     weekly_tokens = int(config.get("weekly_token_budget") or 0)
+    development_until = config.get("development_token_exemption_until")
+    development_exempt = False
+    if development_until:
+        try:
+            expiry = datetime.fromisoformat(development_until.replace("Z", "+00:00"))
+            development_exempt = expiry.tzinfo is not None and moment < expiry
+        except (ValueError, TypeError, AttributeError):
+            reasons.append("invalid development_token_exemption_until")
+    if development_exempt:
+        warnings.append(f"Operator-authorized development: weekly token ceiling is not enforced "
+                        f"until {development_until}; usage is still measured")
     if policy not in ("hold", "require_token_budget"):
         reasons.append("unpriced_research_policy is invalid; expected hold or require_token_budget")
 
@@ -358,7 +369,8 @@ def _evaluate(config, moment, late_minutes):
     elif research_cost is None:
         if policy == "require_token_budget" and weekly_tokens > 0:
             warnings.append("Research dollar spend and remaining allowance are unknown; "
-                            "admission uses the configured measured token ceiling")
+                            + ("development token exemption is active" if development_exempt else
+                               "admission uses the configured measured token ceiling"))
         else:
             reasons.append("research pricing is unknown; admission requires priced usage or "
                            "an operator-selected require_token_budget policy with a positive ceiling")
@@ -383,7 +395,7 @@ def _evaluate(config, moment, late_minutes):
     # the cadence outruns what the operator is willing to spend, whatever the cost column says.
     week_usage = usage_by_kind(config, week_start, moment).get("research", {})
     week_tokens = int(week_usage.get("input_tokens", 0)) + int(week_usage.get("output_tokens", 0))
-    if weekly_tokens and week_tokens >= weekly_tokens:
+    if weekly_tokens and week_tokens >= weekly_tokens and not development_exempt:
         reasons.append(
             f"research used {week_tokens:,} tokens in the last 7 days, at or over the "
             f"{weekly_tokens:,}-token weekly budget"
@@ -427,6 +439,7 @@ def _evaluate(config, moment, late_minutes):
         "runs_weighted_last_7_days": weighted,
         "research_tokens_last_7_days": week_tokens,
         "weekly_token_budget": weekly_tokens,
+        "development_token_exemption_active": development_exempt,
         "sessions_over_token_cap": len(over_cap),
         "session_cap_per_week": cap,
         "accounting_available": True,
@@ -489,9 +502,11 @@ def resume_block(config, decision):
     lines.append(f"sessions in the last 7 days: {decision['runs_last_7_days']}"
                  f"/{decision['session_cap_per_week']}")
     if decision.get("weekly_token_budget"):
+        token_policy = ("development exemption active" if decision.get("development_token_exemption_active")
+                        else "normal-operation ceiling enforced")
         lines.append(
             f"tokens in the last 7 days: {decision['research_tokens_last_7_days']:,}"
-            f"/{decision['weekly_token_budget']:,} (measured; this is the binding budget)"
+            f"/{decision['weekly_token_budget']:,} (measured; {token_policy})"
         )
     lines.append(
         f"session limits: <= {config.get('session_max_turns')} tool-calling iterations and "

@@ -19,6 +19,11 @@ ML run on workers. The existing benchmark checkout remains read-only.
 The first deployed path uses that runner's binary classification CSV contract;
 new task formats are outside this implementation timebox.
 
+Operator clarification at 15:45 UTC: the 40,000,000-token rolling limit applies
+to normal operation, not development. The current development exemption expires
+at the 19:07 UTC implementation deadline. Keep measuring usage. Bounded model
+tasks, worker spending/resource limits and the elapsed-time budget still apply.
+
 Exclude dashboard/website redesign, general-purpose agent frameworks, speculative
 validators, new benchmark protocols, and the deferred chronological adapter.
 The old remediation campaign is historical work, not a prerequisite for this
