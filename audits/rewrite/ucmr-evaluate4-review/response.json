@@ -1,0 +1,27 @@
+{
+  "verdict": "repair",
+  "reason": "The core construction is largely consistent: target direction and units, entry-point population, one-row-per-public-water-system selection, exact event-key additional-data join, chronological half-open windows, and the independent label audit all check out. Two concrete defects remain: the stated population says samples with missing CollectionDate are excluded and counted, but the code silently drops them without a missing-date counter, and the source construction recipe still documents a three-key additional-data join while the code uses SampleEventCode when available. Both are repairable accounting/documentation defects, not reasons to reject the dataset.",
+  "findings": [
+    {
+      "issue": "Missing CollectionDate exclusions are not counted, contrary to the stated population rule.",
+      "evidence": "In `build`, `counts['bad_date'] += int((dates.isna() & raw.ne('')).sum())` counts only nonmissing unparseable dates; rows with `raw == ''` are then dropped by `t = t.loc[dates.notna()]`, and there is no `missing_date` counter or source check. `task.population` says samples with missing CollectionDate are excluded and counted; `source-checks.json` reports only 'unparseable nonmissing dates 0'.",
+      "repair": "Add a `missing_date` counter for blank `CollectionDate` values, include it in the population/source check, and report it alongside `bad_date`; re-run the split accounting."
+    },
+    {
+      "issue": "The source construction recipe still specifies a three-key additional-data join, while the code uses the exact sample-event key when available.",
+      "evidence": "`source.construction.access_recipe` says 'Join UCMR5_AddtlDataElem.txt on PWSID/FacilityID/SamplePointID'; `build` sets `join_keys = ['pwsid', 'facilityid', 'samplepointid', 'sampleeventcode']` and calls `_pivot_addtl(sub_add, join_keys)`; `task.prediction_time` and the source checks require the exact event key. A three-key join can mix responses from multiple events at the same point.",
+      "repair": "Update `access_recipe` (and its keep-field list) to include `SampleEventCode` when present, use the system/facility/sample-point key only when no event code exists, and leave unmatched rows missing; align the prose with `prediction_time` and the code."
+    }
+  ],
+  "limitations": [
+    "Additional-data responses are undated self-reports; exact event-key attachment reduces cross-event mixing but does not prove pre-sample availability, as `prediction_time` and the source limitations state.",
+    "For all-nondetect UCMR 3 systems, `prior_ucmr3_max_pfoa_pfos` is the maximum reported UCMR 3 MRL (0.02 or 0.04 ug/L), a censoring bound rather than an observed concentration.",
+    "The first-sample selection excludes 234 systems whose earliest sample falls in the December 2023/2024 embargo or outside the windows; later in-window samples for those systems are not represented.",
+    "UCMR 5 is occurrence monitoring at entry points, not compliance or MCL monitoring; the label is one entry-point sample per system.",
+    "The final UCMR 5 file includes samples through 2026-06, beyond the occurrence page's 2023-2025 cycle text; the holdout follows the observed data.",
+    "EPA's 17 U.S.C. \u00a7105 public-domain basis is U.S. domestic; non-U.S. reuse requires local assessment. The ZIPs also contain PDF documentation, while the derived CSV uses only the EPA text records.",
+    "The evaluation is on 3,769 public 2024 eval rows; there is no holdout scoring or uncertainty interval. Full-model AUC 0.7856 is an observed protocol result, not a universal ceiling.",
+    "`collection_year` is constant within train and eval and is a split tag, not a transferable feature.",
+    "Prior UCMR 3 values and system attributes are current-vintage and treated as pre-sample; historical operational availability is assumed, not ledgered."
+  ]
+}
