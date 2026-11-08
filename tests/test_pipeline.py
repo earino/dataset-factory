@@ -35,6 +35,24 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual('another', tick(self.root, Driver())['candidate'])
         self.assertEqual('discover', self.store.get('example')['stage'])
 
+    def test_finish_ready_work_before_more_discovery_without_interrupting_attempts(self):
+        for name, stages in [('release', 3), ('review', 2), ('construction', 1)]:
+            self.store.add(name, {})
+            for _ in range(stages):
+                self.store.finish(self.store.begin(name)['id'], {'status': 'done'})
+        self.assertEqual(['release', 'review', 'construction', 'example'],
+                         [c['id'] for c in self.store.eligible()])
+        active = self.store.begin('construction')
+        self.assertEqual('construction', self.store.eligible()[0]['id'])
+        self.store.finish(active['id'], {'status': 'waiting', 'delay': 600})
+        class Driver:
+            def execute(_, candidate, attempt, save):
+                self.assertEqual('publish', candidate['stage'])
+                return {'status': 'done'}
+        self.assertEqual('published', tick(self.root, Driver())['stage'])
+        self.assertEqual('review', self.store.eligible()[0]['id'])
+        self.assertEqual('discover', self.store.get('example')['stage'])
+
     def test_retry_is_bounded_and_does_not_approve_artifact(self):
         for number in range(1, 4):
             attempt = self.store.begin('example')

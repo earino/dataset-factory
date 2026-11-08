@@ -1115,3 +1115,21 @@ review, automatic publication and anonymous consumers remain outstanding.
 The requested-model repair export passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42510148595).
 This is live evidence of repair execution, not acceptance of the resulting dataset.
+
+### Finish ready work before new research — 18:37 UTC
+
+UCMR reached evaluation after automatic collection/deletion at 18:30:02/18:30:13,
+while another CMS terms-repair attempt ran and staged an HTTP 403 failure at
+18:34:45 (this time fetching documentation, after terms capture succeeded).
+[CMS build-5 manifest](../audits/rewrite/new-source-outcomes/cms-build-5-manifest.json)
+and [verified diagnostic](../audits/rewrite/new-source-outcomes/cms-build-5-failure.json).
+The fifth worker failure reaches the configured limit; no allowance increase is made.
+
+Code inspection found that oldest-updated ordering could also start fresh discovery
+ahead of ready publication. The scheduler now resumes admitted attempts first,
+then prioritizes publication, semantic review, construction and discovery, retaining
+oldest-first ordering within each stage and honoring retry delays. This implements
+finish-first scheduling without another agent, approval or resource-policy change.
+The focused pipeline/engine checks pass (23 tests), including waiting-work fairness,
+active-attempt resumption and publishing before an older discovery candidate. Clean
+checkout and exact-commit CI verification follow before deployment.

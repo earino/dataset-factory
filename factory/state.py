@@ -107,13 +107,15 @@ class Store:
 
     def eligible(self, now=None):
         now = time.time() if now is None else now
-        # Finish existing attempts first, then older eligible work. Waiting tasks
-        # yield through next_run instead of blocking all other candidates.
+        # Resume existing attempts first, then finish releases/reviews before
+        # spending on more construction or discovery. Waiting tasks still yield.
         with self.connect() as db:
             rows = db.execute('''SELECT c.* FROM candidates c
                 LEFT JOIN attempts a ON a.candidate=c.id AND a.status='running'
                 WHERE c.stage IN ('discover','build','evaluate','publish') AND c.next_run<=?
-                ORDER BY CASE WHEN a.id IS NULL THEN 1 ELSE 0 END, c.updated, c.id''', (now,))
+                ORDER BY CASE WHEN a.id IS NULL THEN 1 ELSE 0 END,
+                    CASE c.stage WHEN 'publish' THEN 0 WHEN 'evaluate' THEN 1
+                         WHEN 'build' THEN 2 ELSE 3 END, c.updated, c.id''', (now,))
             return [self.candidate(row) for row in rows]
 
     def begin(self, candidate_id):

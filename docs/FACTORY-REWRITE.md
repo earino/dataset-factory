@@ -75,6 +75,9 @@ A small SQLite store owns operational candidate/attempt/job/artifact state. Git
 holds code, source evidence and compact exported results, not live transactional
 coordination. Updates are atomic; interrupted operations are reconciled using
 stable identities before retry. Notes never act as executable state.
+Resume admitted attempts first; among new eligible steps, finish publication and
+semantic review before more construction or discovery. Keep oldest-first order
+within a stage, and honor retry delays so waiting work cannot block other candidates.
 `STATE.md` remains the legacy repository projection; replacement runtime state is
 read with `factory status`, not inferred from the historical candidate queue.
 
