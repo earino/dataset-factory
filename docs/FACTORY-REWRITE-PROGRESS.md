@@ -4,16 +4,22 @@ Specification: [FACTORY-REWRITE.md](FACTORY-REWRITE.md).
 Goal tool confirmed **active** at kickoff 2026-11-08 11:07:00 UTC.
 Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 
-**Current status (18:32 UTC): incomplete, zero replacement publications.** Latest
-confirmed production is 75137d7 (18:13:06 UTC). UCMR5 build-6 executed the semantic
-repair and passed construction, full qualification, evaluation and packaging;
-all 33 package assets match staging and the exact-artifact receipt passes. The
-previously empty additional-data features now have measured coverage. Fresh
-semantic review and publication remain outstanding. ClinicalTrials.gov has a
-completed construction proposal awaiting its worker. CMS build-4 again failed
-terms capture and was automatically collected/deleted. The clean-checkout suite
-passes 941 tests (13 skipped); this does not establish two-source acceptance.
-The 19:07 UTC cutoff is scheduled; its execution remains to be verified.
+**Final timebox status (19:08:46 UTC): incomplete; zero replacement publications.**
+Implementation `6ac5f833ce6a517db1ea15f56776b4f387aab8de` was deployed at
+19:00:03 UTC. New admissions were disabled at 19:06:21 UTC; the scheduled
+19:07 backstop confirmed the same setting. Scout's final inventory reports no
+live model/tick processes, no pending collection, zero worker servers and zero
+primary IPs. Cleanup remains available and legacy launch schedules remain paused.
+The final clean-checkout suite passed 944 tests (13 skipped), and implementation
+CI passed. These results do not satisfy the two-source publication requirement.
+Only evidence preservation and handoff continued after the deadline.
+
+UCMR5 build-7 passed full qualification and packaging but its release descriptions
+still need a fresh corrected bundle and semantic acceptance. Build-8's model result
+is preserved, with worker admission stopped by the cutoff. ClinicalTrials ended
+rejected after its terms/access failure; a second successful source is still needed.
+See the [final runtime snapshot](../audits/rewrite/final-cutoff-snapshot/note.md)
+and the closeout/resume record below. There is no completion sign-off.
 
 ## Four-hour checkpoint — 2026-11-08 15:07 UTC
 
@@ -48,29 +54,48 @@ increases, source resurrection or validation exceptions are planned. If the crit
 remain unmet at 19:07, wind down new work safely, retain cleanup/resumable state and
 report the missing evidence and estimated additional effort.
 
-## Acceptance evidence — 2026-11-08 18:32 UTC
+## Final acceptance assessment — 2026-11-08 19:08 UTC
 
-This is an interim assessment, not completion sign-off.
+This records observed evidence and gaps. It is not completion sign-off.
 
-| Criterion | Observed evidence | Remaining |
-| --- | --- | --- |
-| A1: one durable controller | Scheduled tick, exclusive-lock busy result, durable attempt/job identities across deployments; [cutover](../audits/rewrite/cutover/) and [first cycle](../audits/rewrite/first-cycle/). | Confirm the successful path also resumes from its recorded checkpoints. No forced-process-kill claim. |
-| A2: mechanical worker outcomes | Failed and successful real workers were staged, collected and deleted without model follow-up. UCMR5 build-5 was deleted at 17:51:16 and advanced to semantic review; [snapshot](../audits/rewrite/snapshot-1757/note.md). | Observe the publication worker on the successful end-to-end path. |
-| A3: bounded inexpensive model | Recorded requested route performed real discovery and generated builders; exact prompts, responses and usage retained. | Write-only construction verified in the first-write-only evidence; successful semantic review remains. |
-| A4: two complete real sources | UCMR5 build-6 passed full qualification/evaluation/packaging after semantic repair. ClinicalTrials has a generated builder; CMS remains in terms repair. | UCMR5 semantic review/publication and a second materially different complete source, without manual state edits. |
-| A5: trustworthy consumable releases | Full-artifact checks rejected defective artifacts; package/consumer implementation tested in software. | Accepted reproducible releases, measured usefulness, and anonymous full-file verification on both platforms. |
-| A6: automatic recovery | Failed candidates defer/refill; durable staging recovered after provider absence; [controlled transient-fetch recovery](../audits/rewrite/live_fetch_recovery.py) exercised against a real publisher. | Complete successful recovery evidence alongside the end-to-end path; controlled injection is not an organic outage claim. |
-| A7: unattended production | Scheduled script-only ticks observed; three legacy launch/follow-up schedules paused; independent cleanup retained. | Retain final deployed configuration and unattended successful outcome. |
-| A8: shipped, checked, signed off | Implementation `75137d7` deployed at 18:13:06 UTC with exact-commit CI green. Evidence pushed through `48e02a6`, CI green. Progress and raw evidence retained. | Produce final criterion-by-criterion sign-off after the missing real outcomes. |
+- **A1 — observed:** the deployed scheduled controller keeps durable attempt/job
+  identities across deployments and excludes concurrent ticks. See
+  [cutover](../audits/rewrite/cutover/) and [first cycle](../audits/rewrite/first-cycle/).
+  A successful publication restart has not been demonstrated.
+- **A2 — observed for construction:** both failed and successful real workers were
+  staged, collected and deleted mechanically. UCMR builds 5–7 reached review;
+  the final ledger has no pending collection or active servers. A publication
+  worker has not completed the real replacement path.
+- **A3 — observed:** the requested inexpensive route performed bounded discovery,
+  builder generation and substantive review on real sources. Prompts, responses,
+  usage and failures are retained, including [UCMR review 2](../audits/rewrite/ucmr-evaluate2-review/).
+  Reviews correctly requested repairs; this is not evidence of general model reliability.
+- **A4 — NOT MET:** zero of two materially different sources completed automatic
+  public publication. UCMR passed full qualification/packaging but needs corrected
+  release descriptions and semantic acceptance. ClinicalTrials failed terms capture;
+  the final queue marks it rejected. CMS exhausted its bounded attempts.
+- **A5 — NOT MET:** exact-artifact receipts and all 33 package bindings were checked
+  for UCMR builds 6 and 7. No accepted public replacement release has reproducibility,
+  usefulness and anonymous full-file consumer evidence on both platforms together.
+- **A6 — observed:** real failed-worker collection, durable staging recovery,
+  semantic repair and bounded defer/refill occurred. The
+  [controlled transient-fetch probe](../audits/rewrite/live_fetch_recovery.py)
+  used a real publisher; it is not an organic outage claim. Publication recovery
+  still lacks end-to-end live evidence.
+- **A7 — observed:** unattended script-only ticks ran, three legacy launch/follow-up
+  schedules were paused, and independent cleanup was retained. The timebox cutoff
+  stopped new admissions safely. Successful unattended publication remains unproven.
+- **A8 — partial:** implementation and evidence were pushed with exact-commit CI
+  checks. Final implementation [CI passed](https://github.com/earino/dataset-factory/actions/runs/42512474404).
+  This record maps every criterion to evidence and limitations. Overall completion
+  sign-off is withheld because A4 and A5 are unmet.
 
 ## Current work
 
-- **Latest confirmed deployment:** `75137d7` at 18:13:06 UTC. UCMR5 build-6
-  succeeded after automatic repair routing; fresh semantic review and publication
-  remain next. ClinicalTrials construction/worker execution is the second-source
-  path. Latest exported reservation snapshot is EUR 11.10/20.00 at 17:57:25;
-  it is not a live balance. Development-window tokens remain measured but excluded
-  from the normal weekly ceiling. Historical observations follow.
+- **Final deployed implementation:** `6ac5f83` at 19:00:03 UTC. Admissions
+  disabled at 19:06:21 UTC; zero active workers at final inventory. Development
+  tokens remain measured separately from the normal-operation weekly ceiling.
+  Earlier observations below are retained as history, not current runtime state.
 - **Earlier deployment (14:50:19 UTC):** Scout reports `05fab28` deployed and
   the script-only tick resumed. Its [exact-commit CI passed](https://github.com/earino/dataset-factory/actions/runs/42491352932).
   The clean checkout passed 926 tests (13 skipped). No replacement dataset has
@@ -1181,3 +1206,76 @@ are retained (35.2 seconds, supplied terms excerpt absent from captured document
 No successful ClinicalTrials artifact or replacement publication exists at this
 observation. Scout has been asked to verify the 19:07 cutoff with a disabled tick,
 active-worker/expiry inventory, cleanup status and concrete resume steps.
+
+## Closeout preparation — 19:04 UTC
+
+Implementation changes stopped before the deadline. Final implementation commit
+`6ac5f833ce6a517db1ea15f56776b4f387aab8de` passed 944 tests (13 skipped) in a
+clean checkout and [exact-commit CI](https://github.com/earino/dataset-factory/actions/runs/42512474404).
+The preceding description propagation commit also passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42512126554).
+Final deployment/cutoff confirmation is being collected from Scout.
+
+The objective remains incomplete. No two-source publication demonstration exists.
+The remaining acceptance work is concrete:
+
+1. Run a fresh UCMR repair bundle through the deployed description propagation,
+   full qualification and semantic review. A passing build alone is insufficient;
+   the previous review's material findings must be resolved in the actual release.
+2. Repair ClinicalTrials' captured terms evidence, then demonstrate its full
+   construction, qualification, evaluation and semantic review, or select another
+   materially different real source if bounded repair cannot establish access/terms.
+3. Complete automatic GitHub and Hugging Face publication for both accepted
+   datasets and retain anonymous full-file consumer verification. Observe the
+   successful unattended completion path, including any actual publishing repairs.
+4. Recheck the full acceptance mapping and sign off only after those outcomes.
+
+Estimated additional effort: **2–4 hours**, conditional on the current source
+repairs converging. Source replacement or a first-live-publication integration
+failure could require more. This is an estimate, not a new authorized timebox.
+The main remaining uncertainty is end-to-end source/release reliability, not test
+execution. No additional allowance or validation exception is assumed.
+
+On authorized resumption, inspect the final cutoff snapshot and `factory status`,
+keep Scout as the sole launcher, preserve stable attempts and existing staged
+artifacts, and use the normal controller. Re-enable its local admission flag only
+for the resumed work. Keep development accounting separate from normal-operation
+limits; do not reopen genuinely rejected/deferred historical candidates merely to
+fill the demonstration. The existing automatic repair and source-refill paths
+remain responsible for progress.
+
+## Final cutoff and handoff — 19:08 UTC; recorded after the deadline
+
+Scout's [final snapshot](../audits/rewrite/final-cutoff-snapshot/note.md) confirms
+`pipeline_enabled=false`, a waiting tick with no new admissions, no live model or
+tick processes, and a reconciled ledger with zero servers and primary IPs. The
+scheduled cutoff fired idempotently at 19:07 after the manual 19:06:21 cutoff.
+Already-running model tasks finished; their results remain in `.factory/model-tasks/`.
+No replacement release was published. No additional implementation was started.
+
+**Resume correction:** the initial Scout snapshot incorrectly prescribed legacy
+R1–R4 operator approval as a prerequisite. `factory/admission.py:require` already
+supersedes that hold for recorded running replacement build/publish attempts while
+`pipeline.enabled(root)` is true. Build-8 saw the legacy hold because the cutoff
+had disabled the pipeline. That is a shutdown observation, not a new human gate.
+Scout corrected the handoff in `dd737f9` without restarting work. On authorized
+resumption, inspect saved attempt results and re-enable the replacement flag;
+do not add per-dataset approval or reopen unrelated historical remediation work.
+
+The final source inventory changes the earlier second-source plan: ClinicalTrials
+is now rejected, so inspect its preserved reason and use ordinary discovery/refill
+for another materially different source; do not silently reset its state. Source
+15 is queued for discovery and was not admitted. UCMR needs a newly constructed,
+fully checked package with corrected descriptions; build-7 must not be published
+as-is. The outstanding work remains UCMR acceptance, a second complete source,
+two automatic dual-platform releases, and anonymous consumer verification.
+
+Estimated additional effort remains **2–4 hours**, with low confidence until a
+second source passes construction and the first real publication succeeds. Further
+source or publication defects can extend this estimate. No new timebox is assumed.
+The objective is incomplete and work stops under the user's eight-hour instruction.
+
+Final runtime evidence was exported by Scout in `1983f07` and corrected in
+`dd737f9`. The original export passed [CI](https://github.com/earino/dataset-factory/actions/runs/42513596675);
+the corrected export and this closeout commit receive exact-commit CI checks before
+the final user report. Runtime code remains `6ac5f83`; these are evidence-only changes.
