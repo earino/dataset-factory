@@ -1133,3 +1133,30 @@ finish-first scheduling without another agent, approval or resource-policy chang
 The focused pipeline/engine checks pass (23 tests), including waiting-work fairness,
 active-attempt resumption and publishing before an older discovery candidate. Clean
 checkout and exact-commit CI verification follow before deployment.
+
+### Fresh review and description propagation correction — 18:50 UTC
+
+The [second UCMR review](../audits/rewrite/ucmr-evaluate2-review/response.json)
+confirmed the empty-feature defect fixed and requested further repair: independent
+label validation, accurate prior-feature/population descriptions, and checks for
+the stated negative selection conditions. The task completed in 356.4 seconds;
+[export CI](https://github.com/earino/dataset-factory/actions/runs/42511620176) passed.
+The deployed controller correctly returned it to build, preserving the findings.
+Scout also confirms `7b77595` deployed at 18:43:22 UTC; its clean checkout passed
+942 tests (13 skipped) and [CI](https://github.com/earino/dataset-factory/actions/runs/42510942948).
+
+A real contract defect prevented descriptive repairs from reaching the release:
+`quality.task.population` already described the excluded first samples, but review
+and packaging continued to use discovery's original `source.task`. Construction
+now carries corrected population/prediction-time/usefulness/reference text into
+that source record, preserving the earlier task in attempt history. Existing feature
+meanings can be corrected through `quality.feature_meanings`; availability text is
+carried from the existing evaluation contract. The helper retains the original
+question, target, feature identities, split policy and source access/terms. New
+artifacts still require complete qualification and fresh review. This removes an
+artificial inability to repair documentation; it is not a semantic approval.
+
+ClinicalTrials did launch normally: release 438445539 appeared at 18:45:54 UTC.
+Its first worker failed because the supplied terms quote was absent from the
+captured document. The earlier 'stuck behind reconcile guard' inference is
+superseded by that actual launch/result; no queue or ledger repair is needed.

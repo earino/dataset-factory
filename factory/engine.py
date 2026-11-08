@@ -155,6 +155,11 @@ class Driver:
                           if text_draft else task_prompts.construction(data['source'], example, failure, previous))
                 response = self.model.run(attempt['id'], prompt, construction=True)
                 construction.validate(response)
+                described = construction.describe_task(data['source'], response)
+                if described['task'] != data['source']['task']:
+                    data.setdefault('task_description_history', []).append(
+                        {'attempt': attempt['id'], 'previous_task': data['source']['task']})
+                    data['source'] = described
                 data.update(construction=response, construction_attempt=attempt['id'])
                 data.pop('construction_draft', None)
                 data.pop('construction_text_draft', None)

@@ -26,6 +26,27 @@ def source():
 
 
 class EngineTests(unittest.TestCase):
+    def test_repaired_descriptions_reach_source_without_changing_frozen_task(self):
+        from factory.construction import describe_task
+        original = source()
+        original['task']['features'] = [{'name': 'prior', 'meaning': 'Observed result',
+                                         'availability': 'Known before sampling', 'evidence_url': 'https://example.org'}]
+        response = {'quality': {'task': {'population': 'First event inside the frozen windows',
+                                         'target': 'forbidden change', 'question': 'forbidden change'},
+            'feature_meanings': {'prior': 'Detected maximum, or sourced MRL censoring bound'},
+            'evaluation_contract': {'feature_evidence': {'prior': {
+                'availability': 'Historical availability is unverified'}}}}}
+        corrected = describe_task(original, response)
+        self.assertEqual('First event inside the frozen windows', corrected['task']['population'])
+        self.assertIn('censoring bound', corrected['task']['features'][0]['meaning'])
+        self.assertEqual('Historical availability is unverified', corrected['task']['features'][0]['availability'])
+        for key in ('target', 'question', 'split_policy'):
+            self.assertEqual(original['task'][key], corrected['task'][key])
+        self.assertEqual(original['source'], corrected['source'])
+        self.assertEqual('Observed result', original['task']['features'][0]['meaning'])
+        response['quality']['feature_meanings']['new_feature'] = 'Not declared'
+        with self.assertRaises(FactoryError): describe_task(original, response)
+
     def test_semantic_repair_verdict_returns_findings_to_construction_without_acceptance(self):
         review = json.loads((Path(__file__).resolve().parents[1] /
                              'audits/rewrite/ucmr5-evaluate-1/response.json').read_text())

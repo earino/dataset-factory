@@ -48,6 +48,11 @@ returns to construction, preserving that original attempt and findings. True
 rejections and independently changed decisions remain terminal. Semantic repair
 returns `evaluate -> build`, with at most five failed semantic reviews; each rebuilt
 artifact must pass full qualification/evaluation and a fresh review before publication.
+Construction may correct descriptive text for population, prediction time,
+usefulness, references and existing feature meanings/availability. Review and
+packaging use those corrected descriptions, with originals retained in attempt
+history. Question, target, feature identities and split policy remain unchanged;
+description repair cannot authorize score-driven task changes or waive validation.
 A failed publisher-terms capture gets a bounded research
 repair within that worker allowance. Only source terms/documentation fields and
 their evidence may change; the builder, download URLs, task and splits stay fixed.

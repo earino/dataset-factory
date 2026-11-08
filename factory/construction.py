@@ -1,5 +1,6 @@
 """Assemble the canonical worker pipeline around bounded generated construction."""
 import ast
+import copy
 import json
 import os
 from pathlib import Path
@@ -22,6 +23,43 @@ pyarrow==19.0.1
 pypdf==5.4.0
 '''
 FILES = ('source_io.py', 'dataset_run.py', 'dataset_package.py', 'get_dataset.py')
+
+
+def describe_task(source, response):
+    """Carry construction's corrected descriptions into review and the package."""
+    updated = copy.deepcopy(source)
+    quality = response['quality']
+    descriptions = quality.get('task', {})
+    if not isinstance(descriptions, dict):
+        raise FactoryError('Construction task descriptions must be an object')
+    for name in ('population', 'prediction_time', 'usefulness', 'simple_references'):
+        if name in descriptions:
+            value = descriptions[name]
+            if not isinstance(value, str) or not value.strip():
+                raise FactoryError('Task description must be nonempty text: ' + name)
+            updated['task'][name] = value
+    meanings = quality.get('feature_meanings', {})
+    features = updated['task'].get('features')
+    indexed = {f['name']: f for f in features if isinstance(f, dict) and 'name' in f} if isinstance(features, list) else {}
+    if not isinstance(meanings, dict) or set(meanings) - set(indexed):
+        raise FactoryError('Feature descriptions may only name existing source features')
+    for name, meaning in meanings.items():
+        if not isinstance(meaning, str) or not meaning.strip():
+            raise FactoryError('Feature meaning must be nonempty text: ' + name)
+        indexed[name]['meaning'] = meaning
+    contract = quality.get('evaluation_contract', {})
+    if not isinstance(contract, dict):
+        raise FactoryError('Evaluation contract must be an object')
+    availability = contract.get('feature_evidence', {})
+    if not isinstance(availability, dict):
+        raise FactoryError('Feature availability descriptions must be an object')
+    for name, feature in indexed.items():
+        evidence = availability.get(name, {})
+        if not isinstance(evidence, dict):
+            raise FactoryError('Feature availability evidence must be an object: ' + name)
+        if isinstance(evidence.get('availability'), str) and evidence['availability'].strip():
+            feature['availability'] = evidence['availability']
+    return updated
 
 
 def validate(response):

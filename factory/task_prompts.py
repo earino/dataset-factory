@@ -180,8 +180,16 @@ Never delete directories. Write only to output and cache. The worker is bounded.
 quality is the semantic descriptor for the existing qualification gate. The example
 below shows its schema, NOT evidence you may copy. Fill every semantic field for
 this source, including task, features, IDs, carry columns, label_source_columns,
-post_hoc_columns, measurements, timing and evaluation_contract. Use actual sources
-for every feature_evidence entry including ID/time fields. Mark assumptions as
+post_hoc_columns, measurements, timing and evaluation_contract.
+Correct descriptive mistakes in quality.task.population, prediction_time,
+usefulness or simple_references; these descriptions are carried into source.json,
+review and the release manifest. quality.feature_meanings may map existing source
+feature names to corrected meanings (including censoring and missingness).
+Feature availability text comes from evaluation_contract.feature_evidence.
+These are description corrections, not permission to change the question, target,
+feature selection or frozen splits in response to scores. Preserve actual rules
+and state uncertainty; original descriptions remain in the attempt history.
+Use actual sources for every feature_evidence entry including ID/time fields. Mark assumptions as
 assumed; current snapshots do not prove historical availability. Choose
 retrospective_research unless measured full-row availability supports forecasting.
 The controller fills name, target from your descriptor, positive_label=1, splits,
