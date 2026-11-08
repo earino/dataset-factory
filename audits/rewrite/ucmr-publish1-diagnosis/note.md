@@ -36,3 +36,13 @@ NEXT: the operator's structured error receipt for the existing helper
 makes the next attempt diagnosable; the designed retry then reconciles
 destination files and tags safely. No manual visibility flip, no
 acceptance-gate change.
+
+ADDENDUM 21:02Z: publish-2 (launched by the in-flight tick seconds
+before the 20:50:48Z pause; preserved per operator instruction) FAILED
+IDENTICALLY at 21:00:06Z - UploadError, failure_stage release_publish,
+publication_stage publish, elapsed 119.6 s, staging release 438514274.
+Repeatability CONFIRMED with real evidence; its job bundle predated the
+fix, so no structured receipt. The create_tag keyword-only fix
+(948e3ce) deployed 20:59:39Z; tick resumed 21:00Z. Next retry
+(publish-3) assembles from fixed code with structured error receipts.
+Job record exported alongside publish-1's.
