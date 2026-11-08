@@ -15,9 +15,10 @@ record and relevant skill. Before worker commands read `docs/OPERATIONS.md`; use
 current ledgers and reports rather than inferring state from old prose.
 
 1. **Actionable packaged release first.** Finish unblocked preparation or already
-   approved publication. `awaiting_operator: true` is a human wait; leave it private
-   and choose other work. The flag's absence is not proof of publication approval:
-   require the recorded decision.
+   approved publication. A verified `awaiting_operator: true` with a current autonomous
+   audit receipt is a human wait; leave it private and choose other work. A bare flag
+   remains actionable audit work: follow `docs/AUTONOMOUS-RELEASE-AUDIT.md`. The flag's
+   absence is not proof of publication approval: require the recorded decision.
 2. Otherwise choose the existing candidate whose next evidence-backed step best
    advances a useful task. Reconcile unfinished jobs before launching replacements.
    Follow the licence-ranked queue and recorded priorities.

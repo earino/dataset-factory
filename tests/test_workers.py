@@ -187,9 +187,16 @@ class WorkerTests(unittest.TestCase):
         self.launch()
         self.assertEqual(self.cloud.created, 1)
 
-    def test_a_candidate_waiting_on_the_operator_does_not_block_construction(self):
+    def test_a_bare_awaiting_operator_flag_does_not_bypass_release_work(self):
         self.packaged("awaiting-flip", awaiting=True)
-        self.launch()
+        with self.assertRaisesRegex(FactoryError, "Release work is pending"):
+            self.launch()
+        self.assertEqual(self.cloud.created, 0)
+
+    def test_a_verified_operator_wait_does_not_block_construction(self):
+        self.packaged("awaiting-flip", awaiting=True)
+        with patch('factory.audit_workflow.queue_ready',return_value=True):
+            self.launch()
         self.assertEqual(self.cloud.created, 1)
 
     def test_a_candidate_waiting_on_an_operator_decision_does_not_block_construction(self):

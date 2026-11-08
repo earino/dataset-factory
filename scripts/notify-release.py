@@ -7,8 +7,11 @@ the same dataset produces a new message, a repeated tick does not.
 """
 import json
 from pathlib import Path
+import sys
 
-ROOT = Path("/opt/data/dataset-factory")
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from factory.audit_workflow import queue_ready
 STATE = ROOT / ".factory" / "release-notified.json"
 
 
@@ -27,17 +30,17 @@ def main():
             record = json.loads(path.read_text())
         except (OSError, ValueError):
             continue
-        if record.get("status") != "packaged" or not record.get("awaiting_operator"):
+        if not queue_ready(ROOT,record):
             continue
-        key = f"{record.get('id') or path.parent.name}@{record.get('packaged_at') or 'undated'}"
+        key = f"{record['id']}@{record['autonomous_audit']['sha256']}"
         if key in seen:
             continue
         name = record.get("id") or path.parent.name
         messages.append(
-            f"Ready for the flip: *{name}*\n"
-            f"Packaged and verified. Nothing is public yet.\n"
-            f"Reply `flip {name}` and I will publish it to GitHub, Hugging Face and the site, "
-            f"then verify every asset anonymously."
+            f"Ready for independent review: *{name}*\n"
+            f"Private staging and the internal adversarial audit passed for this version.\n"
+            f"The operator-relayed independent audit and digest-bound approval are still required "
+            f"before the GitHub/Hugging Face public flip. Website publication needs its reviewed plan."
         )
         seen[key] = True
 

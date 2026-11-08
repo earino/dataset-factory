@@ -274,7 +274,8 @@ def release_work_pending(root):
             continue  # check-candidate owns record validity; a broken record must not block work
         if not isinstance(record, dict) or record.get("status") != "packaged":
             continue
-        if record.get("awaiting_operator") or record.get("operator_decision_pending"):
+        from .audit_workflow import queue_ready
+        if record.get("operator_decision_pending") or queue_ready(root, record):
             continue
         pending.append(record.get("id") or path.parent.name)
     return pending
