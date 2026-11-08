@@ -38,15 +38,22 @@ def describe_task(source, response):
             if not isinstance(value, str) or not value.strip():
                 raise FactoryError('Task description must be nonempty text: ' + name)
             updated['task'][name] = value
-    meanings = quality.get('feature_meanings', {})
     features = updated['task'].get('features')
     indexed = {f['name']: f for f in features if isinstance(f, dict) and 'name' in f} if isinstance(features, list) else {}
-    if not isinstance(meanings, dict) or set(meanings) - set(indexed):
-        raise FactoryError('Feature descriptions may only name existing source features')
-    for name, meaning in meanings.items():
-        if not isinstance(meaning, str) or not meaning.strip():
-            raise FactoryError('Feature meaning must be nonempty text: ' + name)
-        indexed[name]['meaning'] = meaning
+    clarified = descriptions.get('features', [])
+    if not isinstance(clarified, list):
+        raise FactoryError('Feature descriptions must be a list')
+    seen = set()
+    for feature in clarified:
+        if not isinstance(feature, dict) or feature.get('name') not in indexed or feature['name'] in seen:
+            raise FactoryError('Feature descriptions may only name distinct existing source features')
+        name = feature['name']; seen.add(name)
+        for field in ('meaning', 'availability'):
+            if field in feature:
+                value = feature[field]
+                if not isinstance(value, str) or not value.strip():
+                    raise FactoryError('Feature description must be nonempty text: ' + name)
+                indexed[name][field] = value
     contract = quality.get('evaluation_contract', {})
     if not isinstance(contract, dict):
         raise FactoryError('Evaluation contract must be an object')

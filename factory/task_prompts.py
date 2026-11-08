@@ -183,8 +183,8 @@ this source, including task, features, IDs, carry columns, label_source_columns,
 post_hoc_columns, measurements, timing and evaluation_contract.
 Correct descriptive mistakes in quality.task.population, prediction_time,
 usefulness or simple_references; these descriptions are carried into source.json,
-review and the release manifest. quality.feature_meanings may map existing source
-feature names to corrected meanings (including censoring and missingness).
+review and the release manifest. quality.task.features may give corrected meaning
+and availability text for existing named features (including censoring and missingness).
 Feature availability text comes from evaluation_contract.feature_evidence.
 These are description corrections, not permission to change the question, target,
 feature selection or frozen splits in response to scores. Preserve actual rules

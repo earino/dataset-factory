@@ -32,8 +32,8 @@ class EngineTests(unittest.TestCase):
         original['task']['features'] = [{'name': 'prior', 'meaning': 'Observed result',
                                          'availability': 'Known before sampling', 'evidence_url': 'https://example.org'}]
         response = {'quality': {'task': {'population': 'First event inside the frozen windows',
-                                         'target': 'forbidden change', 'question': 'forbidden change'},
-            'feature_meanings': {'prior': 'Detected maximum, or sourced MRL censoring bound'},
+                'target': 'forbidden change', 'question': 'forbidden change',
+                'features': [{'name': 'prior', 'meaning': 'Detected maximum, or sourced MRL censoring bound'}]},
             'evaluation_contract': {'feature_evidence': {'prior': {
                 'availability': 'Historical availability is unverified'}}}}}
         corrected = describe_task(original, response)
@@ -44,8 +44,22 @@ class EngineTests(unittest.TestCase):
             self.assertEqual(original['task'][key], corrected['task'][key])
         self.assertEqual(original['source'], corrected['source'])
         self.assertEqual('Observed result', original['task']['features'][0]['meaning'])
-        response['quality']['feature_meanings']['new_feature'] = 'Not declared'
+        response['quality']['task']['features'].append({'name': 'new_feature', 'meaning': 'Not declared'})
         with self.assertRaises(FactoryError): describe_task(original, response)
+
+    def test_real_ucmr_repair_descriptions_reach_the_effective_source(self):
+        from factory.construction import describe_task
+        evidence = Path(__file__).resolve().parents[1] / 'audits/rewrite/new-source-outcomes'
+        manifest = json.loads((evidence / 'ucmr5-build-7-package-manifest.json').read_text())
+        quality = json.loads((evidence / 'ucmr5-build-7-quality.json').read_text())
+        original = {'task': manifest['task'], 'source': manifest['source']}
+        corrected = describe_task(original, {'quality': quality})
+        expected = next(f for f in quality['task']['features'] if f['name'] == 'prior_ucmr3_max_pfoa_pfos')
+        actual = next(f for f in corrected['task']['features'] if f['name'] == expected['name'])
+        self.assertEqual(expected['meaning'], actual['meaning'])
+        self.assertNotEqual(original['task']['population'], corrected['task']['population'])
+        self.assertEqual([f['name'] for f in original['task']['features']],
+                         [f['name'] for f in corrected['task']['features']])
 
     def test_semantic_repair_verdict_returns_findings_to_construction_without_acceptance(self):
         review = json.loads((Path(__file__).resolve().parents[1] /
@@ -246,6 +260,7 @@ class EngineTests(unittest.TestCase):
             fixed = json.loads(raw + '}')
             for key in ('references', 'construction_notes'):
                 fixed[key] = fixed['quality'].pop(key)
+            data['source']['task']['features'] = copy.deepcopy(fixed['quality']['task']['features'])
             model.run.side_effect = None; model.run.return_value = fixed
             with patch.dict(os.environ, {'FACTORY_BENCHMARK_ROOT': str(harness.parent)}), \
                     patch('factory.engine.construction.assemble', return_value=root / 'new.json') as assemble, \

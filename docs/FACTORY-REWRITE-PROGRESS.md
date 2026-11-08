@@ -1160,3 +1160,24 @@ ClinicalTrials did launch normally: release 438445539 appeared at 18:45:54 UTC.
 Its first worker failed because the supplied terms quote was absent from the
 captured document. The earlier 'stuck behind reconcile guard' inference is
 superseded by that actual launch/result; no queue or ledger repair is needed.
+
+### Existing descriptor format retained — 18:55 UTC
+
+Build-7 also completed full construction/qualification/evaluation/packaging
+(success, 61.0 seconds), staged at release 438449041. Its exact-artifact receipt
+and all 33 package asset bindings pass:
+[verification](../audits/rewrite/new-source-outcomes/ucmr5-build-7-binding-verification.json).
+Inspection found that this real repair already writes corrected feature meanings
+into `quality.task.features`. The propagation correction therefore uses that
+existing named-feature descriptor list, not the extra `feature_meanings` mapping
+proposed in the preceding entry. Unknown/new feature names are rejected; the
+original feature identities and task target/splits remain unchanged. A test against
+this actual build-7 descriptor proves its corrections reach the effective source.
+This requires a fresh bundle/full checks/review; no staged artifact is changed.
+
+ClinicalTrials build-1's [manifest](../audits/rewrite/new-source-outcomes/clinicaltrials-build-1-manifest.json)
+and [hash-verified failure](../audits/rewrite/new-source-outcomes/clinicaltrials-build-1-failure.json)
+are retained (35.2 seconds, supplied terms excerpt absent from captured document).
+No successful ClinicalTrials artifact or replacement publication exists at this
+observation. Scout has been asked to verify the 19:07 cutoff with a disabled tick,
+active-worker/expiry inventory, cleanup status and concrete resume steps.
