@@ -220,6 +220,31 @@ It still rejects the mismatch before any measurement; it does not silently renam
 columns or alter the frozen task. Normal bounded repair remains responsible for
 correcting generated code. Full qualification/publication is still pending.
 
+At 14:05:55 UTC the replayed HURDAT2 build-5 durably staged its failure
+(release 438286225): exit 1, not OOM, 32.6 seconds. Its source assertion found two
+disagreements between HU status and the >=64-knot rule. The exact failure bytes
+were verified against the staging manifest and preserved alongside the replay
+receipts. No qualification or scores passed. The controller's normal bounded
+repair must resolve source semantics against the frozen target; no assertion was
+manually removed. Source-4 launch was waiting for the prior worker's reconciliation.
+
+The repair context previously supplied only the source and failure, discarding
+the previous builder from the model's context. It now includes the exact saved
+proposal in place of the generic schema example, so repairs can preserve working
+code. Both live proposals fit the existing 64 KiB prompt bound even with the full
+12,000-character failure allowance; model time/turn/spending limits are unchanged.
+
+At 14:07 UTC Scout measured 36,339,072/40,000,000 rolling inference tokens and
+123/200 sessions. The configured 0.95 stop fraction leaves approximately 1.66M
+tokens before admission stops, not the 3.66M difference to the nominal ceiling.
+Source 5 had completed discovery; source 6 was retrying malformed discovery JSON.
+Full source-3/4 state exports explicitly distinguish reconstructed before-states
+from observed after-states. These reconstructions are not original snapshots.
+Header-contract change `c22aaf9` passed 922 clean-clone tests (13 skipped) and
+[CI](https://github.com/earino/dataset-factory/actions/runs/42488312551).
+Repair-context change passed 923 clean-clone tests (13 skipped). Scout's complete
+state export passed [CI](https://github.com/earino/dataset-factory/actions/runs/42488252046).
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;

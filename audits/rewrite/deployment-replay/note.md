@@ -22,3 +22,14 @@ not claims of untouched end-to-end runs.
 - All previous attempt rows preserved; fresh queued sources untouched;
   no source/task/splits/code/quality or passing-gate edits; tick resumed
   14:0xZ to assemble and run both with fixed helpers under every check.
+
+## Full before/after state files (added on operator request)
+
+The replay receipts originally summarized before/after as data_keys lists.
+Full state files are now exported: <cid>-before-state-reconstructed.json
+and <cid>-after-state.json. Provenance of the reconstruction: all fields
+the replay did not touch (source, focus, failure) are verbatim from the
+current store; construction/construction_attempt are restored from the
+original model-task response files and the recorded pre-replay attempt
+ids; the job pointer is the one recorded in the receipts. after-state is
+a verbatim dump. No store content was modified in producing these files.

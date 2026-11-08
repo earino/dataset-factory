@@ -97,7 +97,8 @@ class Driver:
             raise BudgetWait('Worker policy or independent cleanup is not enabled')
         if data.get('construction_attempt') != attempt['id']:
             example = read_json(self.root / 'skills/dataset-qualification/fixtures/corrected/quality.json')
-            response = self.model.run(attempt['id'], task_prompts.construction(data['source'], example, data.get('failure')),
+            response = self.model.run(attempt['id'], task_prompts.construction(
+                                      data['source'], example, data.get('failure'), data.get('construction')),
                                       construction=True)
             construction.validate(response)
             data.update(construction=response, construction_attempt=attempt['id'])
