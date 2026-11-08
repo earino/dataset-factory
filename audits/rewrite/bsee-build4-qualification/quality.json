@@ -1,0 +1,381 @@
+{
+  "carry_columns": [
+    "install_date"
+  ],
+  "evaluation_contract": {
+    "access": "isolated_rows",
+    "cross_row_audit": {
+      "auxiliary_files_review": "Only public/train.csv, public/eval.csv and private/holdout.csv; no auxiliary label or fixture files.",
+      "probes": [],
+      "rationale": "Each structure contributes one independent row with a unique identifier and disjoint installation-date cohort windows."
+    },
+    "feature_evidence": {
+      "area_code": {
+        "availability": "Documented AREA_CODE location field; current-vintage snapshot does not prove historical availability.",
+        "source": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "status": "assumed"
+      },
+      "block_number": {
+        "availability": "Documented BLOCK_NUMBER location field; current-vintage snapshot does not prove historical availability.",
+        "source": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "status": "assumed"
+      },
+      "district_code": {
+        "availability": "Documented DISTRICT_CODE field; current-vintage snapshot does not prove historical availability.",
+        "source": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "status": "assumed"
+      },
+      "field_name_code": {
+        "availability": "Documented FIELD_NAME_CODE field; current-vintage snapshot does not prove historical availability.",
+        "source": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "status": "assumed"
+      },
+      "install_date": {
+        "availability": "Documented INSTALL_DATE field shipped as the time column and declared carry column; current-vintage snapshot does not prove historical operational availability at installation.",
+        "source": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "status": "assumed"
+      },
+      "install_month": {
+        "availability": "Derived from INSTALL_DATE; month precision is weak and year-only records become January.",
+        "source": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "status": "assumed"
+      },
+      "install_year": {
+        "availability": "Derived from INSTALL_DATE; current-vintage snapshot does not prove historical availability.",
+        "source": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "status": "assumed"
+      },
+      "latitude": {
+        "availability": "Documented LATITUDE field; current-vintage snapshot does not prove historical availability.",
+        "source": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "status": "assumed"
+      },
+      "longitude": {
+        "availability": "Documented LONGITUDE field; current-vintage snapshot does not prove historical availability.",
+        "source": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "status": "assumed"
+      },
+      "struc_type_code": {
+        "availability": "Documented STRUC_TYPE_CODE field; current-vintage snapshot does not prove historical availability.",
+        "source": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "status": "assumed"
+      },
+      "structure_id": {
+        "availability": "Administrative structure identifier present in the current raw extract; assumed stable historically but not proven by a full-row ledger.",
+        "source": "https://www.data.bsee.gov/Platform/Files/PlatStrucRawData.zip",
+        "status": "assumed"
+      },
+      "surf_e_w_dist": {
+        "availability": "Documented SURF_E_W_DIST field; assumed feet from the field description and current-vintage snapshot; continuous so declared high-cardinality.",
+        "source": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "status": "assumed"
+      },
+      "surf_n_s_dist": {
+        "availability": "Documented SURF_N_S_DIST field; assumed feet from the field description and current-vintage snapshot; continuous so declared high-cardinality.",
+        "source": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "status": "assumed"
+      },
+      "water_depth_ft": {
+        "availability": "Documented static WATER_DEPTH field; current-vintage snapshot does not prove historical availability.",
+        "source": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "status": "assumed"
+      }
+    },
+    "limitations": [
+      "Current-vintage retrospective snapshot: the table is a current BSEE record, not a historical 1986-2000 installation-time snapshot.",
+      "Static attributes may have been revised after installation; historical availability at prediction time is assumed, not verified.",
+      "No full-row availability ledger; training labels use later REMOVAL_DATE values and training label timing is unverified.",
+      "INSTALL_DATE month/day precision is weak; year-only records become January 1 and install_month is coarse.",
+      "Fixed-horizon censoring: structures still present at the 25-year cutoff are labeled 0 even if removed later.",
+      "REMOVAL_DATE records structure removal, not necessarily full site clearance, well plugging or all decommissioning obligations.",
+      "Exact raw archive member name and header vocabulary were not present in the supplied evidence; construction resolves them by header matching and fails with observed evidence if absent.",
+      "SURF_N_S_DIST and SURF_E_W_DIST units are assumed feet from the field description.",
+      "The current extract may contain errors; BSEE states the data are not a legal or navigational document.",
+      "U.S. federal Gulf of Mexico OCS structures only; no transferability to other regions."
+    ],
+    "selection": {
+      "evidence": "Cohort membership uses INSTALL_DATE 1986-01-01 through 2000-12-31 and installation-time or static attributes. REMOVAL_DATE is used to exclude impossible removal-before-installation records and to define the fixed-horizon label; it otherwise does not select the cohort.",
+      "kind": "prediction_time"
+    },
+    "training_label_timing": "unverified",
+    "use": "retrospective_research",
+    "vintage": {
+      "evidence": "Current BSEE Platform Structures raw ZIP; no historical installation-time archive was supplied.",
+      "kind": "current_snapshot"
+    }
+  },
+  "event_key_column": "install_date",
+  "external_threshold": {
+    "source": "Frozen task definition: 25 calendar years after installation",
+    "unit": "years",
+    "value": 25
+  },
+  "features": [
+    "water_depth_ft",
+    "struc_type_code",
+    "area_code",
+    "block_number",
+    "field_name_code",
+    "district_code",
+    "latitude",
+    "longitude",
+    "surf_n_s_dist",
+    "surf_e_w_dist",
+    "install_year",
+    "install_month"
+  ],
+  "features_documented_at": "prediction_time",
+  "high_cardinality_columns": [
+    "block_number",
+    "field_name_code",
+    "surf_n_s_dist",
+    "surf_e_w_dist",
+    "install_date"
+  ],
+  "id_columns": [
+    "structure_id"
+  ],
+  "label_source_columns": [
+    "INSTALL_DATE",
+    "REMOVAL_DATE"
+  ],
+  "measurements": [
+    {
+      "column": "water_depth_ft",
+      "frame": "WATER_DEPTH in the BSEE platform record",
+      "unit": "feet"
+    },
+    {
+      "column": "surf_n_s_dist",
+      "frame": "SURF_N_S_DIST in the BSEE platform record",
+      "unit": "feet"
+    },
+    {
+      "column": "surf_e_w_dist",
+      "frame": "SURF_E_W_DIST in the BSEE platform record",
+      "unit": "feet"
+    },
+    {
+      "column": "latitude",
+      "frame": "LATITUDE in the BSEE platform record",
+      "unit": "decimal degrees"
+    },
+    {
+      "column": "longitude",
+      "frame": "LONGITUDE in the BSEE platform record",
+      "unit": "decimal degrees"
+    },
+    {
+      "column": "removed_within_25y",
+      "frame": "calendar years from INSTALL_DATE to REMOVAL_DATE with a fixed 25-year horizon",
+      "unit": "binary"
+    }
+  ],
+  "positive_label": 1,
+  "post_hoc_columns": [
+    "REMOVAL_DATE"
+  ],
+  "split_windows": {
+    "eval": {
+      "end": "1996-01-01T00:00:00.000",
+      "start": "1991-01-01T00:00:00.000"
+    },
+    "holdout": {
+      "end": "2001-01-01T00:00:00.000",
+      "start": "1996-01-01T00:00:00.000"
+    },
+    "train": {
+      "end": "1991-01-01T00:00:00.000",
+      "start": null
+    }
+  },
+  "target": "removed_within_25y",
+  "task": {
+    "decision_user": "Offshore decommissioning planner or financial-assurance analyst estimating long-lived marine infrastructure and removal liability.",
+    "features": [
+      {
+        "availability": "Static site attribute documented in the BSEE field definitions; assumed recorded at installation, not proven by a historical ledger.",
+        "evidence_url": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "meaning": "Water depth at the structure location in feet.",
+        "name": "water_depth_ft"
+      },
+      {
+        "availability": "Static design attribute documented in the BSEE field definitions; assumed known at installation.",
+        "evidence_url": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "meaning": "BSEE structure-type code such as FIXED, WP, CAIS or SPAR.",
+        "name": "struc_type_code"
+      },
+      {
+        "availability": "Location attribute documented in the BSEE field definitions; assumed known at installation.",
+        "evidence_url": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "meaning": "Outer Continental Shelf area abbreviation for the structure location.",
+        "name": "area_code"
+      },
+      {
+        "availability": "Location attribute documented in the BSEE field definitions; assumed known at installation.",
+        "evidence_url": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "meaning": "OCS block number containing the structure, retained as source text.",
+        "name": "block_number"
+      },
+      {
+        "availability": "Development-area attribute documented in the BSEE field definitions; assumed known before installation.",
+        "evidence_url": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "meaning": "Name or code of the field in which the structure is located.",
+        "name": "field_name_code"
+      },
+      {
+        "availability": "Administrative location attribute documented in the BSEE field definitions; assumed known at installation.",
+        "evidence_url": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "meaning": "BSEE administrative district code for the structure.",
+        "name": "district_code"
+      },
+      {
+        "availability": "Location attribute documented in the BSEE field definitions; assumed known at installation.",
+        "evidence_url": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "meaning": "Surface latitude of the structure in decimal degrees.",
+        "name": "latitude"
+      },
+      {
+        "availability": "Location attribute documented in the BSEE field definitions; assumed known at installation.",
+        "evidence_url": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "meaning": "Surface longitude of the structure in decimal degrees.",
+        "name": "longitude"
+      },
+      {
+        "availability": "Location attribute documented in the BSEE field definitions; continuous offset, unit assumed feet.",
+        "evidence_url": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "meaning": "Distance from the surface location to the north or south block boundary, assumed feet.",
+        "name": "surf_n_s_dist"
+      },
+      {
+        "availability": "Location attribute documented in the BSEE field definitions; continuous offset, unit assumed feet.",
+        "evidence_url": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "meaning": "Distance from the surface location to the east or west block boundary, assumed feet.",
+        "name": "surf_e_w_dist"
+      },
+      {
+        "availability": "Calendar control known at the decision instant.",
+        "evidence_url": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "meaning": "Calendar year of installation, derived from INSTALL_DATE.",
+        "name": "install_year"
+      },
+      {
+        "availability": "Calendar control known at the decision instant, subject to date-precision limitations.",
+        "evidence_url": "https://www.data.bsee.gov/Platform/PlatformStructures/FieldDefinitions.aspx",
+        "meaning": "Calendar month of installation, derived from INSTALL_DATE; January when the recorded date is year-only.",
+        "name": "install_month"
+      }
+    ],
+    "outcome_horizon": "25 calendar years after installation; cohort cutoffs fall from 2011-01-01 through 2025-12-31.",
+    "population": "Platform structures with INSTALL_DATE from 1986-01-01 through 2000-12-31, AUTHORITY_TYPE of OCS Lease, nonmissing positive WATER_DEPTH, nonmissing STRUC_TYPE_CODE, valid latitude and longitude, nonempty BLOCK_NUMBER, a nonempty structure identifier, and a fully observed 25-year follow-up against the 2026 current-vintage snapshot; one row per structure. Exclude records whose REMOVAL_DATE precedes INSTALL_DATE.",
+    "prediction_time": "At INSTALL_DATE; when only the installation year is reliable, January 1 of the reported installation year.",
+    "question": "Will a newly installed offshore oil and gas structure in federal Gulf of Mexico waters be removed from the Outer Continental Shelf within 25 years of installation?",
+    "simple_references": "Majority class; base rate by installation year; base rate by structure type, OCS area and district; train-only calendar and identity controls. Persistence score is not applicable because each structure appears once.",
+    "split_policy": "Fixed chronological splits by installation date: train 1986-01-01 through 1990-12-31; evaluation 1991-01-01 through 1995-12-31; holdout 1996-01-01 through 2000-12-31. The 25-year outcome windows are disjoint.",
+    "usefulness": "Decommissioning timing is a major marine-infrastructure and financial-assurance question. The target is a future removal event within a fixed horizon and cannot be copied from a feature available at installation; the model must combine water depth, structure type, location and installation calendar controls."
+  },
+  "time_column": "install_date",
+  "timing": {
+    "features": {
+      "period": null,
+      "published_days_after_period_end": null,
+      "source_kind": "administrative_record"
+    },
+    "observations": [],
+    "prediction_instant": {
+      "citation": "INSTALL_DATE as recorded in the current BSEE extract; no historical availability ledger was supplied.",
+      "days_after_period_end": null,
+      "kind": "event_time",
+      "period": null
+    },
+    "row_selection": {
+      "fields": [
+        "INSTALL_DATE",
+        "AUTHORITY_TYPE",
+        "REMOVAL_DATE"
+      ],
+      "rule": "Keep records whose INSTALL_DATE falls in the half-open 1986-01-01 through 2001-01-01 window, whose AUTHORITY_TYPE is OCS Lease, and which have nonmissing positive WATER_DEPTH, nonmissing STRUC_TYPE_CODE, valid latitude and longitude, nonempty BLOCK_NUMBER and a nonempty structure identifier. Exclude records whose REMOVAL_DATE precedes INSTALL_DATE as an integrity rule. REMOVAL_DATE otherwise defines the label and does not select the cohort."
+    }
+  },
+  "unit_validation": {
+    "checks": 2,
+    "mismatches": 0,
+    "source": "source-checks.json: unit checks",
+    "evidence_sha256": "0c293dffe1a379e7e41176c2ffc4b6743169f6d1dc7b860a7aa71cd122ddeabc"
+  },
+  "name": "bsee-gom-platform-removal-25y",
+  "splits": {
+    "train": "public/train.csv",
+    "eval": "public/eval.csv",
+    "holdout": "private/holdout.csv"
+  },
+  "expected_duplicate_ids": 0,
+  "positive_events": {
+    "train": {
+      "positives": 501,
+      "distinct_events": 12
+    },
+    "eval": {
+      "positives": 430,
+      "distinct_events": 244
+    },
+    "holdout": {
+      "positives": 491,
+      "distinct_events": 404
+    }
+  },
+  "adversarial_battery": {
+    "version": "1.0.0",
+    "ok": true,
+    "input_digest": "4aab26b965aed88c21b87e4493b34a8ae16ed0badc8f5e17ae8b0693f72092fa",
+    "code": {
+      "artifact_scrub.py": "8c663253e691a7b8751f9c853b40a3752a833360caafb1ea8e8f534e64af4b68",
+      "leakage_battery.py": "adbf7ee0aca0012b78cc1f1e4aeb968a23717cae30f66a02e080215e75f830e3",
+      "recovery_recipes.py": "f64c542fcda232169c95ace17421b45275194b934938c0ea4c9b68e6f844ad0e"
+    },
+    "freeze_sha256": "c2364119c3454b7d68ee7e7c4ddb9e32299f0fef54894b03f9e6bcd771c3622d",
+    "all_results_sha256": "a8969de829751e68d10e1993ffecbc187530a541ece83ff1a3877f23d7c4af6d",
+    "detail_files": {
+      "results-0000.jsonl": {
+        "sha256": "1a5aa3a9f367aa36705470bd6a0e567308a8e979849fae7c0f1783e08c7c841c",
+        "bytes": 58637
+      }
+    },
+    "exact": [],
+    "failures": [],
+    "flags": [
+      {
+        "name": "lookup_unanimous:area_code+struc_type_code",
+        "kind": "supervised",
+        "split": "holdout",
+        "sha256": "c8ff97f9dcfddd2fc145e60b5152733c83e34663e335f471b76fbb8c5a455f89",
+        "rows": 609,
+        "covered": 52,
+        "errors": 1,
+        "auc_covered": 0.99,
+        "auc_full": 0.5565086816942248
+      }
+    ],
+    "flag_count": 1,
+    "attempted": {
+      "statistical": 126,
+      "supervised": 420
+    },
+    "constant_or_uncovered": {
+      "statistical": 35,
+      "supervised": 279
+    },
+    "scope": {
+      "donors": [
+        "self",
+        "all"
+      ],
+      "exploratory_keys": 8,
+      "exploratory_operands": 8,
+      "max_columns": 128,
+      "scored_labels_read": false,
+      "tokens_per_column": 80,
+      "train_labels": "supervised controls only"
+    }
+  }
+}

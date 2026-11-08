@@ -22,6 +22,25 @@ stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
 
+## 2026-11-08 23:53 UTC — BSEE full-worker qualification passes
+
+Normal source-17 repair build-4 succeeded in 38.7 worker seconds (release
+438605387 / staging manifest asset 725577631). Full-artifact gate 1.6.1 passed.
+Root verified the exact qualification receipt against downloaded compact metadata
+and the CSV asset identities, without downloading CSVs. All 33 release-package
+asset hashes match staging. Evidence is in
+`audits/rewrite/bsee-build4-qualification/`; artifact digest is
+`ef525ee2eaf7f56db2c93a09687b7f2a3e2f2ea975e3c114127621df9b9179fb`.
+
+This is the BSEE 25-year platform-removal retrospective prediction task, version
+`v-b8b4d09b992910cc`. Current-vintage fields have explicit historical-availability
+limitations. Semantic review, public publication and anonymous consumers remain
+pending. It does not yet satisfy the second-release acceptance criterion.
+
+Failed-call timing commit `54298b169a1881174f7eac56274448b71ecc62dd` passed
+[exact CI](https://github.com/earino/dataset-factory/actions/runs/42536812730).
+Scout was asked to deploy at a safe boundary, preserving paid work.
+
 ## 2026-11-08 23:48 UTC — actual candidate states and failed-call timing
 
 Scout's corrected 23:39 UTC snapshot is preserved in
