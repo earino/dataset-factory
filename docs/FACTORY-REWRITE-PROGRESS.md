@@ -10,7 +10,7 @@ UCMR `v-4a630108a6e75a6b` is public on
 and [Hugging Face](https://huggingface.co/datasets/earino/factory-ucmr5-first-sample-pfas).
 The publication worker anonymously verified all 33 files and loaded every split
 on both platforms; root independently fetched identical public manifests without
-authentication. `948e3ce` is deployed and its publication retry succeeded after the
+authentication. `2963e1f` is deployed; the publication retry succeeded after the
 tag-call correction. The bridge proposal is the second-source path; its literal
 feature-naming failure is corrected in code and the saved proposal can be reused.
 That correction passes 953 clean-checkout tests (13 skipped); deployment and the
@@ -21,6 +21,26 @@ and final resource inventory remain preserved as historical evidence. The tool's
 stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
+
+## 2026-11-08 21:33 UTC — recover the pre-fix bridge deferral
+
+Scout deployed `2963e1f` at 21:13:06 UTC, after source-000015 had already
+exhausted five model-task attempts at about 21:12:44. Three failed on the
+obsolete feature-name rule; two then failed JSON parsing. No construction
+worker launched. The last JSON error and terminal deferral prevented the
+ordinary saved-proposal reuse path from running. Evidence:
+`audits/rewrite/bridge-deferral-state/` (Scout `bf3b61d`, exact CI passed).
+
+The controller now reconciles this specific pre-worker failure class once.
+It checks the retained attempt history, requires a saved proposal to pass
+current construction and task-description validation, and resumes normal
+construction with those exact bytes. Independent decisions, worker failures,
+invalid proposals, and candidates with existing jobs/artifacts are excluded.
+All five failed attempts remain; no allowance is reset. The latest bridge
+build-3 proposal passes the corrected contract. Worker qualification and
+semantic review remain mandatory. Clean checkout: 954 tests passed, 13 skipped;
+30 focused controller/engine tests passed; rule inventory passed. This is code recovery, not a manual
+candidate-state advance or evidence that the bridge is publishable.
 
 ## Revised plan after the timebox — 2026-11-08
 

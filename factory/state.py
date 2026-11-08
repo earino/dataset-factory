@@ -105,6 +105,48 @@ class Store:
                 db.execute("UPDATE candidates SET stage='build',data=?,updated=?,next_run=0,reason=? WHERE id=?",
                            (encoded(data), time.time(), 'Corrected repair verdict routing; fresh construction and review required', row['id']))
 
+    def reconcile_feature_descriptions(self):
+        """Recover pre-worker proposals exhausted under the obsolete name rule once."""
+        from . import construction
+        naming = 'Feature descriptions may only name distinct existing source features'
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            for row in db.execute("SELECT * FROM candidates WHERE stage='deferred'").fetchall():
+                data = json.loads(row['data'])
+                if (data.get('feature_contract_recovery') or
+                        any(data.get(k) for k in ('construction', 'job', 'evidence', 'publication_job'))):
+                    continue
+                attempts = db.execute('SELECT * FROM attempts WHERE candidate=? ORDER BY started,id',
+                                      (row['id'],)).fetchall()
+                builds = [a for a in attempts if a['stage'] == 'build']
+                results = [json.loads(a['result']) for a in builds]
+                if (not builds or attempts[-1]['id'] != builds[-1]['id'] or
+                        row['reason'] != 'Attempt limit reached: ' + results[-1].get('reason', '') or
+                        any(a['status'] != 'retry' or r.get('retry_scope', 'task') != 'task' or
+                            not (r.get('reason') == naming or
+                                 r.get('reason', '').startswith('Model response is not JSON:'))
+                            for a, r in zip(builds, results))):
+                    continue
+                for attempt, result in reversed(list(zip(builds, results))):
+                    if result.get('reason') != naming:
+                        continue
+                    cached = self.root / '.factory/model-tasks' / identifier(attempt['id']) / 'response.json'
+                    if not cached.is_file() or cached.stat().st_size > 256 * 1024:
+                        continue
+                    try:
+                        proposal = json.loads(cached.read_text())
+                        construction.validate(proposal)
+                        construction.describe_task(data['source'], proposal)
+                    except (FactoryError, ValueError, KeyError, TypeError):
+                        continue
+                    data['construction_draft'] = proposal
+                    data['feature_contract_recovery'] = {
+                        'from_attempt': attempt['id'], 'previous_reason': row['reason'],
+                        'reconciled_at': time.time(), 'used': False}
+                    db.execute("UPDATE candidates SET stage='build',data=?,updated=?,next_run=0,reason=? WHERE id=?",
+                               (encoded(data), time.time(), 'Saved proposal passes corrected feature contract', row['id']))
+                    break
+
     def eligible(self, now=None):
         now = time.time() if now is None else now
         # Resume existing attempts first, then finish releases/reviews before

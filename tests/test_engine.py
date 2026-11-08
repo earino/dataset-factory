@@ -26,6 +26,58 @@ def source():
 
 
 class EngineTests(unittest.TestCase):
+    def test_deferred_pre_worker_name_and_json_failures_reuse_latest_valid_proposal_once(self):
+        evidence = Path(__file__).resolve().parents[1] / 'audits/rewrite'
+        original = json.loads((evidence / 'bridge-source15-build1/discovery-response.json').read_text())
+        prior = json.loads((evidence / 'bridge-deferral-state/build3-response.json').read_text())
+        naming = 'Feature descriptions may only name distinct existing source features'
+        for excluded in (None, 'worker', 'changed_reason', 'invalid', 'job', 'rejected'):
+            with self.subTest(excluded=excluded), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp); store = Store(root); store.add('bridge', {'source': original})
+                store.finish(store.begin('bridge')['id'], {'status':'done'})
+                for i in range(5):
+                    attempt = store.begin('bridge')
+                    if i == 2:
+                        paid_attempt = attempt['id']
+                        write_json(root / '.factory/model-tasks' / paid_attempt / 'response.json',
+                                   {} if excluded == 'invalid' else prior)
+                    reason = naming if i < 3 else 'Model response is not JSON: invalid'
+                    scope = 'worker' if excluded == 'worker' else 'task'
+                    store.finish(attempt['id'], {'status':'retry','reason':reason,'retry_scope':scope}, max_attempts=5)
+                if excluded in ('changed_reason','job','rejected'):
+                    with store.connect() as db:
+                        if excluded == 'changed_reason':
+                            db.execute("UPDATE candidates SET reason='Independent decision'")
+                        elif excluded == 'rejected':
+                            db.execute("UPDATE candidates SET stage='rejected'")
+                        else:
+                            db.execute('UPDATE candidates SET data=?',
+                                       (json.dumps({'source':original,'job':{'id':'old'}}),))
+                history = store.attempts('bridge')
+                store.reconcile_feature_descriptions()
+                self.assertEqual(history, store.attempts('bridge'))
+                candidate = store.get('bridge')
+                if excluded:
+                    self.assertNotEqual('build', candidate['stage']); continue
+                self.assertEqual('build', candidate['stage'])
+                self.assertEqual(paid_attempt, candidate['data']['feature_contract_recovery']['from_attempt'])
+                write_json(root / 'config/local.json', {'enabled':True,'cleanup_configured':True})
+                write_json(root / 'skills/dataset-qualification/fixtures/corrected/quality.json', {})
+                harness = root / 'harness/task_template'; harness.mkdir(parents=True)
+                for name in ('train.py','validate.py','validate.sh'): (harness/name).write_text('# fixture')
+                model = Mock(); model.run.side_effect = AssertionError('Do not repeat paid construction')
+                attempt = store.begin('bridge')
+                with patch.dict(os.environ, {'FACTORY_BENCHMARK_ROOT':str(harness.parent)}), \
+                        patch('factory.engine.construction.assemble', side_effect=FactoryError('Stop at bundle')) as assemble:
+                    result = Driver(root, {'worker':{}}, model=model).execute(
+                        candidate, attempt, lambda data: store.save(attempt['id'], data))
+                model.run.assert_not_called()
+                self.assertEqual(prior['build_py'], assemble.call_args.args[3]['build_py'])
+                self.assertTrue(store.get('bridge')['data']['feature_contract_recovery']['used'])
+                store.finish(attempt['id'], result, max_attempts=5)
+                store.reconcile_feature_descriptions()
+                self.assertEqual('deferred', store.get('bridge')['stage'])
+
     def test_saved_bridge_columns_refine_groups_without_another_model_call(self):
         from factory.construction import describe_task
         evidence = Path(__file__).resolve().parents[1] / 'audits/rewrite'

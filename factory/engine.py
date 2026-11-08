@@ -122,12 +122,14 @@ class Driver:
             else:
                 example = read_json(self.root / 'skills/dataset-qualification/fixtures/corrected/quality.json')
                 previous = data.get('construction_draft') or data.get('construction')
+                recovery = data.get('feature_contract_recovery', {})
+                recovering = recovery and recovery.get('used') is False
                 failure = data.get('failure')
-                text_draft = data.get('construction_text_draft')
+                text_draft = None if recovering else data.get('construction_text_draft')
                 # A parsed model response can fail the construction contract
                 # before it becomes an executable proposal. Reuse those paid
                 # bytes as repair input rather than generating from scratch.
-                if isinstance(failure, dict) and failure.get('stage') == 'build':
+                if not recovering and isinstance(failure, dict) and failure.get('stage') == 'build':
                     cached = self.root / '.factory/model-tasks' / failure.get('attempt', 'absent') / 'response.json'
                     if cached.is_file() and cached.stat().st_size <= 256 * 1024:
                         previous = construction.merge_repair(previous, read_json(cached))
@@ -157,9 +159,9 @@ class Driver:
                 # mismatch can proceed once the corrected contract validates it.
                 # It still needs worker qualification and semantic review.
                 prior_failure = data.get('failure', {})
-                reuse = (previous is not None and prior_failure.get('stage') == 'build'
+                reuse = (previous is not None and (recovering or (prior_failure.get('stage') == 'build'
                          and prior_failure.get('reason') ==
-                         'Feature descriptions may only name distinct existing source features')
+                         'Feature descriptions may only name distinct existing source features')))
                 if reuse:
                     try:
                         construction.validate(previous)
@@ -169,7 +171,8 @@ class Driver:
                 if reuse:
                     response = previous
                     data.setdefault('construction_reuse', []).append(
-                        {'attempt': attempt['id'], 'from_attempt': prior_failure.get('attempt'),
+                        {'attempt': attempt['id'], 'from_attempt': (recovery['from_attempt'] if recovering
+                                                                  else prior_failure.get('attempt')),
                          'reason': 'Saved proposal passes corrected feature-description contract'})
                 else:
                     response = self.model.run(attempt['id'], prompt, construction=True)
@@ -186,6 +189,8 @@ class Driver:
                         {'attempt': attempt['id'], 'previous_construction': data['source'].get('construction')})
                 data['source'] = described
                 data.update(construction=response, construction_attempt=attempt['id'])
+                if recovering:
+                    recovery['used'] = True
                 data.pop('construction_draft', None)
                 data.pop('construction_text_draft', None)
             data.pop('job', None)
@@ -265,6 +270,7 @@ class Driver:
 def seed(root, policy):
     store = Store(root)
     store.reconcile_misrouted_reviews()
+    store.reconcile_feature_descriptions()
     rows = store.listing()
     pending = sum(c['stage'] in STAGES for c in rows)
     focuses = ('Public infrastructure or environmental operations, with independent observations',
