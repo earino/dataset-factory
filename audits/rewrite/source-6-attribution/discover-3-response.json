@@ -1,0 +1,183 @@
+{
+  "verdict": "ready",
+  "reason": "openFDA publishes three complete, account-free bulk exports of FDA recall enforcement reports (food, drug, device) as small zipped JSON with a documented 25-field schema, an explicit CC0 1.0 dedication, and a stated credit line. Record counts are verifiable live from api.fda.gov, and restricting to recall_initiation_date on/after 2012-06-01 is directly supported by FDA's own note that earlier RES-format reports lack that field. A firm-level binary label (Class I hazard classification, assigned after initiation) supports a clean chronological design at ~77.5k rows with roughly 44% positives in food, with no multi-agency join and no personal data.",
+  "dataset_id": "fda-recall-class1-at-initiation",
+  "title": "Will FDA classify a newly initiated product recall as Class I (serious hazard)? Predicting the health-hazard classification at the moment the firm recalls",
+  "source": {
+    "publisher": "U.S. Food and Drug Administration (openFDA)",
+    "urls": [
+      "https://download.open.fda.gov/food/enforcement/food-enforcement-0001-of-0001.json.zip",
+      "https://download.open.fda.gov/drug/enforcement/drug-enforcement-0001-of-0001.json.zip",
+      "https://download.open.fda.gov/device/enforcement/device-enforcement-0001-of-0001.json.zip"
+    ],
+    "documentation_url": "https://open.fda.gov/apis/food/enforcement/",
+    "terms_url": "https://open.fda.gov/terms/",
+    "license": "Public domain under a Creative Commons CC0 1.0 Universal dedication (FDA openFDA); no per-record exemption notice appears for these enforcement endpoints",
+    "terms_excerpt": "Unless otherwise noted, the content, data, documentation, code, and related materials on openFDA is public domain and made available with a Creative Commons CC0 1.0 Universal dedication.",
+    "attribution": "Data provided by the U.S. Food and Drug Administration (https://open.fda.gov/)",
+    "citation": "Data provided by the U.S. Food and Drug Administration (https://open.fda.gov/)",
+    "redistribution": true
+  },
+  "task": {
+    "question": "When a firm initiates a recall of an FDA-regulated food, drug, or device, will FDA's later health-hazard evaluation assign it Class I (reasonable probability of serious adverse health consequences or death) rather than Class II or Class III?",
+    "decision_user": "A recalling firm's regulatory-affairs lead, or a retailer/distributor's product-safety team, deciding before FDA classification is published whether to escalate from a quiet trade-level withdrawal to a full market withdrawal and public warning.",
+    "prediction_time": "recall_initiation_date \u2014 the date the firm initiated the recall, i.e. strictly before FDA's center_classification_date. All inputs are fixed at that date (day granularity).",
+    "target": "Binary: 1 if classification == 'Class I'; 0 if classification is 'Class II' or 'Class III'. Rows with missing or any other classification value are dropped, never imputed.",
+    "outcome_horizon": "Outcome is FDA's center classification, recorded at center_classification_date, which follows recall_initiation_date by weeks (observed examples: 2016-08-08 to 2016-10-25; 2023-06-28 to 2023-08-11). Classification is not revised after publication in the Enforcement Report, but the surrounding record can be.",
+    "features": [
+      {
+        "name": "product_type",
+        "meaning": "Regulatory center handling the recall: 'Food', 'Drugs', or 'Devices'.",
+        "availability": "Present on the initiation record itself.",
+        "evidence_url": "https://open.fda.gov/apis/food/enforcement/searchable-fields/"
+      },
+      {
+        "name": "reason_for_recall",
+        "meaning": "Free-text statement of the problem as reported when the recall is initiated (e.g. Listeria monocytogenes found; undeclared milk; CGMP/sterility-assurance failure).",
+        "availability": "Recorded at initiation; may later be edited or expanded by FDA, so treated as the initiation-time narrative only.",
+        "evidence_url": "https://open.fda.gov/apis/food/enforcement/searchable-fields/"
+      },
+      {
+        "name": "distribution_pattern",
+        "meaning": "Free-text description of where the product went (state lists, 'Nationwide', foreign countries).",
+        "availability": "Stated in the recall report at initiation; can be widened if the recall is expanded later.",
+        "evidence_url": "https://open.fda.gov/apis/food/enforcement/searchable-fields/"
+      },
+      {
+        "name": "voluntary_mandated",
+        "meaning": "Whether the recall was firm-initiated (voluntary) or requested/ordered by FDA.",
+        "availability": "Known at initiation (absent only for pre-June-2012 reports).",
+        "evidence_url": "https://open.fda.gov/apis/device/enforcement/understanding-the-api-results/"
+      },
+      {
+        "name": "initial_firm_notification",
+        "meaning": "How the firm notified consignees: Letter, Press Release, Telephone, Visit, or combinations.",
+        "availability": "Fixed when the recall is initiated.",
+        "evidence_url": "https://open.fda.gov/apis/food/enforcement/searchable-fields/"
+      },
+      {
+        "name": "product_quantity",
+        "meaning": "Free-text quantity affected (bottles, units, cases), parsed to a number plus unit where possible.",
+        "availability": "Reported with the initiation; may be revised upward if the recall expands.",
+        "evidence_url": "https://open.fda.gov/apis/food/enforcement/searchable-fields/"
+      },
+      {
+        "name": "product_description",
+        "meaning": "Free-text product identity (brand, strength, package, dosage form, food type).",
+        "availability": "Fixed at initiation.",
+        "evidence_url": "https://open.fda.gov/apis/food/enforcement/searchable-fields/"
+      },
+      {
+        "name": "firm_state_country",
+        "meaning": "Two-letter state and country of the recalling firm's address.",
+        "availability": "Known at initiation; business address only, street address and postal code dropped.",
+        "evidence_url": "https://open.fda.gov/apis/food/enforcement/searchable-fields/"
+      },
+      {
+        "name": "code_info_present",
+        "meaning": "Whether lot/date/UPC coding detail is supplied, and its character length \u2014 a proxy for how traceable the affected stock is.",
+        "availability": "Supplied with the initiation report.",
+        "evidence_url": "https://open.fda.gov/apis/food/enforcement/searchable-fields/"
+      },
+      {
+        "name": "recall_number_prefix_year",
+        "meaning": "Administrative recall-number prefix (F/D/Z) and the year embedded in it, e.g. 'F-0276-2017'.",
+        "availability": "Assigned at report intake, before classification.",
+        "evidence_url": "https://open.fda.gov/apis/food/enforcement/searchable-fields/"
+      },
+      {
+        "name": "initiation_calendar",
+        "meaning": "Month, quarter, and day-of-week of recall_initiation_date.",
+        "availability": "Deterministic from the decision instant.",
+        "evidence_url": "https://open.fda.gov/apis/food/enforcement/searchable-fields/"
+      },
+      {
+        "name": "distribution_breadth",
+        "meaning": "Derived: count of distinct two-letter state tokens in distribution_pattern, plus flags for 'Nationwide' and 'Worldwide'/'Foreign'.",
+        "availability": "Derived only from the initiation-time distribution_pattern string.",
+        "evidence_url": "https://open.fda.gov/apis/food/enforcement/searchable-fields/"
+      }
+    ],
+    "population": "Recall enforcement-report records in the three openFDA bulk files with a non-null recall_initiation_date (openFDA documents that reports before June 2012 lack this field), a final classification of Class I, Class II or Class III, and recall_initiation_date between 2012-06-01 and 2024-12-31. One row per recall_number; (product_type, event_id) is kept only as a grouping key, never as a feature, because it is assigned administratively and can group many near-duplicate rows.",
+    "split_policy": "Chronological on recall_initiation_date, frozen before any modelling: train 2012-06-01..2018-12-31, eval 2019-01-01..2021-12-31, holdout 2022-01-01..2024-12-31. Group boundary embargo: assign each (product_type, event_id) group to a split by its earliest recall_initiation_date and drop any group with records on both sides of a boundary, so a single recall event never contributes rows to two splits. Label-maturation buffer: the holdout ends 2024-12-31 against a 2026-11-03 export, so holdout recalls have had roughly 23 months to receive a published classification.",
+    "usefulness": "The label is an expert regulatory hazard judgment that the firm cannot observe at initiation and that FDA does not publish until weeks later, while the firm must decide immediately whether a trade-level withdrawal and a public press release are warranted; over-escalating is costly and under-escalating is dangerous. The mapping from stated reason to class is not one-to-one \u2014 undeclared-allergen and sterility/CGMP reasons appear under both Class I and Class II \u2014 so the task is not transcription of a field.",
+    "simple_references": "Majority-class rate per split (predict the modal classification), a center-only rule (always Class I for one product_type, always the modal class for the others), a calendar-only model (initiation year and month), and a reason-keyword lookup baseline (small hand-written keyword table for Listeria/Salmonella/undeclared allergen/glass/metal/sterility) as the text-only control. No persistence baseline applies \u2014 there is no repeated entity with a previously observed label \u2014 so the analogue is 'same class as the modal class for this product center in the previous calendar year'."
+  },
+  "evidence": [
+    {
+      "url": "https://open.fda.gov/terms/",
+      "claim": "openFDA data is dedicated to the public domain under CC0 1.0, so redistribution is permitted.",
+      "quote": "Unless otherwise noted, the content, data, documentation, code, and related materials on openFDA is public domain and made available with a Creative Commons CC0 1.0 Universal dedication."
+    },
+    {
+      "url": "https://open.fda.gov/terms/",
+      "claim": "Credit is requested, with a specific suggested line.",
+      "quote": "Data provided by the U.S. Food and Drug Administration (https://open.fda.gov/)"
+    },
+    {
+      "url": "https://open.fda.gov/apis/food/enforcement/",
+      "claim": "Enforcement reports cover every recall FDA monitors, but only after it has been hazard-classified \u2014 this defines the outcome and the survivorship of the sample.",
+      "quote": "all recalls monitored by FDA are included in FDA's weekly Enforcement Report once they are classified according to the level of hazard involved"
+    },
+    {
+      "url": "https://open.fda.gov/apis/food/enforcement/",
+      "claim": "FDA may revise previously published recall information, which motivates the current-vintage limitation.",
+      "quote": "the FDA will make corrections or changes to recall information previously disclosed in a past Enforcement Report"
+    },
+    {
+      "url": "https://open.fda.gov/apis/device/enforcement/understanding-the-api-results/",
+      "claim": "Reports before June 2012 lack recall_initiation_date, status, city, state, country, voluntary_mandated and initial_firm_notification, which justifies the 2012-06-01 population floor.",
+      "quote": "reports from before that time do not contain the following fields"
+    },
+    {
+      "url": "https://open.fda.gov/apis/food/enforcement/searchable-fields/",
+      "claim": "The endpoint documents a fixed field list including classification, recall_initiation_date, center_classification_date, reason_for_recall, distribution_pattern, voluntary_mandated, initial_firm_notification, product_quantity, product_type and recall_number.",
+      "quote": "Use the fields explorer below to find detailed explanations of every field in the dataset."
+    },
+    {
+      "url": "https://api.fda.gov/download.json",
+      "claim": "Exact bulk file for food, with size and record count, and the FDA terms/licence pointers.",
+      "quote": "\"file\": \"https://download.open.fda.gov/food/enforcement/food-enforcement-0001-of-0001.json.zip\""
+    },
+    {
+      "url": "https://open.fda.gov/apis/device/enforcement/download/",
+      "claim": "The device bulk export is a single 90.78 MB zipped JSON file updated 2026-11-03.",
+      "quote": "device-enforcement-0001-of-0001.json.zip"
+    },
+    {
+      "url": "https://api.fda.gov/food/enforcement.json?search=recall_initiation_date:%5B20120601%20TO%2020241231%5D&limit=1",
+      "claim": "Food records with initiation dates in the modelling window: 26,583 (live count at 2026-10-28 index).",
+      "quote": "\"total\": 26583"
+    },
+    {
+      "url": "https://api.fda.gov/device/enforcement.json?search=recall_initiation_date:%5B20120601%20TO%2020241231%5D&limit=1",
+      "claim": "Device records with initiation dates in the modelling window: 34,621.",
+      "quote": "\"total\": 34621"
+    },
+    {
+      "url": "https://api.fda.gov/drug/enforcement.json?search=recall_initiation_date:%5B20120601%20TO%2020241231%5D&limit=1",
+      "claim": "Drug records with initiation dates in the modelling window: 16,340.",
+      "quote": "\"total\": 16340"
+    },
+    {
+      "url": "https://api.fda.gov/food/enforcement.json?search=recall_initiation_date:%5B20120601%20TO%2020241231%5D%20AND%20classification:%22Class%20I%22&limit=1",
+      "claim": "Class I share among in-window food recalls is about 44% (11,766 of 26,583), so the positive class is not rare.",
+      "quote": "\"total\": 11766"
+    }
+  ],
+  "construction": {
+    "format": "Three zipped JSON bulk exports (food, drug, device), each containing one .json file of enforcement-report records in openFDA's API response format; tabularize to CSV with one row per recall_number.",
+    "access_recipe": "Read https://api.fda.gov/download.json for the current file list (it carries export_date, size_mb and records per partition), download the three enforcement .json.zip files, verify the inflated file's first bytes to decide whether it is a single JSON document or one JSON object per line, then stream-parse rather than loading everything into memory (the device payload dominates). Project the documented fields, drop street address and postal code, filter to non-null recall_initiation_date inside 2012-06-01..2024-12-31 and classification in {Class I, Class II, Class III}, derive the listed features, assign splits by (product_type, event_id) group, and write train/eval/holdout CSVs. On any refresh, re-download all files for an endpoint: FDA warns every record may change between exports.",
+    "expected_size": "Observed at the 2026-11-03 export: food 29,586 records / 5.60 MB; drug 18,076 / 3.81 MB; device 40,450 / 90.78 MB. Live API counts restricted to initiation dates 2012-06-01..2024-12-31: food 26,583; drug 16,340; device 34,621 \u2014 about 77.5k rows before event-level de-duplication, with food at 44.3% Class I.",
+    "source_examples": "Documented field/value checks pulled from the live endpoint: food record recall_number 'F-0276-2017', classification 'Class II', product_type 'Food', recall_initiation_date '20160808', center_classification_date '20161025', voluntary_mandated 'Voluntary: Firm initiated'; drug record 'D-321-2016', classification 'Class II', product_type 'Drugs'; device record 'Z-2372-2023', classification 'Class I', product_type 'Devices'. These confirm the classification vocabulary, the date format YYYYMMDD, and that classification postdates initiation."
+  },
+  "limitations": [
+    "Current-vintage data: the files are a 2026-11-03 snapshot and FDA states it may correct or change previously disclosed recall information, so initiation-time availability of distribution_pattern, product_quantity and reason_for_recall is inferred from the record rather than proven historically; this is retrospective research, not a reconstruction of what was visible on the initiation date.",
+    "Sampling is conditional on FDA having monitored and hazard-classified the recall, so unclassified, pending or never-published actions are absent by construction.",
+    "Rows within one recall event (same product_type and event_id) share the same reason, distribution and label, so raw row counts overstate independent evidence; event-level grouping and grouped reporting are required.",
+    "The reason_for_recall narrative is the firm's stated problem but also the main input to FDA's hazard evaluation, so strong text performance partly reflects the regulator's decision rule rather than generalisable product risk.",
+    "distribution_breadth is a heuristic over free text and will misparse informal or non-US geography descriptions.",
+    "Classification policy and reporting practice drift over time (and differ by center), which the chronological splits will surface as performance change rather than as signal.",
+    "The device export is 90.78 MB zipped and much larger inflated than the food and drug files, so the worker needs streaming parsing and disk headroom."
+  ]
+}

@@ -4,8 +4,10 @@ The successful discovery response (discover-2, 17,158 bytes) contains NO
 attribution, citation or credit fields at all (absent keys, not empty strings)
 while declaring license "U.S. Government Works (public domain)" and
 terms_excerpt "U.S. Government Works". The controller's evidence check
-reported "Missing source evidence: attribution" and cycled further discovery
-attempts (discover-3 failure record included). For a U.S. public-domain
+reported "Missing source evidence: attribution" and cycled a further
+discovery attempt; discover-3 then SUCCEEDED with a different source
+selection (openFDA recall enforcement reports, CC0 1.0), so the queue
+moved past the SBA source. For a U.S. public-domain
 source where no credit line is required, the absent field is the actual
 observed value; whether that satisfies the validator is the operator's
 decision. Separately acknowledged: source-5 (bts-flight-arrival) failure was
