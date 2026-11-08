@@ -3,11 +3,21 @@ from pathlib import Path
 import sqlite3
 import tempfile
 import unittest
+from unittest.mock import patch
 
-from factory.model_tasks import ModelTasks, TaskFailure, parse_response, usage
+from factory.model_tasks import ModelTasks, TaskFailure, parse_response, usage, startup_diagnostic, runtime_session
 
 
 class ModelTaskTests(unittest.TestCase):
+    def test_startup_failure_keeps_cause_without_credentials(self):
+        with patch.dict('os.environ', {'PROVIDER_API_KEY': 'short-private-value'}):
+            result = startup_diagnostic('RuntimeError: unavailable\n' +
+                'https://service.example/?token=secret Bearer credentials\n' +
+                'api_key="another-secret" short-private-value hf_hiddencredential')
+        self.assertIn('RuntimeError: unavailable', result)
+        for secret in ('service.example', 'credentials', 'another-secret', 'short-private-value', 'hf_hiddencredential'):
+            self.assertNotIn(secret, result)
+
     def test_structured_response_and_malformed_failure(self):
         self.assertEqual(parse_response('```json\n{"verdict":"ready"}\n```'), {'verdict': 'ready'})
         self.assertEqual(parse_response('Warning: Unknown toolsets: __none__\n{"ok":true}'), {'ok': True})
@@ -44,6 +54,13 @@ class ModelTaskTests(unittest.TestCase):
             self.assertEqual(actual['tool_results'], 1)
             with self.assertRaises(TaskFailure):
                 usage(path, [])
+            with closing(sqlite3.connect(path)) as db:
+                db.execute("INSERT INTO sessions VALUES('unrelated','oneshot')")
+                db.commit()
+            self.assertEqual('new', runtime_session('notice\nsession_id: new\n'))
+            self.assertEqual('new', usage(path, ['old'], 'new')['session_id'])
+            with self.assertRaises(TaskFailure):
+                usage(path, ['old'], 'old')
 
 
 if __name__ == '__main__':

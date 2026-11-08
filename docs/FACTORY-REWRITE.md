@@ -53,6 +53,11 @@ Model tasks receive stage-specific context and structured outputs:
 Malformed or failed model results are bounded failures. Model prose cannot waive
 checks, alter budgets, authorize itself, or substitute for measured results.
 Use the existing supported Hermes runtime rather than inventing an agent runtime.
+Research, construction and semantic review use only the supported web-reading
+toolset. Construction can consult field documentation; it has no coordinator
+filesystem, shell, worker-launch or publishing tool. Each task remains turn/time
+bounded. A local resolver accepting an unknown no-tool name is not evidence that
+the hosted gateway accepts it; the deployed gateway rejected that initial choice.
 
 ## Dataset acceptance and standing publication policy
 
