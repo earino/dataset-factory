@@ -1,0 +1,41 @@
+{
+  "verdict": "repair",
+  "reason": "The source, target direction/units, half-open split windows, one-row-per-PWS selection, prior UCMR3 join, and EPA public-domain basis are sound. The previous empty-ADE-feature defect is fixed: source-checks.json shows nonempty coverage for all five additional-data features, and the supplied 3,769-row eval full_model AUC 0.7896 is a real measured result. However, the target-validation check is tautological, the population and prior-max feature text still do not match the code, and two selection checks do not verify their stated negative conditions. These are repairable check/metadata defects, not a reason to reject the source.",
+  "findings": [
+    {
+      "issue": "The 'Frozen label rule recomputed' check is tautological and cannot fail.",
+      "evidence": "construction_code computes `positive = (sign.eq('=') & value.ge(MRL5)).astype(int)` and `counts['rule_positive'] += int((sign.eq('=') & value.ge(MRL5)).sum())`, then `_check(..., counts['positive'] == counts['rule_positive'])`; source-checks.json reports 'label positives 8822; independently recomputed positives 8822'. Both sides are the same expression, so the check does not independently verify the label.",
+      "repair": "Recompute the label from the written train/eval/holdout CSVs or a separate source parser and compare to the frozen sign/value rule; verify the 0.004 ug/L threshold and units from the source row, not from the same in-memory Series."
+    },
+    {
+      "issue": "The `prior_ucmr3_max_pfoa_pfos` feature text does not match the code for systems with only non-detect UCMR 3 rows.",
+      "evidence": "task.features says 'Maximum prior UCMR 3 PFOA or PFOS result in ug/L; missing when the PWS has no UCMR 3 result.' construction_code sets `prior['prior_ucmr3_max_pfoa_pfos'] = prior['detected_max'].where(prior['detected_max'].notna(), prior['censored_max'])`; for all-nondetect systems `censored_max` is the maximum reported MRL (0.02/0.04 ug/L), a censoring bound, not an observed result. The limitations state this but the feature meaning does not.",
+      "repair": "Update the feature meaning to say the value is the maximum detected result, or the maximum reported MRL for all-nondetect systems, and missing only when there is no UCMR 3 PFOA/PFOS row; alternatively emit a separate monitored/detection flag."
+    },
+    {
+      "issue": "The stated population is broader than the code's effective population: the earliest sample is selected before window assignment, so 234 systems whose earliest sample is in December are dropped even when later in-window samples exist.",
+      "evidence": "task.population says 'PWS ... with at least one entry-point sample ... One row per PWS: the earliest sample by CollectionDate.' construction_code does `selected = events.drop_duplicates('pwsid', keep='first')` before WINDOWS; source-checks.json reports 'selected first samples 10307; shipped 10073; excluded 234; excluded date span 2023-12-04 to 2024-12-30'. The limitation/selection conditioning document the effective population, but the population field still reads as all PWSs with a PFOA/PFOS EP sample.",
+      "repair": "Either change the population text to 'PWS whose earliest PFOA/PFOS EP sample date falls in a frozen window' or select the earliest in-window sample per PWS; keep the 234/date-span count."
+    },
+    {
+      "issue": "The 'UCMR 5 entry-point samples retained' check passes on `counts['ep'] > 0` and does not verify that non-EP rows are excluded, contrary to its expected text.",
+      "evidence": "construction_code `_check(checks, 'UCMR 5 entry-point samples retained', ..., counts['ep'] > 0)`; the expected says 'entry-point rows are included and other sample point types are excluded'; source-checks.json shows 'entry-point rows 132715; other sample point rows 0'. The check would still pass if other > 0.",
+      "repair": "Require `counts['other'] == 0` (or assert the retained frame has only EP rows) for `passed`."
+    },
+    {
+      "issue": "The 'PFOA and PFOS analytes recognized' check does not verify the negative part of its expected rule that unrelated analytes are not captured.",
+      "evidence": "construction_code `_check(..., pfoa_hit and pfos_hit)` while the expected says '... and unrelated analytes are not captured by the acronym rule'; source-checks.json 'analyte names matched ['PFOA', 'PFOS']'. A false-positive contaminant would still pass.",
+      "repair": "Assert `set(analyte_names) == {'PFOA','PFOS'}` or that no contaminant outside the documented PFOA/PFOS names matches the patterns."
+    }
+  ],
+  "limitations": [
+    "The final UCMR 5 data include samples through June 2026 (EPA PFAS UCMR 5 National Summary: samples Jan 3, 2023-Jun 17, 2026; source-check holdout max 2026-06-16), while the rule text and occurrence page describe sample collection Jan 2023-Dec 2025. The holdout through 2026-06-30 follows the data's late samples; this documentation discrepancy should be named.",
+    "Additional data element responses are self-reported around monitoring; 'known before the sample' is assumed, not verified. The pws-level fallback (`add_pws = _pivot_addtl(sub_add, ['pwsid'])` then `_fill_from(selected, add_pws, ['pwsid'], ADDTL_FEATURES)`) can aggregate responses from other/future events at the same system; the prediction_time claim that all inputs predate the sample is stronger than the evidence.",
+    "collection_year is constant within train (2023) and eval (2024) and unseen at eval (calendar_identity_unseen_rows 3769); it is a split tag, not a transferable feature.",
+    "The eval full_model AUC 0.7896 is measured on 3,769 public eval rows only; no holdout scoring, no uncertainty interval. It is an observed result on this protocol, not a universal ceiling.",
+    "EPA's 17 U.S.C. 105 public-domain basis is U.S. domestic; non-U.S. reuse and any third-party material embedded in the zips (beyond the shipped occurrence records) require separate review. No additional publisher licence grant is required for the U.S. federal records.",
+    "UCMR 5 is occurrence monitoring at entry points, not compliance monitoring; the label is one EP sample per system, and small-system participation is a representative sample, unweighted.",
+    "The prior UCMR 3 maximum for all-nondetect systems is the maximum reported MRL (0.02/0.04 ug/L), a censoring bound, not an observed concentration; the UCMR 3 archive is the 2024 revision and historical availability before each UCMR 5 sample is assumed.",
+    "The 234 systems whose earliest sample falls in December 2023/2024 are excluded; the effective population is first sample in a frozen window, not every PWS with a PFOA/PFOS EP sample."
+  ]
+}
