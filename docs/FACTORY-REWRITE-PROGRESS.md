@@ -4,6 +4,14 @@ Specification: [FACTORY-REWRITE.md](FACTORY-REWRITE.md).
 Goal tool confirmed **active** at kickoff 2026-11-08 11:07:00 UTC.
 Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 
+**Current status (17:42 UTC): incomplete, zero replacement publications.** Latest
+confirmed production is d357930 (17:30:21 UTC). The tested 05cd95e paid-response
+reuse fix is pushed with [green CI](https://github.com/earino/dataset-factory/actions/runs/42505943473)
+and deployment requested. CMS is in bounded terms-access repair; UCMR5 progressed
+past its first schema failure and now needs source-encoding repair. RCRA deferred
+after its allowed worker failures. The full clean-checkout suite passes 938 tests
+(13 skipped); these do not establish the two-source acceptance criterion.
+
 ## Four-hour checkpoint — 2026-11-08 15:07 UTC
 
 Reported to the operator at the agreed checkpoint; continuing without awaiting a
@@ -37,7 +45,7 @@ increases, source resurrection or validation exceptions are planned. If the crit
 remain unmet at 19:07, wind down new work safely, retain cleanup/resumable state and
 report the missing evidence and estimated additional effort.
 
-## Acceptance evidence — 2026-11-08 16:38 UTC
+## Acceptance evidence — 2026-11-08 17:42 UTC
 
 This is an interim assessment, not completion sign-off.
 
@@ -46,23 +54,21 @@ This is an interim assessment, not completion sign-off.
 | A1: one durable controller | Scheduled tick, exclusive-lock busy result, durable attempt/job identities across deployments; [cutover](../audits/rewrite/cutover/) and [first cycle](../audits/rewrite/first-cycle/). | Confirm the successful path also resumes from its recorded checkpoints. No forced-process-kill claim. |
 | A2: mechanical worker outcomes | Real failed workers were staged, collected and deleted without model follow-up; [worker reports](../audits/rewrite/new-source-outcomes/). | Observe a successful construction worker advancing automatically. |
 | A3: bounded inexpensive model | Recorded requested route performed real discovery and generated builders; exact prompts, responses and usage retained. | Write-only construction verified in the first-write-only evidence; successful semantic review remains. |
-| A4: two complete real sources | Multiple real sources attempted; STATS19 reached full qualification, which failed. | Two sources through public publication without manual state edits. Deployment replays alone do not establish this. |
+| A4: two complete real sources | Thirteen sources entered the queue; STATS19 and RCRA reached full qualification and failed. CMS and UCMR5 remain in repair. | Two sources through public publication without manual state edits. Deployment replays alone do not establish this. |
 | A5: trustworthy consumable releases | Full-artifact checks rejected defective artifacts; package/consumer implementation tested in software. | Accepted reproducible releases, measured usefulness, and anonymous full-file verification on both platforms. |
 | A6: automatic recovery | Failed candidates defer/refill; durable staging recovered after provider absence; [controlled transient-fetch recovery](../audits/rewrite/live_fetch_recovery.py) exercised against a real publisher. | Complete successful recovery evidence alongside the end-to-end path; controlled injection is not an organic outage claim. |
 | A7: unattended production | Scheduled script-only ticks observed; three legacy launch/follow-up schedules paused; independent cleanup retained. | Retain final deployed configuration and unattended successful outcome. |
-| A8: shipped, checked, signed off | Implementation pushed through `e2441df`, exact-commit CI green; Scout confirms it deployed at 16:37:29 UTC, scheduler resumed at 16:38. Progress and raw evidence retained. | Final criterion-by-criterion sign-off after the missing real outcomes. |
+| A8: shipped, checked, signed off | Implementation pushed through `05cd95e`, exact-commit CI green; Scout confirms `d357930` deployed at 17:30:21 UTC. Progress and raw evidence retained. | Confirm latest deployment and produce final criterion-by-criterion sign-off after the missing real outcomes. |
 
 ## Current work
 
-- **Latest confirmed deployment (16:38 UTC):** Scout reports `e2441df` deployed
-  at 16:37:29 UTC and the scheduler resumed. This includes negative-verdict reuse,
-  the source-rights clarification, 600-second task bound and population-scoped
-  construction checks. Its [exact-commit CI passed](https://github.com/earino/dataset-factory/actions/runs/42500521034).
-  Source 11 RCRA remains in ordinary build repair after the second worker's header
-  failure; source 12 is retrying discovery after non-JSON output. Zero replacement
-  datasets have passed the full publication path. Scout reports worker reservations
-  of EUR 9.98/20.00 (81 reservations), leaving EUR 10.02. The development token
-  exemption remains active until 19:07 UTC. Historical observations follow.
+- **Latest confirmed deployment:** `d357930` at 17:30:21 UTC; its baseline and
+  source-access corrections passed CI. `05cd95e` is queued for a free controller
+  boundary, preserving any paid in-flight work. Next: inspect ordinary CMS and
+  UCMR5 repair outcomes, then the first full qualification, semantic review and
+  publication receipts. Latest exported reservation snapshot is EUR 10.62/20.00
+  at 17:30:37; it is not a live balance. Development-window tokens remain measured
+  but excluded from the normal weekly ceiling. Historical observations follow.
 - **Earlier deployment (14:50:19 UTC):** Scout reports `05fab28` deployed and
   the script-only tick resumed. Its [exact-commit CI passed](https://github.com/earino/dataset-factory/actions/runs/42491352932).
   The clean checkout passed 926 tests (13 skipped). No replacement dataset has
@@ -895,6 +901,24 @@ with no OOM. Release 438407058, manifest 724686538 and its digest-verified failu
 are preserved as `ucmr5-build-4-*`. This is an ordinary encoding repair for the
 existing bounded path; no manual code or candidate edit was made. Attempt numbers
 include model-only failures and do not equal the completed-worker failure count.
+
+### Correct the initial repair allowance (17:44 UTC)
+
+The three-failure cap was an implementation choice, not a user-imposed quality
+requirement. RCRA exhausted it while advancing through two schema errors and then
+qualification; UCMR5 has advanced from schema resolution to source decoding while
+also paying for malformed model responses. Abandoning every such candidate after
+three distinct integration failures forces fresh discovery and construction,
+despite available worker allowance and remaining development time.
+
+The replacement now permits five task failures and five completed-worker failures
+per stage for active candidates, using the existing separate counters. This is a
+configuration change, not a new recovery framework. Individual model tasks remain
+bounded to 600 seconds, the EUR/resource limits and 19:07 deadline remain binding,
+and all artifact and semantic checks remain required. It does not reopen terminal
+sources or alter their recorded reasons. This deliberately revises the earlier
+plan to keep the initial retry cap unchanged, based on observed progress through
+different failures. It does not promise that more retries will produce acceptance.
 
 ## Known findings relevant to implementation
 

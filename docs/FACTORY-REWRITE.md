@@ -38,7 +38,11 @@ replacement. Demonstrated defects relevant to the new path must be fixed.
 to bounded repair or rejection, transient failures to bounded retry. Budget/access
 waits are resumable and explicit. One candidate's rejection cannot stall others.
 Task failures and completed construction-worker failures each have the configured
-three-failure allowance. A failed publisher-terms capture gets a bounded research
+five-failure allowance. This was raised from three after real builders advanced
+through distinct schema/encoding/runtime failures but exhausted the initial cap
+before full evaluation. It changes repair scheduling, not dataset acceptance or
+worker spending/resource limits. Deferred/rejected historical candidates are not
+automatically reopened. A failed publisher-terms capture gets a bounded research
 repair within that worker allowance. Only source terms/documentation fields and
 their evidence may change; the builder, download URLs, task and splits stay fixed.
 Preserve the previous proposal, then re-run the unchanged captured-document check
