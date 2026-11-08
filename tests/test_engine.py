@@ -26,6 +26,58 @@ def source():
 
 
 class EngineTests(unittest.TestCase):
+    def test_access_research_survives_restart_and_updates_recipe_without_researching_503(self):
+        evidence = Path(__file__).resolve().parents[1] / 'audits/rewrite'
+        original = json.loads((evidence / 'bridge-source15-build1/discovery-response.json').read_text())
+        prior = json.loads((evidence / 'bridge-deferral-state/build3-response.json').read_text())
+        researched = {'verdict':'ready', 'source_access_recipe':'Verified publisher archive path',
+                      'evidence':[{'url':'https://example.org/archive','claim':'Current publisher link'}]}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_json(root / 'config/local.json', {'enabled':True,'cleanup_configured':True})
+            write_json(root / 'skills/dataset-qualification/fixtures/corrected/quality.json', {})
+            harness = root / 'harness/task_template'; harness.mkdir(parents=True)
+            for name in ('train.py','validate.py','validate.sh'): (harness/name).write_text('# fixture')
+            def data(status):
+                return {'source':copy.deepcopy(original), 'construction':copy.deepcopy(prior),
+                    'failure':{'stage':'build','diagnostics':{'failure.json':
+                        {'error':'AssertionError','diagnostic':'Archive fetch: HTTP Error ' + status}}}}
+            state = data('404')
+            model = Mock(); model.run.side_effect = [researched, RuntimeError('Crash before code repair')]
+            driver = Driver(root, {'worker':{}}, model=model)
+            with patch.dict(os.environ, {'FACTORY_BENCHMARK_ROOT':str(harness.parent)}), \
+                    patch('factory.engine.construction.assemble', side_effect=FactoryError('Stop at bundle')) as assemble:
+                with self.assertRaises(RuntimeError):
+                    driver.execute({'stage':'build','data':state}, {'id':'repair'}, lambda value:None)
+                self.assertEqual('repair-access', model.run.call_args_list[0].args[0])
+                self.assertTrue(model.run.call_args_list[0].kwargs['research'])
+                self.assertNotIn('build_py', model.run.call_args_list[0].args[1])
+                model.run.reset_mock(); model.run.side_effect = None
+                model.run.return_value = {'build_py':prior['build_py']}
+                driver.execute({'stage':'build','data':state}, {'id':'repair'}, lambda value:None)
+                model.run.assert_called_once()
+                self.assertEqual('repair', model.run.call_args.args[0])
+                self.assertTrue(model.run.call_args.kwargs['construction'])
+                self.assertIn('Verified publisher archive path', model.run.call_args.args[1])
+                actual_source, proposal = assemble.call_args.args[2:4]
+                self.assertEqual(prior['quality'], proposal['quality'])
+                self.assertEqual(researched['source_access_recipe'], proposal['source_access_recipe'])
+                self.assertEqual(researched['source_access_recipe'], actual_source['construction']['access_recipe'])
+                self.assertNotIn('pending_access_research', state)
+                self.assertEqual(1, len(state['source_access_research']))
+                # Transient 503 handling stays on its existing mechanical/repair path.
+                model.run.reset_mock()
+                driver.execute({'stage':'build','data':data('503')}, {'id':'transient'}, lambda value:None)
+                model.run.assert_called_once()
+                self.assertTrue(model.run.call_args.kwargs['construction'])
+                # A saved negative access judgment is not bypassed after restart.
+                blocked = data('404'); model.run.reset_mock()
+                model.run.return_value = {'verdict':'defer','reason':'Archive unavailable'}
+                for _ in range(2):
+                    result = driver.execute({'stage':'build','data':blocked}, {'id':'blocked'}, lambda value:None)
+                    self.assertEqual('defer', result['status'])
+                model.run.assert_called_once()
+
     def test_paid_bridge_final_brace_failure_recovers_code_and_envelope_without_a_model(self):
         from factory.construction import describe_task, merge_repair
         from factory.model_tasks import parse_response

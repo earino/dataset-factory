@@ -2,6 +2,7 @@
 import json
 import os
 from pathlib import Path
+import re
 import time
 from urllib.parse import urlsplit
 
@@ -154,6 +155,30 @@ class Driver:
                                 save(data)
                 if data.get('pending_semantic_review'):
                     failure = {'latest_failure': failure, 'semantic_review': data['pending_semantic_review']}
+                access_error = (data.get('pending_access_failure') or
+                                data.get('failure', {}).get('diagnostics', {}).get('failure.json', {}))
+                diagnostic = str(access_error.get('diagnostic', ''))
+                access_history = data.get('source_access_research', [])
+                if (not recovering and not data.get('pending_access_research') and
+                        (re.search(r'HTTP Error (?:403|404|410)\b', diagnostic)
+                         or '<!doctype html' in diagnostic.lower())):
+                    data['pending_access_failure'] = access_error; save(data)
+                    if access_history and access_history[-1]['attempt'] == attempt['id']:
+                        researched = access_history[-1]['proposal']
+                    else:
+                        researched = self.model.run(attempt['id'] + '-access',
+                            task_prompts.repair_access(data['source'], access_error), research=True)
+                        data.setdefault('source_access_research', []).append(
+                            {'attempt': attempt['id'], 'proposal': researched}); save(data)
+                    if researched.get('verdict') != 'ready':
+                        return {'status': 'defer', 'reason': researched.get('reason', 'Source access remains unresolved')}
+                    if (not isinstance(researched.get('source_access_recipe'), str)
+                            or not researched['source_access_recipe'].strip() or not researched.get('evidence')):
+                        raise TaskFailure('Access research needs a recipe and supporting source evidence')
+                    data['pending_access_research'] = researched; save(data)
+                access_research = data.get('pending_access_research')
+                if access_research:
+                    failure = {'latest_failure': failure, 'source_access_research': access_research}
                 prompt = (task_prompts.construction_json_repair(text_draft['response'], text_draft['failure'])
                           if text_draft else task_prompts.construction(data['source'], example, failure, previous))
                 # A saved paid proposal rejected only by the former group/name
@@ -177,6 +202,8 @@ class Driver:
                          'reason': recovery.get('reason', 'Saved proposal passes corrected feature-description contract')})
                 else:
                     response = self.model.run(attempt['id'], prompt, construction=True)
+                if access_research and 'source_access_recipe' not in response:
+                    response = {**response, 'source_access_recipe': access_research['source_access_recipe']}
                 response = construction.merge_repair(previous, response)
                 data['construction_draft'] = response
                 save(data)
@@ -194,6 +221,8 @@ class Driver:
                     recovery['used'] = True
                 data.pop('construction_draft', None)
                 data.pop('construction_text_draft', None)
+                data.pop('pending_access_research', None)
+                data.pop('pending_access_failure', None)
             data.pop('job', None)
             save(data)
         # The replacement queue owns its own priority. Historical packaged records

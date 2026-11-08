@@ -199,9 +199,10 @@ class Store:
                 folder = self.root / '.factory/model-tasks' / identifier(row['attempt'])
                 # ModelTasks creates this directory before admission, and writes
                 # attempt.json before calling the model. Never replay paid work.
-                if (json.loads(row['result']).get('status') == 'waiting' and folder.is_dir()
-                        and not any((folder / name).exists() for name in
-                                    ('attempt.json', 'prompt.txt', 'response.json', 'response.txt'))):
+                if (json.loads(row['result']).get('status') == 'waiting' and any(
+                        phase.is_dir() and not any((phase / name).exists() for name in
+                            ('attempt.json', 'prompt.txt', 'response.json', 'response.txt'))
+                        for phase in (folder, folder.with_name(folder.name + '-access')))):
                     waiting.append(row['id'])
             try:
                 ready = bool(waiting) and admitted()

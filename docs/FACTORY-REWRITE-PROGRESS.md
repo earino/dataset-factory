@@ -22,6 +22,52 @@ stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
 
+## 2026-11-08 22:48 UTC — research changed source access before rewriting code
+
+Build-8's preserved result (release 438569886 / manifest 725418169) shows a
+34.7-second source-access failure, before qualification. Root independently
+matched the worker build.py SHA-256 to the exact saved build-7 code. The direct
+archive URL returned HTTP 404; the disclaimer still linked to that stale URL.
+Evidence: `audits/rewrite/bridge-build8-access-failure/`.
+
+The code-only repair had only the original, incorrect access notes. For this
+observed failure class the driver now runs a compact bounded web-research task
+about current official access metadata, then gives its result to the existing
+code repair. It does not send the full builder to the research task or download
+bulk source data on the coordinator. The dataset, terms, target and splits stay
+fixed. Unresolved access defers the candidate; research is not artifact acceptance.
+HTTP 403/404/410 and a returned HTML document trigger this path; transient 503
+handling remains mechanical. No source-specific controller or candidate edit was
+added, and model/worker allowances and limits are unchanged.
+
+The researched recipe and evidence are checkpointed across code-repair failures,
+and omitted access-description fields inherit that current recipe. Restart reuses
+the paid research; a saved negative verdict cannot be bypassed. Admission rechecks
+also recognize an unstarted access phase. The focused tests exercise these cases,
+recipe propagation, unchanged quality inheritance, and no research escalation for
+503. Scout was asked to pause new admissions at a safe boundary while preserving
+any live paid child and cleanup, before deploying this repair.
+Validation: 958 clean-checkout tests passed, 13 skipped; 40 focused tests and
+the rule inventory passed.
+
+## 2026-11-08 22:38 UTC — saved response recovered; ordinary slot wait
+
+`57496a9` passed [exact CI](https://github.com/earino/dataset-factory/actions/runs/42529748803).
+Scout reports source-15 mechanically returned to build and build-8 assembled.
+At 22:28:01 its launch correctly waited because source-17's worker occupied the
+single configured slot. The saved outcome is waiting/delay=300, due 22:33:01;
+this is a resource wait, not a qualification result or construction rejection.
+By Scout's 22:33 snapshot source-17 was collected/deleted and the slot was free;
+source-16's discover-5 child remained active. No manual state change or worker
+limit change was made. Await the normal bridge retry and its real worker result.
+
+The other live source is `bsee-gom-platform-removal-25y` (source-17). Root read
+its compact build-1 staging manifest (release 438565242 / manifest 725396775):
+32.7 seconds, exit 1, no OOM. Its preserved source-check diagnostic names archive
+members/headers that did not match the generated table-selection logic. It stopped
+before qualification; the ordinary bounded repair has the diagnostic. This is an
+already discovered candidate, not a new source campaign or substitute data export.
+
 ## 2026-11-08 22:18 UTC — preserve the paid archive-access repair
 
 The admission recheck worked in production: build-7 began at 22:05:31 UTC,
