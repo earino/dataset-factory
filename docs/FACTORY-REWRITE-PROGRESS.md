@@ -22,6 +22,31 @@ stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
 
+## 2026-11-08 21:52 UTC — recovery deployed; actual archive access failure
+
+`b740521` passed [exact CI](https://github.com/earino/dataset-factory/actions/runs/42525699392)
+and deployed at 21:37:59 UTC. The normal tick mechanically reconciled source-15,
+reused its build-3 proposal with zero new model calls, and launched build-6.
+This verifies the saved-proposal path in production, without manual state edits.
+
+The worker stopped after 32.8 seconds because the FHWA disclaimer URL returned
+HTML rather than a ZIP. It did not reach qualification or scoring. Root fetched
+the compact staging manifest and failure diagnostic, and independently read the
+8,161-byte disclaimer page: its ordinary link points to the direct archive;
+it does not redirect. The saved source recipe already names that direct URL.
+Evidence: `audits/rewrite/bridge-build6-access-failure/`. The normal bounded
+construction repair must correct the access code; no new source-specific
+controller or acceptance rule is needed. Second-source acceptance is still open.
+
+Scout's inventory/correction export is in `audits/rewrite/inventory-2145/`.
+The correction supersedes the original qualification wording and cumulative
+usage label: 1,663,491 tokens / 92 calls belong to 15 factory oneshot sessions
+started in the new window at its snapshot; 5,257,838 tokens belong to the old
+window. These are recorded model-task usage, not actual spend, and do not include
+all development conversation activity. Some task elapsed records are incomplete.
+The live export is a snapshot, not final accounting. Its exact CI passed at
+[ad554b8](https://github.com/earino/dataset-factory/actions/runs/42527045087).
+
 ## 2026-11-08 21:33 UTC — recover the pre-fix bridge deferral
 
 Scout deployed `2963e1f` at 21:13:06 UTC, after source-000015 had already
