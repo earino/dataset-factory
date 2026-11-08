@@ -444,6 +444,22 @@ subsequent tasks; these figures refer to their stated observations.
 The first write-only evidence integration `1d3bc87` passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42493852414).
 
+### Ordinary discovery timeout recovery (observed by 15:17 UTC)
+
+Source 8's first discovery hit the 330-second outer timeout during final JSON
+generation after 12 web tool reads. The truncated 12,649-character response and
+partial usage are preserved under `audits/rewrite/source8-discovery-timeout/`.
+Its second ordinary attempt completed in 215 seconds with nine reads, selecting
+`sba-7a-loan-chargeoff`, and the controller advanced it to build. This is observed
+automatic recovery within the existing allowance, without a state edit or extra
+probe. No additional runtime change follows from this timeout. Scout's export
+passed [CI](https://github.com/earino/dataset-factory/actions/runs/42494068244).
+
+The hosted capability inventory now records the verified empty-tool constructor
+path and distinguishes it from the earlier temporary web-only construction path.
+The budget-interpretation correction `fdcec77` passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42494036812).
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;

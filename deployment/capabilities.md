@@ -2,6 +2,20 @@
 
 ## Runtime update — 2026-11-08
 
+Latest verified replacement capability (15:11 UTC, deployed `d16deb5`): the
+write-only helper calls the installed `HermesCLI` constructor with explicit `[]`
+tools, then its native bounded quiet single-query path. Actual recorded route
+`deepseek/deepseek-v4.1-flash-1017` via Nous produced a complete construction
+proposal in one call, 246.6 seconds, with zero attempted/executed tool calls and
+exit 0. Direct script execution removes `factory/` from its import path so our
+`http.py` cannot shadow Python's standard library. The CLI argv empty-tool shortcut
+was not used. Discovery/review retain web access; turn/time and measured spending
+admission remain in force. Exact session and worker records are in
+`audits/rewrite/first-write-only/`. The worker rejected unsupported terms evidence;
+this verifies the write capability and failure lifecycle, not a completed release.
+
+Earlier observations, retained to explain the migration:
+
 Replacement factory live observations (12:21–12:36 UTC): the `web` toolset works
 through the hosted gateway; the first scheduled discovery completed in 296.3 seconds
 and 11 model calls. The gateway **rejects `__none__`** before creating a session.
