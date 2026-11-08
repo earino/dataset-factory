@@ -573,7 +573,7 @@ NLRB data lack redistribution rights or that the source is scientifically unsuit
 The diagnostic-wording change `e129c9a` passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42498708037).
 
-### Source-rights clarification and RCRA outcome (16:31 UTC)
+### Source-rights clarification and RCRA outcome (16:28 UTC)
 
 The research prompts now distinguish a publisher licence grant from an applicable
 statutory public-domain basis. The latter needs evidence that it covers the actual
@@ -601,6 +601,19 @@ Negative-verdict retention commit 1b951b6 passed
 checkout tests (13 skipped); deployment has been requested. Source 9 exhausted
 its bounded attempts and is deferred; source 10 is rejected after terms research.
 No replacement dataset has yet completed qualification and publication.
+
+### Give a bounded model response time to finish
+
+The task wall-clock limit is now 600 seconds (630 including the adapter's existing
+shutdown margin), within the configured 90-minute session maximum. This replaces
+the initially chosen 300-second limit after source 8 discovery and two source 9
+construction attempts hit the 330-second outer timeout. Successful construction
+calls took roughly 247–318 seconds. The change addresses measured truncation and
+repeated work; it does not add attempts, turns, tools or acceptance exceptions.
+Its effect on successful live completion remains to be observed.
+
+Source-rights clarification e2544e8 passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42500043837).
 
 ## Known findings relevant to implementation
 

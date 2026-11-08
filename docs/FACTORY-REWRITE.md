@@ -42,9 +42,12 @@ Preserve the previous proposal, then re-run the unchanged captured-document chec
 and all artifact checks. Unresolved terms are rejected. A model startup failure does not consume a worker repair;
 attempt identities and all failure evidence remain durable. Resource and spending
 limits still apply across both categories.
-Construction has six model turns within the same five-minute task bound: live
-runs showed that two turns could be exhausted on documentation reads before any
-code response. Licence excerpts are matched against captured publisher bytes,
+Construction has six model turns; research has twelve. Model tasks have a
+ten-minute wall-clock bound within the existing session allowance. Live discovery
+and construction calls hit the former 330-second outer limit while still producing
+their response; successful write calls also approached that limit. More time for
+one response avoids restarting paid work; attempt limits remain unchanged.
+Licence excerpts are matched against captured publisher bytes,
 normalizing HTML spacing and honoring explicit omissions only when all verbatim
 spans occur in order. Semantic applicability remains part of source review.
 An exit-1 runtime wrap-up may supply usable construction code. Retain it only
