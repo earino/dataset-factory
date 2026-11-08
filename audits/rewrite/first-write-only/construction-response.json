@@ -1,0 +1,272 @@
+{
+  "build_py": "from pathlib import Path\nimport json\nfrom urllib.parse import urlencode\nimport numpy as np\nimport pandas as pd\nfrom source_io import fetch\n\nSOURCE_URL = 'https://data-usfs.hub.arcgis.com/api/download/v1/items/810d6a45daf441e9bdb5838ef080366b/csv?layers=0'\nREST_URL = 'https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_FireOccurrenceFIRESTAT_YRLY_01/MapServer/0/query'\nTARGET = 'large_fire'\nID_COL = 'OBJECTID'\nTIME_COL = 'DISCOVERY'\nPRESCRIBED = 'PRESCRIBED_FIRE'\nTOTAL = 'TOTAL_ACRES_BURNED'\nNUMERIC_FEATURES = ['POO_LATITUDE', 'POO_LONGITUDE', 'SLOPE', 'ELEVATION']\nCATEGORICAL_FEATURES = ['STATE_CODE', 'REPORT_UNIT_NAME', 'DISTRICT', 'OWNERSHIP_AGENCY_AT_ORIGIN', 'PROTECTING_AGENCY_AT_ORIGIN', 'FIRE_DETECTOR', 'NFDRS_FUEL_MODEL', 'COVER_CLASS', 'ASPECT']\nDERIVED_FEATURES = ['DISCOVERY_MONTH', 'DISCOVERY_DOY', 'DISCOVERY_HOUR']\nFEATURES = DERIVED_FEATURES + NUMERIC_FEATURES + CATEGORICAL_FEATURES\nRAW_FEATURES = NUMERIC_FEATURES + CATEGORICAL_FEATURES\nREQUIRED_SOURCE = [ID_COL, TIME_COL, PRESCRIBED, TOTAL] + RAW_FEATURES\nOUTPUT_COLUMNS = [ID_COL, TIME_COL] + FEATURES + [TARGET]\n\n\ndef _read_header(path):\n    try:\n        return list(pd.read_csv(path, nrows=0, encoding='utf-8-sig').columns)\n    except Exception:\n        return []\n\n\ndef _looks_like_csv(path):\n    try:\n        with open(path, 'rb') as fh:\n            head = fh.read(8192).lstrip()\n        return bool(head) and not head.startswith((b'{', b'[', b'<', b'PK'))\n    except Exception:\n        return False\n\n\ndef _read_csv(path):\n    columns = _read_header(path)\n    missing = [c for c in REQUIRED_SOURCE if c not in columns]\n    if missing:\n        raise ValueError('missing source columns: ' + ','.join(missing))\n    chunks = []\n    for chunk in pd.read_csv(path, usecols=REQUIRED_SOURCE, dtype=str, chunksize=100000, keep_default_na=True, encoding='utf-8-sig', low_memory=False):\n        chunks.append(chunk)\n    if not chunks:\n        raise ValueError('empty CSV')\n    return pd.concat(chunks, ignore_index=True), columns\n\n\ndef _read_rest(cache):\n    frames = []\n    offset = 0\n    fields = ','.join(REQUIRED_SOURCE)\n    where = 'DISCOVER_YEAR>=1987 AND DISCOVER_YEAR<=2019'\n    while offset <= 400000:\n        params = {'where': where, 'outFields': fields, 'returnGeometry': 'false', 'f': 'json', 'resultRecordCount': '2000', 'resultOffset': str(offset), 'orderByFields': 'OBJECTID'}\n        url = REST_URL + '?' + urlencode(params)\n        path = fetch(url, cache, 'firestat_rest_' + str(offset) + '.json')\n        with open(path, 'r', encoding='utf-8') as fh:\n            payload = json.load(fh)\n        feats = payload.get('features') or []\n        if not feats:\n            break\n        frames.append(pd.DataFrame([f.get('attributes', {}) for f in feats]))\n        offset += len(feats)\n        if len(feats) < 2000:\n            break\n    if not frames:\n        raise ValueError('REST fallback returned no features')\n    return pd.concat(frames, ignore_index=True), list(REQUIRED_SOURCE)\n\n\ndef _load(cache):\n    cache = Path(cache)\n    cache.mkdir(parents=True, exist_ok=True)\n    path = Path(fetch(SOURCE_URL, cache, 'firestat_occurrence.csv'))\n    from_rest = False\n    if _looks_like_csv(path):\n        try:\n            df, columns = _read_csv(path)\n        except Exception:\n            df, columns = _read_rest(cache)\n            from_rest = True\n    else:\n        df, columns = _read_rest(cache)\n        from_rest = True\n    return df, columns, from_rest, path\n\n\ndef _clean_strings(df):\n    for c in REQUIRED_SOURCE:\n        if c in df.columns:\n            df[c] = df[c].astype('string').str.strip()\n    return df\n\n\ndef _parse_time(df, from_rest):\n    s = df[TIME_COL]\n    if from_rest:\n        num = pd.to_numeric(s, errors='coerce')\n        dt = pd.to_datetime(num, unit='ms', errors='coerce', utc=True)\n    else:\n        dt = pd.to_datetime(s, errors='coerce', utc=True)\n    return dt.dt.tz_convert(None)\n\n\ndef _normalize(df, from_rest):\n    df = _clean_strings(df.copy())\n    df['_dt'] = _parse_time(df, from_rest)\n    df = df[df['_dt'].notna()].copy()\n    df = df[(df['_dt'].dt.year >= 1987) & (df['_dt'].dt.year <= 2019)].copy()\n    pres = df[PRESCRIBED].astype('string').str.strip().str.upper()\n    pres = pres.replace({'NULL': pd.NA, 'NONE': pd.NA, '': pd.NA})\n    mask = (pres.isna() | pres.eq('N')).fillna(False)\n    df = df[mask].copy()\n    df[TOTAL] = pd.to_numeric(df[TOTAL], errors='coerce')\n    negative_acres = int((df[TOTAL] < 0).sum())\n    df = df[df[TOTAL].notna() & (df[TOTAL] >= 0)].copy()\n    df[TARGET] = (df[TOTAL] > 100.0).astype('int8')\n    for c in NUMERIC_FEATURES:\n        df[c] = pd.to_numeric(df[c], errors='coerce')\n    for c in CATEGORICAL_FEATURES:\n        df[c] = df[c].astype('string').str.strip()\n    for c in ['STATE_CODE', 'OWNERSHIP_AGENCY_AT_ORIGIN', 'PROTECTING_AGENCY_AT_ORIGIN', 'FIRE_DETECTOR', 'NFDRS_FUEL_MODEL', 'COVER_CLASS', 'ASPECT']:\n        df[c] = df[c].str.upper()\n    df['DISCOVERY_MONTH'] = df['_dt'].dt.month.astype('Int64')\n    df['DISCOVERY_DOY'] = df['_dt'].dt.dayofyear.astype('Int64')\n    df['DISCOVERY_HOUR'] = df['_dt'].dt.hour.astype('Int64')\n    df[TIME_COL] = df['_dt'].dt.strftime('%Y-%m-%dT%H:%M:%S')\n    return df, negative_acres\n\n\ndef _split_frames(df):\n    windows = {'train': ('1987-01-01', '2015-01-01'), 'eval': ('2015-01-01', '2018-01-01'), 'holdout': ('2018-01-01', '2020-01-01')}\n    frames = {}\n    for name, (start, end) in windows.items():\n        mask = pd.Series(True, index=df.index)\n        if start is not None:\n            mask &= df['_dt'] >= pd.Timestamp(start)\n        if end is not None:\n            mask &= df['_dt'] < pd.Timestamp(end)\n        frames[name] = df[mask].copy()\n    return frames, windows\n\n\ndef _prepare(df):\n    out = df[OUTPUT_COLUMNS].copy()\n    out[TARGET] = out[TARGET].astype('int8')\n    return out.sort_values([TIME_COL, ID_COL], kind='mergesort', na_position='last')\n\n\ndef build(output, cache):\n    output = Path(output)\n    cache = Path(cache)\n    public = output / 'public'\n    private = output / 'private'\n    public.mkdir(parents=True, exist_ok=True)\n    private.mkdir(parents=True, exist_ok=True)\n    cache.mkdir(parents=True, exist_ok=True)\n    df, source_columns, from_rest, source_path = _load(cache)\n    df, negative_acres = _normalize(df, from_rest)\n    checks = []\n\n    def add(check, observed, expected, passed, kind=None):\n        item = {'check': check, 'observed': str(observed), 'expected': str(expected), 'passed': bool(passed)}\n        if kind is not None:\n            item['kind'] = kind\n        checks.append(item)\n\n    missing = [c for c in REQUIRED_SOURCE if c not in source_columns]\n    add('required FIRESTAT columns present', 'missing=' + str(missing), 'OBJECTID, DISCOVERY, PRESCRIBED_FIRE, TOTAL_ACRES_BURNED and all declared feature fields', not missing)\n\n    n_rows = int(len(df))\n    n_pos = int(df[TARGET].sum())\n    duplicate_ids = int(df[ID_COL].duplicated().sum())\n    min_dt = df['_dt'].min()\n    max_dt = df['_dt'].max()\n    dt_ok = bool(pd.notna(min_dt) and pd.notna(max_dt) and min_dt >= pd.Timestamp('1987-01-01') and max_dt < pd.Timestamp('2020-01-01'))\n    add('source loaded and DISCOVERY parses into 1987-2019', 'source=' + ('REST' if from_rest else 'CSV') + '; rows=' + str(n_rows) + '; range=' + str(min_dt) + '..' + str(max_dt), 'nonempty source and discovery timestamps in 1987-01-01T00:00:00..2019-12-31T23:59:59', n_rows > 0 and dt_ok)\n\n    prescribed_values = sorted([str(v).upper() for v in df[PRESCRIBED].dropna().unique()])\n    add('PRESCRIBED_FIRE excludes prescribed fires', prescribed_values, 'only null or N after filter', not prescribed_values or set(prescribed_values).issubset({'N'}))\n\n    total_min = float(df[TOTAL].min()) if n_rows else float('nan')\n    total_max = float(df[TOTAL].max()) if n_rows else float('nan')\n    add('TOTAL_ACRES_BURNED is nonnegative acres', 'min=' + str(total_min) + '; max=' + str(total_max) + '; negative_dropped=' + str(negative_acres), 'acres field, nonnegative finite values', bool(n_rows and total_min >= 0 and np.isfinite(total_max)), kind='unit')\n\n    prevalence = 100.0 * n_pos / n_rows if n_rows else float('nan')\n    add('100-acre target threshold and prevalence', 'positives=' + str(n_pos) + '; prevalence=' + str(round(prevalence, 2)) + '%', '10,156 positives of 306,733 eligible rows, about 3.31%', n_pos == 10156 and abs(prevalence - 3.31) <= 0.01, kind='unit')\n\n    add('eligible unplanned 1987-2019 rows', n_rows, 306733, n_rows == 306733)\n    add('OBJECTID uniqueness', duplicate_ids, 0, duplicate_ids == 0)\n\n    target_values = sorted(int(v) for v in df[TARGET].dropna().unique())\n    add('binary target values', target_values, '[0, 1]', target_values == [0, 1])\n\n    def _has_example(unit, year, acres):\n        m = df['REPORT_UNIT_NAME'].astype('string').str.contains(unit, regex=False, na=False)\n        m &= df['_dt'].dt.year.eq(year)\n        sub = df[m]\n        if len(sub) == 0:\n            return False\n        return bool((sub[TOTAL] - acres).abs().le(0.01).any())\n\n    hawk = _has_example('HAWK LANE SCHOOL', 1997, 37.0)\n    white = _has_example('WHITE ROCK', 1997, 1.0)\n    add('published source examples', 'HAWK LANE SCHOOL 1997 total=37.0: ' + str(hawk) + '; WHITE ROCK 1997 total=1.0: ' + str(white), 'both example rows present with documented acreage', hawk and white)\n\n    frames, windows = _split_frames(df)\n    counts = {k: int(len(v)) for k, v in frames.items()}\n    positives = {k: int(v[TARGET].sum()) for k, v in frames.items()}\n    expected_counts = {'train': 275269, 'eval': 20292, 'holdout': 11172}\n    expected_pos = {'train': 8465, 'eval': 1146, 'holdout': 545}\n    add('frozen split row counts', counts, expected_counts, counts == expected_counts)\n    add('frozen split positive counts', positives, expected_pos, positives == expected_pos)\n    add('all rows assigned to exactly one split', sum(counts.values()), n_rows, sum(counts.values()) == n_rows)\n\n    forbidden = [TOTAL, 'FIRE_SIZE_CLASS', 'AGENCY_ACRES', 'OTHER_ACRES_INSIDE', 'OTHER_ACRES_OUTSIDE', 'WUI_ACRES', 'PRESCRIBED_ACRES', 'FIRE_OUT', 'STRATEGY_MET', 'CONTAINED', 'COMPLEX_FIRE', 'COMPLEX_NAME', 'FIRE_INTENSITY_LEVEL', 'INITIAL_RESPONSE', 'STATISTICAL_CAUSE', 'INITIAL_STRATEGY']\n    add('output columns exclude label source and post-hoc fields', ','.join(OUTPUT_COLUMNS), 'declared ID, DISCOVERY, declared features and target only', not any(c in OUTPUT_COLUMNS for c in forbidden))\n    add('target header exact', TARGET, 'large_fire', TARGET == 'large_fire')\n\n    failed = [c for c in checks if not c['passed']]\n    assert not failed, 'source checks failed: ' + json.dumps(failed, indent=2)\n\n    paths = {'train': public / 'train.csv', 'eval': public / 'eval.csv', 'holdout': private / 'holdout.csv'}\n    for name in ['train', 'eval', 'holdout']:\n        _prepare(frames[name]).to_csv(paths[name], index=False, na_rep='', lineterminator=chr(10))\n\n    headers = {}\n    for name, path in paths.items():\n        headers[name] = list(pd.read_csv(path, nrows=0, encoding='utf-8-sig').columns)\n    add('written CSV headers identical and exact', headers, OUTPUT_COLUMNS, all(h == OUTPUT_COLUMNS for h in headers.values()))\n\n    failed = [c for c in checks if not c['passed']]\n    assert not failed, 'output checks failed: ' + json.dumps(failed, indent=2)\n    return checks\n",
+  "quality": {
+    "name": "usfs-firestat-wildfire-100ac",
+    "task": {
+      "question": "At the time a wildland fire is discovered on or near National Forest System land, will it ultimately burn more than 100 acres?",
+      "prediction_time": "At the first report/discovery timestamp, before initial attack and before suppression outcomes are known."
+    },
+    "target": "large_fire",
+    "positive_label": 1,
+    "time_column": "DISCOVERY",
+    "event_key_column": "DISCOVERY",
+    "id_columns": [
+      "OBJECTID"
+    ],
+    "features": [
+      "DISCOVERY_MONTH",
+      "DISCOVERY_DOY",
+      "DISCOVERY_HOUR",
+      "POO_LATITUDE",
+      "POO_LONGITUDE",
+      "SLOPE",
+      "ELEVATION",
+      "STATE_CODE",
+      "REPORT_UNIT_NAME",
+      "DISTRICT",
+      "OWNERSHIP_AGENCY_AT_ORIGIN",
+      "PROTECTING_AGENCY_AT_ORIGIN",
+      "FIRE_DETECTOR",
+      "NFDRS_FUEL_MODEL",
+      "COVER_CLASS",
+      "ASPECT"
+    ],
+    "features_documented_at": "discovery_time",
+    "carry_columns": [
+      "DISCOVERY"
+    ],
+    "label_source_columns": [
+      "TOTAL_ACRES_BURNED"
+    ],
+    "post_hoc_columns": [
+      "TOTAL_ACRES_BURNED",
+      "FIRE_SIZE_CLASS",
+      "AGENCY_ACRES",
+      "OTHER_ACRES_INSIDE",
+      "OTHER_ACRES_OUTSIDE",
+      "WUI_ACRES",
+      "PRESCRIBED_ACRES",
+      "FIRE_OUT",
+      "STRATEGY_MET",
+      "CONTAINED",
+      "COMPLEX_FIRE",
+      "COMPLEX_NAME",
+      "FIRE_INTENSITY_LEVEL",
+      "INITIAL_RESPONSE",
+      "STATISTICAL_CAUSE",
+      "INITIAL_STRATEGY"
+    ],
+    "high_cardinality_columns": [
+      "OBJECTID",
+      "DISCOVERY",
+      "REPORT_UNIT_NAME",
+      "DISTRICT",
+      "POO_LATITUDE",
+      "POO_LONGITUDE"
+    ],
+    "measurements": [
+      {
+        "column": "TOTAL_ACRES_BURNED",
+        "unit": "acres",
+        "frame": "Final reported total acres burned at fire out; label source, withheld from model inputs."
+      },
+      {
+        "column": "ELEVATION",
+        "unit": "feet",
+        "frame": "Elevation at the head of the fire at initial action."
+      },
+      {
+        "column": "SLOPE",
+        "unit": "percent",
+        "frame": "Slope percent at the fire location."
+      },
+      {
+        "column": "POO_LATITUDE",
+        "unit": "decimal degrees",
+        "frame": "Reported point-of-origin latitude."
+      },
+      {
+        "column": "POO_LONGITUDE",
+        "unit": "decimal degrees",
+        "frame": "Reported point-of-origin longitude."
+      },
+      {
+        "column": "DISCOVERY",
+        "unit": "local date/time",
+        "frame": "Local date and clock time the fire was discovered."
+      }
+    ],
+    "external_threshold": {
+      "value": 100.0,
+      "unit": "acres",
+      "source": "FIRESTAT TOTAL_ACRES_BURNED; task definition is final acres greater than 100.0."
+    },
+    "split_windows": {
+      "train": {
+        "start": "1987-01-01T00:00:00.000",
+        "end": "2015-01-01T00:00:00.000"
+      },
+      "eval": {
+        "start": "2015-01-01T00:00:00.000",
+        "end": "2018-01-01T00:00:00.000"
+      },
+      "holdout": {
+        "start": "2018-01-01T00:00:00.000",
+        "end": "2020-01-01T00:00:00.000"
+      }
+    },
+    "splits": {
+      "train": "public/train.csv",
+      "eval": "public/eval.csv",
+      "holdout": "private/holdout.csv"
+    },
+    "expected_duplicate_ids": 0,
+    "timing": {
+      "features": {
+        "period": "event",
+        "published_days_after_period_end": null
+      },
+      "observations": [],
+      "prediction_instant": {
+        "kind": "event_time",
+        "citation": "FIRESTAT DISCOVERY is recorded at first report; no publication schedule or full-row availability ledger is evidenced."
+      },
+      "row_selection": {
+        "fields": [
+          "DISCOVERY",
+          "PRESCRIBED_FIRE",
+          "TOTAL_ACRES_BURNED"
+        ],
+        "latest_period_used": null
+      }
+    },
+    "evaluation_contract": {
+      "access": "isolated_rows",
+      "use": "retrospective_research",
+      "selection": {
+        "kind": "prediction_time",
+        "evidence": "All features are discovery-time or static pre-fire attributes; final acreage is withheld."
+      },
+      "vintage": {
+        "kind": "current_snapshot",
+        "evidence": "ArcGIS Hub FIRESTAT current snapshot; the layer is incomplete after 2019."
+      },
+      "training_label_timing": "unverified",
+      "feature_evidence": {
+        "OBJECTID": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "ArcGIS feature identifier in the current snapshot; uniqueness is asserted across shipped rows.",
+          "status": "verified"
+        },
+        "DISCOVERY": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Recorded at first report, before dispatch or suppression.",
+          "status": "verified"
+        },
+        "DISCOVERY_MONTH": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Derived only from DISCOVERY; no outcome information used.",
+          "status": "verified"
+        },
+        "DISCOVERY_DOY": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Derived only from DISCOVERY; no outcome information used.",
+          "status": "verified"
+        },
+        "DISCOVERY_HOUR": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Derived only from DISCOVERY; no outcome information used.",
+          "status": "verified"
+        },
+        "POO_LATITUDE": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Known from the ignition location at discovery.",
+          "status": "verified"
+        },
+        "POO_LONGITUDE": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Known from the ignition location at discovery.",
+          "status": "verified"
+        },
+        "STATE_CODE": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Known at discovery from the reported location.",
+          "status": "verified"
+        },
+        "REPORT_UNIT_NAME": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Known at discovery from the administrative unit.",
+          "status": "verified"
+        },
+        "DISTRICT": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Known at discovery from the administrative unit.",
+          "status": "verified"
+        },
+        "OWNERSHIP_AGENCY_AT_ORIGIN": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Static ownership attribute known at discovery; historical display is not proven by the snapshot.",
+          "status": "assumed"
+        },
+        "PROTECTING_AGENCY_AT_ORIGIN": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Static jurisdiction attribute known at discovery; historical display is not proven by the snapshot.",
+          "status": "assumed"
+        },
+        "FIRE_DETECTOR": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Recorded at discovery; describes detection, not suppression outcome.",
+          "status": "verified"
+        },
+        "NFDRS_FUEL_MODEL": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Static pre-fire fuel attribute; assumed available from maps at dispatch, not proven by this retrospective snapshot.",
+          "status": "assumed"
+        },
+        "COVER_CLASS": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Static pre-fire vegetation attribute; assumed available from maps at dispatch, not proven by this retrospective snapshot.",
+          "status": "assumed"
+        },
+        "SLOPE": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Static terrain attribute; assumed available from pre-fire maps at dispatch, not proven by this retrospective snapshot.",
+          "status": "assumed"
+        },
+        "ASPECT": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Static terrain attribute; assumed available from pre-fire maps at dispatch, not proven by this retrospective snapshot.",
+          "status": "assumed"
+        },
+        "ELEVATION": {
+          "source": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+          "availability": "Static terrain attribute; assumed available from pre-fire maps at dispatch, not proven by this retrospective snapshot.",
+          "status": "assumed"
+        }
+      },
+      "limitations": [
+        "Current-vintage retrospective snapshot; records are edited after the fire, so final acres and administrative fields may differ from information available at discovery.",
+        "No historical publication-date or full-row availability ledger; timing.observations is empty and training_label_timing is unverified.",
+        "Fuel and terrain fields are assumed available from pre-fire maps at dispatch; the snapshot does not prove they were displayed historically.",
+        "The layer is incomplete after 2019, so the holdout is historical rather than a current operational feed.",
+        "PRESCRIBED_FIRE is null for many 2007-2016 records; nulls are treated as unplanned per the dataset scope.",
+        "License metadata conflict: Forest Service metadata and the Hub page state CC0 1.0, while Data.gov and Ag Data Commons list CC BY 4.0; attribution is retained.",
+        "The label is final reported acreage with variable lag and revisions, and there is no fixed outcome horizon.",
+        "Coverage is limited to National Forest System land or Forest Service-protected land and reporting changed over 1987-2019.",
+        "The positive class is rare at about 3.31%; chronological splits do not guarantee geographic independence because fires cluster in space and time.",
+        "OBJECTID uniqueness is asserted, but complex-fire records can still describe related incidents."
+      ],
+      "cross_row_audit": {
+        "auxiliary_files_review": "Only public/train.csv, public/eval.csv and private/holdout.csv are written; no auxiliary evaluation files.",
+        "probes": [],
+        "rationale": "Rows are separate fire records; split is chronological by discovery date; no target-history or neighbor features."
+      }
+    }
+  },
+  "references": {
+    "persistence_column": null,
+    "persistence_direction": 1,
+    "entity_columns": []
+  },
+  "construction_notes": "Primary source is the ArcGIS Hub CSV endpoint. If that file is unreadable or not tabular, the builder pages the documented FIRESTAT REST query endpoint with OBJECTID ordering and 2000-record pages; both are actual publisher URLs and are fetched through source_io.fetch. Only the declared source fields are read, in 100000-row pandas chunks. The builder filters DISCOVERY to 1987-01-01 through 2019-12-31, keeps PRESCRIBED_FIRE null or N, drops missing or negative TOTAL_ACRES_BURNED rather than treating missing as zero, and sets large_fire=1 only when TOTAL_ACRES_BURNED > 100.0. TOTAL_ACRES_BURNED and the listed post-outcome/administrative fields are never shipped. OBJECTID is the stable ID; no rows are deduplicated because the publisher count and expected split sizes sum to 306733 and OBJECTID uniqueness is asserted. Split windows are hardcoded at 1987-2014, 2015-2017 and 2018-2019; no holdout rows are used for target, feature, threshold or split choices. The builder asserts the publisher evidence counts 306733 eligible rows, 10156 positives, train 275269/8465, eval 20292/1146 and holdout 11172/545; a changed live layer fails the build instead of silently changing the task. Published source examples HAWK LANE SCHOOL 1997 total 37.0 and WHITE ROCK 1997 total 1.0 are checked. Missing semantic evidence: there is no historical publication-date or full-row availability ledger, so timing.observations is empty and training_label_timing is unverified; static fuel and terrain fields are marked assumed; final acreage is post-outcome with variable lag. No persistence reference applies because each row is an independent fire and no prior-fire history is used."
+}

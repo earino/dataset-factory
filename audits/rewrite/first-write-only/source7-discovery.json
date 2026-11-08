@@ -1,0 +1,169 @@
+{
+  "verdict": "ready",
+  "reason": "A single public FIRESTAT feature layer provides 306,733 eligible unplanned U.S. Forest Service fire records, including 10,156 fires larger than 100 acres, with documented discovery, location, ownership, fuel and terrain fields. Final acreage is withheld from the inputs, rows are independent fires, and fixed chronological splits give 545 holdout positives. No account, sensitive personal data, or multi-agency join is required; the Forest Service metadata designates the data CC0 1.0, though catalog records conflict and attribution is retained.",
+  "dataset_id": "usfs-firestat-wildfire-100ac",
+  "title": "Will a newly discovered U.S. Forest Service wildfire burn more than 100 acres?",
+  "source": {
+    "publisher": "U.S. Forest Service, U.S. Department of Agriculture",
+    "urls": [
+      "https://data-usfs.hub.arcgis.com/api/download/v1/items/810d6a45daf441e9bdb5838ef080366b/csv?layers=0"
+    ],
+    "documentation_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+    "terms_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "license": "CC0 1.0 Universal Public Domain Dedication",
+    "terms_excerpt": "The U.S. Forest Service waives copyright and related rights in the work worldwide through the CC0 1.0 Universal Public Domain Dedication",
+    "attribution": "U.S. Forest Service",
+    "citation": "",
+    "redistribution": true
+  },
+  "task": {
+    "question": "At the time a wildland fire is discovered on or near National Forest System land, will it ultimately burn more than 100 acres?",
+    "decision_user": "U.S. Forest Service initial-attack dispatcher or duty officer deciding whether to escalate response.",
+    "prediction_time": "At the first report/discovery timestamp, before initial attack and before suppression outcomes are known.",
+    "target": "Binary: 1 if the fire's final TOTAL_ACRES_BURNED is greater than 100.0 acres; 0 if TOTAL_ACRES_BURNED is between 0 and 100.0 acres inclusive. Records with missing final acreage are excluded.",
+    "outcome_horizon": "From discovery to the final reported fire size at fire out; variable, often days to weeks, with no fixed horizon.",
+    "features": [
+      {
+        "name": "DISCOVERY",
+        "meaning": "Local date and clock time the fire was discovered; used to derive month, day-of-year and hour.",
+        "availability": "Recorded at first report, before dispatch or suppression.",
+        "evidence_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml"
+      },
+      {
+        "name": "POO_LATITUDE",
+        "meaning": "Decimal latitude of the reported point of origin.",
+        "availability": "Known from the ignition location at discovery.",
+        "evidence_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml"
+      },
+      {
+        "name": "POO_LONGITUDE",
+        "meaning": "Decimal longitude of the reported point of origin.",
+        "availability": "Known from the ignition location at discovery.",
+        "evidence_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml"
+      },
+      {
+        "name": "STATE_CODE",
+        "meaning": "State or jurisdiction at the point of origin.",
+        "availability": "Known at discovery from the reported location.",
+        "evidence_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml"
+      },
+      {
+        "name": "REPORT_UNIT_NAME",
+        "meaning": "National Forest or reporting unit name.",
+        "availability": "Known at discovery from the administrative unit.",
+        "evidence_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml"
+      },
+      {
+        "name": "DISTRICT",
+        "meaning": "Ranger District number.",
+        "availability": "Known at discovery from the administrative unit.",
+        "evidence_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml"
+      },
+      {
+        "name": "OWNERSHIP_AGENCY_AT_ORIGIN",
+        "meaning": "Land ownership type at the point of origin.",
+        "availability": "Static ownership attribute known at discovery.",
+        "evidence_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml"
+      },
+      {
+        "name": "PROTECTING_AGENCY_AT_ORIGIN",
+        "meaning": "Agency legally responsible for primary protection at the point and time of origin.",
+        "availability": "Static jurisdiction attribute known at discovery.",
+        "evidence_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml"
+      },
+      {
+        "name": "FIRE_DETECTOR",
+        "meaning": "Method by which the fire was detected.",
+        "availability": "Recorded at discovery; describes detection, not suppression outcome.",
+        "evidence_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml"
+      },
+      {
+        "name": "NFDRS_FUEL_MODEL",
+        "meaning": "National Fire Danger Rating System fuel model at the origin.",
+        "availability": "Static pre-fire fuel attribute; assumed available from pre-fire maps at dispatch. The retrospective form does not prove it was displayed historically.",
+        "evidence_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml"
+      },
+      {
+        "name": "COVER_CLASS",
+        "meaning": "Regional vegetation cover type where the fire burned.",
+        "availability": "Static pre-fire vegetation attribute; assumed available from pre-fire maps at dispatch.",
+        "evidence_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml"
+      },
+      {
+        "name": "SLOPE",
+        "meaning": "Slope in percent at the fire location.",
+        "availability": "Static terrain attribute; assumed available from pre-fire maps at dispatch.",
+        "evidence_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml"
+      },
+      {
+        "name": "ASPECT",
+        "meaning": "Predominant landscape aspect at the fire location.",
+        "availability": "Static terrain attribute; assumed available from pre-fire maps at dispatch.",
+        "evidence_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml"
+      },
+      {
+        "name": "ELEVATION",
+        "meaning": "Elevation in feet at the head of the fire at initial action.",
+        "availability": "Static terrain attribute; assumed available from pre-fire maps at dispatch.",
+        "evidence_url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml"
+      }
+    ],
+    "population": "Unplanned FIRESTAT fire-occurrence records discovered 1987-01-01 through 2019-12-31 on National Forest System land or land the Forest Service protects, not flagged PRESCRIBED_FIRE='Y'. Eligibility is fixed at discovery; records lacking a final acreage are dropped only because the label cannot be observed, not selected by outcome value.",
+    "split_policy": "Frozen discovery-year boundaries: train 1987-2014 (275,269 rows; 8,465 positives), eval 2015-2017 (20,292; 1,146), holdout 2018-2019 (11,172; 545). No embargo because rows are separate fires and no lag, rolling-history, or target-history features are used. Exclude 2020 and later because the layer is incomplete after 2019.",
+    "usefulness": "Initial-attack triage: identify the roughly 3.3% of new reports that become fires larger than 100 acres using only discovery context and static site attributes. Because total acres and size class are withheld, a model cannot copy the label and must combine season, location, ownership, fuel and terrain.",
+    "simple_references": "Always-negative majority rate is 96.69% of eligible records. Calendar-only controls use month, day-of-year and hour plus state; identity controls use reporting unit and district. Persistence is not applicable because each row is an independent fire and no prior-fire history is used."
+  },
+  "evidence": [
+    {
+      "url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+      "claim": "The publisher defines the layer as ignition points from Individual Wildland Fire Reports.",
+      "quote": "The FIRESTAT (Fire Statistics System) Fire Occurrence point layer represents ignition points, or points of origin, from which individual wildland fires started on National Forest System lands."
+    },
+    {
+      "url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+      "claim": "Final acreage is retrospective and fire size class is derived from it, so both are excluded from inputs.",
+      "quote": "The Fire Class Size field is auto-populated based on the number of acres in the Total Acres Burned field."
+    },
+    {
+      "url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+      "claim": "Fire intensity is observed during initial attack, so it is excluded from discovery-time inputs.",
+      "quote": "Fire intensity code for the predominant or typical sustained average flame length observed at the head of the fire during the initial attack."
+    },
+    {
+      "url": "https://data.fs.usda.gov/geodata/edw/edw_resources/meta/S_USA.Fire_Occurrence_FIRESTAT_YRLY.xml",
+      "claim": "The Forest Service metadata designates the data CC0 1.0.",
+      "quote": "The U.S. Forest Service waives copyright and related rights in the work worldwide through the CC0 1.0 Universal Public Domain Dedication"
+    },
+    {
+      "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_FireOccurrenceFIRESTAT_YRLY_01/MapServer/0/query?where=(PRESCRIBED_FIRE%20IS%20NULL%20OR%20PRESCRIBED_FIRE%3D%27N%27)%20AND%20DISCOVER_YEAR%3E%3D%271987%27%20AND%20DISCOVER_YEAR%3C%3D%272019%27&returnCountOnly=true&f=json",
+      "claim": "There are 306,733 eligible unplanned fire records in 1987-2019.",
+      "quote": "{\"count\":306733}"
+    },
+    {
+      "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_FireOccurrenceFIRESTAT_YRLY_01/MapServer/0/query?where=(PRESCRIBED_FIRE%20IS%20NULL%20OR%20PRESCRIBED_FIRE%3D%27N%27)%20AND%20TOTAL_ACRES_BURNED%3E100%20AND%20DISCOVER_YEAR%3E%3D%271987%27%20AND%20DISCOVER_YEAR%3C%3D%272019%27&returnCountOnly=true&f=json",
+      "claim": "Of those eligible records, 10,156 burned more than 100 acres.",
+      "quote": "{\"count\":10156}"
+    },
+    {
+      "url": "https://data-usfs.hub.arcgis.com/datasets/usfs::firestat-fire-occurrence-yearly-update-feature-layer/explore",
+      "claim": "The distribution page reports 329,480 records and a CC0 1.0 license.",
+      "quote": "Records: 329,480"
+    }
+  ],
+  "construction": {
+    "format": "Single-table CSV from ArcGIS Hub; the source also offers shapefile, GeoJSON and an ArcGIS REST query endpoint.",
+    "access_recipe": "Download the CSV at https://data-usfs.hub.arcgis.com/api/download/v1/items/810d6a45daf441e9bdb5838ef080366b/csv?layers=0. If the CSV endpoint fails, page https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_FireOccurrenceFIRESTAT_YRLY_01/MapServer/0/query with f=json, returnGeometry=false, resultRecordCount=2000, and OBJECTID ordering. Read with pandas. Keep OBJECTID, DISCOVERY, POO_LATITUDE, POO_LONGITUDE, STATE_CODE, REPORT_UNIT_NAME, DISTRICT, OWNERSHIP_AGENCY_AT_ORIGIN, PROTECTING_AGENCY_AT_ORIGIN, FIRE_DETECTOR, NFDRS_FUEL_MODEL, COVER_CLASS, SLOPE, ASPECT, ELEVATION, LOCAL_TIMEZONE, PRESCRIBED_FIRE and TOTAL_ACRES_BURNED. Filter discovery 1987-2019, PRESCRIBED_FIRE not equal to Y, and non-null total acres. Derive the binary target from TOTAL_ACRES_BURNED, then immediately drop TOTAL_ACRES_BURNED, FIRE_SIZE_CLASS, AGENCY_ACRES, OTHER_ACRES_INSIDE, OTHER_ACRES_OUTSIDE, WUI_ACRES, PRESCRIBED_ACRES, FIRE_OUT, STRATEGY_MET, CONTAINED, COMPLEX_FIRE, COMPLEX_NAME, FIRE_INTENSITY_LEVEL, INITIAL_RESPONSE, STATISTICAL_CAUSE and INITIAL_STRATEGY. Use POO_LATITUDE and POO_LONGITUDE, not the integer LAT_DEG and LONG_DEG fields. REST JSON returns dates as epoch milliseconds; the CSV returns human-readable dates.",
+    "expected_size": "329,480 total features; 306,733 eligible records; 10,156 positives (3.31%). Split sizes are 275,269 train, 20,292 eval and 11,172 holdout. A single CSV is expected in the tens of megabytes; the Forest Service shapefile is listed at 53 MB.",
+    "source_examples": "REST sample rows: HAWK LANE SCHOOL, 1997, PRESCRIBED_FIRE='N', TOTAL_ACRES_BURNED=37.0, FIRE_SIZE_CLASS='C - 10-99.99 Acres'; WHITE ROCK, 1997, PRESCRIBED_FIRE='N', TOTAL_ACRES_BURNED=1.0, FIRE_SIZE_CLASS='B - .26-9.99 Acres'."
+  },
+  "limitations": [
+    "The live layer ends in 2019: it has 327 records for 2020, 30 for 2021, 1 for 2024, and none for 2022-2023, so the holdout is historical rather than a current operational feed.",
+    "This is a current-vintage retrospective snapshot; records are edited after the fire, so final acres and administrative fields may differ from what was known at discovery, and the dataset does not prove historical real-time availability of the fuel and terrain fields.",
+    "PRESCRIBED_FIRE is null for many 2007-2016 records; including nulls as unplanned relies on the dataset's stated scope of unplanned ignitions.",
+    "Upstream license metadata conflict: the Forest Service item metadata and Hub page state CC0 1.0, while Data.gov and Ag Data Commons list CC BY 4.0; attribution to the U.S. Forest Service is retained either way.",
+    "The label is final reported acreage, a post-outcome quantity with variable reporting lag and possible revisions, and there is no fixed outcome horizon.",
+    "Coverage is limited to National Forest System land or land the Forest Service protects; reporting and coverage changed over 1987-2019, so this is not representative of all U.S. wildfires.",
+    "The positive class is rare at 3.31%, and spatial-temporal clustering means chronological splits do not guarantee geographic independence; the majority baseline is strong.",
+    "Duplicate or complex-fire records may exist; construction should deduplicate on report unit, fire number and discovery year."
+  ]
+}

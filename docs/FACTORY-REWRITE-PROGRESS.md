@@ -43,7 +43,7 @@ This is an interim assessment, not completion sign-off.
 | --- | --- | --- |
 | A1: one durable controller | Scheduled tick, exclusive-lock busy result, durable attempt/job identities across deployments; [cutover](../audits/rewrite/cutover/) and [first cycle](../audits/rewrite/first-cycle/). | Confirm the successful path also resumes from its recorded checkpoints. No forced-process-kill claim. |
 | A2: mechanical worker outcomes | Real failed workers were staged, collected and deleted without model follow-up; [worker reports](../audits/rewrite/new-source-outcomes/). | Observe a successful construction worker advancing automatically. |
-| A3: bounded inexpensive model | Recorded requested route performed real discovery and generated builders; exact prompts, responses and usage retained. | Verify write-only construction and successful semantic review in the deployed path. |
+| A3: bounded inexpensive model | Recorded requested route performed real discovery and generated builders; exact prompts, responses and usage retained. | Write-only construction verified in the first-write-only evidence; successful semantic review remains. |
 | A4: two complete real sources | Multiple real sources attempted; STATS19 reached full qualification, which failed. | Two sources through public publication without manual state edits. Deployment replays alone do not establish this. |
 | A5: trustworthy consumable releases | Full-artifact checks rejected defective artifacts; package/consumer implementation tested in software. | Accepted reproducible releases, measured usefulness, and anonymous full-file verification on both platforms. |
 | A6: automatic recovery | Failed candidates defer/refill; durable staging recovered after provider absence; [controlled transient-fetch recovery](../audits/rewrite/live_fetch_recovery.py) exercised against a real publisher. | Complete successful recovery evidence alongside the end-to-end path; controlled injection is not an organic outage claim. |
@@ -399,6 +399,30 @@ source evidence and bounded diagnostics together. This changes the adapter's
 request-size check only; turn/time limits, inference admission, worker budgets,
 artifact qualification and publication requirements remain unchanged. It does
 not reopen deferred attempts. Focused model-task tests pass.
+
+### First successful write-only model task (15:11–15:14 UTC)
+
+Source 7 (`usfs-firestat-wildfire-100ac`) produced a valid 11,275-byte builder
+through the corrected adapter: one main call, requested DeepSeek route via Nous,
+6,473 input / 45,994 output tokens, zero attempted or executed tools, exit 0,
+246.6 seconds. Exact response, usage, discovery and worker record are retained
+under `audits/rewrite/first-write-only/`. Scout's export passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42493717884).
+This verifies bounded write-only construction, not model suitability for all stages.
+Semantic review remains unobserved.
+
+Worker 175148469 (EUR 0.16 reservation) failed after 32.4 seconds, exit 1, not OOM.
+The terms check rejected the supplied quote; staging release 438323271 contains
+the durable report. Exact manifest and hash-verified failure are retained under
+`audits/rewrite/new-source-outcomes/`. The controller collected/deleted the worker
+and rejected the candidate automatically. The claimed quote was absent from both
+the cited CC0 deed and the source metadata in a separate bounded read. This is a
+rejection of unsupported proposal evidence, not a determination that USFS data
+cannot be redistributed. No accepted dataset or score resulted. Source 8 discovery
+has hit bounded timeouts and continues under its existing allowance.
+
+Four-hour checkpoint commit `69e0ea4` passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42493190422).
 
 ## Known findings relevant to implementation
 
