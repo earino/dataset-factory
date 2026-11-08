@@ -1,0 +1,277 @@
+{
+  "build_py": "from __future__ import annotations\nimport hashlib\nimport pathlib\nimport numpy as np\nimport pandas as pd\nfrom source_io import fetch\n\nSOURCE_URL = 'https://data.sba.gov/sites/default/files/uploaded_resources/FOIA_7a_FY2010_FY2019_asof_260930.csv'\nTARGET = 'charged_off_60m'\nID_COL = 'loan_uid'\nTIME_COL = 'ApprovalDate'\nFEATURES = [\n    'GrossApproval',\n    'SBAGuaranteedApproval',\n    'TermInMonths',\n    'InitialInterestRate',\n    'FixedorVariableInterestInd',\n    'ProcessingMethod',\n    'NaicsCode2',\n    'NaicsCode4',\n    'BusinessType',\n    'BusinessAge',\n    'ProjectState',\n    'CongressionalDistrict',\n    'FranchiseCode',\n    'JobsSupported',\n    'CollateralInd',\n    'RevolverStatus',\n    'LocationID',\n    'ApprovalMonth',\n]\nOUTPUT_COLUMNS = [ID_COL, TIME_COL] + FEATURES + [TARGET]\nREQUIRED = [\n    'ApprovalDate',\n    'ChargeOffDate',\n    'LoanStatus',\n    'GrossApproval',\n    'SBAGuaranteedApproval',\n    'TermInMonths',\n    'InitialInterestRate',\n    'FixedorVariableInterestInd',\n    'ProcessingMethod',\n    'NaicsCode',\n    'BusinessType',\n    'BusinessAge',\n    'ProjectState',\n    'CongressionalDistrict',\n    'FranchiseCode',\n    'JobsSupported',\n    'CollateralInd',\n    'RevolverStatus',\n    'LocationID',\n]\nSPLITS = {\n    'train': ('2010-10-01', '2013-10-01'),\n    'eval': ('2014-10-01', '2016-10-01'),\n    'holdout': ('2017-10-01', '2019-10-01'),\n}\n\n\ndef _canon(x):\n    return ''.join(ch for ch in str(x).strip().lower() if ch.isalnum())\n\n\ndef _resolve(header):\n    by_norm = {}\n    for col in header:\n        by_norm.setdefault(_canon(col), col)\n    mapping = {}\n    missing = []\n    for col in REQUIRED:\n        actual = col if col in header else by_norm.get(_canon(col))\n        if actual is None:\n            missing.append(col)\n        else:\n            mapping[col] = actual\n    return mapping, missing\n\n\ndef _num(s):\n    x = s.astype('string').str.strip()\n    x = x.str.replace(',', '', regex=False)\n    x = x.str.replace('$', '', regex=False)\n    return pd.to_numeric(x, errors='coerce')\n\n\ndef _txt(s):\n    x = s.astype('string').str.strip()\n    return x.mask(x == '', pd.NA)\n\n\ndef _fmt(v):\n    if pd.isna(v):\n        return ''\n    try:\n        return f'{float(v):.6f}'\n    except Exception:\n        return str(v)\n\n\ndef _sha1(s):\n    return hashlib.sha1(str(s).encode('utf-8')).hexdigest()[:20]\n\n\ndef _add(checks, name, observed, expected, passed, kind=None):\n    entry = {\n        'check': name,\n        'observed': str(observed),\n        'expected': str(expected),\n        'passed': bool(passed),\n    }\n    if kind is not None:\n        entry['kind'] = kind\n    checks.append(entry)\n    if not passed:\n        raise AssertionError(name + ': observed=' + str(observed) + '; expected=' + str(expected))\n\n\ndef build(output: pathlib.Path, cache: pathlib.Path):\n    output = pathlib.Path(output)\n    cache = pathlib.Path(cache)\n    checks = []\n    local = pathlib.Path(fetch(SOURCE_URL, cache, 'FOIA_7a_FY2010_FY2019_asof_260930.csv'))\n    header = list(pd.read_csv(local, nrows=0, encoding='utf-8-sig').columns)\n    mapping, missing = _resolve(header)\n    _add(checks, 'required source columns', str(len(REQUIRED) - len(missing)) + '/' + str(len(REQUIRED)) + ' present', 'publisher dictionary fields needed for the declared task', len(missing) == 0)\n    actual_cols = list(dict.fromkeys(mapping[c] for c in REQUIRED))\n    frames = []\n    total_rows = 0\n    approval_nonempty = 0\n    approval_bad = 0\n    for chunk in pd.read_csv(local, dtype=str, usecols=actual_cols, chunksize=250000, low_memory=False, encoding='utf-8-sig'):\n        total_rows += len(chunk)\n        chunk = chunk.rename(columns={v: k for k, v in mapping.items()})\n        approval = pd.to_datetime(chunk[TIME_COL], errors='coerce')\n        nonempty = _txt(chunk[TIME_COL]).notna()\n        approval_nonempty += int(nonempty.sum())\n        approval_bad += int((nonempty & approval.isna()).sum())\n        gross = _num(chunk['GrossApproval'])\n        naics = _txt(chunk['NaicsCode'])\n        naics6 = naics.where(naics.str.fullmatch('[0-9]{6}', na=False))\n        conditions = [\n            (approval >= pd.Timestamp(SPLITS['train'][0])) & (approval < pd.Timestamp(SPLITS['train'][1])),\n            (approval >= pd.Timestamp(SPLITS['eval'][0])) & (approval < pd.Timestamp(SPLITS['eval'][1])),\n            (approval >= pd.Timestamp(SPLITS['holdout'][0])) & (approval < pd.Timestamp(SPLITS['holdout'][1])),\n        ]\n        split_code = np.select(conditions, ['train', 'eval', 'holdout'], default='')\n        keep = approval.notna() & gross.notna() & (gross > 0) & naics6.notna() & (split_code != '')\n        if keep.any():\n            part = chunk.loc[keep].copy()\n            part['__split'] = split_code[keep]\n            part['__naics6'] = naics6[keep]\n            frames.append(part)\n    _add(checks, 'source rows read', total_rows, '> 0', total_rows > 0)\n    _add(checks, 'ApprovalDate parseability', str(approval_bad) + ' unparseable of ' + str(approval_nonempty) + ' nonempty', '0 unparseable nonempty approval dates', approval_bad == 0)\n    if not frames:\n        raise ValueError('no eligible rows in the fixed split windows')\n    df = pd.concat(frames, ignore_index=True)\n    _add(checks, 'eligible rows in fixed windows', len(df), '> 0', len(df) > 0)\n    df[TIME_COL] = pd.to_datetime(df[TIME_COL], errors='coerce')\n    for col in ['GrossApproval', 'SBAGuaranteedApproval', 'TermInMonths', 'InitialInterestRate', 'JobsSupported', 'RevolverStatus']:\n        df[col] = _num(df[col])\n    for col in ['FixedorVariableInterestInd', 'ProcessingMethod', 'BusinessType', 'BusinessAge', 'ProjectState', 'CongressionalDistrict', 'FranchiseCode', 'LocationID', 'CollateralInd']:\n        df[col] = _txt(df[col])\n    df['ProcessingMethod'] = df['ProcessingMethod'].str.upper()\n    df['FixedorVariableInterestInd'] = df['FixedorVariableInterestInd'].str.upper()\n    df['BusinessType'] = df['BusinessType'].str.upper()\n    df['ProjectState'] = df['ProjectState'].str.upper()\n    df['CollateralInd'] = df['CollateralInd'].str.upper()\n    df['NaicsCode2'] = df['__naics6'].str.slice(0, 2)\n    df['NaicsCode4'] = df['__naics6'].str.slice(0, 4)\n    df['RevolverStatus'] = df['RevolverStatus'].astype('Int64')\n    df['ApprovalMonth'] = df[TIME_COL].dt.month.astype('Int64')\n    status = _txt(df['LoanStatus']).str.upper()\n    observed_status = sorted([str(x) for x in status.dropna().unique().tolist()])\n    known_status = {'CANCLD', 'CHGOFF', 'COMMIT', 'EXEMPT', 'PIF'}\n    _add(checks, 'LoanStatus value set', observed_status, 'subset of CANCLD, CHGOFF, COMMIT, EXEMPT, PIF', len(observed_status) > 0 and set(observed_status).issubset(known_status))\n    chargeoff_dt = pd.to_datetime(df['ChargeOffDate'], errors='coerce')\n    mismatch = int((chargeoff_dt.notna() & (status.fillna('') != 'CHGOFF')).sum())\n    _add(checks, 'ChargeOffDate and LoanStatus consistency', str(mismatch) + ' rows with ChargeOffDate but non-CHGOFF status', '0 mismatches', mismatch == 0)\n    horizon = df[TIME_COL] + pd.DateOffset(months=60)\n    df[TARGET] = ((chargeoff_dt.notna()) & (chargeoff_dt <= horizon)).astype('int64')\n    _add(checks, 'target domain', sorted(df[TARGET].unique().tolist()), '[0, 1]', set(df[TARGET].unique().tolist()).issubset({0, 1}))\n    term_med = float(df['TermInMonths'].dropna().median()) if df['TermInMonths'].notna().any() else float('nan')\n    _add(checks, 'TermInMonths unit and frame', ('median=' + format(term_med, '.1f') + ' months') if pd.notna(term_med) else 'no non-null values', 'loan maturity in months; plausible median between 12 and 600', bool(pd.notna(term_med) and 12 <= term_med <= 600), kind='unit')\n    rate_med = float(df['InitialInterestRate'].dropna().median()) if df['InitialInterestRate'].notna().any() else float('nan')\n    _add(checks, 'InitialInterestRate unit and frame', ('median=' + format(rate_med, '.2f') + ' percent') if pd.notna(rate_med) else 'no non-null values', 'percentage points; plausible median between 0 and 30', bool(pd.notna(rate_med) and 0 <= rate_med <= 30), kind='unit')\n    gross_med = float(df['GrossApproval'].dropna().median()) if df['GrossApproval'].notna().any() else float('nan')\n    _add(checks, 'GrossApproval unit and frame', ('median=' + format(gross_med, '.2f') + ' USD') if pd.notna(gross_med) else 'no non-null values', 'U.S. dollars; plausible median between 1000 and 10000000', bool(pd.notna(gross_med) and 1000 <= gross_med <= 10000000), kind='unit')\n    counts = df['__split'].value_counts().to_dict()\n    split_obs = 'train=' + str(int(counts.get('train', 0))) + ', eval=' + str(int(counts.get('eval', 0))) + ', holdout=' + str(int(counts.get('holdout', 0)))\n    _add(checks, 'fixed split windows', split_obs, 'each split nonempty', all(counts.get(s, 0) > 0 for s in ['train', 'eval', 'holdout']))\n    approval_str = df[TIME_COL].dt.strftime('%Y-%m-%d').fillna('')\n    key = (\n        approval_str + '|' +\n        df['LocationID'].fillna('').astype('string') + '|' +\n        df['GrossApproval'].map(_fmt).fillna('') + '|' +\n        df['SBAGuaranteedApproval'].map(_fmt).fillna('') + '|' +\n        df['TermInMonths'].map(_fmt).fillna('') + '|' +\n        df['NaicsCode2'].fillna('').astype('string') + '|' +\n        df['NaicsCode4'].fillna('').astype('string')\n    )\n    df[ID_COL] = 'sba_' + key.map(_sha1)\n    seq = df.groupby(ID_COL).cumcount().astype(str)\n    df[ID_COL] = df[ID_COL] + '_' + seq\n    _add(checks, 'constructed row identifiers', str(df[ID_COL].nunique()) + ' unique of ' + str(len(df)) + ' rows', 'all rows unique', df[ID_COL].is_unique)\n    df[TIME_COL] = df[TIME_COL].dt.strftime('%Y-%m-%d')\n    destinations = [('train', 'public/train.csv'), ('eval', 'public/eval.csv'), ('holdout', 'private/holdout.csv')]\n    for split, rel in destinations:\n        part = df.loc[df['__split'] == split, OUTPUT_COLUMNS].copy()\n        part = part.sort_values([TIME_COL, ID_COL], kind='mergesort')\n        if part.empty:\n            raise AssertionError('empty split: ' + split)\n        if not part[ID_COL].is_unique:\n            raise AssertionError('duplicate ids in split: ' + split)\n        out = output / rel\n        out.parent.mkdir(parents=True, exist_ok=True)\n        part.to_csv(out, index=False)\n    return checks\n",
+  "quality": {
+    "name": "sba-7a-chargeoff-60m",
+    "target": "charged_off_60m",
+    "positive_label": 1,
+    "task": {
+      "prediction_time": "At loan approval, using only fields recorded in the same approval record.",
+      "question": "At the moment a 7(a) loan is approved, will it be charged off within the following 60 months?"
+    },
+    "features": [
+      "GrossApproval",
+      "SBAGuaranteedApproval",
+      "TermInMonths",
+      "InitialInterestRate",
+      "FixedorVariableInterestInd",
+      "ProcessingMethod",
+      "NaicsCode2",
+      "NaicsCode4",
+      "BusinessType",
+      "BusinessAge",
+      "ProjectState",
+      "CongressionalDistrict",
+      "FranchiseCode",
+      "JobsSupported",
+      "CollateralInd",
+      "RevolverStatus",
+      "LocationID",
+      "ApprovalMonth"
+    ],
+    "carry_columns": [],
+    "id_columns": [
+      "loan_uid"
+    ],
+    "time_column": "ApprovalDate",
+    "event_key_column": "ApprovalDate",
+    "split_windows": {
+      "train": {
+        "start": "2010-10-01T00:00:00.000",
+        "end": "2013-10-01T00:00:00.000"
+      },
+      "eval": {
+        "start": "2014-10-01T00:00:00.000",
+        "end": "2016-10-01T00:00:00.000"
+      },
+      "holdout": {
+        "start": "2017-10-01T00:00:00.000",
+        "end": "2019-10-01T00:00:00.000"
+      }
+    },
+    "splits": {
+      "train": "public/train.csv",
+      "eval": "public/eval.csv",
+      "holdout": "private/holdout.csv"
+    },
+    "high_cardinality_columns": [
+      "NaicsCode4",
+      "LocationID",
+      "FranchiseCode"
+    ],
+    "label_source_columns": [
+      "ChargeOffDate"
+    ],
+    "post_hoc_columns": [
+      "LoanStatus",
+      "ChargeOffDate",
+      "PaidInFullDate",
+      "FirstDisbursementDate",
+      "SoldSecMrktInd"
+    ],
+    "measurements": [
+      {
+        "column": "GrossApproval",
+        "frame": "approved gross loan amount in U.S. dollars",
+        "unit": "USD"
+      },
+      {
+        "column": "SBAGuaranteedApproval",
+        "frame": "SBA guaranteed amount in U.S. dollars",
+        "unit": "USD"
+      },
+      {
+        "column": "TermInMonths",
+        "frame": "loan maturity in months",
+        "unit": "months"
+      },
+      {
+        "column": "InitialInterestRate",
+        "frame": "total initial interest rate at approval, base plus spread",
+        "unit": "percent"
+      },
+      {
+        "column": "JobsSupported",
+        "frame": "self-reported jobs created plus retained",
+        "unit": "jobs"
+      },
+      {
+        "column": "ApprovalMonth",
+        "frame": "calendar month of approval derived from ApprovalDate",
+        "unit": "month-of-year"
+      }
+    ],
+    "timing": {
+      "features": {
+        "period": "event",
+        "published_days_after_period_end": 0
+      },
+      "observations": [
+        {
+          "period": "FY2019",
+          "period_end": "2019-09-30",
+          "published": "2026-09-30"
+        }
+      ],
+      "prediction_instant": {
+        "citation": "ApprovalDate is the row-level loan approval instant; only same-row approval-time fields are used as features.",
+        "days_after_period_end": 0,
+        "kind": "event",
+        "period": "day"
+      },
+      "row_selection": {
+        "fields": [
+          "ApprovalDate",
+          "GrossApproval",
+          "NaicsCode"
+        ],
+        "latest_period_used": "FY2010-FY2019"
+      }
+    },
+    "external_threshold": {
+      "source": "Task contract: charge-off within 60 months after ApprovalDate; frozen before scoring",
+      "unit": "months",
+      "value": 60
+    },
+    "features_documented_at": "prediction_time",
+    "evaluation_contract": {
+      "access": "isolated_rows",
+      "cross_row_audit": {
+        "auxiliary_files_review": "Only public/train.csv, public/eval.csv, and private/holdout.csv are written; no auxiliary evaluation files or fixture labels are shipped.",
+        "probes": [],
+        "rationale": "Each row is a distinct approved loan; the builder does not compute cross-row target-based features. LocationID is shipped as an identity/categorical feature only."
+      },
+      "feature_evidence": {
+        "loan_uid": {
+          "availability": "constructed opaque key from approval date and approval-time fields; the publisher documents no unique loan identifier",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/FOIA_7a_FY2010_FY2019_asof_260930.csv",
+          "status": "assumed"
+        },
+        "ApprovalDate": {
+          "availability": "row-level approval date in the current FOIA snapshot; historical operational availability is not proven",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "GrossApproval": {
+          "availability": "recorded at approval in the current FOIA snapshot; not proven point-in-time",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "SBAGuaranteedApproval": {
+          "availability": "recorded at approval in the current FOIA snapshot; not proven point-in-time",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "TermInMonths": {
+          "availability": "recorded at approval in the current FOIA snapshot; not proven point-in-time",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "InitialInterestRate": {
+          "availability": "dictionary describes this as the rate at the time the loan was approved; current snapshot only",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "FixedorVariableInterestInd": {
+          "availability": "recorded at approval in the current FOIA snapshot; not proven point-in-time",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "ProcessingMethod": {
+          "availability": "approval route code in the current FOIA snapshot; not proven point-in-time",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "NaicsCode2": {
+          "availability": "derived from the application NaicsCode at approval; 2-digit prefix",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "NaicsCode4": {
+          "availability": "derived from the application NaicsCode at approval; 4-digit prefix",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "BusinessType": {
+          "availability": "application field at approval in the current FOIA snapshot; not proven point-in-time",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "BusinessAge": {
+          "availability": "self-reported categorical field at application; not a numeric years-in-business measure",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "ProjectState": {
+          "availability": "project location field known at approval in the current FOIA snapshot; not proven point-in-time",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "CongressionalDistrict": {
+          "availability": "project district field known at approval in the current FOIA snapshot; not proven point-in-time",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "FranchiseCode": {
+          "availability": "franchise affiliation code present in the current FOIA snapshot; franchise name string is excluded",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "JobsSupported": {
+          "availability": "self-reported at application in the current FOIA snapshot; explicitly unvalidated by SBA",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "CollateralInd": {
+          "availability": "lender-reported collateral indicator in the current FOIA snapshot; not proven point-in-time",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "RevolverStatus": {
+          "availability": "term versus revolver indicator in the current FOIA snapshot; not proven point-in-time",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "LocationID": {
+          "availability": "SBA lender identifier in the current FOIA snapshot; shipped as a categorical feature, not used to compute evaluation or holdout outcome rates",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        },
+        "ApprovalMonth": {
+          "availability": "derived deterministically from approval date",
+          "source": "https://data.sba.gov/sites/default/files/uploaded_resources/7a_504_foia_data_dictionary.xlsx",
+          "status": "assumed"
+        }
+      },
+      "limitations": [
+        "Current-vintage reconstruction from the 2026-09-30 extract; no full-row availability ledger proves every field was recorded identically at each historical approval.",
+        "Approved-only population; denied applications are absent, so this is not an underwriting model on raw applicants.",
+        "No publisher unique loan identifier exists; opaque IDs are constructed from approval-time fields, so borrower-level deduplication and repeated-borrower grouping are impossible.",
+        "Lender clustering is strong through LocationID; holdout lenders may be unseen in training.",
+        "Charge-off is an administrative loss-recognition event that lags delinquency and depends on SBA and lender practice, so it is a noisy proxy for economic default.",
+        "CANCLD and COMMIT approvals receive label 0 by construction because funding status is post-approval.",
+        "JobsSupported and BusinessAge are self-reported; BusinessAge is categorical and is not treated as years in business.",
+        "Adjacent 60-month outcome windows overlap in calendar time; the embargo reduces but does not eliminate shared macro shocks.",
+        "Borrower name, street, city, ZIP, and the current-assignee bank block are excluded from shipped columns.",
+        "No persistence reference applies because each row is a distinct loan with no repeated-unit history."
+      ],
+      "selection": {
+        "evidence": "ApprovalDate and dictionary-documented approval-time fields; no disbursement, status, servicing, or bank-assignee fields are used as features",
+        "kind": "prediction_time"
+      },
+      "training_label_timing": "unverified",
+      "use": "retrospective_research",
+      "vintage": {
+        "evidence": "Source file name ends asof_260930, indicating the 2026-09-30 extract.",
+        "kind": "current_snapshot"
+      }
+    }
+  },
+  "references": {
+    "persistence_column": null,
+    "persistence_direction": 1,
+    "entity_columns": [
+      "LocationID"
+    ]
+  },
+  "construction_notes": "Source interpretation: the FY2010-FY2019 7(a) FOIA extract is streamed in 250k-row chunks; the separate FY2020-present file is not used and no bank-assignee, borrower-identity, or post-approval columns are shipped. The builder resolves the exact required publisher column names case-insensitively, fails if any are missing, drops rows outside the fixed half-open windows, and drops rows with invalid ApprovalDate, nonpositive GrossApproval, or non-6-digit NaicsCode. Features are approval-time fields plus deterministic NaicsCode2, NaicsCode4, and ApprovalMonth; missing values remain empty, never zero. Target is ChargeOffDate non-null and no later than ApprovalDate plus 60 months; CANCLD and COMMIT rows with no charge-off are label 0. Split boundaries are train [2010-10-01, 2013-10-01), eval [2014-10-01, 2016-10-01), holdout [2017-10-01, 2019-10-01), with FY2014 and FY2017 dropped as embargo years. No holdout is used for target, feature, threshold, or split selection. Checks cover required column presence, ApprovalDate parseability, eligible row counts, split nonemptiness, LoanStatus code subset, ChargeOffDate/LoanStatus consistency, unique constructed IDs, and unit/frame medians for TermInMonths, InitialInterestRate, and GrossApproval. Missing semantic evidence: no full-row historical availability ledger was available, so all feature_evidence statuses are assumed and training_label_timing is unverified; the source is a current snapshot, not proof of operational availability at each historical approval. No tools were available in this write-only phase, so I did not re-download or re-read the source. No persistence column applies: each row is a distinct loan with no repeated-unit history; entity_columns lists LocationID only as a lender identity reference, not a persistence score."
+}
