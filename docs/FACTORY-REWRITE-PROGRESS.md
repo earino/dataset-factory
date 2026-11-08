@@ -634,6 +634,24 @@ Unexpected values affecting included records still require evidence or failure.
 The task, population, target and artifact gate remain fixed. No live candidate
 proposal or state was edited. This corrects an observed generated constraint.
 
+### RCRA repair advances to actual-header failure (16:35 UTC)
+
+The ordinary second RCRA worker completed its earlier outcome-domain check and
+failed after 42.0 seconds at a missing source column. Its error lists the actual
+headers, including OPERATING_TSDF and FULL_ENFORCEMENT, while the builder expected
+OPERATING_TSDF_CODES (and listed FULL_ENFORCEMENT_CODES as another required field).
+The exact staging manifest 724514248 and digest-verified failure from release
+438370585 are retained as `new-source-outcomes/rcra-build-2-*`. No qualification
+or metric was produced. The ordinary repair receives these actual headers.
+
+Prompt correction e2441df passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42500521034).
+Scout was asked to include it at the pending deployment boundary, or the next
+needed boundary if the preceding deployment had already resumed, avoiding a
+separate pause solely for this prompt change.
+Scout confirmed at 16:37 UTC that 64a1113 had merged with task_seconds=600;
+applying e2441df and resuming the tick were in progress at that observation.
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;
