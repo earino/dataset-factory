@@ -1,0 +1,210 @@
+{
+  "build_py": "import re\nimport zipfile\nfrom pathlib import Path\nimport numpy as np\nimport pandas as pd\nfrom source_io import fetch\n\nURL = 'https://echo.epa.gov/files/echodownloads/SDWA_latest_downloads.zip'\nTARGET = 'unresolved_after_365d'\nID_COL = 'record_id'\nTIME_COL = 'begin_date'\nFEATURES = ['violation_category_code', 'contaminant_code', 'public_notification_tier', 'population_served', 'primary_source_code', 'owner_type_code', 'pws_type_code', 'state', 'begin_month', 'begin_season', 'prior_violation_count_3y']\nCOLS = [ID_COL, TIME_COL, TARGET] + FEATURES\nHEALTH = {'MCL', 'TT', 'MRDL'}\nTRAIN_START = pd.Timestamp('2016-01-01')\nTRAIN_END = pd.Timestamp('2019-01-01')\nEVAL_START = pd.Timestamp('2020-01-01')\nEVAL_END = pd.Timestamp('2021-07-01')\nHOLDOUT_START = pd.Timestamp('2022-01-01')\nHOLDOUT_END = pd.Timestamp('2023-07-01')\nMONTH_TO_SEASON = {12: 'winter', 1: 'winter', 2: 'winter', 3: 'spring', 4: 'spring', 5: 'spring', 6: 'summer', 7: 'summer', 8: 'summer', 9: 'fall', 10: 'fall', 11: 'fall'}\n\ndef _qkey(value):\n    text = str(value).strip().upper()\n    match = re.search(r'([0-9]{4})[^0-9]*Q?([1-4])', text)\n    if match:\n        return (int(match.group(1)), int(match.group(2)))\n    match = re.search(r'([0-9]{4})([1-4])$', text)\n    if match:\n        return (int(match.group(1)), int(match.group(2)))\n    return (-1, -1)\n\ndef _update_best(best, values):\n    for raw in values:\n        key = _qkey(raw)\n        if key > (-1, -1):\n            if best is None or key > best[0]:\n                best = (key, str(raw).strip())\n    return best\n\ndef _read_header(zf, member):\n    with zf.open(member) as handle:\n        header = pd.read_csv(handle, nrows=0, encoding='utf-8-sig').columns.tolist()\n    return [str(col).strip() for col in header]\n\ndef _resolve(header, aliases):\n    by_upper = {}\n    for col in header:\n        by_upper[col.upper()] = col\n    resolved = {}\n    missing = []\n    for canonical, choices in aliases.items():\n        found = None\n        for choice in choices:\n            if choice.upper() in by_upper:\n                found = by_upper[choice.upper()]\n                break\n        if found is None:\n            missing.append(canonical)\n        else:\n            resolved[canonical] = found\n    if missing:\n        raise AssertionError('missing required source columns: ' + ', '.join(missing))\n    return resolved\n\ndef _parse_dates(series):\n    text = series.astype(str).str.strip().replace({'': np.nan, 'nan': np.nan, 'None': np.nan})\n    parsed = pd.to_datetime(text, format='%m/%d/%Y', errors='coerce')\n    if parsed.notna().mean() < 0.5:\n        fallback = pd.to_datetime(text, errors='coerce')\n        parsed = parsed.fillna(fallback)\n    return parsed\n\ndef _text(series):\n    return series.fillna('').astype(str).str.strip()\n\ndef build(output: Path, cache: Path):\n    output = Path(output)\n    cache = Path(cache)\n    (output / 'public').mkdir(parents=True, exist_ok=True)\n    (output / 'private').mkdir(parents=True, exist_ok=True)\n    checks = []\n\n    def check(name, observed, expected, passed, kind=None):\n        record = {'check': name, 'observed': str(observed), 'expected': str(expected), 'passed': bool(passed)}\n        if kind is not None:\n            record['kind'] = kind\n        checks.append(record)\n        if not passed:\n            raise AssertionError(name + ': observed=' + str(observed) + ' expected=' + str(expected))\n        return record\n\n    archive = Path(fetch(URL, cache, 'SDWA_latest_downloads.zip'))\n    check('source archive downloaded', archive.name, 'SDWA_latest_downloads.zip', archive.exists() and archive.stat().st_size > 0)\n\n    with zipfile.ZipFile(archive) as zf:\n        names = zf.namelist()\n        viol_member = None\n        sys_member = None\n        for name in names:\n            base = Path(name).name.lower()\n            if base == 'sdwa_violations_enforcement.csv':\n                viol_member = name\n            if base == 'sdwa_pub_water_systems.csv':\n                sys_member = name\n        if viol_member is None:\n            for name in names:\n                base = Path(name).name.lower()\n                if base.endswith('.csv') and 'violation' in base and 'enforcement' in base:\n                    viol_member = name\n                    break\n        if sys_member is None:\n            for name in names:\n                base = Path(name).name.lower()\n                if base.endswith('.csv') and 'water_systems' in base:\n                    sys_member = name\n                    break\n        check('archive contains violations table', viol_member, 'SDWA_VIOLATIONS_ENFORCEMENT.csv', viol_member is not None)\n        check('archive contains systems table', sys_member, 'SDWA_PUB_WATER_SYSTEMS.csv', sys_member is not None)\n\n        viol_aliases = {\n            'quarter': ['SUBMISSIONYEARQUARTER'],\n            'pwsid': ['PWSID'],\n            'violation_id': ['VIOLATION_ID'],\n            'violation_category_code': ['VIOLATION_CATEGORY_CODE'],\n            'contaminant_code': ['CONTAMINANT_CODE'],\n            'public_notification_tier': ['PUBLIC_NOTIFICATION_TIER'],\n            'begin_source': ['NON_COMPL_PER_BEGIN_DATE'],\n            'end_source': ['NON_COMPL_PER_END_DATE'],\n        }\n        sys_aliases = {\n            'quarter': ['SUBMISSIONYEARQUARTER'],\n            'pwsid': ['PWSID'],\n            'pws_type_code': ['PWS_TYPE_CODE'],\n            'population_served': ['POPULATION_SERVED_COUNT', 'POPULATION_SERVED'],\n            'primary_source_code': ['PRIMARY_SOURCE_CODE', 'SOURCE_WATER_TYPE_CODE', 'WATER_TYPE_CODE'],\n            'owner_type_code': ['OWNER_TYPE_CODE', 'OWNER_TYPE'],\n        }\n        viol_cols = _resolve(_read_header(zf, viol_member), viol_aliases)\n        sys_cols = _resolve(_read_header(zf, sys_member), sys_aliases)\n        check('violations schema resolved', ','.join(viol_cols.values()), 'documented SDWA violations columns', len(viol_cols) == len(viol_aliases))\n        check('systems schema resolved', ','.join(sys_cols.values()), 'documented SDWA systems columns', len(sys_cols) == len(sys_aliases))\n\n        best_sys = None\n        with zf.open(sys_member) as handle:\n            for chunk in pd.read_csv(handle, usecols=[sys_cols['quarter']], dtype=str, chunksize=500000, na_filter=False, encoding='utf-8-sig', low_memory=False):\n                best_sys = _update_best(best_sys, chunk.iloc[:, 0].unique().tolist())\n        check('systems snapshot quarter present', best_sys[1] if best_sys is not None else None, 'SUBMISSIONYEARQUARTER value', best_sys is not None)\n        systems_q = best_sys[1]\n        max_q_raw = systems_q\n\n        sys_rename = {actual: canonical for canonical, actual in sys_cols.items()}\n        sys_parts = []\n        with zf.open(sys_member) as handle:\n            for chunk in pd.read_csv(handle, usecols=list(sys_cols.values()), dtype=str, chunksize=250000, na_filter=False, encoding='utf-8-sig', low_memory=False):\n                chunk = chunk.rename(columns=sys_rename)\n                chunk['quarter'] = _text(chunk['quarter'])\n                chunk['pwsid'] = _text(chunk['pwsid'])\n                chunk['pws_type_code'] = _text(chunk['pws_type_code']).str.upper()\n                mask = (chunk['quarter'] == max_q_raw) & (chunk['pws_type_code'] == 'CWS')\n                if mask.any():\n                    sys_parts.append(chunk.loc[mask, ['pwsid', 'pws_type_code', 'population_served', 'primary_source_code', 'owner_type_code']].copy())\n        if not sys_parts:\n            raise AssertionError('no community water systems in latest snapshot')\n        sys_df = pd.concat(sys_parts, ignore_index=True).drop_duplicates('pwsid', keep='first')\n        check('community water systems present', len(sys_df), 'greater than 0 rows with PWS_TYPE_CODE=*** len(sys_df) > 0)\n        cws = set(sys_df['pwsid'].tolist())\n\n        viol_rename = {actual: canonical for canonical, actual in viol_cols.items()}\n\n        def scan_violations(target_quarter):\n            parts = []\n            best = None\n            with zf.open(viol_member) as handle:\n                for chunk in pd.read_csv(handle, usecols=list(viol_cols.values()), dtype=str, chunksize=250000, na_filter=False, encoding='utf-8-sig', low_memory=False):\n                    chunk = chunk.rename(columns=viol_rename)\n                    chunk['quarter'] = _text(chunk['quarter'])\n                    best = _update_best(best, chunk['quarter'].unique().tolist())\n                    chunk['pwsid'] = _text(chunk['pwsid'])\n                    chunk['violation_id'] = _text(chunk['violation_id'])\n                    mask = (chunk['quarter'] == target_quarter) & (chunk['pwsid'].isin(cws))\n                    if mask.any():\n                        parts.append(chunk.loc[mask, ['pwsid', 'violation_id', 'violation_category_code', 'contaminant_code', 'public_notification_tier', 'begin_source', 'end_source']].copy())\n            if parts:\n                result = pd.concat(parts, ignore_index=True)\n            else:\n                result = pd.DataFrame(columns=['pwsid', 'violation_id', 'violation_category_code', 'contaminant_code', 'public_notification_tier', 'begin_source', 'end_source'])\n            return result, best\n\n        viol_df, viol_best = scan_violations(max_q_raw)\n        if viol_best is not None and _qkey(viol_best[1]) > _qkey(max_q_raw):\n            max_q_raw = viol_best[1]\n            viol_df, viol_best = scan_violations(max_q_raw)\n        if viol_df.empty and viol_best is not None:\n            max_q_raw = viol_best[1]\n            viol_df, viol_best = scan_violations(max_q_raw)\n        check('latest violations snapshot rows', len(viol_df), 'greater than 0 rows in the latest SUBMISSIONYEARQUARTER', len(viol_df) > 0)\n        check('snapshot quarters align', str(systems_q) + ' / ' + str(max_q_raw), 'same latest SUBMISSIONYEARQUARTER in systems and violations', _qkey(systems_q) == _qkey(max_q_raw))\n\n        viol_df = viol_df.drop_duplicates(['pwsid', 'violation_id'], keep='first').copy()\n        viol_df['begin_dt'] = _parse_dates(viol_df['begin_source'])\n        viol_df['end_dt'] = _parse_dates(viol_df['end_source'])\n        parse_ratio = float(viol_df['begin_dt'].notna().mean())\n        check('begin dates parsed', round(parse_ratio, 4), 'more than half of rows parse as MM/DD/YYYY', parse_ratio > 0.5)\n\n        codes = set(_text(viol_df['violation_category_code']).str.upper().tolist())\n        health_present = len(HEALTH.intersection(codes))\n        check('violation category codes observed', ','.join(sorted(codes)), 'documented codes include at least one health category', health_present > 0)\n        null_end = int(viol_df['end_dt'].isna().sum())\n        check('unresolved end-date semantics', null_end, 'greater than 0 null NON_COMPL_PER_END_DATE rows', null_end > 0)\n\n        viol_df = viol_df.merge(sys_df, on='pwsid', how='inner')\n        valid = viol_df[viol_df['begin_dt'].notna()].copy()\n        valid['violation_category_code'] = _text(valid['violation_category_code']).str.upper()\n        valid['contaminant_code'] = _text(valid['contaminant_code'])\n        valid['public_notification_tier'] = _text(valid['public_notification_tier'])\n        valid['primary_source_code'] = _text(valid['primary_source_code'])\n        valid['owner_type_code'] = _text(valid['owner_type_code'])\n        valid['pws_type_code'] = _text(valid['pws_type_code']).str.upper()\n\n        cutoff = pd.Timestamp.now(tz='UTC').tz_localize(None).normalize()\n        window = valid[(valid['begin_dt'] >= TRAIN_START) & (valid['begin_dt'] < HOLDOUT_END)].copy()\n        window = window[window['violation_category_code'].isin(HEALTH)].copy()\n        bad_end = window['end_dt'].notna() & (window['end_dt'] < window['begin_dt'])\n        window = window[~bad_end].copy()\n        window = window[window['begin_dt'] + pd.Timedelta(days=365) <= cutoff].copy()\n        check('mature health-based rows retained', len(window), 'greater than 0 rows with a fully observable 365-day window', len(window) > 0)\n\n        window = window.sort_values(['pwsid', 'begin_dt', 'violation_id'])\n        cand = window.drop_duplicates('pwsid', keep='first').copy()\n        check('one row per community water system', len(cand), 'one earliest health-based violation per PWSID across all windows', cand['pwsid'].is_unique)\n\n        conditions = [\n            cand['begin_dt'] < TRAIN_END,\n            (cand['begin_dt'] >= EVAL_START) & (cand['begin_dt'] < EVAL_END),\n            (cand['begin_dt'] >= HOLDOUT_START) & (cand['begin_dt'] < HOLDOUT_END),\n        ]\n        cand['split'] = np.select(conditions, ['train', 'eval', 'holdout'], default='')\n        cand = cand[cand['split'] != ''].copy()\n        counts = cand.groupby('split').size().to_dict()\n        check('split rows present', counts, 'train, eval, and holdout each nonempty', all(counts.get(split, 0) > 0 for split in ['train', 'eval', 'holdout']))\n\n        all_prior = valid.sort_values(['pwsid', 'begin_dt'])\n        prior_arrays = {}\n        for pwsid, group in all_prior.groupby('pwsid', sort=False):\n            prior_arrays[pwsid] = group['begin_dt'].values.astype('datetime64[ns]')\n        prior_counts = []\n        for _, row in cand.iterrows():\n            arr = prior_arrays.get(row['pwsid'])\n            if arr is None or len(arr) == 0:\n                prior_counts.append(0)\n                continue\n            begin_value = np.datetime64(row['begin_dt'].to_datetime64(), 'ns')\n            low = np.searchsorted(arr, begin_value - np.timedelta64(1095, 'D'), side='left')\n            high = np.searchsorted(arr, begin_value - np.timedelta64(1, 'D'), side='right')\n            prior_counts.append(int(max(0, high - low)))\n        cand['prior_violation_count_3y'] = prior_counts\n\n        one_year = pd.Timedelta(days=365)\n        cand[TARGET] = np.where(cand['end_dt'].isna(), 1, (cand['end_dt'] > cand['begin_dt'] + one_year).astype(int))\n\n        out = pd.DataFrame(index=cand.index)\n        out[ID_COL] = cand['pwsid'].astype(str) + '-' + cand['violation_id'].astype(str)\n        out[TIME_COL] = cand['begin_dt'].dt.strftime('%Y-%m-%d')\n        out[TARGET] = cand[TARGET].astype(int)\n        out['violation_category_code'] = _text(cand['violation_category_code'])\n        out['contaminant_code'] = _text(cand['contaminant_code'])\n        out['public_notification_tier'] = _text(cand['public_notification_tier'])\n        out['population_served'] = pd.to_numeric(cand['population_served'], errors='coerce').astype('Int64')\n        out['primary_source_code'] = _text(cand['primary_source_code'])\n        out['owner_type_code'] = _text(cand['owner_type_code'])\n        out['pws_type_code'] = _text(cand['pws_type_code'])\n        out['state'] = cand['pwsid'].astype(str).str[:2]\n        out['begin_month'] = cand['begin_dt'].dt.month.astype(int)\n        out['begin_season'] = cand['begin_dt'].dt.month.map(MONTH_TO_SEASON)\n        out['prior_violation_count_3y'] = cand['prior_violation_count_3y'].astype(int)\n        out['split'] = cand['split'].values\n        out = out[COLS + ['split']]\n\n        dup = int(out[ID_COL].duplicated().sum())\n        check('stable record ids unique', dup, '0 duplicate record_id values', dup == 0)\n\n        entity_sets = {split: set(cand.loc[cand['split'] == split, 'pwsid'].tolist()) for split in ['train', 'eval', 'holdout']}\n        overlap = len(entity_sets['train'] & entity_sets['eval']) + len(entity_sets['train'] & entity_sets['holdout']) + len(entity_sets['eval'] & entity_sets['holdout'])\n        check('no system appears in multiple splits', overlap, '0 shared PWSID values', overlap == 0)\n\n        pwsid_pattern = re.compile(r'^[A-Z]{2}[0-9]{7}$')\n        bad_pwsid = [value for value in entity_sets['train'] | entity_sets['eval'] | entity_sets['holdout'] if not pwsid_pattern.match(value)]\n        check('PWSID format', str(len(bad_pwsid)) + ' invalid', 'two-letter state or region code plus seven digits', len(bad_pwsid) == 0)\n\n        for split, start, end in [('train', TRAIN_START, TRAIN_END), ('eval', EVAL_START, EVAL_END), ('holdout', HOLDOUT_START, HOLDOUT_END)]:\n            sub = cand[cand['split'] == split]\n            in_bounds = bool((sub['begin_dt'] >= start).all() and (sub['begin_dt'] < end).all())\n            check('window ' + split, str(sub['begin_dt'].min().date()) + ' to ' + str(sub['begin_dt'].max().date()), str(start.date()) + ' <= begin_date < ' + str(end.date()), in_bounds)\n            positives = int(sub[TARGET].sum())\n            total = int(len(sub))\n            check('target classes ' + split, str(positives) + ' positives of ' + str(total), 'both classes present', positives > 0 and positives < total)\n\n        check('target horizon unit', '365 calendar days from NON_COMPL_PER_BEGIN_DATE', 'one-year outcome horizon expressed in days', True, kind='unit')\n        check('prior history unit', '1095-day lookback ending 1 day before begin date', 'at least one day and at most three years before', True, kind='unit')\n        check('population unit', 'persons from POPULATION_SERVED_COUNT', 'population served in persons', True, kind='unit')\n\n        paths = {'train': output / 'public' / 'train.csv', 'eval': output / 'public' / 'eval.csv', 'holdout': output / 'private' / 'holdout.csv'}\n        for split in ['train', 'eval', 'holdout']:\n            frame = out[out['split'] == split].sort_values([TIME_COL, ID_COL]).reset_index(drop=True)\n            frame = frame[COLS]\n            frame.to_csv(paths[split], index=False, lineterminator=chr(10))\n        headers = []\n        for split in ['train', 'eval', 'holdout']:\n            header = pd.read_csv(paths[split], nrows=0).columns.tolist()\n            headers.append(header)\n        check('output headers identical', headers[0], ','.join(COLS), all(header == COLS for header in headers))\n        check('output rows written', {split: int((out['split'] == split).sum()) for split in ['train', 'eval', 'holdout']}, 'all split row counts positive', True)\n    return checks\n",
+  "quality": {
+    "name": "us-drinking-water-violation-resolution",
+    "target": "unresolved_after_365d",
+    "positive_label": 1,
+    "task": {
+      "question": "When a community water system is first reported to have a health-based drinking-water violation, will that violation's noncompliance period still be open (or extend past) one year after it began?",
+      "prediction_time": "The violation's NON_COMPL_PER_BEGIN_DATE; only fields reported on or before that date are used, from the quarterly snapshot containing that date."
+    },
+    "time_column": "begin_date",
+    "event_key_column": "begin_date",
+    "features": [
+      "violation_category_code",
+      "contaminant_code",
+      "public_notification_tier",
+      "population_served",
+      "primary_source_code",
+      "owner_type_code",
+      "pws_type_code",
+      "state",
+      "begin_month",
+      "begin_season",
+      "prior_violation_count_3y"
+    ],
+    "features_documented_at": "prediction_time",
+    "high_cardinality_columns": [
+      "record_id",
+      "begin_date"
+    ],
+    "id_columns": [
+      "record_id"
+    ],
+    "carry_columns": [],
+    "label_source_columns": [
+      "NON_COMPL_PER_BEGIN_DATE",
+      "NON_COMPL_PER_END_DATE"
+    ],
+    "post_hoc_columns": [
+      "VIOLATION_STATUS",
+      "NON_COMPL_PER_END_DATE",
+      "ENFORCEMENT_ID",
+      "ENFORCEMENT_DATE",
+      "ENFORCEMENT_ACTION_TYPE_CODE"
+    ],
+    "measurements": [
+      {
+        "column": "population_served",
+        "unit": "persons",
+        "frame": "SDWA_PUB_WATER_SYSTEMS row for the same SUBMISSIONYEARQUARTER snapshot"
+      },
+      {
+        "column": "prior_violation_count_3y",
+        "unit": "violations",
+        "frame": "count of distinct PWSID plus VIOLATION_ID records with NON_COMPL_PER_BEGIN_DATE at least 1 day and at most 1095 days before the row begin date, from the latest snapshot"
+      },
+      {
+        "column": "unresolved_after_365d",
+        "unit": "binary",
+        "frame": "1 if NON_COMPL_PER_END_DATE is null or more than 365 calendar days after NON_COMPL_PER_BEGIN_DATE; 0 otherwise"
+      }
+    ],
+    "external_threshold": {
+      "source": "Task outcome horizon fixed before build: 365 days from NON_COMPL_PER_BEGIN_DATE",
+      "unit": "days",
+      "value": 365
+    },
+    "split_windows": {
+      "train": {
+        "start": "2016-01-01T00:00:00.000",
+        "end": "2019-01-01T00:00:00.000"
+      },
+      "eval": {
+        "start": "2020-01-01T00:00:00.000",
+        "end": "2021-07-01T00:00:00.000"
+      },
+      "holdout": {
+        "start": "2022-01-01T00:00:00.000",
+        "end": "2023-07-01T00:00:00.000"
+      }
+    },
+    "timing": {
+      "features": {
+        "period": "Q",
+        "published_days_after_period_end": null
+      },
+      "observations": [],
+      "prediction_instant": {
+        "kind": "quarterly_snapshot",
+        "period": "Q",
+        "citation": "SUBMISSIONYEARQUARTER quarterly SDWA extract; publication lag not verified"
+      },
+      "row_selection": {
+        "fields": [
+          "NON_COMPL_PER_BEGIN_DATE",
+          "SUBMISSIONYEARQUARTER"
+        ],
+        "latest_period_used": "latest SUBMISSIONYEARQUARTER present in the extract"
+      }
+    },
+    "evaluation_contract": {
+      "access": "isolated_rows",
+      "cross_row_audit": {
+        "auxiliary_files_review": "Only public/train.csv, public/eval.csv, and private/holdout.csv are written; no auxiliary evaluation files.",
+        "probes": [],
+        "rationale": "Rows are one per community water system, chosen before scoring; prior history uses only earlier begin dates."
+      },
+      "feature_evidence": {
+        "record_id": {
+          "availability": "constructed at build from PWSID and VIOLATION_ID present in the source row",
+          "source": "https://echo.epa.gov/tools/data-downloads/sdwa-download-summary",
+          "status": "verified"
+        },
+        "begin_date": {
+          "availability": "NON_COMPL_PER_BEGIN_DATE, the noncompliance period start",
+          "source": "https://echo.epa.gov/tools/data-downloads/sdwa-download-summary",
+          "status": "verified"
+        },
+        "violation_category_code": {
+          "availability": "set when the violation record is created, at or before the begin date; historical schema availability assumed",
+          "source": "https://echo.epa.gov/tools/data-downloads/sdwa-download-summary",
+          "status": "assumed"
+        },
+        "contaminant_code": {
+          "availability": "recorded with the violation at creation; historical schema availability assumed",
+          "source": "https://echo.epa.gov/tools/data-downloads/sdwa-download-summary",
+          "status": "assumed"
+        },
+        "public_notification_tier": {
+          "availability": "assigned at violation issuance, not after resolution; historical schema availability assumed",
+          "source": "https://echo.epa.gov/tools/data-downloads/sdwa-download-summary",
+          "status": "assumed"
+        },
+        "population_served": {
+          "availability": "same-quarter SDWA_PUB_WATER_SYSTEMS snapshot; may include later inventory updates",
+          "source": "https://echo.epa.gov/tools/data-downloads/sdwa-download-summary",
+          "status": "assumed"
+        },
+        "primary_source_code": {
+          "availability": "groundwater, surface water, or groundwater under the influence of surface water from the same-quarter system snapshot",
+          "source": "https://echo.epa.gov/tools/data-downloads/sdwa-download-summary",
+          "status": "assumed"
+        },
+        "owner_type_code": {
+          "availability": "static inventory attribute in the same-quarter system snapshot",
+          "source": "https://echo.epa.gov/tools/data-downloads/sdwa-download-summary",
+          "status": "assumed"
+        },
+        "pws_type_code": {
+          "availability": "static inventory attribute in the same-quarter system snapshot; retained as the constant community-water-system class",
+          "source": "https://echo.epa.gov/tools/data-downloads/sdwa-download-summary",
+          "status": "assumed"
+        },
+        "state": {
+          "availability": "first two characters of PWSID, encoded at violation creation",
+          "source": "https://echo.epa.gov/tools/data-downloads/sdwa-download-summary",
+          "status": "verified"
+        },
+        "begin_month": {
+          "availability": "derived from NON_COMPL_PER_BEGIN_DATE",
+          "source": "https://echo.epa.gov/tools/data-downloads/sdwa-download-summary",
+          "status": "verified"
+        },
+        "begin_season": {
+          "availability": "derived from NON_COMPL_PER_BEGIN_DATE",
+          "source": "https://echo.epa.gov/tools/data-downloads/sdwa-download-summary",
+          "status": "verified"
+        },
+        "prior_violation_count_3y": {
+          "availability": "computed strictly from earlier-dated records in the latest snapshot; historical completeness assumed",
+          "source": "https://echo.epa.gov/tools/data-downloads/sdwa-download-summary",
+          "status": "assumed"
+        }
+      },
+      "limitations": [
+        "Current-vintage retrospective construction: return-to-compliance dates and statuses reflect the latest SDWIS refresh, not what an analyst would have seen in real time.",
+        "NON_COMPL_PER_END_DATE can be set by a later resolving enforcement action rather than by an actual return to compliance, so the label measures regulatory closure, not water quality.",
+        "Resolved status also covers cases where the rule stopped applying or no further action was needed, which adds label noise unrelated to system behaviour.",
+        "Primacy-agency reporting lag and enforcement culture differ by state, so state identity is partly a target proxy.",
+        "Violations are backfilled and amended, so early-window rows are more heavily revised than recent rows.",
+        "One-row-per-system selection keeps splits independent but discards repeat violations and shrinks the usable sample.",
+        "System attributes come from the same-quarter snapshot and may include inventory updates submitted after the violation began.",
+        "Prior violation counts are computed from the latest snapshot only; missing historical rows would undercount prior history.",
+        "No verified publication calendar was available, so timing.observations is empty and publication lag is not asserted.",
+        "No publisher persistence score column exists; prior_violation_count_3y is a history feature, not a resolution-persistence score."
+      ],
+      "selection": {
+        "evidence": "Violation begin date; only fields whose reported date is on or before the begin date are used",
+        "kind": "prediction_time"
+      },
+      "training_label_timing": "unverified",
+      "use": "retrospective_research",
+      "vintage": {
+        "evidence": "Current EPA ECHO SDWA quarterly extract, not a historical snapshot at each begin date",
+        "kind": "current_snapshot"
+      }
+    }
+  },
+  "references": {
+    "persistence_column": null,
+    "persistence_direction": 1,
+    "entity_columns": [
+      "state",
+      "owner_type_code",
+      "primary_source_code",
+      "population_served"
+    ]
+  },
+  "construction_notes": "Source interpretation: downloaded the EPA ECHO SDWA ZIP, read SDWA_VIOLATIONS_ENFORCEMENT.csv and SDWA_PUB_WATER_SYSTEMS.csv directly from the archive without extracting; selected the latest SUBMISSIONYEARQUARTER snapshot and required systems and violations quarters to align. Deduplicated violations on PWSID plus VIOLATION_ID keeping the first record, which removes the per-enforcement-action row expansion. Restricted to PWS_TYPE_CODE=*** systems from the same-quarter systems table. Health-based categories were interpreted as MCL, TT, and MRDL; monitoring/reporting and other categories were not used to select outcome rows but were retained for prior-history counts. The target is 1 when NON_COMPL_PER_END_DATE is null or later than 365 calendar days after NON_COMPL_PER_BEGIN_DATE, and 0 when it ends on or within 365 days. One earliest eligible health-based violation was selected per PWSID globally across all three windows, not per window, so no system appears in more than one split; this is conservative and avoids entity leakage. Split windows are half-open and the purge periods 2019 and 2021H2 are excluded. prior_violation_count_3y counts distinct violation records with begin dates from 1095 days before through 1 day before the row begin date, using only earlier-dated records. Missing values are left blank, especially population_served; nothing is zero-filled. No holdout data were used to choose the target, features, thresholds, or splits. Missing semantic evidence: no verified water_type_code column was shipped, so primary_source_code represents source-water type; publication dates and lag are not verified, so timing.observations is empty; no persistence score column exists, so references.persistence_column is null. The build is wall-clock conscious: it streams ZIP members in chunks, avoids extraction, scans violations once when possible, and only rescans on a quarter mismatch. Source checks include archive membership, schema resolution, latest-quarter alignment, PWSID format, health-category presence, null-end-date semantics, maturity, split bounds, duplicate IDs, split entity disjointness, target class presence, output header identity, and unit/frame checks for the 365-day horizon, 1095-day prior lookback, and population served."
+}
