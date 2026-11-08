@@ -42,7 +42,13 @@ five-failure allowance. This was raised from three after real builders advanced
 through distinct schema/encoding/runtime failures but exhausted the initial cap
 before full evaluation. It changes repair scheduling, not dataset acceptance or
 worker spending/resource limits. Deferred/rejected historical candidates are not
-automatically reopened. A failed publisher-terms capture gets a bounded research
+automatically reopened. The controller reconciles one specific earlier routing
+defect: an explicit semantic `repair` verdict incorrectly recorded as rejection
+returns to construction, preserving that original attempt and findings. True
+rejections and independently changed decisions remain terminal. Semantic repair
+returns `evaluate -> build`, with at most five failed semantic reviews; each rebuilt
+artifact must pass full qualification/evaluation and a fresh review before publication.
+A failed publisher-terms capture gets a bounded research
 repair within that worker allowance. Only source terms/documentation fields and
 their evidence may change; the builder, download URLs, task and splits stay fixed.
 Preserve the previous proposal, then re-run the unchanged captured-document check

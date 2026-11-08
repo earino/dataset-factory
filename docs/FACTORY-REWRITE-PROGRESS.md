@@ -4,12 +4,14 @@ Specification: [FACTORY-REWRITE.md](FACTORY-REWRITE.md).
 Goal tool confirmed **active** at kickoff 2026-11-08 11:07:00 UTC.
 Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 
-**Current status (17:53 UTC): incomplete, zero replacement publications.** Latest
+**Current status (18:05 UTC): incomplete, zero replacement publications.** Latest
 confirmed production is 286a6fa (17:47:09 UTC, including paid-response reuse and the
 five-failure allowance). UCMR5 build-5 succeeded: construction, full qualification,
 evaluation and packaging completed; all 33 package assets match staged hashes and
-the exact-artifact receipt passes. Its semantic review and public publication
-remain pending. CMS is in bounded terms-access repair. RCRA deferred after its
+the exact-artifact receipt passes. Semantic review subsequently found real
+construction/metadata defects and requested repair. The old controller incorrectly
+rejected that repair verdict; the routing correction is being tested. UCMR is not
+an accepted dataset. CMS is in bounded terms-access repair. RCRA deferred after its
 then-configured worker failures. The full clean-checkout suite passes 938 tests
 (13 skipped); these do not establish the two-source acceptance criterion.
 
@@ -53,7 +55,7 @@ This is an interim assessment, not completion sign-off.
 | Criterion | Observed evidence | Remaining |
 | --- | --- | --- |
 | A1: one durable controller | Scheduled tick, exclusive-lock busy result, durable attempt/job identities across deployments; [cutover](../audits/rewrite/cutover/) and [first cycle](../audits/rewrite/first-cycle/). | Confirm the successful path also resumes from its recorded checkpoints. No forced-process-kill claim. |
-| A2: mechanical worker outcomes | Real failed workers were staged, collected and deleted without model follow-up. UCMR5 build-5 now has a successful staged result; [worker reports](../audits/rewrite/new-source-outcomes/). | Confirm successful-worker collection/cleanup and automatic stage advancement. |
+| A2: mechanical worker outcomes | Failed and successful real workers were staged, collected and deleted without model follow-up. UCMR5 build-5 was deleted at 17:51:16 and advanced to semantic review; [snapshot](../audits/rewrite/snapshot-1757/note.md). | Observe the publication worker on the successful end-to-end path. |
 | A3: bounded inexpensive model | Recorded requested route performed real discovery and generated builders; exact prompts, responses and usage retained. | Write-only construction verified in the first-write-only evidence; successful semantic review remains. |
 | A4: two complete real sources | UCMR5 passed full qualification/evaluation/packaging. STATS19 and RCRA failed qualification; CMS remains in repair. | UCMR5 semantic review/publication and a second materially different complete source, without manual state edits. |
 | A5: trustworthy consumable releases | Full-artifact checks rejected defective artifacts; package/consumer implementation tested in software. | Accepted reproducible releases, measured usefulness, and anonymous full-file verification on both platforms. |
@@ -947,11 +949,52 @@ historical forecasting score. The calendar/identity reference fell back for ever
 validation row; the persistence reference used the training prior on 3,714 rows
 with absent history. These limitations prevent treating those controls as strong
 evidence of general headroom. Train/eval/holdout row counts are 3,874/3,769/2,430.
+The subsequent semantic review found five advertised features empty and other
+construction defects; these prototype measurements do not establish usefulness
+of the intended full-feature dataset or authorize release.
 
 Semantic review, successful-worker cleanup/advancement and public publication are
 not yet confirmed. Scout received the verified result through `/btw`, explicitly
 leaving these steps to the controller; no semantic approval or candidate edit was
 issued. Two complete public datasets remain required.
+
+### Correct semantic repair routing (18:05 UTC)
+
+The [17:57 snapshot](../audits/rewrite/snapshot-1757/note.md) confirms automatic
+collection/deletion of the successful UCMR worker at 17:51:16 and advancement to
+evaluate. Source-14 discovery was live (PID 27623, 19 seconds at snapshot), CMS
+had a repair worker, and reservations were EUR 11.10/20.00.
+
+The [complete UCMR review](../audits/rewrite/ucmr5-evaluate-1/response.json) returns
+**repair**, explicitly saying the source and label should not be rejected. It
+confirms the label direction/units, then identifies four substantive defects:
+five declared features were empty because long-format rows were parsed as column
+names; two checks were hardcoded true; prior-history missingness contradicted its
+description; and effective population exclusions were not clearly documented.
+The initial truncated snapshot's apparent label/units rejection was misleading.
+The measured review used 222.284 seconds, three main-model calls, two tool results,
+and the requested model route. Its evidence export 204cfc6 passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42507709105).
+
+Code inspection identifies the actual routing defect: `Driver.evaluate` returned
+reject for every verdict other than accept, including repair. This was not failure
+allowance exhaustion as Scout's export title inferred. The correction routes a
+concrete repair verdict back to construction, retains the previous artifact/job
+and findings, supplies those findings across subsequent build failures, and asks
+the next review to check them. Successful qualification/evaluation and a new
+semantic acceptance are still required. Five semantic repair verdicts exhaust
+the bound; they cannot cycle indefinitely. A saved review is reused on restart
+under its exact attempt identity instead of calling the model again.
+
+A deterministic reconciliation corrects only the earlier misrouting class:
+candidate rejected, last attempt evaluate/reject, stored verdict repair with
+findings, and unchanged matching reason. It preserves the original attempt,
+records the correction, and cannot reapply it. True rejections, independent later
+decisions and deferred candidates are untouched. This is a specific bug correction,
+not a per-dataset approval or a general reopening of terminal work. The construction
+prompt also forbids literal-true checks and silently empty declared features.
+Focused regressions cover the actual review, restart reuse, bounded reconstruction,
+preserved history, true rejections and changed decisions; all 29 pass.
 
 ## Known findings relevant to implementation
 

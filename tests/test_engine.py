@@ -26,6 +26,26 @@ def source():
 
 
 class EngineTests(unittest.TestCase):
+    def test_semantic_repair_verdict_returns_findings_to_construction_without_acceptance(self):
+        review = json.loads((Path(__file__).resolve().parents[1] /
+                             'audits/rewrite/ucmr5-evaluate-1/response.json').read_text())
+        data = {'source': source(), 'construction': {'build_py': 'def build(output, cache): pass',
+                'quality': {'evaluation_contract': {}}}, 'job': {'id': 'old-build'},
+                'evidence': {'qualification.json': {'ok': True, 'gate_version': '1.6.1', 'failed_checks': []},
+                             'evaluation.json': {}, 'source-checks.json': {}, 'SOURCES.json': {},
+                             'LICENSE-EVIDENCE.json': {}, 'MANIFEST.json': {'artifact_version': 'old'}}}
+        model = Mock(); model.run.return_value = review
+        with tempfile.TemporaryDirectory() as tmp:
+            driver = Driver(tmp, {}, model=model)
+            for _ in range(2):
+                outcome = driver.evaluate({}, {'id': 'review-1'}, data, lambda value: None)
+            self.assertEqual('repair', outcome['status'])
+            self.assertEqual(review, data['pending_semantic_review'])
+            self.assertEqual(1, len(data['semantic_repairs']))
+            self.assertEqual('old', data['semantic_repairs'][0]['artifact_version'])
+            self.assertNotIn('publication', data)
+            model.run.assert_called_once()
+
     def test_terms_repair_reuses_builder_and_keeps_frozen_task_and_prior_evidence(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -111,7 +131,8 @@ class EngineTests(unittest.TestCase):
             previous = {'build_py': 'def build(output, cache):\n    return []\n',
                         'quality': {'target': 'ksi'}, 'references': {}}
             data = {'source': source(), 'construction': previous, 'construction_attempt': 'old',
-                    'failure': {'diagnostic': "KeyError: 'ksi'"}}
+                    'failure': {'diagnostic': "KeyError: 'ksi'"},
+                    'pending_semantic_review': {'findings': [{'issue': 'Pivot long-format concepts'}]}}
             with patch.dict(os.environ, {'FACTORY_BENCHMARK_ROOT': str(harness.parent)}):
                 result = Driver(root, {}, model=Model()).execute(
                     {'stage': 'build', 'data': data}, {'id': 'repair'}, lambda value: None)
@@ -119,6 +140,7 @@ class EngineTests(unittest.TestCase):
             self.assertEqual(previous, context['previous_construction'])
             self.assertEqual(data['failure']['reason'], 'Stop before any worker in this fixture')
             self.assertIn("KeyError: 'ksi'", context['prior_failure'])
+            self.assertIn('Pivot long-format concepts', context['prior_failure'])
             self.assertTrue(calls[0][1]['construction'])
             self.assertEqual('retry', result['status'])
             self.assertFalse((root / 'jobs').exists())

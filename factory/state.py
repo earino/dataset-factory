@@ -15,6 +15,15 @@ def encoded(value):
     return json.dumps(value, sort_keys=True, allow_nan=False, separators=(',', ':'))
 
 
+def record_semantic_repair(data, review, attempt_id):
+    history = data.setdefault('semantic_repairs', [])
+    if not any(item['attempt'] == attempt_id for item in history):
+        history.append({'attempt': attempt_id, 'review': review, 'job': data.get('job'),
+                        'artifact_version': data.get('evidence', {}).get('MANIFEST.json', {}).get('artifact_version')})
+    data['pending_semantic_review'] = review
+    data['failure'] = {'stage': 'semantic_review', 'attempt': attempt_id, 'review': review}
+
+
 class Store:
     def __init__(self, root):
         self.root = Path(root).resolve()
@@ -76,6 +85,26 @@ class Store:
         with self.connect() as db:
             return [self.candidate(row) for row in db.execute('SELECT * FROM candidates ORDER BY created,id')]
 
+    def reconcile_misrouted_reviews(self):
+        """Correct the old repair->reject routing; preserve the original verdict/history."""
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            for row in db.execute("SELECT * FROM candidates WHERE stage='rejected'").fetchall():
+                data = json.loads(row['data']); review = data.get('review', {})
+                if review.get('verdict') != 'repair' or not review.get('findings'):
+                    continue
+                last = db.execute('SELECT * FROM attempts WHERE candidate=? ORDER BY started DESC,id DESC LIMIT 1',
+                                  (row['id'],)).fetchone()
+                if (not last or last['stage'] != 'evaluate' or last['status'] != 'reject'
+                        or json.loads(last['result']).get('reason') != review.get('reason')
+                        or row['reason'] != review.get('reason') or data.get('review_routing_corrected')):
+                    continue
+                record_semantic_repair(data, review, last['id'])
+                data['review_routing_corrected'] = {'attempt': last['id'], 'previous_reason': row['reason'],
+                                                  'corrected_at': time.time()}
+                db.execute("UPDATE candidates SET stage='build',data=?,updated=?,next_run=0,reason=? WHERE id=?",
+                           (encoded(data), time.time(), 'Corrected repair verdict routing; fresh construction and review required', row['id']))
+
     def eligible(self, now=None):
         now = time.time() if now is None else now
         # Finish existing attempts first, then older eligible work. Waiting tasks
@@ -122,7 +151,7 @@ class Store:
     def finish(self, attempt_id, outcome, *, max_attempts=3, now=None):
         stamp = time.time() if now is None else now
         status = outcome['status']
-        if status not in ('done', 'waiting', 'retry', 'reject', 'defer'):
+        if status not in ('done', 'waiting', 'retry', 'reject', 'defer', 'repair'):
             raise FactoryError('Unknown operation outcome')
         scope = outcome.get('retry_scope', 'task')
         if scope not in ('task', 'worker'):
@@ -133,6 +162,8 @@ class Store:
             if not attempt or attempt['status'] != 'running':
                 raise FactoryError('Cannot finish an inactive attempt')
             stage = attempt['stage']
+            if status == 'repair' and stage != 'evaluate':
+                raise FactoryError('Only semantic evaluation can request reconstruction')
             # Model/startup failures and real construction failures have separate
             # bounded allowances. Ordinals remain unique history, not a counter
             # of how many times the builder has actually run.
@@ -146,9 +177,15 @@ class Store:
                 stage = 'rejected'
             elif status == 'defer' or (status == 'retry' and failures >= max_attempts):
                 stage = 'deferred'
+            elif status == 'repair':
+                repairs = 1 + db.execute("SELECT COUNT(*) FROM attempts WHERE candidate=? AND stage='evaluate' "
+                                        "AND status IN ('repair','reject')", (attempt['candidate'],)).fetchone()[0]
+                stage = 'deferred' if repairs >= max_attempts else 'build'
             reason = outcome.get('reason', '')
             if stage == 'deferred' and status == 'retry':
                 reason = 'Attempt limit reached: ' + reason
+            elif stage == 'deferred' and status == 'repair':
+                reason = 'Semantic repair limit reached: ' + reason
             delay = max(0, float(outcome.get('delay', 30 if status == 'waiting' else 60)))
             db.execute('UPDATE candidates SET stage=?,updated=?,next_run=?,reason=? WHERE id=?',
                        (stage, stamp, stamp + delay if status in ('waiting', 'retry') else 0,

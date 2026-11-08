@@ -93,5 +93,44 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(expected, result['stage'])
         self.assertEqual([], self.store.eligible())
 
+    def test_semantic_repairs_require_reconstruction_and_are_bounded(self):
+        self.store.finish(self.store.begin('example')['id'], {'status': 'done'})
+        for number in range(3):
+            self.store.finish(self.store.begin('example')['id'], {'status': 'done'})
+            self.assertEqual('evaluate', self.store.get('example')['stage'])
+            result = self.store.finish(self.store.begin('example')['id'],
+                                       {'status': 'repair', 'reason': 'Incorrect source pivot'})
+            self.assertEqual('deferred' if number == 2 else 'build', result['stage'])
+        self.assertIn('Semantic repair limit', result['reason'])
+        self.assertFalse(any(a['stage'] == 'publish' for a in self.store.attempts()))
+
+    def test_misrouted_repair_correction_preserves_history_and_true_rejections(self):
+        for name, verdict in [('example', 'repair'), ('true-reject', 'reject'), ('changed-reason', 'repair')]:
+            self.store.add(name, {})
+            for _ in range(2):
+                self.store.finish(self.store.begin(name)['id'], {'status': 'done'})
+            attempt = self.store.begin(name)
+            review = {'verdict': verdict, 'reason': 'Source issue', 'findings': [{'issue': 'Wrong pivot'}]}
+            self.store.save(attempt['id'], {'review': review, 'job': {'id': 'finished-build'},
+                'evidence': {'MANIFEST.json': {'artifact_version': 'old-artifact'}}})
+            self.store.finish(attempt['id'], {'status': 'reject', 'reason': 'Source issue'})
+        with self.store.connect() as db:
+            db.execute("UPDATE candidates SET reason='Later independent rejection' WHERE id='changed-reason'")
+        history = self.store.attempts()
+        self.store.reconcile_misrouted_reviews()
+        self.store.reconcile_misrouted_reviews()
+        repaired = self.store.get('example')
+        self.assertEqual('build', repaired['stage'])
+        self.assertEqual(history, self.store.attempts())
+        self.assertEqual(1, len(repaired['data']['semantic_repairs']))
+        self.assertEqual('old-artifact', repaired['data']['semantic_repairs'][0]['artifact_version'])
+        self.assertEqual('repair', repaired['data']['pending_semantic_review']['verdict'])
+        self.assertEqual('rejected', self.store.get('true-reject')['stage'])
+        self.assertEqual('rejected', self.store.get('changed-reason')['stage'])
+        # The misrouted failed review still counts toward the repair bound.
+        self.store.finish(self.store.begin('example')['id'], {'status': 'done'})
+        result = self.store.finish(self.store.begin('example')['id'], {'status': 'repair'}, max_attempts=2)
+        self.assertEqual('deferred', result['stage'])
+
 
 if __name__ == '__main__': unittest.main()

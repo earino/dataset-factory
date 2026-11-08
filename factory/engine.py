@@ -7,7 +7,7 @@ from urllib.parse import urlsplit
 
 from .common import FactoryError, identifier, read_json
 from .model_tasks import ModelTasks, BudgetWait, TaskFailure
-from .state import Store, STAGES
+from .state import Store, STAGES, record_semantic_repair
 from . import construction, task_prompts, worker, worker_artifacts
 from .reconciliation import advance_worker
 
@@ -149,6 +149,8 @@ class Driver:
                                               'attempt': failure['attempt']}
                                 data['construction_text_draft'] = text_draft
                                 save(data)
+                if data.get('pending_semantic_review'):
+                    failure = {'latest_failure': failure, 'semantic_review': data['pending_semantic_review']}
                 prompt = (task_prompts.construction_json_repair(text_draft['response'], text_draft['failure'])
                           if text_draft else task_prompts.construction(data['source'], example, failure, previous))
                 response = self.model.run(attempt['id'], prompt, construction=True)
@@ -198,13 +200,22 @@ class Driver:
         compact = {name: evidence[name] for name in ('evaluation.json', 'source-checks.json', 'SOURCES.json', 'LICENSE-EVIDENCE.json')}
         compact['qualification'] = {k: evidence['qualification.json'][k] for k in ('ok', 'gate_version', 'failed_checks')}
         compact['evaluation_contract'] = data['construction']['quality']['evaluation_contract']
-        review = self.model.run(attempt['id'], task_prompts.review(data['source'],
-                                data['construction']['build_py'], compact), research=True)
-        data['review'] = review; save(data)
+        if data.get('pending_semantic_review'):
+            compact['previous_semantic_review'] = data['pending_semantic_review']
+        review = (data['review'] if data.get('review_attempt') == attempt['id'] else
+                  self.model.run(attempt['id'], task_prompts.review(data['source'],
+                                 data['construction']['build_py'], compact), research=True))
+        data.update(review=review, review_attempt=attempt['id']); save(data)
+        if review.get('verdict') == 'repair':
+            if not isinstance(review.get('findings'), list) or not review['findings']:
+                raise TaskFailure('Semantic repair requires concrete findings')
+            record_semantic_repair(data, review, attempt['id']); save(data)
+            return {'status': 'repair', 'reason': review.get('reason', 'Construction needs semantic repair')}
         if review.get('verdict') != 'accept':
             return {'status': 'reject', 'reason': review.get('reason', 'Unresolved semantic or usefulness concern')}
         if review.get('findings'):
             return {'status': 'reject', 'reason': 'Review claims acceptance but retains unresolved findings'}
+        data.pop('pending_semantic_review', None); save(data)
         return {'status': 'done', 'reason': 'Source interpretation and measured usefulness reviewed'}
 
     def publish(self, candidate, attempt, data, save):
@@ -214,6 +225,7 @@ class Driver:
 
 def seed(root, policy):
     store = Store(root)
+    store.reconcile_misrouted_reviews()
     rows = store.listing()
     pending = sum(c['stage'] in STAGES for c in rows)
     focuses = ('Public infrastructure or environmental operations, with independent observations',
