@@ -124,15 +124,20 @@ def _rows(query, params=(), db=None):
         ) from None
 
 
-def usage_by_kind(config, start, end):
+def usage_by_kind(config, start, end, *, exclude_session_window=None):
     """Measured usage in [start, end), split by session kind and by task class."""
     epoch_start, epoch_end = start.timestamp(), end.timestamp()
+    exclusion = ''
+    parameters = (epoch_start, epoch_end)
+    if exclude_session_window:
+        exclusion = ' and (s.started_at is null or not (s.started_at >= ? and s.started_at < ?))'
+        parameters += tuple(value.timestamp() for value in exclude_session_window)
     rows = _rows(
         "select u.session_id, u.task, u.api_call_count, u.input_tokens, u.output_tokens, "
         "u.estimated_cost_usd, u.cost_status, s.source "
         "from session_model_usage u left join sessions s on s.id = u.session_id "
-        "where u.last_seen >= ? and u.first_seen < ?",
-        (epoch_start, epoch_end),
+        "where u.last_seen >= ? and u.first_seen < ?" + exclusion,
+        parameters,
     )
     buckets = {}
     research_ids = [str(j) for j in (config.get("research_job_ids") or [])]
@@ -351,12 +356,20 @@ def _evaluate(config, moment, late_minutes):
     weekly_tokens = int(config.get("weekly_token_budget") or 0)
     development_until = config.get("development_token_exemption_until")
     development_exempt = False
+    development_window = None
     if development_until:
         try:
             expiry = datetime.fromisoformat(development_until.replace("Z", "+00:00"))
             development_exempt = expiry.tzinfo is not None and moment < expiry
+            if config.get('development_token_exemption_from'):
+                beginning = datetime.fromisoformat(config['development_token_exemption_from'].replace('Z', '+00:00'))
+                if beginning.tzinfo is None or expiry.tzinfo is None or beginning >= expiry:
+                    raise ValueError('Invalid development interval')
+                development_window = (beginning, expiry)
+                development_exempt = beginning <= moment < expiry
         except (ValueError, TypeError, AttributeError):
-            reasons.append("invalid development_token_exemption_until")
+            development_exempt = False
+            reasons.append("invalid development token exemption interval")
     if development_exempt:
         warnings.append(f"Operator-authorized development: weekly token ceiling is not enforced "
                         f"until {development_until}; usage is still measured")
@@ -395,9 +408,15 @@ def _evaluate(config, moment, late_minutes):
     # the cadence outruns what the operator is willing to spend, whatever the cost column says.
     week_usage = usage_by_kind(config, week_start, moment).get("research", {})
     week_tokens = int(week_usage.get("input_tokens", 0)) + int(week_usage.get("output_tokens", 0))
-    if weekly_tokens and week_tokens >= weekly_tokens and not development_exempt:
+    normal_usage = (usage_by_kind(config, week_start, moment, exclude_session_window=development_window)
+                    .get('research', {}) if development_window else week_usage)
+    normal_tokens = int(normal_usage.get('input_tokens', 0)) + int(normal_usage.get('output_tokens', 0))
+    development_tokens = week_tokens - normal_tokens
+    if development_tokens:
+        warnings.append(f'{development_tokens:,} measured development tokens are excluded from the normal-operation weekly ceiling')
+    if weekly_tokens and normal_tokens >= weekly_tokens and not development_exempt:
         reasons.append(
-            f"research used {week_tokens:,} tokens in the last 7 days, at or over the "
+            f"normal-operation research used {normal_tokens:,} tokens in the last 7 days, at or over the "
             f"{weekly_tokens:,}-token weekly budget"
         )
 
@@ -438,6 +457,8 @@ def _evaluate(config, moment, late_minutes):
         "runs_last_7_days": used,
         "runs_weighted_last_7_days": weighted,
         "research_tokens_last_7_days": week_tokens,
+        "normal_operation_tokens_last_7_days": normal_tokens,
+        "development_tokens_last_7_days": development_tokens,
         "weekly_token_budget": weekly_tokens,
         "development_token_exemption_active": development_exempt,
         "sessions_over_token_cap": len(over_cap),
@@ -505,8 +526,9 @@ def resume_block(config, decision):
         token_policy = ("development exemption active" if decision.get("development_token_exemption_active")
                         else "normal-operation ceiling enforced")
         lines.append(
-            f"tokens in the last 7 days: {decision['research_tokens_last_7_days']:,}"
-            f"/{decision['weekly_token_budget']:,} (measured; {token_policy})"
+            f"tokens in the last 7 days: {decision['research_tokens_last_7_days']:,} measured total; "
+            f"{decision.get('normal_operation_tokens_last_7_days', decision['research_tokens_last_7_days']):,}"
+            f"/{decision['weekly_token_budget']:,} normal operation ({token_policy})"
         )
     lines.append(
         f"session limits: <= {config.get('session_max_turns')} tool-calling iterations and "

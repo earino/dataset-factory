@@ -181,6 +181,35 @@ class WeeklyTokenBudgetTests(BudgetTestCase):
         self.assertFalse(expired["development_token_exemption_active"])
         self.assertTrue(any("weekly budget" in reason for reason in expired["reasons"]))
 
+    def test_development_usage_is_not_charged_to_normal_operation_after_expiry(self):
+        development = ('development', 'chat', 10, 30_000_000, 15_000_000, 0.0,
+                       'estimated', 'scout-research')
+        make_state_db(self.state_db, [development])
+        moment = datetime.now(timezone.utc)
+        deadline = moment + timedelta(hours=1)
+        config = self.config(allowance_usd=30.0, sessions_per_week=200,
+                             weekly_token_budget=40_000_000,
+                             development_token_exemption_from=(moment - timedelta(hours=2)).isoformat(),
+                             development_token_exemption_until=deadline.isoformat())
+        expired = budget.evaluate(config, moment=deadline)
+        self.assertTrue(expired['allowed'], expired['reasons'])
+        self.assertFalse(expired['development_token_exemption_active'])
+        self.assertEqual(45_000_000, expired['research_tokens_last_7_days'])
+        self.assertEqual(45_000_000, expired['development_tokens_last_7_days'])
+        self.assertEqual(0, expired['normal_operation_tokens_last_7_days'])
+        normal = ('normal', 'chat', 10, 30_000_000, 10_000_000, 0.0,
+                  'estimated', 'scout-research')
+        make_state_db(self.state_db, [development, normal])
+        with sqlite3.connect(self.state_db) as db:
+            db.execute('update sessions set started_at=? where id=?', (deadline.timestamp(), 'normal'))
+            db.execute('update session_model_usage set first_seen=?,last_seen=? where session_id=?',
+                       (deadline.timestamp(), deadline.timestamp() + 1, 'normal'))
+        decision = budget.evaluate(config, moment=deadline + timedelta(seconds=2))
+        self.assertFalse(decision['allowed'])
+        self.assertEqual(85_000_000, decision['research_tokens_last_7_days'])
+        self.assertEqual(40_000_000, decision['normal_operation_tokens_last_7_days'])
+        self.assertTrue(any('weekly budget' in reason for reason in decision['reasons']))
+
 
 class GateTests(BudgetTestCase):
     def test_an_unconfigured_allowance_refuses_to_wake_the_model(self):

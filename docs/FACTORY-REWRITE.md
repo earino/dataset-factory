@@ -23,6 +23,9 @@ Operator clarification at 15:45 UTC: the 40,000,000-token rolling limit applies
 to normal operation, not development. The current development exemption expires
 at the 19:07 UTC implementation deadline. Keep measuring usage. Bounded model
 tasks, worker spending/resource limits and the elapsed-time budget still apply.
+Keep the development window's measured tokens visible, but exclude sessions started
+within 11:07–19:07 UTC from the normal weekly token calculation even after expiry.
+Sessions started at or after 19:07 are normal operation. Other allowances are unchanged.
 
 Exclude dashboard/website redesign, general-purpose agent frameworks, speculative
 validators, new benchmark protocols, and the deferred chronological adapter.

@@ -727,6 +727,38 @@ Parser fix d80511b passed [CI](https://github.com/earino/dataset-factory/actions
 and 931 clean-checkout tests (13 skipped). Scout's source-12 evidence export passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42501241367).
 
+### Tested gate batch and CMS terms access failure (16:57 UTC)
+
+Batch 08b28f5 passed [CI](https://github.com/earino/dataset-factory/actions/runs/42502349062)
+and has been sent to Scout for deployment at an actual free process/flock boundary.
+Deployment is not yet confirmed. It includes parser d80511b and qualification 1.6.1.
+
+CMS `nursing-home-next-survey-harm-citation` reached worker build-1, which failed
+at 32.5 seconds because its terms URL returned HTTP 403. Staging release 438383146,
+manifest 724574499 and the digest-verified failure are preserved as
+`new-source-outcomes/cms-build-1-*`. This is a source access/evidence failure,
+not a finding that the data are scientifically unsuitable or unredistributable.
+The existing bounded terms-repair path should handle it; no manual retry, approval
+or candidate edit was requested. Next: confirm deployment, observe this normal
+repair and the next discovery, then inspect the first successful full qualification
+and public two-platform consumer results. Zero replacement publications so far.
+
+### Keep development tokens separate after the exemption expires
+
+The first exemption stopped enforcing the token ceiling during development, but
+would have charged the same development tokens to normal operation after 19:07.
+That conflicts with the operator's clarification that the 40M limit is only for
+normal operation. The authorized development window is now explicit: sessions
+started from kickoff 11:07 UTC through (but not including) 19:07 UTC are excluded
+from the normal weekly token calculation. Their full measured usage remains in
+reports and monthly cost accounting. New sessions at the deadline are normal
+operation. Existing worker, priced-cost, session and per-task limits are unchanged.
+This does not classify earlier remediation sessions by guessed titles.
+
+A ledger regression verifies that 45M recorded development tokens remain visible
+and do not block normal operation after expiry, while a new 40M normal-operation
+session at the deadline does trigger the normal ceiling. All 31 budget tests pass.
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;
