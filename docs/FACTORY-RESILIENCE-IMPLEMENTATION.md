@@ -19,12 +19,12 @@ proof of exact reconstruction. Published data, tags and manifests remain frozen.
 | R2: scaffold/answer scrubber | Shipped PR #27, merge `a2578ed`; both exact-commit CI workflows passed; deployed/read back by Scout in `fbc8fee` | Full-worker A4 scrub reports committed in `0cca3b2`; all four refused |
 | R3: measurable claims from bytes | Shipped PR #29 as `3858d4f`; 812 clean-clone tests; exact merge CI green | Full-worker A4 facts/claims committed in `0cca3b2`; three prose false positives fixed and replayed in PR #40 (`9de5544`) |
 | R4: source licence evidence and generation | Shipped PR #30 as `00a773d`; 826 clean-clone tests; both exact merge CI runs green | A4 licence admission refused all four; actual unreadable/conflict captures preserved |
-| R5: autonomous adversarial audit | Implemented in draft on `codex/adversarial-release-audit`: bounded zero-tool model session, composable feature-only attacks, full staged-worker recheck and content-bound queue admission | Initial 870-test clean clone and both CI runs passed. Runtime source is reviewed and pinned; the final integrated suite/CI and deployed preflight are pending. No real eligible package/model acceptance claimed |
+| R5: autonomous adversarial audit | Shipped PR #38, merge `5374fbb`; exact-commit CI passed; current Hermes 0.23.0 source reviewed and pinned | 872 tests passed in clean clone; hosted factory preflight readback pending. No live eligible model audit claimed |
 | Review item 2: publication invariants/rule consolidation | Shipped PR #35 as `c686be9`: strict current-review admission, verified descriptor regression, normative inventory and reconciled publication/licence wording | 836 clean-clone tests and exact merge CI passed; approvals/R5 separate |
 | Review item 3: structured events and generated state | Shipped PR #33 as `817aaa0`, exact CI green | Original 1,364,901 bytes preserved; generated view below 20 KB; Scout deployment readback pending |
-| Review item 4: digest-bound approvals | Draft on `codex/operator-approval-records`: shared guarded two-platform flip, independent verdict/operator-source binding, resumable anonymous verification and all fourteen retrospective records | 886 local tests pass (13 skips); clean clone/CI and deployment pending. No public visibility changes authorized or performed |
+| Review item 4: digest-bound approvals | Shipped PR #39, merge `523d711`; exact-commit CI passed; both visibility entry points guarded and all fourteen historical records retained | Integrated clean clone: 888 tests passed, 13 platform skips. Hosted readback pending; no visibility change performed |
 | Review item 5: deterministic reconciliation | Shipped PR #34 as `e79b0f1`; 785 clean-clone tests, exact merge CI green | First live bookkeep passed at 20:38Z; ledger-bound live receipt committed in 6171970; replay remains conditional |
-| Review item 6: actor identity | In progress | Codex author on new commits; no history rewrite |
+| Review item 6: actor identity | New Codex work uses `Codex <codex@factory.local>`; merged shipping commits verified | The earlier PR #28 identity error is recorded below; no published history rewrite |
 | A4: four blocked packages through full pipeline | Prepared PR #31 and current-evidence refresh PR #36 (`2d5b79a`), exact merge CI green, 836 clean-clone tests; job 004 pin admitted after A2 cleanup | Completed job 004 in `0cca3b2`: all nine stages ran for all four, inputs unchanged, none release eligible; 49 compact reports independently matched staging hashes. Dataset disposition remains the operator’s next decision |
 
 Each item gets a separate branch/PR. This ledger is implementation status, not a passing
@@ -329,3 +329,17 @@ historical dataset acceptance or a live model run. Runtime source is reviewed at
 installed-source capture. The deployed factory preflight remains to be read back. No model or
 provider setting, allowance or schedule was changed. The existing remediation hold
 blocks paid model audits; known defective packages stop at deterministic prerequisites.
+
+## Shipping checkpoint — 2026-11-08
+
+PRs #38, #39 and #41 are merged with passing exact-commit CI. The integrated clean
+clone passes 888 tests (13 platform skips). Compact evidence and remaining work:
+`audits/resilience/2026-11-08-shipping.json`.
+
+Scout received the seventeen-job A2 handoff and the deployed-check commands. The
+acceptance sequence uses the existing one-worker budget and closeout procedure.
+The first eight A2 comparisons and all four A4 comparisons are already recorded;
+completion still requires the remaining ninety configurations and the hosted
+readback. No further engineering is planned unless these checks expose a concrete
+failure. Blocked-dataset repairs, discovery and public changes remain outside this
+remediation work.
