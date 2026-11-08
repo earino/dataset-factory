@@ -21,6 +21,27 @@ rejected after its terms/access failure; a second successful source is still nee
 See the [final runtime snapshot](../audits/rewrite/final-cutoff-snapshot/note.md)
 and the closeout/resume record below. There is no completion sign-off.
 
+## Revised plan after the timebox — 2026-11-08
+
+The operator confirmed that **prediction benchmarks remain the product**. The
+proposal to publish plain curated data instead was withdrawn before implementation.
+[The revised specification](FACTORY-REWRITE.md) keeps A1–A8 unchanged and sizes
+requirements to the benchmark's stated use. Dates, availability and leakage checks
+remain material where they affect that use; unsupported forecasting claims,
+cosmetic review loops and checks on irrelevant excluded rows are not additional
+requirements.
+
+Next work: one authoritative current task description; smaller repairs using saved
+code/evidence; complete UCMR through automatic publication and anonymous consumers;
+then prove the same path on a materially different source. Keep the existing
+controller/workers/publishers. No new framework, reviewer cascade or general cache
+is planned. Record actual stage timing and usage with existing records. The prior
+2–4-hour estimate is not a reliable completion commitment.
+
+This is a documentation change only. The implementation goal and production
+admissions remain paused. No runtime configuration, worker, model call, candidate
+state or release was changed. The revised behavior is not claimed as implemented.
+
 ## Four-hour checkpoint — 2026-11-08 15:07 UTC
 
 Reported to the operator at the agreed checkpoint; continuing without awaiting a

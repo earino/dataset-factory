@@ -1,176 +1,215 @@
-# Autonomous Dataset Factory rewrite
+# Autonomous Dataset Factory: revised implementation specification
 
-Authorized by the operator on 2026-11-08. This specification supersedes conflicting
-legacy workflow requirements for the replacement. Historical findings, published
-artifacts, checksums and tags remain preserved. It does not certify old packages.
+Revised 2026-11-08 after the initial eight-hour run and the operator's clarification:
+**the product is useful prediction benchmarks, with requirements sized to that
+purpose.** A plain data export is not a substitute. This specification supersedes
+conflicting legacy workflow requirements for the replacement. Historical releases,
+checksums, evidence and tags remain intact.
 
-## Outcome and scope
+**Status:** the implementation goal is paused after its timebox. This document
+specifies the next changes; it does not claim they are implemented or restart
+production. The deployed implementation is `6ac5f83`; the initial run produced
+zero complete public replacement benchmarks. See [progress and evidence](FACTORY-REWRITE-PROGRESS.md).
+The prior specification remains available in Git history at `a2a1baa`.
 
-Discover interesting real sources and publish trustworthy, reproducible datasets
-for ML and agentic benchmarking without routine human intervention. Deterministic
-code owns procedures; bounded LLM tasks own research, interpretation, construction
-code and unfamiliar repairs. Initially use the hosted route corresponding to
-`deepseek-v4.1-flash:1017`, recording the actual configured route and observed usage.
+## Outcome and limits
 
-Keep the current lightweight coordinator, Hetzner workers, staging storage,
-GitHub and Hugging Face destinations. Reuse working cloud/transfer/cleanup code,
-substantive validators, source research and construction scripts. Bulk data and
-ML run on workers. The existing benchmark checkout remains read-only.
-The first deployed path uses that runner's binary classification CSV contract;
-new task formats are outside this implementation timebox.
+An agent discovers interesting real-world sources and produces useful, trustworthy,
+reproducible prediction benchmarks for ML and agentic evaluation, through public
+publication without routine human intervention. Known procedures run in code.
+LLMs handle source interpretation, task choice, source-specific construction and
+material semantic questions. Initially use `deepseek-v4.1-flash:1017`; retain the
+actual requested route, usage, failures and task results. Cheap tokens alone do
+not establish a cheap or fast process.
 
-Operator clarification at 15:45 UTC: the 40,000,000-token rolling limit applies
-to normal operation, not development. The current development exemption expires
-at the 19:07 UTC implementation deadline. Keep measuring usage. Bounded model
-tasks, worker spending/resource limits and the elapsed-time budget still apply.
-Keep the development window's measured tokens visible, but exclude sessions started
-within 11:07–19:07 UTC from the normal weekly token calculation even after expiry.
-Sessions started at or after 19:07 are normal operation. Other allowances are unchanged.
+Keep the small coordinator, one worker-launching owner (Scout), SQLite state,
+existing worker isolation/cleanup, staging, and GitHub/Hugging Face publishers.
+Bulk data and ML stay on workers. Reuse the existing binary-classification runner;
+`../harness_benchmark` remains read-only. No new agent framework, scheduler,
+benchmark protocol, dashboard, website project or general patch engine is needed.
+The legacy remediation campaign is not a prerequisite for this replacement.
 
-Exclude dashboard/website redesign, general-purpose agent frameworks, speculative
-validators, new benchmark protocols, and the deferred chronological adapter.
-The old remediation campaign is historical work, not a prerequisite for this
-replacement. Demonstrated defects relevant to the new path must be fixed.
+## What makes a release good enough
 
-## Lifecycle and ownership
+A release answers five practical questions. It does not claim universal safety,
+perfect historical knowledge, optimal model performance or proof of novelty.
 
-`discover -> build -> evaluate -> publish -> published`; substantive failures go
-to bounded repair or rejection, transient failures to bounded retry. Budget/access
-waits are resumable and explicit. One candidate's rejection cannot stall others.
-Task failures and completed construction-worker failures each have the configured
-five-failure allowance. This was raised from three after real builders advanced
-through distinct schema/encoding/runtime failures but exhausted the initial cap
-before full evaluation. It changes repair scheduling, not dataset acceptance or
-worker spending/resource limits. Deferred/rejected historical candidates are not
-automatically reopened. The controller reconciles one specific earlier routing
-defect: an explicit semantic `repair` verdict incorrectly recorded as rejection
-returns to construction, preserving that original attempt and findings. True
-rejections and independently changed decisions remain terminal. Semantic repair
-returns `evaluate -> build`, with at most five failed semantic reviews; each rebuilt
-artifact must pass full qualification/evaluation and a fresh review before publication.
-Construction may correct descriptive text for population, prediction time,
-usefulness, references and existing feature meanings/availability. Review and
-packaging use those corrected descriptions, with originals retained in attempt
-history. Question, target, feature identities and split policy remain unchanged;
-description repair cannot authorize score-driven task changes or waive validation.
-A failed publisher-terms capture gets a bounded research
-repair within that worker allowance. Only source terms/documentation fields and
-their evidence may change; the builder, download URLs, task and splits stay fixed.
-Preserve the previous proposal, then re-run the unchanged captured-document check
-and all artifact checks. Unresolved terms are rejected. A model startup failure does not consume a worker repair;
-attempt identities and all failure evidence remain durable. Resource and spending
-limits still apply across both categories.
-Construction has six model turns; research has twelve. Model tasks have a
-ten-minute wall-clock bound within the existing session allowance. Live discovery
-and construction calls hit the former 330-second outer limit; a discovery response
-was cut off mid-JSON and successful write calls approached that limit. More time for
-one response avoids restarting paid work; attempt limits remain unchanged.
-Licence excerpts are matched against captured publisher bytes,
-normalizing HTML spacing and honoring explicit omissions only when all verbatim
-spans occur in order. Semantic applicability remains part of source review.
-An exit-1 runtime wrap-up may supply usable construction code. Retain it only
-when its JSON/AST/descriptor contract and measured requested-model route pass;
-record the nonzero exit and still require every artifact check and semantic
-review. This is proposal reuse, never publication acceptance. A nonzero research
-or review call may retain a complete negative `defer`/`reject` verdict with a reason
-and verified model usage, avoiding another search for the same negative outcome.
-Positive `ready`/`accept` verdicts still require a zero exit.
+1. **What are we predicting, and why is it useful?** State the target, population,
+   input features, prediction setting and outcome horizon. Establish that labels
+   and transformations mean what the release says. Keep a concrete use case;
+   novelty or an elaborate story is not an additional release gate.
+2. **Is the test valid for that setting?** Use appropriate disjoint train,
+   development and final-scoring splits. Keep holdout labels and answer scaffolds
+   outside evaluated agents' inputs. Check actual leakage paths, including joins,
+   duplicated entities/events and cross-row exposure when applicable. A timestamp
+   or identifier is not automatically leakage; its role in the task matters.
+3. **Does it work as a benchmark?** Run the existing runner on the exact artifact,
+   retain a simple reference baseline and measured usefulness evidence. Report
+   class balance, missingness and relevant coverage. No universal minimum row
+   count, target AUC band or exhaustive model search. A degenerate task or an
+   invalid score needs repair; an unremarkable score is not itself a defect.
+4. **Can others use and reproduce it?** Preserve source references/rights,
+   acquisition and construction code, dependencies, input identities, meaningful
+   validation and limitations. Verify complete files, schema and hashes on the
+   worker. Public consumers must load the declared bytes on both destinations.
+5. **May we distribute it?** Establish readable, applicable source terms, preserve
+   attribution and upstream restrictions, and use the documented standing policy.
+   A government domain alone is not proof of permission. A network access failure
+   is not proof of incompatible rights; use bounded access repair or defer it.
 
-A small SQLite store owns operational candidate/attempt/job/artifact state. Git
-holds code, source evidence and compact exported results, not live transactional
-coordination. Updates are atomic; interrupted operations are reconciled using
-stable identities before retry. Notes never act as executable state.
-Resume admitted attempts first; among new eligible steps, finish publication and
-semantic review before more construction or discovery. Keep oldest-first order
-within a stage, and honor retry delays so waiting work cannot block other candidates.
-`STATE.md` remains the legacy repository projection; replacement runtime state is
-read with `factory status`, not inferred from the historical candidate queue.
+### Dates and claims
 
-`python3 -m factory run --once` performs eligible work through a deterministic
-controller, invoked by the existing no-agent scheduler. `status` explains current
-state and next work without starting a model. Normal worker completion, transfer
-verification, cleanup, retries and publishing do not need LLM calls. Preserve the
-independent expiry sweeper. Only Scout's deployed coordinator launches workers.
+Dates are a means to validate a task, not a separate certification project. A
+split-boundary error, use of an outcome recorded after prediction as an input, or
+training on labels unavailable at a claimed historical cutoff is material. A
+parser disagreement about equivalent dates is a software bug. Missing publication
+lags in an administrative source do not justify inventing dates or rejecting a
+clearly scoped retrospective task automatically.
 
-Model tasks receive stage-specific context and structured outputs:
-- Discovery: source, access/terms evidence, useful question, target and timing.
-- Build/repair: construction code plus tests against source examples and failure
-  diagnostics. Execute generated code in the existing worker isolation.
-- Semantic review: assess source interpretation, prediction-time assumptions,
-  usefulness and concrete concerns; return findings, not ceremonial approvals.
+For a historically faithful forecasting claim, establish input and label
+availability for that claim, including source vintages. For a retrospective
+prediction benchmark, state what timing is assumed or unknown and check the
+actual declared setting. Do not call it verified real-time forecasting. Known
+answer leakage remains a defect in either setting. Follow the distinction already
+made in [PREDICTION-CONTRACT.md](PREDICTION-CONTRACT.md); do not require forecasting
+proof for a benchmark that makes no forecasting claim.
 
-Malformed or failed model results are bounded failures. Model prose cannot waive
-checks, alter budgets, authorize itself, or substitute for measured results.
-Use the existing supported Hermes runtime rather than inventing an agent runtime.
-Research and semantic review use the supported web-reading toolset. Construction
-and JSON-format repair are write-only, using the supplied evidence and exact
-previous proposal. A small adapter calls the installed Hermes Python constructor
-with an explicit empty tool list, because its CLI argument parser substitutes
-default tools for empty input. It preserves native turn/time bounds and accounting;
-it does not implement another agent runtime. Recorded tool execution in a write-only
-task is a failure. An unknown toolset alias is never used. Live six-turn repairs
-spent every turn on documentation reads without producing code; increasing that
-limit did not fix the missing writing capacity.
+### What blocks publication
 
-## Dataset acceptance and standing publication policy
+Block on a concrete defect in the five questions above: unsupported distribution
+rights, wrong labels or units, materially false feature/population descriptions,
+known answer exposure, invalid splits/scores, unusable files or mismatched bytes.
+Uncertainty blocks the claim that depends on it; a narrower honest claim is
+permitted when the prediction task remains useful and valid. Disclosure cannot
+make a known-invalid task valid.
 
-The operator authorizes automatic publication of new versions meeting this policy
-within existing configured spending/resource limits and destination namespaces.
-Per-dataset operator transcripts/approvals and operator-relayed audits are removed
-from the replacement. Keep credentials separate from generated code and data.
-New repositories use the existing `earino` GitHub and Hugging Face namespaces and
-the reserved `factory-` prefix. Existing repositories without the replacement's
-ownership/manifest identity are not adopted or made public.
+Each blocking finding identifies the affected claim or artifact, supporting
+evidence, and the needed correction. Cosmetic prose, hypothetical concerns with
+no task-specific basis, checks on excluded records that cannot affect the task,
+and demands to prove every possible property are not additional release gates.
+Generated assertions that always return true are not evidence. A check should
+measure its stated property, not merely repeat the builder's declaration.
 
-Acceptance requires readable compatible source terms with attribution; a clear
-prediction question and target; evidence for feature/label availability and stated
-evaluation scope; valid, non-overlapping splits appropriate to that scope; full-row
-qualification of the exact artifact; no demonstrated label reconstruction from
-shipped features or answer scaffolds; reproducible construction; valid baselines
-and evidence of task usefulness; and consumer loading of the accepted bytes.
-Existing scientific checks are retained or consolidated, not bypassed to ship.
-Unknown semantic concerns lead to repair/rejection, not universal safety claims.
-Readable source-rights evidence can establish an applicable statutory public-domain
-basis; a separate publisher licence grant is not always necessary. Research and
-review must establish applicability to the actual records, preserve third-party
-rights and territorial limits, and avoid treating a government domain as proof.
-The captured-source evidence and all dataset acceptance checks still apply.
-Gate 1.6.1 corrects date-versus-midnight comparisons and applies the existing
-retrospective policy to explicitly administrative event data without inventing
-reporting periods or publication lags. Such timing is reported as unverified;
-known timing contradictions, historical forecasting requirements, full-artifact
-leakage checks and semantic review remain binding.
+Reviewers may discover new material defects during repair. They should check the
+existing findings and changed assumptions first, reuse established evidence, and
+avoid restarting broad source research or adding unrelated requirements. Retain
+one bounded semantic review stage; do not add a reviewer cascade or human sign-off.
 
-Use one immutable artifact manifest and measured results to generate documentation,
-dataset cards and both destination uploads. Source/build/validator identities are
-recorded for reproducibility; unrelated code edits do not require renewed prose.
-Never mutate frozen historical bytes/tags. New corrections get new versions.
-GitHub and Hugging Face retries resume independently; publication is complete only
-when anonymous consumers verify the declared files on both. Websites are outside
-the critical path and outside this project's acceptance criteria.
-One publication worker reuses the existing GitHub transfer and Hugging Face
-publisher, then tags, changes visibility and performs anonymous full-file loading.
-It receives only accepted, digest-bound assets. Version tags bind the entire
-package inventory; the qualification digest separately identifies the scored data.
+## Smaller tasks and one current benchmark description
 
-## Implementation and migration
+The existing failure pattern was a large generated builder/descriptor followed by
+large regenerations. The replacement should retain source-specific generated code,
+but make a repair operate on the smallest affected component.
 
-1. Add authoritative state and controller; make worker completion mechanical.
-2. Connect bounded model discovery/build/review and worker evaluation.
-3. Connect generated packaging and automatic two-destination publication.
-4. Run real sources end-to-end, exercise recovery, deploy and retire old schedulers.
+- **Research:** return source evidence, an interesting task and the specific
+  assumptions needed to construct it. Reuse captured evidence. Resolve missing
+  source facts with a focused research task rather than asking the constructor
+  to browse again.
+- **Construct:** generate the source-specific acquisition/transform/label logic
+  and the semantic declarations that cannot be derived. Code already handles
+  packaging, hashes, row counts, qualification execution, baselines and transfer;
+  the model should not reimplement those procedures.
+- **Repair:** supply the exact saved proposal, source evidence and concrete failure.
+  Return only changed structured fields or the affected source file where practical.
+  Reuse unchanged code and evidence. A full file is acceptable when it is the
+  smallest reliable edit; no new patch language or general editing framework.
+- **Review:** judge meaning and actual benchmark usefulness from source evidence,
+  code and measured results. Return accept, material repair, or rejection with
+  reasons. Deterministic checks do not need another model's approval.
 
-Implement on an isolated branch. Scout owns hosted execution, reports current
-capabilities/budgets and source opportunities; Codex owns implementation/integration.
-Do not run old and new launchers concurrently. Preserve existing candidate records
-as history; import only explicit eligible candidates, never silently approve old
-blocked packages. Take a compact operational backup before cutover. If rollout
-fails, stop new work while retaining cleanup and durable results.
+One current task description supplies construction, review, manifest and public
+documentation. Discovery's proposal and later revisions remain history, not
+competing editable authorities. Use the existing candidate record and formats;
+consolidate duplicated fields at their current boundaries before introducing a
+new schema. Generate mechanically derivable descriptors from that record and
+measured results. A corrected feature meaning must reach the release without
+another model rewriting it. Task, target and split changes remain explicit and
+versioned; do not tune benchmark selection to agent outcomes or holdout scores.
 
-Tests prioritize real producer/consumer contracts, state restart behavior and
-source transformations. Small synthetic tests prove code behavior only. Live
-acceptance uses actual data and actual providers. Verify suite changes in a clean
-checkout and inspect CI for each pushed commit before reporting it complete.
+Keep dependency-aware reuse simple: retain the existing immutable input/artifact
+identities. Changed data or transformation logic requires full-artifact checks
+and updated measurements. A text-only correction does not require model code
+regeneration or rerunning unrelated numeric work; verify the corrected meaning
+against the existing data and bind the new package to its evidence. Never edit
+frozen releases in place or apply a receipt to different bytes. Where the existing
+implementation cannot yet establish safe reuse, rerun the required checks rather
+than introducing a generic cache system.
+
+## Controller and publication
+
+Keep `discover -> build -> evaluate -> publish -> published`. The deterministic
+controller owns admission, stable attempt/job identities, retries, collection,
+cleanup, publication and restart reconciliation. SQLite owns operational state;
+Git holds code and compact evidence. Notes are not executable state. The existing
+script-only scheduler invokes `python3 -m factory run --once`; `factory status`
+reads replacement state. `STATE.md` remains the historical workflow projection.
+
+Resume admitted work first, then finish publication/review ahead of fresh builds
+or discovery. A transient access or runtime fault retries or defers; it does not
+become a claim that the dataset is scientifically unsuitable. Rejection/refill
+remains automatic. Distinguish model startup/format failures from worker and
+semantic failures, preserving previous responses so paid work is not discarded.
+Bound retries within configured allowances; do not raise them to hide a loop.
+
+Use the existing Hermes adapter and explicit write-only construction capability.
+The current configuration is six construction turns, twelve research turns and a
+ten-minute task bound, with configured five-failure limits. These are deployed
+settings, not evidence that they are optimal. Measure before changing them. Keep
+native time/turn accounting; no speculative runtime replacement.
+
+Standing policy authorizes automatic publication in owned `earino` GitHub and
+Hugging Face `factory-` repositories after acceptance. No per-dataset operator
+approval. Never adopt an unrelated repository or publish known-defective artifacts.
+Keep write credentials separate from inference credentials and generated code.
+The existing publisher moves bulk accepted files on a worker, resumes each
+platform safely, binds the version tag to the complete manifest, changes visibility
+and verifies anonymous full-file consumption on both platforms. A staging upload
+or a public repository alone is not completion. Websites remain outside scope.
+
+## Next implementation sequence
+
+**First: finish one real benchmark.** Start with UCMR's retained source and build-8
+attempt; inspect its saved result before spending another model call. Trace only
+its path through `factory/engine.py`, `factory/construction.py`, task prompts,
+packaging and `factory/automatic_publication.py`. Correct description ownership
+and the smallest demonstrated repair inefficiency on this path. Check worker-side
+source access/schema early within existing execution where that avoids a costly
+build; do not create a new preflight service or stage.
+
+Publish a corrected UCMR version automatically to both destinations and verify it
+as an anonymous consumer. Do not hand-edit candidate state, accept the known wrong
+build-7 descriptions, or change validation to rescue UCMR. If a substantive source
+problem exhausts bounded repair, record it and use another suitable candidate.
+During this first implementation step, avoid expanding the discovery campaign;
+this is a work priority, not a new permanent admission gate.
+
+**Second: prove generality.** Use normal discovery for a materially different
+source and complete the same path without source-specific orchestration or human
+state changes. Repair shared components only where the second run demonstrates a
+gap. ClinicalTrials' recorded rejection and historical failures remain evidence;
+they are not silently reset to fill the demonstration.
+
+**Third: verify unattended repetition and sign off.** Retain observed recovery and
+cleanup evidence, verify restart/retry across the complete path and observe
+scheduled operation with old launchers still disabled. Map A1–A8 to actual results.
+No milestone requires routine human approval, and no further feature phase follows
+once the acceptance criteria are met.
+
+For both sources, record elapsed time by stage, model calls/input/output tokens,
+worker time, retries and their causes using existing task/job records. Separate
+implementation/deployment delays from normal operation and allow for overlapping
+work. Report time and measured usage per completed benchmark, not test count or
+an invented overhead percentage. Use these observations to judge the model route
+and task sizing; do not invent a latency target without data or make telemetry a
+new project.
+
+Tests focus on the actual boundaries that failed: repair routing, saved-response
+reuse, description propagation and publication restart/consumer contracts. Keep
+existing relevant checks; remove or narrow a rule only with a concrete explanation
+of why it does not test the stated task. No new validation campaign, blanket gate
+bypass, or acceptance based on fixtures. Verify suite changes in a clean checkout
+and inspect exact-commit CI after every push. Maintain the progress document as
+work proceeds, separating implemented changes from observed release outcomes.
 
 ## Acceptance criteria
 
@@ -185,16 +224,26 @@ checkout and inspect CI for each pushed commit before reporting it complete.
 | A7 | An unattended scheduled run is observed; old research/follow-up production launch paths are disabled; independent cleanup remains active. |
 | A8 | Changes pushed, exact-commit CI passes, progress record links evidence and limitations for every criterion. |
 
-## Timebox and scope control
+## Timebox, development accounting and present status
 
-Kickoff: **2026-11-08 11:07:00 UTC**. Four-hour report: **15:07:00 UTC**.
-Eight-hour deadline: **19:07:00 UTC**. Report at four hours and continue without
-waiting. At deadline, safely wind down, retain resumable state and report unmet
-criteria and estimated effort; do not claim completion or weaken checks.
-Worker spending/resource limits and bounded model tasks remain binding. The normal
-weekly inference token ceiling is exempt during this development timebox, as
-explicitly authorized above.
+The initial run started 2026-11-08 at 11:07 UTC and ended at 19:07 UTC, with its
+four-hour report at 15:07. It did not meet A4/A5. Admissions were disabled at
+19:06:21, the scheduled cutoff confirmed that setting, and final inventory at
+19:08:46 showed no live workers or pending collection. Cleanup remains available.
+This documentation revision does not grant a new implementation timebox or resume
+the goal. The earlier 2–4-hour completion estimate is not a reliable commitment;
+the first public release remains unproven.
 
-Every change must serve A1-A8 or fix a demonstrated defect on that path. Defer other
-ideas in the progress record. Record justified design changes here explicitly.
-Completion is an evidence-based Codex sign-off, not an additional human gate.
+The 40,000,000-token ceiling applies to normal operation, not development. Keep
+measuring development usage and exclude it from normal-operation accounting.
+The deployed exemption currently records the initial 11:07–19:07 window; a resumed
+development session needs its actual window recorded before admission, without
+raising worker spending/resource limits. Do not classify development as normal
+operation merely because the first timebox expired.
+
+On resumption, Scout remains the sole launcher. Inspect saved results and enable
+the replacement's local flag for the resumed work; the legacy R1–R4 human approval
+hold is not a prerequisite. Preserve cleanup, stable attempts and historical
+artifacts. Defer unrelated improvements. Completion means all A1–A8 have observed
+evidence, including two real public prediction benchmarks, not code completion or
+a simpler data-export substitute.
