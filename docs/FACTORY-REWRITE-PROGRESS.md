@@ -276,6 +276,27 @@ Clean checkout: 924 tests passed (13 skipped). The preceding evidence-only commi
 and Scout's turn-exhaustion export passed
 [CI](https://github.com/earino/dataset-factory/actions/runs/42490155457).
 
+### First full-artifact qualification attempt (14:41:37 UTC)
+
+STATS19 build-3 corrected its target header and reached the full gate. It exited 1
+after 256.8 seconds, not OOM (staging release 438306422). The digest-verified report
+and failure are in `audits/rewrite/new-source-outcomes/`. Four checks failed:
+availability status values used `documented` instead of the gate's supported
+statuses; training-label timing was `post_outcome` rather than an explicit
+unverified retrospective assumption; timing observations included non-date text;
+and worker-finalized event counts used full IDs while the gate groups key[:10].
+
+The deterministic finalizer now matches the gate's existing conservative grouping,
+including empty keys. A producer/consumer test checks agreement against the actual
+gate; the gate itself is unchanged. Construction instructions specify the existing
+status/timing schema and date-key grouping. Repairs receive failed check details
+instead of a report dominated by passing evidence and hashes; full evidence stays
+in the store. Unknown dates must stay unknown, and retrospective assumptions must
+remain explicit. No new scores or accepted artifacts follow from this failed run.
+The counter and diagnostic fixes passed 926 clean-checkout tests (13 skipped).
+Write-only adapter `61b7da1` passed
+[CI](https://github.com/earino/dataset-factory/actions/runs/42490660352).
+
 ## Known findings relevant to implementation
 
 - Standard upload ledger assets omitted names while the audit collector required them;

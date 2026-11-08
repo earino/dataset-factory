@@ -72,6 +72,15 @@ Return ONLY JSON {"verdict":"accept"|"repair"|"reject", "reason":"...",
 def construction(source, quality_example, failure=None, previous=None):
     # Retain full diagnostics in operational state; send only a bounded excerpt
     # to the repair task so one failed report cannot consume the entire context.
+    if isinstance(failure, dict) and isinstance(failure.get('diagnostics'), dict):
+        diagnostics = dict(failure['diagnostics'])
+        report = diagnostics.get('qualification.json')
+        if isinstance(report, dict):
+            diagnostics['qualification.json'] = {
+                'ok': report.get('ok'), 'gate_version': report.get('gate_version'),
+                'failed_checks': report.get('failed_checks'),
+                'results': [r for r in report.get('results', []) if r.get('ok') is not True]}
+        failure = {**failure, 'diagnostics': diagnostics}
     failure = json.dumps(failure, sort_keys=True)[:12000] if failure is not None else None
     return '''Write a small complete Python builder for this real source and frozen task.
 This is the write-only phase: no tools are available. Use the supplied source
@@ -115,6 +124,14 @@ retrospective_research unless measured full-row availability supports forecastin
 The controller fills name, target from your descriptor, positive_label=1, splits,
 positive_events, expected_duplicate_ids and meta.json from the produced CSVs. You
 must provide time_column, event_key_column and fixed half-open split_windows.
+event_key_column names the event date/time used for conservative day clusters:
+the existing gate groups nonempty key[:10], not complete record identifiers.
+feature_evidence.status must be "verified", "assumed" or "unverified" (never
+"documented"). Without a full-row availability ledger, retrospective_research
+requires training_label_timing="unverified" and explicit limitations; "post_outcome"
+does not establish when training labels were available. timing.observations contains
+only actual ISO period_end/published dates. Keep unknown dates in assumptions,
+not in date fields, and never invent observations to satisfy a check.
 For a domain threshold, include real unit/frame checks with kind="unit" in the
 returned source checks; no fabricated receipt.
 Do not include adversarial_battery; the actual gate writes it after inspecting rows.

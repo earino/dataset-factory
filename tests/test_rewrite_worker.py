@@ -24,6 +24,24 @@ class Response(io.BytesIO):
 
 
 class RewriteWorkerTests(unittest.TestCase):
+    def test_finalize_counts_agree_with_existing_gate_for_long_event_keys(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            extract = Path(tmp) / 'extract'
+            shutil.copytree(ROOT / 'skills/dataset-qualification/fixtures/corrected', extract)
+            quality = read_json(extract / 'quality.json')
+            quality['event_key_column'] = 'incident_number'
+            quality = dataset_run.finalize(extract, {'quality': quality},
+                {'dataset_id': 'counter-fixture', 'task': {'question': 'fixture', 'split_policy': 'fixture'}})
+            spec = importlib.util.spec_from_file_location('counter_gate',
+                ROOT / 'skills/dataset-qualification/scripts/qualify_dataset.py')
+            gate = importlib.util.module_from_spec(spec); spec.loader.exec_module(gate)
+            columns = {name: gate.read_columns(extract / path) for name, path in quality['splits'].items()}
+            report = gate.Report(extract); gate.check_splits(quality, report, columns)
+            check = next(r for r in report.results if r['check'] == 'splits.distinct_events_match_rows')
+            self.assertTrue(check['ok'], check)
+            self.assertLess(quality['positive_events']['eval']['distinct_events'],
+                            quality['positive_events']['eval']['positives'])
+
     def test_declared_target_mismatch_reports_headers_before_measurement(self):
         with tempfile.TemporaryDirectory() as tmp:
             extract = Path(tmp)

@@ -51,7 +51,12 @@ def finalize(extract, descriptor, source):
                 count += 1
                 if label == '1':
                     positives += 1
-                    events.add(row[quality['event_key_column']])
+                    # Match the existing gate's conservative event-day grouping,
+                    # including its handling of empty keys. Do not claim a full-ID
+                    # count where qualification will recompute date prefixes.
+                    key = row[quality['event_key_column']]
+                    if key:
+                        events.add(key[:10])
             rows[split] = count
             rates[split] = positives / count if count else 0
             quality['positive_events'][split] = {'positives': positives, 'distinct_events': len(events)}

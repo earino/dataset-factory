@@ -26,6 +26,16 @@ def source():
 
 
 class EngineTests(unittest.TestCase):
+    def test_repair_context_keeps_failed_checks_instead_of_large_passing_evidence(self):
+        from factory.task_prompts import construction
+        report = {'ok': False, 'failed_checks': ['late-failure'], 'results': [
+            {'ok': True, 'evidence': 'x' * 30000},
+            {'ok': False, 'check': 'late-failure', 'detail': 'correct the event count'}]}
+        prompt = construction(source(), {}, {'diagnostics': {'qualification.json': report}})
+        self.assertIn('correct the event count', prompt)
+        self.assertNotIn('x' * 100, prompt)
+        self.assertEqual(2, len(report['results']))
+
     def test_build_repair_receives_exact_previous_proposal_and_failure(self):
         calls = []
         class Model:
