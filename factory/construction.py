@@ -58,6 +58,18 @@ def describe_task(source, response):
     clarified = descriptions.get('features', [])
     if not isinstance(clarified, list):
         raise FactoryError('Feature descriptions must be a list')
+    # Discovery may describe groups (e.g. component ratings); construction
+    # resolves them into physical columns. A complete description of exactly
+    # the declared output features becomes the current public contract.
+    names = [f.get('name') if isinstance(f, dict) else None for f in clarified]
+    shipped = quality.get('features', [])
+    concrete = (bool(names) and all(isinstance(n, str) for n in names)
+                and isinstance(shipped, list) and all(isinstance(n, str) for n in shipped)
+                and len(names) == len(set(names)) == len(shipped) and set(names) == set(shipped))
+    if concrete:
+        by_name = {f['name']: f for f in clarified}
+        updated['task']['features'] = [{**indexed.get(n, {}), **copy.deepcopy(by_name[n])} for n in shipped]
+        indexed = {f['name']: f for f in updated['task']['features']}
     seen = set()
     for feature in clarified:
         if not isinstance(feature, dict) or feature.get('name') not in indexed or feature['name'] in seen:
@@ -81,6 +93,11 @@ def describe_task(source, response):
             raise FactoryError('Feature availability evidence must be an object: ' + name)
         if isinstance(evidence.get('availability'), str) and evidence['availability'].strip():
             feature['availability'] = evidence['availability']
+    if concrete:
+        for name, feature in indexed.items():
+            if any(not isinstance(feature.get(field), str) or not feature[field].strip()
+                   for field in ('meaning', 'availability')):
+                raise FactoryError('Concrete feature needs meaning and availability: ' + name)
     return updated
 
 

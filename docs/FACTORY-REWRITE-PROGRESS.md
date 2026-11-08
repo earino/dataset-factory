@@ -4,16 +4,17 @@ Specification: [FACTORY-REWRITE.md](FACTORY-REWRITE.md).
 Goal tool confirmed **active** at kickoff 2026-11-08 11:07:00 UTC.
 Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 
-**Current implementation status (20:51 UTC): incomplete; UCMR accepted,
-publication repair in progress.** The new run was authorized at 19:58:14 UTC
-without a new elapsed-time limit. `fdaf39b` is deployed, 948 clean-checkout tests
-passed (13 skipped), and exact-commit CI passed. Build-9 passed full qualification,
-byte-bound package checks and semantic review. The first publisher transferred
-and verified both private destinations, then failed during the public-release
-step; no anonymous consumer success is established. A small safe failure receipt
-is being added to identify that exact operation. Bridge-inventory deterioration
-is the materially different second-source path; its saved construction is under
-ordinary repair. Detailed current evidence appears in the appended entries below.
+**Current implementation status: 1 of 2 required public benchmarks verified.**
+UCMR `v-4a630108a6e75a6b` is public on
+[GitHub](https://github.com/earino/factory-ucmr5-first-sample-pfas/releases/tag/v-4a630108a6e75a6b)
+and [Hugging Face](https://huggingface.co/datasets/earino/factory-ucmr5-first-sample-pfas).
+The publication worker anonymously verified all 33 files and loaded every split
+on both platforms; root independently fetched identical public manifests without
+authentication. `948e3ce` is deployed and its publication retry succeeded after the
+tag-call correction. The bridge proposal is the second-source path; its literal
+feature-naming failure is corrected in code and the saved proposal can be reused.
+That correction passes 953 clean-checkout tests (13 skipped); deployment and the
+bridge's full worker validation/publication are next. The goal is incomplete.
 
 The first eight-hour run ended incomplete and was safely wound down; its cutoff
 and final resource inventory remain preserved as historical evidence. The tool's
@@ -1444,3 +1445,61 @@ was discarded, so its recorded error class remains UploadError; do not rewrite
 historical evidence as a captured TypeError. Both fixes deploy together so another
 provider failure retains its safe operation/error/status details.
 Primary source: https://github.com/huggingface/huggingface_hub/blob/main/src/huggingface_hub/hf_api.py
+
+## Bridge feature vocabulary and paid-proposal reuse — 2026-11-08
+
+[Bridge build-1](../audits/rewrite/bridge-source15-build1/) and
+[build-2](../audits/rewrite/bridge-source15-build2-repair/) expose a concrete
+interface error: discovery names groups (component_ratings, age, ownership),
+whereas construction names the twelve actual CSV feature columns. Both paid
+proposals failed the literal-name rule before any worker measurement. The saved
+build-2 descriptor fully describes its declared output columns; its target,
+question and split policy are unchanged. This is not evidence of feature leakage
+or score-driven selection. No benchmark number is quoted from this unqualified proposal.
+
+Construction now accepts complete descriptions matching exactly the declared
+physical features, updates the single current task description, and retains the
+original group plan in task history. Review receives that plan plus construction
+notes to judge source interpretation and input validity. Partial descriptive
+corrections still refer to existing names; duplicate/undeclared/incomplete concrete
+contracts still fail. The research plan is context, not an additional obligation
+to implement every suggested input group.
+
+A proposal rejected solely by the previous feature-description rule is reused
+mechanically if full construction validation and current description validation
+now pass. It proceeds through a new ordinary attempt and all worker/semantic gates;
+no model call or candidate-state edit is needed. If it is still invalid, ordinary
+bounded model repair remains available rather than another validation-only loop.
+Tests exercise both real saved bridge responses, unchanged paid code, history,
+original-plan review context, invalid descriptions and the fallback repair path.
+All 19 engine tests pass locally. Full clean-checkout and CI checks follow.
+
+## First complete public benchmark — 2026-11-08
+
+[Publication receipt](../audits/rewrite/ucmr-publication-success/publication.json)
+and [worker manifest](../audits/rewrite/ucmr-publication-success/manifest.json)
+prove publish-3 succeeded in 143.4 seconds, exit 0. Both anonymous consumers
+verified 33 files and loaded train=3,874 / eval=3,769 / holdout=2,430 rows under
+`v-4a630108a6e75a6b`, artifact
+`1bf9c8af47a3cd62f65faa7f22efd3fd66ddc1f8ba0fbb0762b391cf6fb04a10`.
+The uploaded publication.json receipt was independently hash/size checked.
+Root also fetched each platform's public tagged MANIFEST.json without credentials:
+[anonymous checks](../audits/rewrite/ucmr-publication-success/anonymous-manifest-check.json).
+Both equal the accepted manifest, SHA256
+`8ab0f948b992f10527fad689bd14062efe0393b7a2475e6a81aeb12abf94da53`.
+
+Publication retry preserved the same GitHub release 438509765 and all 35 remote
+asset IDs across attempts 1, 2 and 3. The successful HF retry skipped all 35
+already uploaded files: [recovery evidence](../audits/rewrite/ucmr-publication-success/recovery.json).
+This is real automatic retry across a deployed bug fix, without a manual flip,
+new construction, or model-driven publishing decision. The second failure came
+from a pre-fix bundle already admitted before the pause; the next attempt used
+the corrected keyword-only call. The tag-call fix passed 951 clean tests/13 skips
+and [CI](https://github.com/earino/dataset-factory/actions/runs/42522742179);
+the diagnostics commit also passed [CI](https://github.com/earino/dataset-factory/actions/runs/42522459505).
+
+The bridge feature-contract correction now passes 953 tests (13 skipped) in a
+clean checkout. A test proves its actual saved build-2 proposal advances to bundle
+assembly without an LLM call, preserves question/target/splits, and supplies the
+original research feature plan to semantic review. This is software evidence;
+the second real worker/release remains outstanding. No overall sign-off yet.

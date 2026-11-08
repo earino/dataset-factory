@@ -118,7 +118,15 @@ but make a repair operate on the smallest affected component.
   reasons. Deterministic checks do not need another model's approval.
 
 One current task description supplies construction, review, manifest and public
-documentation. Discovery's proposal and later revisions remain history, not
+documentation. Discovery may name input groups; construction can resolve them into
+concrete columns. A complete description of exactly `quality.features` supplies
+the current column contract, with the original research plan retained for semantic
+review. Renaming a group into valid derived inputs is not a target change. The
+original plan is context, not a demand to build every suggested feature; actual
+input validity, honest current descriptions and independence from holdout/agent
+outcomes remain binding. A paid proposal blocked only by the corrected naming
+rule can proceed when it passes current construction validation; full worker
+qualification and semantic review still decide acceptance. Discovery's proposal and later revisions remain history, not
 competing editable authorities. Use the existing candidate record and formats;
 consolidate duplicated fields at their current boundaries before introducing a
 new schema. Generate mechanically derivable descriptors from that record and

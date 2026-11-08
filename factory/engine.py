@@ -153,7 +153,26 @@ class Driver:
                     failure = {'latest_failure': failure, 'semantic_review': data['pending_semantic_review']}
                 prompt = (task_prompts.construction_json_repair(text_draft['response'], text_draft['failure'])
                           if text_draft else task_prompts.construction(data['source'], example, failure, previous))
-                response = self.model.run(attempt['id'], prompt, construction=True)
+                # A saved paid proposal rejected only by the former group/name
+                # mismatch can proceed once the corrected contract validates it.
+                # It still needs worker qualification and semantic review.
+                prior_failure = data.get('failure', {})
+                reuse = (previous is not None and prior_failure.get('stage') == 'build'
+                         and prior_failure.get('reason') ==
+                         'Feature descriptions may only name distinct existing source features')
+                if reuse:
+                    try:
+                        construction.validate(previous)
+                        construction.describe_task(data['source'], previous)
+                    except (FactoryError, ValueError, KeyError, TypeError):
+                        reuse = False
+                if reuse:
+                    response = previous
+                    data.setdefault('construction_reuse', []).append(
+                        {'attempt': attempt['id'], 'from_attempt': prior_failure.get('attempt'),
+                         'reason': 'Saved proposal passes corrected feature-description contract'})
+                else:
+                    response = self.model.run(attempt['id'], prompt, construction=True)
                 response = construction.merge_repair(previous, response)
                 data['construction_draft'] = response
                 save(data)
@@ -211,6 +230,15 @@ class Driver:
         compact = {name: evidence[name] for name in ('evaluation.json', 'source-checks.json', 'SOURCES.json', 'LICENSE-EVIDENCE.json')}
         compact['qualification'] = {k: evidence['qualification.json'][k] for k in ('ok', 'gate_version', 'failed_checks')}
         compact['evaluation_contract'] = data['construction']['quality']['evaluation_contract']
+        compact['construction_notes'] = data['construction'].get('construction_notes', '')
+        history = data.get('task_description_history', [])
+        if history:
+            original = history[0]['previous_task'].get('features')
+            current = data['source']['task'].get('features')
+            if (isinstance(original, list) and isinstance(current, list)
+                    and [f.get('name') for f in original if isinstance(f, dict)] !=
+                        [f.get('name') for f in current if isinstance(f, dict)]):
+                compact['original_feature_plan'] = original
         if data.get('pending_semantic_review'):
             compact['previous_semantic_review'] = data['pending_semantic_review']
         review = (data['review'] if data.get('review_attempt') == attempt['id'] else

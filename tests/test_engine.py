@@ -26,6 +26,67 @@ def source():
 
 
 class EngineTests(unittest.TestCase):
+    def test_saved_bridge_columns_refine_groups_without_another_model_call(self):
+        from factory.construction import describe_task
+        evidence = Path(__file__).resolve().parents[1] / 'audits/rewrite'
+        original = json.loads((evidence / 'bridge-source15-build1/discovery-response.json').read_text())
+        prior = json.loads((evidence / 'bridge-source15-build2-repair/construction-response.json').read_text())
+        model = Mock(); model.run.side_effect = AssertionError('Paid proposal must be reused')
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_json(root / 'config/local.json', {'enabled': True, 'cleanup_configured': True})
+            write_json(root / 'skills/dataset-qualification/fixtures/corrected/quality.json', {})
+            write_json(root / '.factory/model-tasks/old/response.json', prior)
+            harness = root / 'harness/task_template'; harness.mkdir(parents=True)
+            for name in ('train.py', 'validate.py', 'validate.sh'): (harness / name).write_text('# fixture')
+            data = {'source': original, 'failure': {'stage':'build','attempt':'old',
+                'reason':'Feature descriptions may only name distinct existing source features'}}
+            with patch.dict(os.environ, {'FACTORY_BENCHMARK_ROOT': str(harness.parent)}), \
+                    patch('factory.engine.construction.assemble', side_effect=FactoryError('Stop at bundle')) as assemble, \
+                    patch('factory.engine.worker.launch') as launch:
+                Driver(root, {'worker':{}}, model=model).execute(
+                    {'stage':'build','data':data}, {'id':'new'}, lambda value: None)
+            model.run.assert_not_called(); launch.assert_not_called()
+            actual, proposal = assemble.call_args.args[2:4]
+            self.assertEqual(prior['build_py'], proposal['build_py'])
+            self.assertEqual(prior['quality']['features'], [f['name'] for f in actual['task']['features']])
+            for key in ('question','target','split_policy'): self.assertEqual(original['task'][key], actual['task'][key])
+            self.assertEqual(original['task'], data['task_description_history'][0]['previous_task'])
+            self.assertEqual('old', data['construction_reuse'][0]['from_attempt'])
+            data['evidence'] = {'qualification.json':{'ok':True,'gate_version':'1.6.1','failed_checks':[]},
+                **{n:{} for n in ('evaluation.json','source-checks.json','SOURCES.json','LICENSE-EVIDENCE.json')}}
+            model.run.side_effect = None; model.run.return_value = {'verdict':'repair','reason':'Unit review',
+                'findings':[{'issue':'Unit evidence required'}]}
+            result = Driver(root, {}, model=model).evaluate({}, {'id':'review'}, data, lambda value: None)
+            self.assertEqual('repair', result['status'])
+            self.assertIn('"original_feature_plan":', model.run.call_args.args[1])
+            self.assertIn('"name": "component_ratings"', model.run.call_args.args[1])
+        bad = copy.deepcopy(prior)
+        bad['quality']['task']['features'].append({'name':'undeclared','meaning':'x','availability':'x'})
+        with self.assertRaises(FactoryError): describe_task(original,bad)
+        bad = copy.deepcopy(prior); bad['quality']['task']['features'][0]['meaning'] = ''
+        with self.assertRaises(FactoryError): describe_task(original,bad)
+
+    def test_still_invalid_saved_names_use_ordinary_repair_instead_of_retry_loop(self):
+        evidence = Path(__file__).resolve().parents[1] / 'audits/rewrite/bridge-source15-build1'
+        prior = json.loads((evidence/'construction-response.json').read_text())
+        original = json.loads((evidence/'discovery-response.json').read_text())
+        model = Mock(); model.run.side_effect = TaskFailure('Unit stop after repair prompt')
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_json(root/'config/local.json', {'enabled':True,'cleanup_configured':True})
+            write_json(root/'skills/dataset-qualification/fixtures/corrected/quality.json', {})
+            write_json(root/'.factory/model-tasks/old/response.json', prior)
+            harness = root/'harness/task_template'; harness.mkdir(parents=True)
+            for name in ('train.py','validate.py','validate.sh'): (harness/name).write_text('# fixture')
+            data = {'source':original, 'failure':{'stage':'build','attempt':'old',
+                'reason':'Feature descriptions may only name distinct existing source features'}}
+            with patch.dict(os.environ, {'FACTORY_BENCHMARK_ROOT':str(harness.parent)}):
+                outcome = Driver(root,{},model=model).execute({'stage':'build','data':data},
+                    {'id':'next'},lambda value:None)
+            self.assertEqual('retry',outcome['status']); model.run.assert_called_once()
+            self.assertNotIn('construction_reuse',data)
+
     def test_metadata_only_repair_reuses_real_builder_and_reaches_bundle(self):
         evidence = Path(__file__).resolve().parents[1] / 'audits/rewrite'
         prior = json.loads((evidence / 'ucmr-build8-resumed-run/construction-response.json').read_text())
