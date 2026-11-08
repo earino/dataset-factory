@@ -1,0 +1,187 @@
+{
+  "verdict": "ready",
+  "reason": "The NASA Exoplanet Archive TESS Objects of Interest (TOI) table is a single, unauthenticated TAP/CSV download of 8,151 rows with fully documented field definitions, a per-row creation timestamp, and a resolved 6-value working-group disposition. Restricting to TOIs created on or before 2023-06-30 whose disposition is resolved gives 2,622 independent candidate events (1,334 false-positive-class vs 1,288 planet-class, near-balanced) across 2,490 distinct host stars, which supports fixed chronological train/eval/holdout splits on toi_created. Features are transit-fit and stellar-catalog quantities known at announcement; the disposition itself and all follow-up/ExoFOP products are excluded. Terms are NASA open-data with a verbatim acknowledgment requirement and a suggested citation; no account, no multi-agency join, and no sensitive personal data are involved.",
+  "dataset_id": "tess-toi-vetting",
+  "title": "Predicting the TESS working-group disposition of a transit candidate from its announcement-time transit and stellar parameters",
+  "source": {
+    "publisher": "NASA Exoplanet Archive, NASA Exoplanet Science Institute (NExScI) / Caltech-IPAC, under contract with NASA",
+    "urls": [
+      "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+toi,tid,tfopwg_disp,toi_created,pl_orbper,pl_trandep,pl_trandurh,pl_rade,pl_insol,pl_eqt,st_teff,st_logg,st_rad,st_tmag,st_dist,pl_pnum+from+toi&format=csv"
+    ],
+    "documentation_url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html",
+    "terms_url": "https://exoplanetarchive.ipac.caltech.edu/docs/acknowledge.html",
+    "license": "NASA Science Mission Directorate open data (U.S. Government work, publicly available without restriction); no Creative Commons license is asserted upstream",
+    "terms_excerpt": "It is Science Mission Directorate (SMD) policy, consistent with NASA and Federal policies, that information produced from SMD-funded scientific research activities be made publicly available.",
+    "attribution": "This research has made use of the NASA Exoplanet Archive, which is operated by the California Institute of Technology, under contract with the National Aeronautics and Space Administration under the Exoplanet Exploration Program.",
+    "citation": "Christiansen et al. (2025), \"The NASA Exoplanet Archive and Exoplanet Follow-up Observing Program: Data, Tools, and Usage,\" Planetary Science Journal 6, 186, doi:10.3847/PSJ/ade3c2",
+    "redistribution": true
+  },
+  "task": {
+    "question": "Given only the transit-fit observables and host-star catalog parameters published when a TESS Object of Interest was announced, can we predict whether the TESS Follow-up Observing Program Working Group ultimately classifies it as a false positive or as a planet?",
+    "decision_user": "A follow-up scheduling group (TFOPWG-style triage) deciding which newly announced candidates merit scarce ground-based photometric/spectroscopic follow-up time; the model ranks candidates by probability of being an astrophysical false alarm using only what is on hand at announcement.",
+    "prediction_time": "The row's toi_created timestamp (date the TESS Project identified the object of interest), using only the transit and stellar columns in that row as served by the archive; no follow-up, ExoFOP, or disposition information is used.",
+    "target": "Binary y=1 (false positive) if tfopwg_disp is 'FP' or 'FA'; y=0 (planet) if tfopwg_disp is 'CP' or 'KP'. Rows with tfopwg_disp 'PC', 'APC', or null are excluded from all splits rather than treated as negatives.",
+    "outcome_horizon": "Working-group disposition as recorded in the archive snapshot read at construction time (2026-11); the cohort is right-censored at toi_created <= 2023-06-30 so every scored row has had at least ~2.5 years for follow-up and disposition.",
+    "features": [
+      {
+        "name": "pl_orbper",
+        "meaning": "Orbital period of the candidate in days, from the transit fit.",
+        "availability": "Present in the TOI row at announcement; a periodicity detection, not an outcome.",
+        "evidence_url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html"
+      },
+      {
+        "name": "pl_trandep",
+        "meaning": "Transit depth in ppm (relative flux decrement).",
+        "availability": "Measured from TESS photometry by the transit search at announcement.",
+        "evidence_url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html"
+      },
+      {
+        "name": "pl_trandurh",
+        "meaning": "Transit duration in hours.",
+        "availability": "Measured from the same light curve at announcement.",
+        "evidence_url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html"
+      },
+      {
+        "name": "pl_rade",
+        "meaning": "Implied planet radius in Earth radii (depth plus stellar radius).",
+        "availability": "Derived quantity computed at vetting from depth and catalog stellar radius; available at announcement as a model parameter.",
+        "evidence_url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html"
+      },
+      {
+        "name": "pl_insol",
+        "meaning": "Insolation flux in Earth units.",
+        "availability": "Derived from period and stellar parameters at announcement.",
+        "evidence_url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html"
+      },
+      {
+        "name": "pl_eqt",
+        "meaning": "Equilibrium temperature in K, black-body assumption.",
+        "availability": "Derived at announcement from period and stellar parameters.",
+        "evidence_url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html"
+      },
+      {
+        "name": "st_teff",
+        "meaning": "Host-star effective temperature in K from the TESS Input Catalog.",
+        "availability": "Catalog value, independent of the transit event and present before announcement.",
+        "evidence_url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html"
+      },
+      {
+        "name": "st_logg",
+        "meaning": "Host-star surface gravity log(g) in cm/s^2 from the TIC.",
+        "availability": "Catalog value available at announcement; may be null for some rows.",
+        "evidence_url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html"
+      },
+      {
+        "name": "st_rad",
+        "meaning": "Host-star radius in solar radii from the TIC.",
+        "availability": "Catalog value available at announcement; the key discriminator between planetary and stellar-eclipse depth.",
+        "evidence_url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html"
+      },
+      {
+        "name": "st_tmag",
+        "meaning": "Host-star TESS-band magnitude.",
+        "availability": "Catalog value known before the observation.",
+        "evidence_url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html"
+      },
+      {
+        "name": "st_dist",
+        "meaning": "Host-star distance in parsecs from the TIC.",
+        "availability": "Catalog value known before the observation.",
+        "evidence_url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html"
+      },
+      {
+        "name": "pl_pnum",
+        "meaning": "Number of candidate objects listed for that host star.",
+        "availability": "Count known at announcement from the same vetting pass; not an outcome field.",
+        "evidence_url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html"
+      }
+    ],
+    "population": "All TOI-table rows with toi_created <= 2023-06-30 whose tfopwg_disp is one of CP, KP, FP, FA. Excluded at the decision instant: unresolved rows (PC, APC, null), which are censored rather than negative. One row per host star is kept (the lowest-numbered TOI for each tid) so multi-candidate systems do not contribute correlated duplicates; the dropped duplicates are recorded, not silently merged.",
+    "split_policy": "Frozen before any measurement. Train: toi_created < 2021-01-01 (~1,575 rows before one-per-star dedupe). Eval: 2021-01-01 <= toi_created < 2022-01-01 (657 rows). Holdout: 2022-01-01 <= toi_created <= 2023-06-30 (390 rows). No feature embargo is required because rows are independent objects and no row's features are derived from another row's outcome; instead a right-censoring buffer excludes everything created after 2023-06-30. Boundaries are date strings on the toi_created column, not row order.",
+    "usefulness": "The label is a human/working-group astrophysical verdict, not a field that can be copied from a column: the model must learn the physical separation between planetary transits and blended eclipsing binaries, grazing stellar companions, and instrumental artifacts from depth, duration, period, implied radius and host-star properties alone. The classes are nearly balanced (~51/49), so a majority control is weak, and the exclusion of follow-up existence, TFOPWG comments, and disposition-adjacent fields prevents the trivial shortcut. Accuracy gains over the radius-threshold rule reflect genuine multivariate discrimination, and the same setup has documented external baselines in the exoplanet-vetting literature.",
+    "simple_references": "Majority class (~51% false-positive-class) is the floor. Persistence is not applicable (no repeated unit and no prior outcome for the same object). Identity/calendar controls: a model using only toi_created (era) and st_tmag, and a single-threshold rule 'pl_rade > 20 R_Earth => false positive', which captures most stellar eclipses but fails on small blended binaries. These three are the controls a real model must beat on the 2022-2023 holdout."
+  },
+  "evidence": [
+    {
+      "url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html",
+      "claim": "The disposition field and its six documented values, including that CP/KP denote planets and FP/FA denote false positives/false alarms.",
+      "quote": "**APC** =ambiguous planetary candidate **CP** =confirmed planet **FA** =false alarm **FP** =false positive **KP** =known planet **PC** =planetary candidate"
+    },
+    {
+      "url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html",
+      "claim": "Each TOI row carries a creation timestamp usable as the decision instant.",
+      "quote": "toi\\_created\u2020 | TOI Creation Date | Date on which the TESS Project identified the Object of Interest."
+    },
+    {
+      "url": "https://exoplanetarchive.ipac.caltech.edu/docs/API_TOI_columns.html",
+      "claim": "The table publishes transit-fit and stellar quantities (period, depth, duration, radius, insolation, Teff, logg, radius, Tmag, distance) as ordinary columns.",
+      "quote": "pl\\_trandep\u2020 | Planet Transit Depth \\[ppm\\] | The size of the relative flux decrement caused by the orbiting body transiting in front of the star."
+    },
+    {
+      "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+tfopwg_disp,count(*)+as+n+from+toi+group+by+tfopwg_disp&format=csv",
+      "claim": "Observed class counts in the live table: 819 CP, 606 KP, 1,319 FP, 98 FA, 4,813 PC, 494 APC, 2 null.",
+      "quote": "\"APC\",494\n,2\n\"KP\",606\n\"FP\",1319\n\"FA\",98\n\"CP\",819\n\"PC\",4813"
+    },
+    {
+      "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+tfopwg_disp,count(*)+as+n+from+toi+where+toi_created+%3C%3D+%272023-06-30%27+group+by+tfopwg_disp&format=csv",
+      "claim": "In the pre-2023-07 cohort the resolved classes are 775 CP, 513 KP, 1,237 FP, 97 FA, i.e. 1,288 planet-class and 1,334 false-positive-class rows.",
+      "quote": "\"APC\",438\n\"KP\",513\n\"FP\",1237\n\"FA\",97\n\"CP\",775\n\"PC\",3628"
+    },
+    {
+      "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+count(distinct+tid)+as+n+from+toi+where+toi_created+%3C%3D+%272023-06-30%27+and+tfopwg_disp+in+%28%27CP%27,%27KP%27,%27FP%27,%27FA%27%29&format=csv",
+      "claim": "The resolved cohort spans 2,490 distinct host stars, so one-per-star dedupe costs only ~5% of rows and removes the main correlation between rows.",
+      "quote": "n\n2490"
+    },
+    {
+      "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+top+3+toi,tid,tfopwg_disp,toi_created,pl_orbper,pl_trandep,pl_trandurh,pl_rade,st_teff,st_logg,st_rad,st_tmag,st_dist,pl_insol,pl_pnum+from+toi&format=csv",
+      "claim": "The exact column list in the planned download resolves and returns populated CSV values, e.g. TOI 1031.01 with a resolved FP disposition created 2019-06-25.",
+      "quote": "\"1031.01\",304021498,\"FP\",\"2019-06-25 15:58:39\",5.6526230,1250.0000000,3.4340000,8.9435400,6415.4000000,3.9800000,1.9200000,9.7318000,270.7710000,2717.0600000,1"
+    },
+    {
+      "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+min(toi_created)+as+mn,max(toi_created)+as+mx,count(*)+as+n+from+toi&format=csv",
+      "claim": "Total table size and the actual creation-date span.",
+      "quote": "mn,mx,n\n\"2018-08-30 14:17:58\",\"2026-10-08 21:21:31\",8151"
+    },
+    {
+      "url": "https://exoplanetarchive.ipac.caltech.edu/docs/TAP/usingTAP.html",
+      "claim": "The table is retrievable programmatically over a documented TAP/Sync endpoint in CSV format without credentials.",
+      "quote": "The NASA Exoplanet Archive's TAP service allows users to programmatically access and retrieve data from some of its data tables as an alternative to the interactive web interface"
+    },
+    {
+      "url": "https://exoplanetarchive.ipac.caltech.edu/docs/acknowledge.html",
+      "claim": "Required acknowledgment text for any published use of archive services.",
+      "quote": "This research has made use of the NASA Exoplanet Archive, which is operated by the California Institute of Technology, under contract with the National Aeronautics and Space Administration under the Exoplanet Exploration Program."
+    },
+    {
+      "url": "https://exoplanetarchive.ipac.caltech.edu/docs/acknowledge.html",
+      "claim": "The archive names the publication it asks users to cite in place of the retired Akeson et al. reference.",
+      "quote": "Please cite Christiansen et al. (2025), the NASA Exoplanet Archive's published paper accepted by the Planetary Science Journal"
+    },
+    {
+      "url": "https://science.nasa.gov/researchers/science-information-policy/",
+      "claim": "Upstream rights basis: NASA SMD policy makes SMD-funded research information publicly available; this is an open-data policy, not a CC license.",
+      "quote": "It is Science Mission Directorate (SMD) policy, consistent with NASA and Federal policies, that information produced from SMD-funded scientific research activities be made publicly available."
+    },
+    {
+      "url": "https://exoplanetarchive.ipac.caltech.edu/docs/terms_of_use.html",
+      "claim": "A third-party README pointed at this terms URL; it does not exist, so the operative upstream terms are the acknowledgment/citation page plus NASA policy, and the record should not claim a separate terms page.",
+      "quote": "# Not Found\n\nThe requested URL was not found on this server."
+    }
+  ],
+  "construction": {
+    "format": "CSV returned by a single HTTPS GET to the TAP synchronous endpoint; no authentication, no API key, no pagination needed at this size.",
+    "access_recipe": "GET https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+toi,tid,tfopwg_disp,toi_created,pl_orbper,pl_trandep,pl_trandurh,pl_rade,pl_insol,pl_eqt,st_teff,st_logg,st_rad,st_tmag,st_dist,pl_pnum+from+toi&format=csv and parse with pandas.read_csv (all values quoted, blanks are empty fields, so na_values must include the empty string). ADQL is case-insensitive for identifiers but the disposition string literals are upper case. Build the cohort by filtering on toi_created <= '2023-06-30' and tfopwg_disp in {CP,KP,FP,FA}, then y = tfopwg_disp.isin(['FP','FA']), then sort by (toi_created, toi) and drop_duplicates on tid keeping the lowest toi value. Assign splits purely from toi_created boundaries; log the dropped-unresolved and dropped-duplicate counts. Persist the raw CSV bytes and the exact query string beside the derived splits so the snapshot is reproducible.",
+    "expected_size": "8,151 total TOI rows measured; 2,622 resolved rows in the pre-2023-07 cohort (1,334 false-positive-class, 1,288 planet-class) and 2,490 distinct host stars; the 16-column CSV is estimated at roughly 1-2 MB, far under any worker storage concern.",
+    "source_examples": "Documented values observed in the live table: tfopwg_disp takes APC/CP/FA/FP/KP/PC; toi_created runs from 2018-08-30 to 2026-10-08; row TOI 1031.01 has tid 304021498, disposition FP, creation 2019-06-25 15:58:39, pl_orbper 5.6526230 d, pl_trandep 1250.0 ppm, pl_rade 8.94 R_Earth, st_teff 6415.4 K, st_rad 1.92 R_Sun. Blank values occur (e.g. st_logg is empty for one of the sampled rows), confirming that missingness must be handled explicitly rather than imputed silently."
+  },
+  "limitations": [
+    "Current-vintage retrospective only: the archive serves today's parameter values and today's dispositions, so the features are not proven to be the exact numbers available on each toi_created date, and the label is the disposition as of the 2026-11 snapshot rather than an as-of-announcement state.",
+    "Right-censoring: 4,068 unresolved rows (PC/APC) are excluded, and they are not missing at random; later cohorts are disproportionately unresolved, so the 2022-2023 holdout is smaller and its resolved subset is selected by how much follow-up that era attracted.",
+    "Cohort drift: follow-up resources and TESS observing strategy changed between 2018 and 2023, so the false-positive base rate per era differs; chronological splits therefore measure temporal generalization, not a stationary process, and a drop in holdout performance may be drift rather than model failure.",
+    "Label is a working-group judgment about the same photometry used for the features: the model predicts a vetting verdict from measurements of the signal, which is legitimate but means the ceiling is human/robotic vetting consistency, not physical ground truth, and some labels are later revised.",
+    "'KP' rows are planets already known before TESS and are typically easier and better measured than newly discovered candidates, so the planet class is heterogeneous; results should be reported with and without KP rows.",
+    "One-per-star dedupe removes multi-candidate systems from the sample, which biases slightly against compact multi-planet systems where false positives are rarer; the remaining rows are still not fully independent because two different stars can be blends of one another only rarely, but residual spatial correlation in the TESS fields is not modeled.",
+    "No formal license deed exists upstream (a widely copied 'terms_of_use.html' link returns 404); redistribution is asserted on the basis of NASA SMD open-data policy and the archive's acknowledgment requirement, and the required acknowledgment and Christiansen et al. (2025) citation must travel with any redistributed derivative.",
+    "Missing values in stellar columns (notably st_logg, occasionally st_dist) require an explicit policy at construction time; a tree model can consume NaN, but the choice must be frozen before measuring and reported."
+  ]
+}
