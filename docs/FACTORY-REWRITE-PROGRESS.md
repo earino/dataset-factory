@@ -244,6 +244,13 @@ Header-contract change `c22aaf9` passed 922 clean-clone tests (13 skipped) and
 [CI](https://github.com/earino/dataset-factory/actions/runs/42488312551).
 Repair-context change passed 923 clean-clone tests (13 skipped). Scout's complete
 state export passed [CI](https://github.com/earino/dataset-factory/actions/runs/42488252046).
+`a06169d` passed [CI](https://github.com/earino/dataset-factory/actions/runs/42488715059)
+and Scout reports deployment at 14:15:08 UTC with the scheduler resumed.
+STATS19 build-2 staged at 14:15:48 UTC (release 438291663), exit 1 after 45.1 s,
+not OOM. It reached the expected `KeyError: ksi` after construction. Its bundle
+had been assembled before the clearer error was deployed; immutable attempt
+bundles were preserved. Exact manifest and verified failure bytes are retained.
+No passing qualification or publication is claimed for either replay.
 
 ## Known findings relevant to implementation
 
