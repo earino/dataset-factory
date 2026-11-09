@@ -15,8 +15,8 @@ Bridge source-15 and BSEE source-17 reached their existing retry bounds and are
 deferred, with history preserved. Federal Register source-16 has a saved valid
 build-5 repair, blocked by worker budget admission: EUR 14.86 reserved plus
 EUR 0.16 for the next worker exceeds the EUR 15 construction boundary by EUR 0.02.
-The proposed monthly allowance change from EUR 20 to EUR 25 is awaiting Eduardo's
-authorization; no limit has changed. Minute tick and cleanup remain active,
+Eduardo has authorized an extra EUR 25 for this development run; Scout is applying
+the temporary EUR 45 total allowance, with EUR 5 retained for release work. Minute tick and cleanup remain active,
 legacy launchers paused, and no paid model child remains. The goal is incomplete.
 
 The first eight-hour run ended incomplete and was safely wound down; its cutoff
@@ -24,6 +24,37 @@ and final resource inventory remain preserved as historical evidence. The tool's
 stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
+
+## 2026-11-09 18:50 UTC — extra development worker allowance authorized
+
+Eduardo authorized “an extra 25 bucks or something” after reviewing the difference
+between Hetzner usage and the factory's reservation ledger. Use EUR 25, the
+existing policy currency, as additional allowance for this development run:
+temporarily raise `monthly_budget_eur` from 20 to 45; retain the EUR 5 release
+reserve and existing worker concurrency, resource, expiry and retry limits.
+This is not a permanent recurring allowance increase. Restore the EUR 20 normal
+allowance at normal-operation handoff, recording the remaining reservation state.
+
+Scout was instructed to apply the local configuration, verify readback and let
+the sole normal coordinator resume the saved FR build-5 proposal. Application,
+worker admission and the next artifact are pending live confirmation. Do not
+reset deferred bridge/BSEE candidates or repeat the saved model task.
+
+Accounting follow-up, explicitly deferred from this completion path: the public
+Hetzner Cloud API documents resource prices (`GET /pricing`) but no accrued-cost
+or invoice endpoint. Console usage and later invoice consumption records are the
+provider's billing evidence. Future admission accounting should retain conservative
+reservations for active/uncertain resources, then reconcile confirmed deleted
+resources from measured resource lifetimes and recorded prices, including billing
+rounding and separately billed resources. Label calculated amounts as estimates;
+do not equate retained maximum-lifetime reservations with actual spend. Eduardo
+reported EUR 4.88 in the November console; it was not independently retrieved.
+Sources: [API reference](https://docs.hetzner.cloud/reference/cloud#pricing),
+[billing FAQ](https://docs.hetzner.com/cloud/billing/faq/).
+
+The goal remains A1–A8 under the revised specification, with no new elapsed-time
+limit. One of two required public benchmarks is verified. No completion sign-off
+or accounting rewrite is implied by the additional allowance.
 
 ## 2026-11-09 00:30 UTC — exact budget blocker and safe resumable state
 
