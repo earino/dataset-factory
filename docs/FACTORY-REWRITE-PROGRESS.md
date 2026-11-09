@@ -22,6 +22,28 @@ stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
 
+## 2026-11-09 00:26 UTC — worker budget admission blocks FR build-4
+
+In the fresh session Scout confirmed from live state that FR build-4 is waiting
+on the conservative worker cost gate, not on its saved construction response.
+Exact current ledger and proposed reservation figures were requested; they have
+not yet been returned. The earlier 23:39 snapshot (EUR 14.30 reserved) must not
+be presented as the current balance. No allowance, reservation or release
+reserve has been changed.
+
+Root requested Eduardo's authorization to change the monthly worker allowance
+from EUR 20 to EUR 25, retaining the EUR 5 release reserve and all existing worker
+resource/concurrency limits. This is pending; it is not authorization to spend.
+The revised goal explicitly retains worker spending limits during development.
+BSEE's latest reported code repair was build-9, its last task-failure-bound
+attempt; paid output and normal controller state are to be preserved. Its final
+outcome and post-reset live inventory remain pending Scout's compact export.
+
+Evidence-only commit `b99d6b91fc7b435289db2ba93c544867fcaede77` passed
+[exact CI](https://github.com/earino/dataset-factory/actions/runs/42538796815).
+The goal remains incomplete: one public benchmark is verified, and no second
+accepted public prediction benchmark or final normal-operation handoff is claimed.
+
 ## 2026-11-09 00:05 UTC — BSEE semantic repair and Scout session recovery
 
 BSEE evaluate-1 returned repair after 170.167 seconds, five recorded calls,
