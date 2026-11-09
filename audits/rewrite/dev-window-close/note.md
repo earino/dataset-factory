@@ -24,8 +24,15 @@ model/worker interruption or code-deployment pause was needed.
   (cron ca002a2e360e enabled, one-shot 2026-12-01T00:00Z, never run; script
   copy sha256 225066278e475ac4...; monthly_budget_eur 45 now, extra allowance stays usable
   through November, reset 45->20 only if still 45).
-- Budget close readback: development_token_exemption_active=None (historical
-  development usage excluded from normal accounting).
+- Budget close readback (scripts/research-budget.py --json, output["decision"],
+  observed 2026-11-09T21:20:55.985823+00:00): allow=False, development_token_exemption_active=false,
+  development_tokens_last_7_days=10478967, normal-operation tokens last 7 days=42971314,
+  reasons=["lock held for 110s by scout-research"]. Development window closed: development_token_windows[0] from
+  2026-11-08T19:58:14Z until 2026-11-09T21:12:00Z (closure commit c93981e);
+  the window stays recorded, so historical development usage remains
+  excluded from normal-operation ceilings; post-window sessions use normal
+  admission.
+
 - Window usage refreshed through 21:12:00Z:
   ../681deb7-deploy/dev-window-usage.json (unknown elapsed stays unknown).
 - Normal operation continues: eia860 source-19 build-4 and nhtsa source-20
