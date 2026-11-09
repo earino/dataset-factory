@@ -10,19 +10,52 @@ UCMR `v-4a630108a6e75a6b` is public on
 and [Hugging Face](https://huggingface.co/datasets/earino/factory-ucmr5-first-sample-pfas).
 The publication worker anonymously verified all 33 files and loaded every split
 on both platforms; root independently fetched identical public manifests without
-authentication. `54298b1` is deployed; 960 clean-checkout tests pass (13 skipped).
-Bridge source-15 and BSEE source-17 reached their existing retry bounds and are
-deferred, with history preserved. Federal Register source-16 build-5 ran after budget admission cleared, but failed
-qualification on regressed declarations; normal build-6 repair is next.
-Eduardo has authorized an extra EUR 25 for this development run; Scout is applying
-the temporary EUR 45 total allowance, with EUR 5 retained for release work. Minute tick and cleanup remain active,
-legacy launchers paused, and no paid model child remains. The goal is incomplete.
+authentication. `65de530` is deployed; 961 clean-checkout tests pass (13 skipped).
+Bridge source-15, Federal Register source-16 and BSEE source-17 reached their
+existing retry bounds and are deferred, with history preserved. Source-18 CFPB
+bank-account monetary-relief construction is on normal access repair: its terms
+page capture recovered, then the data endpoint returned HTTP 403. Existing
+metadata-only gate predicates now reject declarations before new worker spending;
+full-artifact qualification remains mandatory. The extra EUR 25 is authorized
+and applied (EUR 45 November allowance, EUR 5 release reserve); normal EUR 20
+returns at December's boundary. One of two required public benchmarks is verified.
+The goal is incomplete.
 
 The first eight-hour run ended incomplete and was safely wound down; its cutoff
 and final resource inventory remain preserved as historical evidence. The tool's
 stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
+
+## 2026-11-09 19:39 UTC — deployed preflight and normal CFPB access recovery
+
+Scout deployed `65de53070c46503307572aaa25ee262d0741facb` at a safe boundary,
+preserving the existing remote source-18 worker. Exact CI is
+[green](https://github.com/earino/dataset-factory/actions/runs/42682772672).
+Scout corrected its schema-example claim in
+`b052366c4491bf701599de189a20ea6bdcdac8a4`
+([exact CI](https://github.com/earino/dataset-factory/actions/runs/42683521843)).
+The queue already prioritizes publication/review/build before new discovery;
+current delays include a discovery task admitted while the prior worker was
+waiting. No queue-priority rewrite was made.
+
+Normal source-18 is `cfpb-bank-account-monetary-relief`, job prefix
+`rw-1c8d6061c611`. Build-1 worker (32.7 seconds, release 439541208 / manifest
+728683595) failed on HTTP 403 while capturing publisher terms. Normal build-2
+repaired that step: its license-evidence asset exists, then its worker failed
+on HTTP 403 in the builder's data fetch (45.2 seconds, release 439553885 /
+manifest 728719432). This is progress through the access path, not dataset
+qualification or a rights sign-off. No CSVs or benchmark scores were produced.
+Compact hash-verified manifests, failures and the captured license-evidence
+record are in `audits/rewrite/cfpb-access-failures/`. Existing bounded access
+research/code repair handles the new failure; no source-specific orchestration
+or retry reset is authorized or needed.
+
+CFPB build-2's bundled qualifier hash matches the refactored gate. A live
+preflight rejection has not yet been observed; the negative regression test uses
+the real failed FR descriptor and is not counted as a completed benchmark.
+The December allowance-reset one-shot scheduler identity has been requested
+from Scout; creation/readback is still pending confirmation.
 
 ## 2026-11-09 19:22 UTC — run existing declaration checks before paying for workers
 
