@@ -4,29 +4,99 @@ Specification: [FACTORY-REWRITE.md](FACTORY-REWRITE.md).
 Goal tool confirmed **active** at kickoff 2026-11-08 11:07:00 UTC.
 Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
 
-**Current implementation status: 1 of 2 required public benchmarks verified.**
-UCMR `v-4a630108a6e75a6b` is public on
-[GitHub](https://github.com/earino/factory-ucmr5-first-sample-pfas/releases/tag/v-4a630108a6e75a6b)
-and [Hugging Face](https://huggingface.co/datasets/earino/factory-ucmr5-first-sample-pfas).
-The publication worker anonymously verified all 33 files and loaded every split
-on both platforms; root independently fetched identical public manifests without
-authentication. `65de530` is deployed; 961 clean-checkout tests pass (13 skipped).
-Bridge source-15, Federal Register source-16 and BSEE source-17 reached their
-existing retry bounds and are deferred, with history preserved. Source-18 CFPB
-bank-account monetary-relief build-4 has passed full qualification, baseline and
-exact package verification. Its accept-with-positive-findings review was wrongly
-routed to rejection; a generic bounded review-contract recovery passed 963 clean-checkout tests (13 skipped) and awaits deployment. Existing
-metadata-only gate predicates now reject declarations before new worker spending;
-full-artifact qualification remains mandatory. The extra EUR 25 is authorized
-and applied (EUR 45 November allowance, EUR 5 release reserve); normal EUR 20
-returns at December's boundary. One of two required public benchmarks is verified.
-The goal is incomplete.
+**Current status: two of two public prediction benchmarks verified.**
+Final normal-operation handoff, fresh cleanup/scheduler readback and the sign-off
+commit's CI remain pending. The deployed implementation is `681deb7` (20:57:14 UTC);
+963 clean-checkout tests pass (13 skipped) and [exact-commit CI passed](https://github.com/earino/dataset-factory/actions/runs/42695833297).
 
-The first eight-hour run ended incomplete and was safely wound down; its cutoff
-and final resource inventory remain preserved as historical evidence. The tool's
-stored old goal is still paused and cannot be resumed by the agent's tools;
-Eduardo explicitly authorized continuing this implementation in the current turn.
-This is not a completion sign-off.
+- UCMR first-sample PFAS: [GitHub](https://github.com/earino/factory-ucmr5-first-sample-pfas/releases/tag/v-4a630108a6e75a6b),
+  [Hugging Face](https://huggingface.co/datasets/earino/factory-ucmr5-first-sample-pfas).
+- CFPB bank-account monetary relief: [GitHub](https://github.com/earino/factory-cfpb-bank-account-monetary-relief/releases/tag/v-fa7df05b0fd096d9),
+  [Hugging Face](https://huggingface.co/datasets/earino/factory-cfpb-bank-account-monetary-relief).
+
+Each publication worker anonymously verified all 33 manifest files and loaded all
+train/eval/holdout rows from each platform. Root independently fetched each public
+tagged manifest without authentication and matched the accepted bytes.
+[UCMR receipt](../audits/rewrite/ucmr-publication-success/publication.json);
+[CFPB receipt](../audits/rewrite/cfpb-publication-success/publication.json).
+The two sources are materially different: drinking-water measurements and
+consumer-finance complaints. Neither release claims historical forecasting proof.
+
+The revised development window is 2026-11-08T19:58:14Z through
+2026-11-09T21:12:00Z. Its sessions remain measured and excluded from normal-operation
+inference ceilings after closure. The earlier eight-hour run ended incomplete;
+historical observations below retain their original timestamps and status.
+The extra EUR 25 remains authorized for November (EUR 45 allowance, EUR 5 release
+reserve). The existing deterministic one-shot restores EUR 20 on 1 December.
+Reservation reconciliation is deferred; reservation totals are not billed spend.
+
+## 2026-11-09 21:12 UTC — second public benchmark verified; final handoff
+
+CFPB publish-1 succeeded in 241.3 worker seconds, exit 0, staging release
+439649721 / manifest 728998656. The independently hash-checked publication receipt
+is asset 728998451. It binds build-4 artifact
+`9f471e2cfd980ea753159195b0bd7df7d97bb31cefd4dba3b6c377e74118ef8a`
+and version `v-fa7df05b0fd096d9`. Both anonymous consumers verified 33 files and
+loaded train=75,528 / eval=37,582 / holdout=49,873 rows. Both tags match their
+platform's main commit. Root independently fetched both public manifests and
+matched the accepted bytes, SHA256
+`cb478312cfefb823355f56b2976cfe3263c30c122301bdaf8f820cc02e6265b4`:
+[anonymous checks](../audits/rewrite/cfpb-publication-success/anonymous-manifest-check.json).
+No manual candidate advancement or per-dataset approval was used. The generic
+review-contract correction returned the candidate to ordinary bounded evaluation,
+then normal scheduling reached automatic publication. Raw evaluate-2 and final
+cleanup/state exports have been requested from Scout.
+
+Acceptance evidence at this checkpoint:
+
+- **A1:** the [safe deployment record](../audits/rewrite/681deb7-deploy/note.md)
+  shows preserved task/worker identities and tick-only recovery. The existing
+  pre-deploy EIA worker was collected and deleted by the new controller.
+- **A2:** both qualified construction manifests and public publication receipts
+  show successful outcomes; failed CFPB builds and EIA collection show failure
+  handling. The controller owns those transitions, not model follow-up sessions.
+  Final publication-worker deletion readback is pending.
+- **A3:** [UCMR code-generation usage](../audits/rewrite/ucmr-build9-repair/usage.json),
+  [accepted review usage](../audits/rewrite/ucmr-evaluate5-acceptance/usage.json)
+  and the [development task records](../audits/rewrite/681deb7-deploy/dev-window-usage.json)
+  retain the requested DeepSeek route, calls, tokens, elapsed times and failures.
+- **A4:** both public receipts above demonstrate the complete path on materially
+  different real sources. The CFPB review-routing migration is generic and keeps
+  the paid report, attempt history and retry allowance; it does not approve data.
+- **A5:** [UCMR qualification](../audits/rewrite/new-source-outcomes/ucmr5-build-9-qualification.json),
+  [baseline](../audits/rewrite/new-source-outcomes/ucmr5-build-9-evaluation.json),
+  [CFPB qualification](../audits/rewrite/cfpb-build4-qualified/qualification.json),
+  [baseline](../audits/rewrite/cfpb-build4-qualified/evaluation.json) and both
+  anonymous consumer receipts bind validation and usable files to exact artifacts.
+  Build/source code, source hashes, snapshots, terms and reproduction instructions
+  ship with the files. Baselines use validation only, not holdout scoring.
+- **A6:** [UCMR publication recovery](../audits/rewrite/ucmr-publication-success/recovery.json)
+  reused the same release and matching uploads after real failures. CFPB recovered
+  terms/data access through ordinary bounded repair; failed candidates defer at
+  their normal limits while unrelated candidates continue. The
+  [transient-fetch probe](../audits/rewrite/correction-deploy/live-fetch-recovery-stdout.json)
+  injected one 503 before a real publisher request and verified retry/cache reuse;
+  it is a controlled transport test, not a claim of an organic outage.
+- **A7:** the minute tick resumed after deployment and produced CFPB's review and
+  publication without operator approval. A fresh readback of the enabled tick,
+  independent cleanup and three disabled legacy launch paths is pending.
+- **A8:** implementation and exported evidence commits have exact-commit green CI;
+  suite changes passed a clean checkout. Final documentation/config push and its
+  exact CI remain pending.
+
+Scope and limits: these are current-vintage, purpose-specific prediction tasks,
+with published assumptions and limitations. Validation differences do not establish
+universal headroom. The model route works on actual research, construction and
+review, but recorded source-access, generation and format failures remain; bounded
+retry/defer prevents unlimited repair. This is not a claim that every source builds
+successfully or that all model reasoning is necessary.
+
+The 21:04 usage snapshot records 56 model tasks, 316 calls, 3,546,298 input tokens,
+1,559,686 output tokens and 9,860,864 cache-read tokens. Recorded model elapsed is
+10,971.416 seconds; some interrupted tasks lack elapsed data, so this is not a
+complete total. Twenty-seven worker jobs recorded 3,421.6 execution seconds.
+These records exclude root and interactive Scout coordination, and are not billed
+spend or a general overhead percentage. Final window records remain to be closed.
 
 ## 2026-11-09 20:38 UTC — fix contradictory review output without accepting it
 
@@ -58,7 +128,7 @@ candidate edit, retry reset or source-specific orchestration is used.
 Regression checks use the real CFPB review and verify no publication, retained
 paid output, a normal consistent subsequent decision, unchanged historical
 attempts, unchanged true rejections and the consumed retry allowance. All 45
-focused engine/pipeline/model tests pass. The full clean-checkout suite passes 963 tests (13 skipped). Exact pushed-commit CI is next.
+focused engine/pipeline/model tests pass. The full clean-checkout suite passes 963 tests (13 skipped). Commit `681deb7ffc55fe821a34ed18794e98b3e8b7f209` passed [exact-commit CI](https://github.com/earino/dataset-factory/actions/runs/42695833297). Scout paused the minute tick at 20:52:23 UTC; the existing EIA source-19 build-3 model task, started at 20:52:01, is allowed to finish before deployment. Scout confirmed deployment at 20:57:14 UTC, clean engine import/config readback, the existing source-19 build-3 remote worker preserved, and minute tick resumed. The [deployment record](../audits/rewrite/681deb7-deploy/note.md) confirms tick-only reconciliation at 20:59:19 and evaluate-2 start at 21:00:03; the old attempt and retry allowance are retained. The pre-deploy EIA worker was collected/deleted at 20:59:38 by the new code. Its [evidence commit passed CI](https://github.com/earino/dataset-factory/actions/runs/42698992081).
 The artifact remains staged and unpublished pending a consistent normal review.
 
 ## 2026-11-09 20:12 UTC — CFPB qualification, baseline and exact package verified
