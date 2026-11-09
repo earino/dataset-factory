@@ -1,0 +1,22 @@
+{
+  "verdict": "accept",
+  "reason": "The construction matches the stated task and publisher documentation. Population is the CFPB 'Checking or savings account' product over 2019-2023 (162,983 scored rows; 21,734/24,238/29,556/37,582/49,873 by year), the target is exactly 'Closed with monetary relief'=1 and the four listed terminal dispositions=0, with In progress/blank/other excluded (source checks show zero unknown responses). Features are intake fields plus deterministic month/weekday; company_response is label-only and no post-intake field is shipped. Fixed half-open chronological splits are non-overlapping, written timestamps are naive UTC inside declared windows, and IDs are unique and non-overlapping. Source counts and the 2022 eval are internally consistent (37,582 rows; full_model AUC 0.741/Brier 0.1205 vs majority AUC 0.5/Brier 0.1340; calendar AUC 0.509). The construction ships no label-derived group-rate or cross-row feature: company is a raw intake categorical and response_counts are diagnostic only. The RIN/asset-style rate-refresh leak described in the brief therefore does not exist here; the isolation claim rests on the absence of cross-row/label-derived features, not merely unique IDs.",
+  "findings": [
+    {
+      "issue": "No label-derived group-rate feature is constructed (the brief's batch-rate leak mechanism does not apply).",
+      "evidence": "FEATURES = ['sub_product','issue','sub_issue','company','state','submitted_via','month','weekday']; OUT_COLS = [complaint_id,date_received] + FEATURES + [monetary_relief]; build() performs no group aggregation, target encoding, or rate update; source-checks response_counts are diagnostic only and are not written to any split.",
+      "repair": "None required for this construction. If downstream modeling adds company-level target encoding, fit it only on training labels whose outcome windows closed before each scored row; do not accept unique complaint IDs alone as proof of isolation."
+    }
+  ],
+  "limitations": [
+    "Licensed scope is U.S. public domain under 17 U.S.C. 105; no worldwide dedication is claimed. Third-party consumer narratives are excluded. The company-response field is a short factual disposition published by CFPB, and the publisher's data-use page states all published complaint data is freely available for use.",
+    "Minor metadata inconsistencies: source expected_size/vintage state 19,020,152 total records and a 2026-11-08 snapshot, while the supplied API quote and live API return 19,028,339 and last_updated 2026-11-09. Neither affects the 162,983-row cohort or split counts.",
+    "The downstream runner (train.py/validate.py/validate.sh) is supplied only as hashes, not source. The construction code ships no target encoding or group-rate feature, but a runner-level train-only target-encoding implementation cannot be audited from the supplied material.",
+    "The supplied 2022 evaluation reports majority-prior and calendar-identity baselines but not issue-level or company-identity base-rate baselines, so incremental value over those controls is unmeasured; this is a reporting gap, not a construction defect.",
+    "The public search endpoint ignored complaint_id/searchTerm filters during review (returning the full 19M-row index), so the three source examples could not be independently re-queried. Field mappings and aggregate counts are internally consistent.",
+    "Population is published complaints, which CFPB publishes only after the company responds or after 15 days and excludes complaints referred to other regulators; the task acknowledges this is not a statistical sample and that company response is self-reported and unaudited.",
+    "The snapshot is current-vintage (2026) and the task is retrospective_research with training_label_timing unverified; training labels from late 2021 may have matured after the nominal 2022-01-01 boundary, so this is not a real-time deployment claim.",
+    "Product/issue/sub-issue taxonomies changed in 2017 and 2023; historical rows preserve the submission wording, so category drift is present, especially in the 2023 holdout.",
+    "No consumer identifier is available, so repeat complaints by the same consumer cannot be linked; company names are not entity-resolved, so mergers/rebrands can split or merge the same institution across the window."
+  ]
+}
