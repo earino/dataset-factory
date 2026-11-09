@@ -1,12 +1,17 @@
 # Factory rewrite progress
 
 Specification: [FACTORY-REWRITE.md](FACTORY-REWRITE.md).
-Goal tool confirmed **active** at kickoff 2026-11-08 11:07:00 UTC.
-Checkpoint 15:07:00 UTC; deadline 19:07:00 UTC.
+Initial run: kickoff 2026-11-08 11:07:00 UTC; checkpoint 15:07:00 UTC;
+cutoff 19:07:00 UTC. The revised run and final outcomes are recorded below.
 
-**Current status: two of two public prediction benchmarks verified.**
-Final normal-operation handoff, fresh cleanup/scheduler readback and the sign-off
-commit's CI remain pending. The deployed implementation is `681deb7` (20:57:14 UTC);
+**Current status: A1–A8 outcomes demonstrated; two public prediction benchmarks verified.**
+The [hosted handoff](../audits/rewrite/dev-window-close/note.md) confirms
+publication-worker deletion, no live provider workers, current schedules and closed
+development exemption. [Raw normal admission](../audits/rewrite/dev-window-close/budget-decision-readback.json)
+is allowed: 32,553,209 normal-operation tokens against the 40,000,000 ceiling,
+with 10,478,967 measured development tokens excluded and the exemption inactive.
+Scout remains the sole coordinator. Normal unattended operation continues.
+The deployed implementation is `681deb7` (20:57:14 UTC);
 963 clean-checkout tests pass (13 skipped) and [exact-commit CI passed](https://github.com/earino/dataset-factory/actions/runs/42695833297).
 
 - UCMR first-sample PFAS: [GitHub](https://github.com/earino/factory-ucmr5-first-sample-pfas/releases/tag/v-4a630108a6e75a6b),
@@ -21,6 +26,9 @@ tagged manifest without authentication and matched the accepted bytes.
 [CFPB receipt](../audits/rewrite/cfpb-publication-success/publication.json).
 The two sources are materially different: drinking-water measurements and
 consumer-finance complaints. Neither release claims historical forecasting proof.
+The [December reset proof](../audits/rewrite/dev-window-close/dec1-reset-proof.json)
+and [deployed script copy](../audits/rewrite/dev-window-close/scout_allowance_reset.py)
+preserve the temporary November allowance without raising later monthly limits.
 
 The revised development window is 2026-11-08T19:58:14Z through
 2026-11-09T21:12:00Z. Its sessions remain measured and excluded from normal-operation
@@ -30,7 +38,7 @@ The extra EUR 25 remains authorized for November (EUR 45 allowance, EUR 5 releas
 reserve). The existing deterministic one-shot restores EUR 20 on 1 December.
 Reservation reconciliation is deferred; reservation totals are not billed spend.
 
-## 2026-11-09 21:12 UTC — second public benchmark verified; final handoff
+## A1–A8 outcome sign-off — 2026-11-09
 
 CFPB publish-1 succeeded in 241.3 worker seconds, exit 0, staging release
 439649721 / manifest 728998656. The independently hash-checked publication receipt
@@ -44,45 +52,53 @@ matched the accepted bytes, SHA256
 [anonymous checks](../audits/rewrite/cfpb-publication-success/anonymous-manifest-check.json).
 No manual candidate advancement or per-dataset approval was used. The generic
 review-contract correction returned the candidate to ordinary bounded evaluation,
-then normal scheduling reached automatic publication. Raw evaluate-2 and final
-cleanup/state exports have been requested from Scout.
+then normal scheduling reached automatic publication. The [raw evaluate-2](../audits/rewrite/cfpb-evaluate2/response.json) is accept with
+zero findings; its [usage](../audits/rewrite/cfpb-evaluate2/usage.json) records
+331.813 seconds, seven calls, requested DeepSeek route. The
+[handoff](../audits/rewrite/dev-window-close/note.md) records automatic completion
+at 21:12:19, worker collection at 21:12:04 and deletion at 21:12:17.
 
-Acceptance evidence at this checkpoint:
+Criterion-by-criterion observed evidence:
 
-- **A1:** the [safe deployment record](../audits/rewrite/681deb7-deploy/note.md)
+- **A1 — met:** the [safe deployment record](../audits/rewrite/681deb7-deploy/note.md)
   shows preserved task/worker identities and tick-only recovery. The existing
   pre-deploy EIA worker was collected and deleted by the new controller.
-- **A2:** both qualified construction manifests and public publication receipts
+- **A2 — met:** both qualified construction manifests and public publication receipts
   show successful outcomes; failed CFPB builds and EIA collection show failure
   handling. The controller owns those transitions, not model follow-up sessions.
-  Final publication-worker deletion readback is pending.
-- **A3:** [UCMR code-generation usage](../audits/rewrite/ucmr-build9-repair/usage.json),
+  Publication-worker deletion and an empty live-provider inventory are confirmed
+  in the hosted handoff.
+- **A3 — met:** [UCMR code-generation usage](../audits/rewrite/ucmr-build9-repair/usage.json),
   [accepted review usage](../audits/rewrite/ucmr-evaluate5-acceptance/usage.json)
   and the [development task records](../audits/rewrite/681deb7-deploy/dev-window-usage.json)
   retain the requested DeepSeek route, calls, tokens, elapsed times and failures.
-- **A4:** both public receipts above demonstrate the complete path on materially
+- **A4 — met:** both public receipts above demonstrate the complete path on materially
   different real sources. The CFPB review-routing migration is generic and keeps
   the paid report, attempt history and retry allowance; it does not approve data.
-- **A5:** [UCMR qualification](../audits/rewrite/new-source-outcomes/ucmr5-build-9-qualification.json),
+- **A5 — met:** [UCMR qualification](../audits/rewrite/new-source-outcomes/ucmr5-build-9-qualification.json),
   [baseline](../audits/rewrite/new-source-outcomes/ucmr5-build-9-evaluation.json),
   [CFPB qualification](../audits/rewrite/cfpb-build4-qualified/qualification.json),
   [baseline](../audits/rewrite/cfpb-build4-qualified/evaluation.json) and both
   anonymous consumer receipts bind validation and usable files to exact artifacts.
   Build/source code, source hashes, snapshots, terms and reproduction instructions
   ship with the files. Baselines use validation only, not holdout scoring.
-- **A6:** [UCMR publication recovery](../audits/rewrite/ucmr-publication-success/recovery.json)
+- **A6 — met:** [UCMR publication recovery](../audits/rewrite/ucmr-publication-success/recovery.json)
   reused the same release and matching uploads after real failures. CFPB recovered
   terms/data access through ordinary bounded repair; failed candidates defer at
   their normal limits while unrelated candidates continue. The
   [transient-fetch probe](../audits/rewrite/correction-deploy/live-fetch-recovery-stdout.json)
   injected one 503 before a real publisher request and verified retry/cache reuse;
   it is a controlled transport test, not a claim of an organic outage.
-- **A7:** the minute tick resumed after deployment and produced CFPB's review and
-  publication without operator approval. A fresh readback of the enabled tick,
-  independent cleanup and three disabled legacy launch paths is pending.
-- **A8:** implementation and exported evidence commits have exact-commit green CI;
-  suite changes passed a clean checkout. Final documentation/config push and its
-  exact CI remain pending.
+- **A7 — met:** the minute tick resumed after deployment and produced CFPB's review and
+  publication without operator approval. The [fresh hosted readback](../audits/rewrite/dev-window-close/note.md) confirms
+  the enabled minute tick and cleanup, successful ticks, and all three legacy
+  launch paths disabled.
+- **A8 — met:** implementation and exported evidence commits have exact-commit green CI;
+  suite changes passed a clean checkout. The [closure/evidence commit passed CI](https://github.com/earino/dataset-factory/actions/runs/42700515978),
+  as did the [hosted handoff](https://github.com/earino/dataset-factory/actions/runs/42701075118).
+  The [raw accounting readback](../audits/rewrite/dev-window-close/budget-decision-readback.json)
+  confirms actual normal admission after closing development. Every remaining
+  sign-off/evidence push is checked for exact-commit CI before goal closeout.
 
 Scope and limits: these are current-vintage, purpose-specific prediction tasks,
 with published assumptions and limitations. Validation differences do not establish
@@ -91,12 +107,16 @@ review, but recorded source-access, generation and format failures remain; bound
 retry/defer prevents unlimited repair. This is not a claim that every source builds
 successfully or that all model reasoning is necessary.
 
-The 21:04 usage snapshot records 56 model tasks, 316 calls, 3,546,298 input tokens,
-1,559,686 output tokens and 9,860,864 cache-read tokens. Recorded model elapsed is
-10,971.416 seconds; some interrupted tasks lack elapsed data, so this is not a
-complete total. Twenty-seven worker jobs recorded 3,421.6 execution seconds.
-These records exclude root and interactive Scout coordination, and are not billed
-spend or a general overhead percentage. Final window records remain to be closed.
+The [closed-window usage records](../audits/rewrite/681deb7-deploy/dev-window-usage.json)
+contain 58 model tasks, 325 calls, 3,592,724 input tokens, 1,603,531 output tokens
+and 10,058,624 cache-read tokens. Recorded model elapsed is 11,379.324 seconds;
+some interrupted tasks lack elapsed data, so this is not a complete total.
+Twenty-eight worker jobs recorded 3,662.9 execution seconds (six succeeded,
+22 failed, including publication retries). These records exclude root and
+interactive Scout coordination, and are not billed spend or a general overhead
+percentage. The window spans 25h13m46s and includes the long worker-budget admission
+hold; it must not be treated as continuous model/worker execution time.
+
 
 ## 2026-11-09 20:38 UTC — fix contradictory review output without accepting it
 

@@ -6,10 +6,12 @@ purpose.** A plain data export is not a substitute. This specification supersede
 conflicting legacy workflow requirements for the replacement. Historical releases,
 checksums, evidence and tags remain intact.
 
-**Status:** the implementation goal is paused after its timebox. This document
-specifies the next changes; it does not claim they are implemented or restart
-production. The deployed implementation is `6ac5f83`; the initial run produced
-zero complete public replacement benchmarks. See [progress and evidence](FACTORY-REWRITE-PROGRESS.md).
+**Status (2026-11-09):** implemented and deployed. Two materially different real
+prediction benchmarks completed automatic publication on GitHub and Hugging Face,
+with anonymous full-file consumer verification. Scout is the sole coordinator;
+normal unattended operation and cleanup remain enabled, old launchers disabled,
+and the development inference exemption is closed. See the criterion-by-criterion
+[sign-off, evidence and limitations](FACTORY-REWRITE-PROGRESS.md).
 The prior specification remains available in Git history at `a2a1baa`.
 
 ## Outcome and limits
@@ -238,16 +240,19 @@ The initial run started 2026-11-08 at 11:07 UTC and ended at 19:07 UTC, with its
 four-hour report at 15:07. It did not meet A4/A5. Admissions were disabled at
 19:06:21, the scheduled cutoff confirmed that setting, and final inventory at
 19:08:46 showed no live workers or pending collection. Cleanup remains available.
-This documentation revision does not grant a new implementation timebox or resume
-the goal. The earlier 2–4-hour completion estimate is not a reliable commitment;
-the first public release remains unproven.
+At revision b83c19a this was a proposed resumption plan and public release was
+unproven. Eduardo then authorized a new run from 2026-11-08T19:58:14Z with no new
+elapsed-time limit. The two public outcomes were verified by 2026-11-09T21:12:00Z;
+the development accounting window closes there. The earlier 2–4-hour estimate was
+not a reliable commitment. Progress retains the actual timing and failed attempts.
 
 The 40,000,000-token ceiling applies to normal operation, not development. Keep
 measuring development usage and exclude it from normal-operation accounting.
-The deployed exemption currently records the initial 11:07–19:07 window; a resumed
-development session needs its actual window recorded before admission, without
-raising worker spending/resource limits. Do not classify development as normal
-operation merely because the first timebox expired.
+The recorded initial 11:07–19:07 window and resumed 19:58:14–21:12:00 next-day
+window remain excluded after closure; later sessions use normal admission. Worker
+resource limits remain. Eduardo separately authorized EUR 25 extra for November:
+EUR 45 monthly allowance, EUR 5 release reserve, with a deterministic 1 December
+reset to EUR 20 if the allowance is still 45. Reservations are not billed spend.
 
 On resumption, Scout remains the sole launcher. Inspect saved results and enable
 the replacement's local flag for the resumed work; the legacy R1–R4 human approval
