@@ -14,7 +14,7 @@ reservation gate in `factory/worker.py` (`launch`, spent + reservation > cap):
 | November reserved total | **EUR 14.86** | 110 job records with `2026-11` in `budget_months` (deleted jobs count; the accounting is conservative by design) |
 | Construction boundary | **EUR 15.00** | `monthly_budget_eur` 20.00 − `release_reserve_eur` 5.00 (`config/local.json`) |
 | Remaining headroom | **EUR 0.14** | 15.00 − 14.86 |
-| Next FR worker reservation | **EUR 0.16** | standard recipe: `rate_ceiling_eur` 0.08/h × 2 h lifetime; every November record reserved exactly 0.16 |
+| Next FR worker reservation | **EUR 0.16** | standard recipe: `rate_ceiling_eur` 0.08/h × 2 h lifetime; all three prior FR workers (build-1/2/3) reserved exactly 0.16 |
 | Result | **15.02 > 15.00** | over by **EUR 0.02** |
 
 Exact last admission error (identical in the tick outcome, the candidate record
