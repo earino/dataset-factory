@@ -1,16 +1,17 @@
 {
  "window_start": "2026-11-08T19:58:14Z",
- "as_of": "2026-11-09T21:04:26.968745+00:00",
+ "window_end": "2026-11-09T21:12:00Z",
+ "as_of": "2026-11-09T21:17:20.069484+00:00",
  "source": "existing records only: .factory/model-tasks/*/usage.json, jobs/*.json, pipeline.sqlite3 attempts",
- "notes": "recorded_elapsed_s misses some interrupted discovery tasks (recorded 0); attempt span_s is wall span and long spans cross the intra-day admission hold, not work time; reservations are bounds, not billed spend",
+ "notes": "recorded_elapsed_s misses some interrupted discovery tasks (recorded 0; unknown stays unknown); attempt span_s is wall span and long spans cross the intra-day admission hold, not work time; reservations are bounds, not billed spend",
  "model_tasks": {
-  "count": 56,
-  "calls": 316,
-  "input_tokens": 3546298,
-  "output_tokens": 1559686,
-  "cache_read_tokens": 9860864,
+  "count": 58,
+  "calls": 325,
+  "input_tokens": 3592724,
+  "output_tokens": 1603531,
+  "cache_read_tokens": 10058624,
   "cache_write_tokens": 0,
-  "recorded_elapsed_s": 10971.416
+  "recorded_elapsed_s": 11379.323999999999
  },
  "per_model_task": [
   {
@@ -628,6 +629,28 @@
    "cache_read": 256,
    "cache_write": 0,
    "elapsed_s": 244.3
+  },
+  {
+   "started": "2026-11-09T21:00:03.110417+00:00",
+   "attempt": "rw-1c8d6061c611-evaluate-2",
+   "candidate": "source-000018",
+   "calls": 7,
+   "input": 32062,
+   "output": 34106,
+   "cache_read": 197504,
+   "cache_write": 0,
+   "elapsed_s": 331.8
+  },
+  {
+   "started": "2026-11-09T21:07:01.546252+00:00",
+   "attempt": "rw-4b31be89313d-build-2",
+   "candidate": "source-000020",
+   "calls": 2,
+   "input": 14364,
+   "output": 9739,
+   "cache_read": 256,
+   "cache_write": 0,
+   "elapsed_s": 76.1
   }
  ],
  "worker_jobs": [
@@ -900,6 +923,16 @@
    "status": "failed",
    "exit_code": 1,
    "staging_release_id": 439635373
+  },
+  {
+   "id": "rw-1c8d6061c611-publish-1",
+   "candidate": "cfpb-bank-account-monetary-relief",
+   "created_at": "2026-11-09T21:06:04.982831+00:00",
+   "collected_at": "2026-11-09T21:12:04.209956+00:00",
+   "worker_elapsed_s": 241.3,
+   "status": "succeeded",
+   "exit_code": 0,
+   "staging_release_id": 439649721
   }
  ],
  "worker_attempt_causes": [
@@ -1285,26 +1318,34 @@
    "attempt": "rw-1c8d6061c611-evaluate-2",
    "candidate": "source-000018",
    "stage": "evaluate",
-   "status": "running",
+   "status": "done",
    "started": "2026-11-09T21:00:03.110417+00:00",
-   "span_s": 263.9,
-   "cause": ""
+   "span_s": 336.6,
+   "cause": "Source interpretation and measured usefulness reviewed"
+  },
+  {
+   "attempt": "rw-1c8d6061c611-publish-1",
+   "candidate": "source-000018",
+   "stage": "publish",
+   "status": "done",
+   "started": "2026-11-09T21:06:02.190671+00:00",
+   "span_s": 377.7,
+   "cause": "Published and anonymously verified on GitHub and Hugging Face"
+  },
+  {
+   "attempt": "rw-4b31be89313d-build-2",
+   "candidate": "source-000020",
+   "stage": "build",
+   "status": "running",
+   "started": "2026-11-09T21:07:01.546252+00:00",
+   "span_s": 298.5,
+   "cause": "An active or interrupted job exists; reconcile it before launching another"
   }
  ],
  "worker_totals": {
-  "jobs": 27,
-  "succeeded": 5,
+  "jobs": 28,
+  "succeeded": 6,
   "failed": 22,
-  "worker_elapsed_s": 3421.6
- },
- "identity_check": {
-  "source-000018": "cfpb-bank-account-monetary-relief",
-  "source-000019": "eia860-proposed-generator-completion (staging build-1 release 439594642, worker 29.9s CalledProcessError per root manifest 439594642)",
-  "source-000020": "nhtsa-pe-recall",
-  "eia860_build3": {
-   "release_id": 439635373,
-   "elapsed_s": 38.9,
-   "status": "failed"
-  }
+  "worker_elapsed_s": 3662.9
  }
 }
