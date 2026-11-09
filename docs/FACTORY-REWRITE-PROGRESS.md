@@ -10,17 +10,45 @@ UCMR `v-4a630108a6e75a6b` is public on
 and [Hugging Face](https://huggingface.co/datasets/earino/factory-ucmr5-first-sample-pfas).
 The publication worker anonymously verified all 33 files and loaded every split
 on both platforms; root independently fetched identical public manifests without
-authentication. `7e50d10` is deployed; 960 clean-checkout tests pass (13 skipped).
-Bridge source-15 reached its five-worker-failure limit and is deferred, with
-history preserved. Federal Register source-16 build-4 is repairing the absent
-training-agency rate fallback; its latest artifact has not passed qualification.
-BSEE source-17 is queued through normal construction. The goal is incomplete.
+authentication. `54298b1` is deployed; 960 clean-checkout tests pass (13 skipped).
+Bridge source-15 and BSEE source-17 reached their existing retry bounds and are
+deferred, with history preserved. Federal Register source-16 has a saved valid
+build-5 repair, blocked by worker budget admission: EUR 14.86 reserved plus
+EUR 0.16 for the next worker exceeds the EUR 15 construction boundary by EUR 0.02.
+The proposed monthly allowance change from EUR 20 to EUR 25 is awaiting Eduardo's
+authorization; no limit has changed. Minute tick and cleanup remain active,
+legacy launchers paused, and no paid model child remains. The goal is incomplete.
 
 The first eight-hour run ended incomplete and was safely wound down; its cutoff
 and final resource inventory remain preserved as historical evidence. The tool's
 stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
+
+## 2026-11-09 00:30 UTC — exact budget blocker and safe resumable state
+
+Scout's measured 00:25:53 UTC export is
+`audits/rewrite/budget-blocker-0026/note.md` at `7a2adfcaf320471e9a1882126dd3ecdeab2673ef`.
+The November ledger reserves EUR 14.86. The next standard worker reserves EUR
+0.16; together EUR 15.02 exceeds the EUR 15 construction boundary. These are
+conservative reservations, not billed spend. No reservation is deleted or
+reduced to fit. The EUR 5 release reserve is intact.
+
+Correction to the earlier snapshots: FR build-4 failed descriptor validation
+("Construction descriptor lacks target"). The saved valid response belongs to
+build-5, awaiting normal worker admission with no new model calls. BSEE repair
+builds 5–9 all failed Python parsing; source-17 is deferred at its existing task
+failure bound. No retry reset or candidate-state advance was made.
+
+Scout verified minute tick `07d6f8be3783` and cleanup `e80975eddd4a` active with
+exit 0, and all three legacy launchers paused. No paid model child remains;
+BSEE build-9 completed on its own. Root's proposed allowance increase to EUR 25
+remains pending explicit authorization because the goal retains worker spending
+limits. Under the current policy the saved FR attempt can resume in December.
+No second release or final sign-off is claimed.
+
+Commit `db60b64e78310774f21879625b2a7f4bedf10ec1` passed
+[exact CI](https://github.com/earino/dataset-factory/actions/runs/42540142725).
 
 ## 2026-11-09 00:26 UTC — worker budget admission blocks FR build-4
 
