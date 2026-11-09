@@ -1,0 +1,415 @@
+{
+  "quality": {
+    "name": "fr-proposed-rule-finalization",
+    "target": "finalized_within_36_months",
+    "positive_label": 1,
+    "use": "retrospective_research",
+    "scope": {
+      "use": "retrospective_research",
+      "access": "isolated_rows",
+      "eval_role": "development",
+      "holdout_role": "final"
+    },
+    "task": {
+      "use": "retrospective_research",
+      "question": "When an agency publishes a notice of proposed rulemaking in the Federal Register, will a final rule for that same regulatory action be published within three years?",
+      "population": "Federal Register Proposed Rule documents published 1995-01-01 through 2022-06-30 whose regulation_id_numbers array contains exactly one value matching the RIN pattern four digits, a hyphen, two letters, two digits; keep the earliest such NPRM per RIN; drop titles matching comment-period extension, correction or withdrawal wording. 1994 NPRMs are fetched as pre-window context only: they are not shipped, and because the agency prior-rate feature aggregates training-split labels exclusively, they contribute no label information to that feature. NPRMs after 2022-06-30 are excluded so every 1096-day label window closes by 2026-11-07.",
+      "prediction_time": "The publication date of the first eligible Federal Register Proposed Rule carrying the row RIN. Only fields from that NPRM record are model inputs; later Rule documents are used only to construct the label, and the backward-looking agency prior rate uses training-split labels only.",
+      "target": "finalized_within_36_months is 1 if at least one Federal Register Rule whose regulation_id_numbers contains the row RIN has a publication_date strictly greater than the NPRM publication date and no later than NPRM publication date plus 1096 days; otherwise it is 0.",
+      "split_policy": "Chronological on NPRM publication_date, half-open windows: train 1995-01-01 through 2012-12-31, eval 2013-01-01 through 2017-12-31, holdout 2018-01-01 through 2022-06-30. Every label window closes on or before 2026-11-07, which the 2022-06-30 cut enforces.",
+      "usefulness": "Finalization is absent from the NPRM record and must be forecast from a metadata signature. The 1096-day horizon includes slow finalizations and repeated proposals that never finalize; document-level signals such as comment window, CFR breadth, page span and same-agency history remain available at publication.",
+      "simple_references": "Persistence is not applicable because rows are one regulatory action (RIN) with no entity time series. Controls to beat include the overall majority class, the training-period top-level-agency base rate, the publication-year base rate and a month-of-publication-only model. A Unified Agenda final-rule-stage flag is deliberately excluded.",
+      "features": [
+        {
+          "name": "top_level_agency",
+          "meaning": "Slug of the highest-level agency in the NPRM agencies array; the entry with a null parent_id is used when present, otherwise the first agency entry slug.",
+          "availability": "Printed in the NPRM agencies array on the publication date; parent-slug fallback is assumed when the parent entry is absent.",
+          "evidence_url": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=agencies&fields%5B%5D=publication_date"
+        },
+        {
+          "name": "agency_is_subagency",
+          "meaning": "1 when the first issuing agency entry has a non-null parent_id, 0 otherwise.",
+          "availability": "parent_id is part of the current agencies record; historical completeness is unverified.",
+          "evidence_url": "https://www.federalregister.gov/api/v1/agencies/161"
+        },
+        {
+          "name": "cfr_part_count",
+          "meaning": "Count of cfr_references entries, i.e. CFR parts the action would amend.",
+          "availability": "Printed with the NPRM at publication; current API snapshot.",
+          "evidence_url": "https://www.federalregister.gov/api/v1/documents.json?per_page=20&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2015-06-01&conditions%5Bpublication_date%5D%5Blte%5D=2015-06-10&fields%5B%5D=cfr_references&fields%5B%5D=document_number"
+        },
+        {
+          "name": "cfr_title_count",
+          "meaning": "Number of distinct CFR titles touched by the NPRM.",
+          "availability": "Derived from the same cfr_references printed at publication.",
+          "evidence_url": "https://www.federalregister.gov/api/v1/documents.json?per_page=20&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2015-06-01&conditions%5Bpublication_date%5D%5Blte%5D=2015-06-10&fields%5B%5D=cfr_references&fields%5B%5D=document_number"
+        },
+        {
+          "name": "page_span",
+          "meaning": "end_page minus start_page plus one; missing when either printed page is absent.",
+          "availability": "Page range is fixed when the issue is printed.",
+          "evidence_url": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=start_page&fields%5B%5D=end_page&fields%5B%5D=document_number"
+        },
+        {
+          "name": "abstract_char_count",
+          "meaning": "Length of the Federal Register abstract in characters; 0 when absent.",
+          "availability": "Abstract is published with the NPRM itself.",
+          "evidence_url": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=abstract&fields%5B%5D=document_number"
+        },
+        {
+          "name": "comment_period_days",
+          "meaning": "comments_close_on minus publication_date in days; missing when no Federal Register comment close date is set.",
+          "availability": "Both dates appear on the face of the NPRM at publication.",
+          "evidence_url": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=comments_close_on&fields%5B%5D=publication_date"
+        },
+        {
+          "name": "docket_id_count",
+          "meaning": "Number of docket_ids entries; 0 when none.",
+          "availability": "Docket identifiers are printed in the document heading at publication.",
+          "evidence_url": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=docket_ids&fields%5B%5D=document_number"
+        },
+        {
+          "name": "joint_issuance",
+          "meaning": "1 when more than one agency appears in the agencies array, 0 otherwise.",
+          "availability": "Visible in the agencies array at publication.",
+          "evidence_url": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=agencies&fields%5B%5D=publication_date"
+        },
+        {
+          "name": "publication_month",
+          "meaning": "Calendar month of NPRM publication, 1 through 12.",
+          "availability": "Publication date of the row itself.",
+          "evidence_url": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=publication_date"
+        },
+        {
+          "name": "agency_prior_finalization_rate",
+          "meaning": "Share of earlier training-split same-top-level-agency NPRM rows finalized, counting only training rows whose 1096-day outcome window closed strictly before this row publication date; smoothed as (positives plus 0.5) divided by (count plus 1) below three such rows; fixed default 0.5 when no such earlier closed training row exists; empty only when the row has no top-level agency.",
+          "availability": "Backward-looking only; built from training-split labels whose 1096-day outcome windows closed strictly before the row publication date, so eval and holdout rows never contribute a label. An agency-bearing row with no earlier closed training row for its top-level agency receives the fixed constant 0.5, which is an arbitrary default for unseen agencies rather than an estimated rate. The value is blind to developments after 2012-12-31.",
+          "evidence_url": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=agencies&fields%5B%5D=publication_date&fields%5B%5D=type"
+        }
+      ]
+    },
+    "features": [
+      "top_level_agency",
+      "agency_is_subagency",
+      "cfr_part_count",
+      "cfr_title_count",
+      "page_span",
+      "abstract_char_count",
+      "comment_period_days",
+      "docket_id_count",
+      "joint_issuance",
+      "publication_month",
+      "agency_prior_finalization_rate"
+    ],
+    "id_column": "rin",
+    "id_columns": [
+      "rin"
+    ],
+    "time_column": "publication_date",
+    "event_key_column": "publication_date",
+    "carry_columns": [
+      "publication_date"
+    ],
+    "label_source_columns": [
+      "regulation_id_numbers",
+      "type"
+    ],
+    "post_hoc_columns": [],
+    "high_cardinality_columns": [
+      "publication_date",
+      "agency_prior_finalization_rate"
+    ],
+    "declared_high_cardinality_columns": [
+      "publication_date",
+      "agency_prior_finalization_rate"
+    ],
+    "declared_columns": [
+      "rin",
+      "publication_date",
+      "finalized_within_36_months",
+      "top_level_agency",
+      "agency_is_subagency",
+      "cfr_part_count",
+      "cfr_title_count",
+      "page_span",
+      "abstract_char_count",
+      "comment_period_days",
+      "docket_id_count",
+      "joint_issuance",
+      "publication_month",
+      "agency_prior_finalization_rate"
+    ],
+    "measurements": [
+      {
+        "column": "page_span",
+        "frame": "Federal Register printed page range of the NPRM",
+        "unit": "pages"
+      },
+      {
+        "column": "abstract_char_count",
+        "frame": "Federal Register abstract field",
+        "unit": "characters"
+      },
+      {
+        "column": "comment_period_days",
+        "frame": "comments_close_on minus publication_date; null when no Federal Register comment date is set",
+        "unit": "days"
+      },
+      {
+        "column": "cfr_part_count",
+        "frame": "number of CFR part entries in cfr_references",
+        "unit": "CFR parts"
+      },
+      {
+        "column": "cfr_title_count",
+        "frame": "number of distinct CFR titles in cfr_references",
+        "unit": "CFR titles"
+      },
+      {
+        "column": "docket_id_count",
+        "frame": "number of docket identifiers on the NPRM",
+        "unit": "docket identifiers"
+      },
+      {
+        "column": "publication_month",
+        "frame": "calendar month of NPRM publication",
+        "unit": "month"
+      },
+      {
+        "column": "agency_prior_finalization_rate",
+        "frame": "earlier training-split same-agency NPRM rows whose 1096-day outcome window closed strictly before this row publication date, with the 0.5 default when no such row exists; eval and holdout rows use those training labels only",
+        "unit": "proportion"
+      }
+    ],
+    "split_windows": {
+      "train": {
+        "start": "1995-01-01T00:00:00.000",
+        "end": "2013-01-01T00:00:00.000"
+      },
+      "eval": {
+        "start": "2013-01-01T00:00:00.000",
+        "end": "2018-01-01T00:00:00.000"
+      },
+      "holdout": {
+        "start": "2018-01-01T00:00:00.000",
+        "end": "2022-07-01T00:00:00.000"
+      }
+    },
+    "evaluation_contract": {
+      "access": "isolated_rows",
+      "use": "retrospective_research",
+      "feature_evidence": {
+        "top_level_agency": {
+          "source": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=agencies&fields%5B%5D=publication_date",
+          "availability": "Printed in the NPRM agencies array at publication; parent-slug fallback is assumed when the parent entry is absent.",
+          "status": "assumed"
+        },
+        "agency_is_subagency": {
+          "source": "https://www.federalregister.gov/api/v1/agencies/161",
+          "availability": "parent_id is part of the current agencies record; historical completeness is unverified.",
+          "status": "assumed"
+        },
+        "cfr_part_count": {
+          "source": "https://www.federalregister.gov/api/v1/documents.json?per_page=20&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2015-06-01&conditions%5Bpublication_date%5D%5Blte%5D=2015-06-10&fields%5B%5D=cfr_references&fields%5B%5D=document_number",
+          "availability": "Count of cfr_references entries at publication; current snapshot.",
+          "status": "verified"
+        },
+        "cfr_title_count": {
+          "source": "https://www.federalregister.gov/api/v1/documents.json?per_page=20&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2015-06-01&conditions%5Bpublication_date%5D%5Blte%5D=2015-06-10&fields%5B%5D=cfr_references&fields%5B%5D=document_number",
+          "availability": "Derived from the same cfr_references printed at publication; current snapshot.",
+          "status": "verified"
+        },
+        "page_span": {
+          "source": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=start_page&fields%5B%5D=end_page&fields%5B%5D=document_number",
+          "availability": "Printed page range in the current API record; historical formatting practice may vary.",
+          "status": "verified"
+        },
+        "abstract_char_count": {
+          "source": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=abstract&fields%5B%5D=document_number",
+          "availability": "Abstract is published with the NPRM; 0 means absent in the source field.",
+          "status": "verified"
+        },
+        "comment_period_days": {
+          "source": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=comments_close_on&fields%5B%5D=publication_date",
+          "availability": "comments_close_on and publication_date are current API fields; null means no Federal Register comment close date.",
+          "status": "verified"
+        },
+        "docket_id_count": {
+          "source": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=docket_ids&fields%5B%5D=document_number",
+          "availability": "Docket identifiers are printed in the document heading at publication; current snapshot.",
+          "status": "verified"
+        },
+        "joint_issuance": {
+          "source": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=agencies&fields%5B%5D=publication_date",
+          "availability": "Derived from the agencies array at publication; current snapshot.",
+          "status": "verified"
+        },
+        "publication_month": {
+          "source": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=publication_date",
+          "availability": "Calendar month of the row publication date; current snapshot.",
+          "status": "verified"
+        },
+        "agency_prior_finalization_rate": {
+          "source": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=agencies&fields%5B%5D=publication_date&fields%5B%5D=type",
+          "availability": "Constructed only from training-split NPRM labels whose outcome windows closed strictly before the row publication date; eval and holdout rows reuse those training-only aggregates, and an agency with no earlier closed training row receives the fixed 0.5 default, so no scored label enters the value.",
+          "status": "assumed"
+        },
+        "publication_date": {
+          "source": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=publication_date",
+          "availability": "Current API snapshot; publication_date is printed in the NPRM record. Historical completeness is unverified.",
+          "status": "verified"
+        },
+        "rin": {
+          "source": "https://www.federalregister.gov/api/v1/documents.json?per_page=3&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bpublication_date%5D%5Bgte%5D=2024-01-01&fields%5B%5D=regulation_id_numbers&fields%5B%5D=document_number",
+          "availability": "Current API snapshot; the regulation_id_numbers array is printed in the NPRM record. Historical completeness is unverified.",
+          "status": "verified"
+        }
+      },
+      "selection": {
+        "fields": [
+          "type",
+          "publication_date",
+          "regulation_id_numbers",
+          "title"
+        ],
+        "latest_period": "2022-06-30",
+        "rule": "Proposed Rule documents published 1995-01-01 through 2022-06-30 with exactly one regulation_id_numbers value matching four digits, a hyphen, two letters, two digits, excluding titles mentioning comment-period extension, correction or withdrawal; keep the earliest eligible NPRM per RIN. Row selection reads no later Rule document and no label; later Rule documents set only the target, and the agency prior rate uses training-split labels only.",
+        "outcome_conditioning": "none"
+      },
+      "limitations": [
+        "Current-vintage Federal Register metadata are not proof of what a historical analyst saw on the decision date.",
+        "RIN inclusion in Federal Register headings is voluntary, so the NPRM population is biased toward formal, better-documented rulemakings.",
+        "Umbrella RINs identify a rule series rather than one action; the one-row-per-RIN rule bounds but does not remove this issue.",
+        "Rule type aggregates final rules, interim final rules, direct final rules, temporary rules and corrections.",
+        "Merged, split, successor or duplicate RINs may cause a completed action to be scored as not finalized.",
+        "NPRMs after 2022-06-30 are excluded so every 1096-day outcome window closes by the data freeze.",
+        "Agency reorganisations and renames split top-level agency categories across the long panel.",
+        "Missing page, comment-period or prior-rate values are represented as missing, not zero.",
+        "The agency prior-finalization rate uses training-split labels only: eval and holdout rows receive an aggregate of earlier training outcomes, which keeps the feature free of scored labels but also makes it blind to developments after 2012-12-31.",
+        "An agency-bearing row whose top-level agency has no earlier closed training row receives the fixed constant 0.5, which is an arbitrary default for unseen or newly created agencies rather than an estimated rate.",
+        "No eval or holdout label enters any shipped feature, and no scored label was used for target, feature, threshold or split choices.",
+        "No persistence reference applies because each regulatory action appears at most once."
+      ],
+      "label_availability": {
+        "status": "unverified",
+        "training_label_timing": "unverified",
+        "full_row_availability_ledger": false,
+        "ledger": [],
+        "reason": "No full-row availability ledger exists for 1995-2022; current-vintage retrospective metadata do not prove what an analyst saw at each publication date. The task is retrospective research and does not claim historical forecasting availability.",
+        "limitations": [
+          "Historical availability of agencies, parent_id, comments_close_on, abstract, page range and docket identifiers over 1995-2022 is unverified.",
+          "Training-label timing remains unverified because no complete row-level availability ledger was measured."
+        ]
+      },
+      "cross_row_audit": {
+        "auxiliary_files_review": "Only the declared public/train.csv, public/eval.csv and private/holdout.csv inputs",
+        "probes": [],
+        "rationale": "One row per regulatory action (RIN); no entity time series or cross-row identity reference is shipped. The agency prior-finalization rate is a cross-row aggregate built from training-split labels only, so it cannot carry an eval or holdout outcome into another row, and agency-bearing rows with no earlier closed training row receive the fixed constant 0.5. Flipping every eval and holdout label leaves each shipped rate unchanged."
+      }
+    },
+    "vintage": {
+      "kind": "current_snapshot",
+      "evidence": "Federal Register API snapshot accessed 2026-11-07; historical field availability is not verified",
+      "use": "retrospective_research",
+      "selection": {
+        "fields": [
+          "type",
+          "publication_date",
+          "regulation_id_numbers",
+          "title"
+        ],
+        "latest_period": "2022-06-30",
+        "rule": "Proposed Rule documents published 1995-01-01 through 2022-06-30 with exactly one regulation_id_numbers value matching four digits, a hyphen, two letters, two digits, excluding titles mentioning comment-period extension, correction or withdrawal; keep the earliest eligible NPRM per RIN. Row selection reads no later Rule document and no label; later Rule documents set only the target, and the agency prior rate uses training-split labels only.",
+        "outcome_conditioning": "none"
+      },
+      "limitations": [
+        "Current-vintage Federal Register metadata are not proof of what a historical analyst saw on the decision date.",
+        "Historical field availability over 1995-2022 is unverified.",
+        "Training-label timing remains unverified because no full-row availability ledger was measured."
+      ]
+    },
+    "vintage_and_selection": {
+      "vintage": {
+        "kind": "current_snapshot",
+        "evidence": "Federal Register API snapshot accessed 2026-11-07; historical field availability is not verified",
+        "use": "retrospective_research"
+      },
+      "selection": {
+        "fields": [
+          "type",
+          "publication_date",
+          "regulation_id_numbers",
+          "title"
+        ],
+        "latest_period": "2022-06-30",
+        "rule": "Proposed Rule documents published 1995-01-01 through 2022-06-30 with exactly one regulation_id_numbers value matching four digits, a hyphen, two letters, two digits, excluding titles mentioning comment-period extension, correction or withdrawal; keep the earliest eligible NPRM per RIN. Row selection reads no later Rule document and no label; later Rule documents set only the target, and the agency prior rate uses training-split labels only.",
+        "outcome_conditioning": "none"
+      },
+      "limitations": [
+        "Current-vintage Federal Register metadata are not proof of what a historical analyst saw on the decision date.",
+        "Historical field availability over 1995-2022 is unverified.",
+        "Training-label timing remains unverified because no full-row availability ledger was measured."
+      ]
+    },
+    "selection": {
+      "fields": [
+        "type",
+        "publication_date",
+        "regulation_id_numbers",
+        "title"
+      ],
+      "latest_period": "2022-06-30",
+      "rule": "Proposed Rule documents published 1995-01-01 through 2022-06-30 with exactly one regulation_id_numbers value matching four digits, a hyphen, two letters, two digits, excluding titles mentioning comment-period extension, correction or withdrawal; keep the earliest eligible NPRM per RIN. Row selection reads no later Rule document and no label; later Rule documents set only the target, and the agency prior rate uses training-split labels only.",
+      "outcome_conditioning": "none"
+    },
+    "limitations": [
+      "Current-vintage Federal Register metadata are not proof of what a historical analyst saw on the decision date.",
+      "RIN inclusion in Federal Register headings is voluntary, so the NPRM population is biased toward formal, better-documented rulemakings.",
+      "Umbrella RINs identify a rule series rather than one action; the one-row-per-RIN rule bounds but does not remove this issue.",
+      "Rule type aggregates final rules, interim final rules, direct final rules, temporary rules and corrections.",
+      "Merged, split, successor or duplicate RINs may cause a completed action to be scored as not finalized.",
+      "NPRMs after 2022-06-30 are excluded so every 1096-day outcome window closes by the data freeze.",
+      "Agency reorganisations and renames split top-level agency categories across the long panel.",
+      "Missing page, comment-period or prior-rate values are represented as missing, not zero.",
+      "The agency prior-finalization rate uses training-split labels only: eval and holdout rows receive an aggregate of earlier training outcomes, which keeps the feature free of scored labels but also makes it blind to developments after 2012-12-31.",
+      "An agency-bearing row whose top-level agency has no earlier closed training row receives the fixed constant 0.5, which is an arbitrary default for unseen or newly created agencies rather than an estimated rate.",
+      "No eval or holdout label enters any shipped feature, and no scored label was used for target, feature, threshold or split choices.",
+      "No persistence reference applies because each regulatory action appears at most once."
+    ],
+    "timing": {
+      "features": {
+        "source_kind": "administrative_record",
+        "period": "D",
+        "published_days_after_period_end": 0,
+        "days_after_period_end": 0,
+        "publication_lag_days": 0,
+        "lag_days": 0,
+        "feature_lag_days": 0,
+        "available": "at NPRM publication",
+        "available_at": "publication_date"
+      },
+      "observations": [],
+      "prediction_instant": {
+        "kind": "event_time",
+        "period": "D",
+        "days_after_period_end": 0,
+        "published_days_after_period_end": 0,
+        "citation": "NPRM publication_date in the Federal Register API record"
+      },
+      "row_selection": {
+        "fields": [
+          "type",
+          "publication_date",
+          "regulation_id_numbers",
+          "title"
+        ],
+        "latest_period": "2022-06-30",
+        "latest_period_used": "2022-06-30",
+        "period_end": "2022-06-30",
+        "rule": "Earliest eligible Proposed Rule per valid RIN; publication_date from 1995-01-01 through 2022-06-30; selection reads only fields printed on the NPRM record itself and never later Rule documents or scored labels. The agency prior-rate feature uses training-split labels only and the fixed 0.5 default where no earlier closed training row exists."
+      }
+    },
+    "training_label_timing": "unverified"
+  },
+  "construction_notes": "Descriptor and declaration repair only; the saved build_py is retained unchanged because the prior failure was a qualification-descriptor failure, not a download or row-construction failure. Prior diagnostics reported use=None, missing explicit vintage/selection/limitations declarations, no label-availability ledger, undeclared publication_date, publication_date treated as an answer source, undeclared high-cardinality columns, and a null feature publication lag. This proposal keeps the frozen task, target, population, feature list, label rule and split windows unchanged. publication_date is now declared as the required time and event-key column and as a carry column in every split; it is not repeated in label_source_columns, which now names only the non-shipped fields used to identify the matching later Rule (regulation_id_numbers and type). The row clock and horizon origin remain publication_date in timing.row_selection and the target rule. The continuous agency prior rate is declared in high_cardinality_columns because smoothing produces many distinct values. Timing now records a zero-day event-time availability lag for the NPRM metadata itself under source_kind administrative_record; this is an event-record availability statement, not a claim of a statistical reporting period or a historical forecasting system. No full-row historical availability ledger is claimed: feature evidence marks historical completeness as unverified or assumed where only the current snapshot was checked. The source access recipe is unchanged. No scores informed this repair, and no persistence reference applies because each regulatory action appears at most once."
+}
