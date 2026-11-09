@@ -22,6 +22,32 @@ stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
 
+## 2026-11-09 00:05 UTC — BSEE semantic repair and Scout session recovery
+
+BSEE evaluate-1 returned repair after 170.167 seconds, five recorded calls,
+73,646 input / 29,186 output tokens (including title generation). It identified
+that COMPLEX_ID_NUM can refer to a group of structures, so deduplication removed
+102 eligible structures, and that the lease-number proxy did not implement the
+declared OCS Lease authority filter. These are concrete construction defects;
+the passing mechanical report alone is not acceptance. The response and usage
+are preserved in `audits/rewrite/bsee-evaluate1-and-repairs/`, exported by Scout
+at `e5f239cc55703cad9c76f02225f9f53f320138aa`
+([exact CI](https://github.com/earino/dataset-factory/actions/runs/42538039593)).
+Normal code repairs build-5 and build-6 failed syntax validation; build-7 was the
+latest paid child. No worker-failure counters were reset. Conditional advice
+about unmaterialized group-rate references does not require adding those
+features or proving historical forecasting for this retrospective task.
+
+Scout confirmed deployment of `54298b1` at 23:59:33 UTC with the paid child
+preserved and the minute tick resumed. The large Telegram coordination session
+hit its 600-second compression ceiling, then stalled again after exporting the
+checkpoint. Root reset that chat with `/new` and supplied a compact durable-state
+resume message, asking Scout to inspect live children and the FR build-4
+admission delay. This resets chat context, not candidate state. Actual post-reset
+child/controller reconciliation is still pending confirmation.
+Evidence-only main `0ad3e6d4510a56798ed7c66b3dd6f76a066c3db1` passed
+[exact CI](https://github.com/earino/dataset-factory/actions/runs/42537799585).
+
 ## 2026-11-08 23:53 UTC — BSEE full-worker qualification passes
 
 Normal source-17 repair build-4 succeeded in 38.7 worker seconds (release
