@@ -16,11 +16,18 @@ export. Root's independent read of both staging outcomes is commit `4ee6f77`
   `label_source_columns` includes publication_date; instant D/0). Release
   439516409, manifest 728607727, qualification 728607354, quality 728607185.
   Closed 19:03:26; artifacts preserved; worker deleted.
-- 19:05:01 build-6 repair model task started. The prompt carries the
-  declaration-failure details, the saved build-5 proposal and the schema
-  example (verified present: evaluation_contract, features_documented_at,
+- 19:05:01 build-6 repair model task started. The prompt's top-level keys are
+  `previous_construction`, `prior_failure` and `source`. It carried the
+  declaration-failure details and the saved build-5 proposal, but **no schema
+  example**; the field names (evaluation_contract, features_documented_at,
   high_cardinality_columns, carry_columns, label_source_columns,
-  training_label_timing, vintage, publication_date, declaration).
+  training_label_timing, vintage, publication_date) occur inside
+  `previous_construction`. This export's earlier wording calling that a schema
+  example was an inference and is corrected here; `65de530` now actually
+  supplies the repair schema example.
+- build-6 response contained only `quality` + `construction_notes`, and the
+  worker's build.py hash exactly equals build-5's — live omitted-code repair
+  reuse is proven. The failed artifact is still not accepted.
 - build-6 response (29,420 bytes) validated; worker launched 19:06:56
   (server 175346567, EUR 0.16): 328.6 s, failed only
   `contract.vintage_and_selection`, `contract.label_availability`,
