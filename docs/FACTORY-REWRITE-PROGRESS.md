@@ -12,9 +12,8 @@ The publication worker anonymously verified all 33 files and loaded every split
 on both platforms; root independently fetched identical public manifests without
 authentication. `54298b1` is deployed; 960 clean-checkout tests pass (13 skipped).
 Bridge source-15 and BSEE source-17 reached their existing retry bounds and are
-deferred, with history preserved. Federal Register source-16 has a saved valid
-build-5 repair, blocked by worker budget admission: EUR 14.86 reserved plus
-EUR 0.16 for the next worker exceeds the EUR 15 construction boundary by EUR 0.02.
+deferred, with history preserved. Federal Register source-16 build-5 ran after budget admission cleared, but failed
+qualification on regressed declarations; normal build-6 repair is next.
 Eduardo has authorized an extra EUR 25 for this development run; Scout is applying
 the temporary EUR 45 total allowance, with EUR 5 retained for release work. Minute tick and cleanup remain active,
 legacy launchers paused, and no paid model child remains. The goal is incomplete.
@@ -24,6 +23,41 @@ and final resource inventory remain preserved as historical evidence. The tool's
 stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
+
+## 2026-11-09 19:05 UTC — budget applied, FR code repaired but declarations regressed
+
+Scout confirmed local allowance readback EUR 45 with release reserve EUR 5,
+construction boundary EUR 40 and unchanged worker/resource/retry limits. Normal
+tick admitted the saved FR build-5 without repeating its paid model proposal.
+The ledger then reserved EUR 15.02 for November (reservations, not billed spend).
+The temporary allowance and obligation to restore EUR 20 at normal-operation
+handoff are also recorded in Scout's persistent memory.
+
+FR build-5 worker ran 343.2 seconds and failed full gate 1.6.1 (release 439516409,
+manifest asset 728607727, qualification 728607354, quality 728607185). Compact
+metadata, source code and a root note are preserved in
+`audits/rewrite/fr-build5-declaration-regression/`. Root verified the builder
+against the source tar and worker code pin. It fixes the absent-training-agency
+fallback and retains train-only, maturity-bounded rate computation and existing
+scored-label-flip checks. No CSV was downloaded and no score is accepted.
+
+The quality replacement introduced eight declaration failures: scope/vintage/
+training-label timing moved outside evaluation_contract, feature-time and
+high-cardinality declarations disappeared, and the NPRM publication_date was
+misclassified as a label source while still shipped and missing from carry
+columns. The event declaration again used D/0 rather than its unverified event
+representation. These are actual metadata regressions, not a prohibition on
+publication dates. Normal repair should preserve the working builder and correct
+only the quality descriptor; the gate and worker bounds remain unchanged.
+
+Scout reports build-5 collected/deleted at 19:03:26 UTC, artifacts preserved;
+build-6 repair begins on the 19:04:26 tick. Source-18, discovered through the
+normal queue, remains queued behind the single worker slot. Deferred bridge/BSEE
+bounds are preserved. Root authorization commit
+`4ee6f77ee30e90ee355c3fcf3e007776bbfdb2ec` passed
+[exact CI](https://github.com/earino/dataset-factory/actions/runs/42677769846).
+Scout's clarification `8522db0912061816ba1a709a7e08d3ab8b7db761` also has
+[green exact CI](https://github.com/earino/dataset-factory/actions/runs/42540848338).
 
 ## 2026-11-09 18:50 UTC — extra development worker allowance authorized
 
