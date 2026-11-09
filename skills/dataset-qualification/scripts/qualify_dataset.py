@@ -278,6 +278,45 @@ def check_leakage(dataset: Path, quality: dict, report: Report,
                {"undeclared": undeclared_ids, "declared": sorted(declared_free)})
 
 
+def check_declarations(quality, report, *, contract=True, timing=True):
+    """Existing data-independent predicates, also used before worker admission.
+
+    Passing these declarations is never artifact qualification. Row, availability
+    ledger, timing-evidence and recovery checks still run on the full worker data.
+    """
+    if timing:
+        documented = quality.get("features_documented_at")
+        report.add("timing.every_feature_documented",
+                   documented == "prediction_time",
+                   f"features documented as available {documented!r}",
+                   {"features_documented_at": documented})
+    if not contract:
+        return
+    contract = quality.get('evaluation_contract')
+    report.add('contract.declared', isinstance(contract, dict),
+               'evaluation_contract required: intended use, access, vintage and evidence')
+    if not isinstance(contract, dict):
+        return
+    scope = contract.get('use')
+    access = contract.get('access')
+    report.add('contract.scope', scope in ('retrospective_research', 'historical_forecasting')
+               and access in ('isolated_rows', 'chronological', 'common_cutoff_batch'),
+               f'use={scope!r}; access={access!r}; eval is development, holdout is final')
+    vintage = contract.get('vintage', {})
+    selection = contract.get('selection', {})
+    if not isinstance(vintage, dict): vintage = {}
+    if not isinstance(selection, dict): selection = {}
+    report.add('contract.vintage_and_selection',
+               vintage.get('kind') in ('as_of', 'current_snapshot', 'mixed') and bool(vintage.get('evidence'))
+               and selection.get('kind') in ('prediction_time', 'outcome_conditioned')
+               and bool(selection.get('evidence')) and bool(contract.get('limitations')),
+               'Vintage, selection and limitations must be explicit; declarations are not measurements')
+    if not contract.get('availability_ledger'):
+        report.add('contract.label_availability', scope == 'retrospective_research'
+                   and contract.get('training_label_timing') == 'unverified',
+                   'No full-row availability ledger: training-label timing UNVERIFIED; retrospective use only')
+
+
 def check_prediction_time(quality: dict, report: Report) -> None:
     task = quality.get("task", {})
     when = (task.get("prediction_time") or "").strip()
@@ -299,11 +338,7 @@ def check_prediction_time(quality: dict, report: Report) -> None:
                else f"label source used as a feature: {source_features}",
                {"source_features": source_features})
 
-    documented = quality.get("features_documented_at")
-    report.add("timing.every_feature_documented",
-               documented == "prediction_time",
-               f"features documented as available {documented!r}",
-               {"features_documented_at": documented})
+    check_declarations(quality, report, contract=False)
 
     # A declaration is not evidence. These checks exist because two datasets were packaged with a
     # prediction instant that preceded the publication of their own features: the string
@@ -396,16 +431,12 @@ def check_evaluation_contract(dataset, quality, report, columns_by_split):
     Retrospective artifacts may qualify with explicit assumptions. They cannot claim historical
     availability. Cross-row probes measure exposure, not whether an existing model used it.
     """
+    check_declarations(quality, report, timing=False)
     contract = quality.get('evaluation_contract')
-    report.add('contract.declared', isinstance(contract, dict),
-               'evaluation_contract required: intended use, access, vintage and evidence')
     if not isinstance(contract, dict):
         return
     scope = contract.get('use')
     access = contract.get('access')
-    report.add('contract.scope', scope in ('retrospective_research', 'historical_forecasting')
-               and access in ('isolated_rows', 'chronological', 'common_cutoff_batch'),
-               f'use={scope!r}; access={access!r}; eval is development, holdout is final')
     evidence = contract.get('feature_evidence', {})
     if not isinstance(evidence, dict):
         evidence = {}
@@ -419,11 +450,6 @@ def check_evaluation_contract(dataset, quality, report, columns_by_split):
     selection = contract.get('selection', {})
     if not isinstance(vintage, dict): vintage = {}
     if not isinstance(selection, dict): selection = {}
-    report.add('contract.vintage_and_selection',
-               vintage.get('kind') in ('as_of', 'current_snapshot', 'mixed') and bool(vintage.get('evidence'))
-               and selection.get('kind') in ('prediction_time', 'outcome_conditioned')
-               and bool(selection.get('evidence')) and bool(contract.get('limitations')),
-               'Vintage, selection and limitations must be explicit; declarations are not measurements')
     audit = contract.get('cross_row_audit', {})
     if not isinstance(audit, dict): audit = {}
     probes = audit.get('probes', [])
@@ -449,9 +475,6 @@ def check_evaluation_contract(dataset, quality, report, columns_by_split):
                    'Historical forecasting requires verified inputs, as-of vintage and prediction-time selection')
     ledger = contract.get('availability_ledger')
     if not ledger:
-        report.add('contract.label_availability', scope == 'retrospective_research'
-                   and contract.get('training_label_timing') == 'unverified',
-                   'No full-row availability ledger: training-label timing UNVERIFIED; retrospective use only')
         return
     problems = []
     try:

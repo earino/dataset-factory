@@ -24,6 +24,48 @@ stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
 
+## 2026-11-09 19:22 UTC — run existing declaration checks before paying for workers
+
+FR build-6 failed after 328.6 worker seconds (release 439529336 / manifest
+728649260 / qualification 728648876). Only three declaration checks remain:
+contract.vintage_and_selection, contract.label_availability and
+timing.every_feature_documented. Exact failed quality/report/staging bindings
+are preserved in `audits/rewrite/fr-build6-static-failures/`. This is the fifth
+worker failure; retain the ordinary deferral and do not reset FR to force success.
+
+These predicates require no rows. Their existing definitions are now factored
+into the gate's `check_declarations` helper and reused by construction validation
+before a fresh worker launch. They are not new requirements. Full worker checks
+still run on all rows, including feature/label availability evidence, timing,
+splits and recovery. Passing preflight does not qualify an artifact. Already
+recorded paid jobs bypass the new preflight so reconciliation/collection cannot
+be blocked by it. Existing saved drafts feed normal bounded repairs; bounded paid
+stdout is now retained even for rejected nonzero exits. Repair prompts retain
+the schema example, previously omitted whenever a previous construction existed.
+
+A regression check uses the exact build-6 descriptor and confirms the preflight
+rejects the same three failed checks; valid descriptors and a worker-only ledger
+can proceed to full validation. A paid-job case confirms collection remains
+possible. All 53 focused contract/timing/engine/model tests and the rule inventory
+pass. The first clean-checkout run found only the expected changed skill-code
+inventory digest; the reviewed qualifier digest is updated in ops/runtime-files.json.
+The full clean-checkout rerun passed 961 tests (13 skipped), and runtime source
+inventory passed. No requirement was removed.
+
+The exported build-6 prompt JSON actually has only previous_construction,
+prior_failure and source keys: it does NOT contain quality_schema_example.
+Scout's export note inferred schema presence from field names appearing elsewhere
+in the prompt. This distinction is verified from the saved bytes. Build-6's paid
+response has only quality and construction_notes; omitted builder reuse is thus
+observed in a real run, although that run failed qualification.
+
+Allowance scope clarification: the additional EUR 25 remains available for this
+November budget. Removing it immediately at sign-off would discard authorized
+headroom and re-block normal operation due to retained reservations. Restore the
+normal EUR 20 at December's budget boundary through the existing deterministic
+one-shot scheduler, preserving any later explicitly authorized configuration.
+No new budget subsystem or reservation-accounting rewrite is part of this fix.
+
 ## 2026-11-09 19:05 UTC — budget applied, FR code repaired but declarations regressed
 
 Scout confirmed local allowance readback EUR 45 with release reserve EUR 5,
@@ -67,7 +109,7 @@ existing policy currency, as additional allowance for this development run:
 temporarily raise `monthly_budget_eur` from 20 to 45; retain the EUR 5 release
 reserve and existing worker concurrency, resource, expiry and retry limits.
 This is not a permanent recurring allowance increase. Restore the EUR 20 normal
-allowance at normal-operation handoff, recording the remaining reservation state.
+allowance at the December budget boundary, recording the remaining reservation state.
 
 Scout was instructed to apply the local configuration, verify readback and let
 the sole normal coordinator resume the saved FR build-5 proposal. Application,

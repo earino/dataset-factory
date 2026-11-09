@@ -26,6 +26,35 @@ def source():
 
 
 class EngineTests(unittest.TestCase):
+    def test_worker_declaration_failures_are_rejected_before_assembly(self):
+        from factory.construction import validate, _declaration_gate
+        repo = Path(__file__).resolve().parents[1]
+        evidence = repo / 'audits/rewrite/fr-build6-static-failures'
+        quality = json.loads((evidence / 'quality.json').read_text())
+        worker_report = json.loads((evidence / 'qualification.json').read_text())
+        gate = _declaration_gate()
+        preflight = gate.Report(Path('no-artifact'))
+        gate.check_declarations(quality, preflight)
+        self.assertEqual(set(worker_report['failed_checks']), set(preflight.failed_checks))
+        proposal = {'build_py':'def build(output, cache):\n    pass\n', 'quality':quality, 'references':{}}
+        with self.assertRaisesRegex(FactoryError, 'Construction declarations fail'):
+            validate(proposal)
+        from factory.construction import assemble
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_json(root / 'jobs/paid.json', {})
+            path = root / '.factory/job-sources/paid/job.json'
+            write_json(path, {})
+            with patch('factory.construction._declaration_gate', side_effect=AssertionError('Already paid')):
+                self.assertEqual(path, assemble(root, 'paid', {}, proposal, {}, {}))
+        # Valid declarations do not require local data or accept an artifact.
+        proposal['quality'] = json.loads((repo /
+            'skills/dataset-qualification/fixtures/corrected/quality.json').read_text())
+        self.assertIs(proposal, validate(proposal))
+        proposal['quality']['evaluation_contract'].update(
+            use='historical_forecasting', availability_ledger='worker-only.csv')
+        self.assertIs(proposal, validate(proposal))
+
     def test_event_timing_canonicalization_preserves_material_timing_checks(self):
         from factory.construction import merge_repair
         from tests.test_timing_gate import checks

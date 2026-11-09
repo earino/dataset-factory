@@ -2,6 +2,8 @@
 import ast
 import copy
 import hashlib
+import importlib.util
+from functools import lru_cache
 import json
 import os
 from pathlib import Path
@@ -144,7 +146,16 @@ def describe_task(source, response):
     return updated
 
 
-def validate(response):
+@lru_cache(maxsize=1)
+def _declaration_gate():
+    path = Path(__file__).resolve().parents[1] / 'skills/dataset-qualification/scripts/qualify_dataset.py'
+    spec = importlib.util.spec_from_file_location('construction_declaration_gate', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def validate(response, *, declarations=True):
     code = response.get('build_py')
     if not isinstance(code, str) or not code.strip() or len(code.encode()) > 48 * 1024:
         raise FactoryError('Construction needs bounded Python source')
@@ -160,6 +171,13 @@ def validate(response):
                  'split_windows', 'timing', 'evaluation_contract', 'measurements'):
         if name not in quality:
             raise FactoryError('Construction descriptor lacks ' + name)
+    if declarations:
+        gate = _declaration_gate()
+        report = gate.Report(Path('construction-declarations'))
+        gate.check_declarations(quality, report)
+        if not report.ok:
+            failures = [item for item in report.results if not item['ok']]
+            raise FactoryError('Construction declarations fail existing qualification checks: ' + json.dumps(failures))
     if not isinstance(response.get('references'), dict):
         raise FactoryError('Construction must declare fixed baseline references')
     return response
@@ -167,7 +185,9 @@ def validate(response):
 
 def assemble(root, job_id, source, response, settings, worker_config):
     root = Path(root)
-    validate(response)
+    recorded = (root / 'jobs' / (job_id + '.json')).exists()
+    # Newly added preflight must never prevent collection of an already paid job.
+    validate(response, declarations=not recorded)
     defect = known_defect(root, response)
     if defect and not (root / 'jobs' / (job_id + '.json')).exists():
         from .model_tasks import TaskFailure

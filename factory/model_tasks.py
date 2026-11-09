@@ -187,6 +187,11 @@ class ModelTasks:
                                 failure['accounting'] = str(accounting)
                             write_json(directory / 'failure.json', failure)
                             raise TaskFailure('Model task exceeded its wall-clock limit') from exc
+                # Preserve bounded paid output even when exit status or the
+                # declaration preflight rejects it. Repairs can reuse these bytes.
+                response_text = w.strip_footer(result.stdout)
+                if len(response_text.encode()) < 256 * 1024:
+                    (directory / 'response.txt').write_text(response_text)
                 proposal = None
                 if result.returncode:
                     # Preserve the startup failure, not just its missing session.
@@ -240,9 +245,6 @@ class ModelTasks:
                 main_tasks = [task for task in measured['tasks'] if task['task'] in (None, '')]
                 if not main_tasks or any(task['model'] != self.policy['model'] for task in main_tasks):
                     raise TaskFailure('Recorded inference route differs from the configured model')
-                response_text = w.strip_footer(result.stdout)
-                if len(response_text.encode()) < 256 * 1024:
-                    (directory / 'response.txt').write_text(response_text)
                 value = proposal if proposal is not None else parse_response(response_text)
                 write_json(response_path, value)
                 return value
