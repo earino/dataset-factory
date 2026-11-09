@@ -150,6 +150,30 @@ class PipelineTests(unittest.TestCase):
         self.assertIn('Semantic repair limit', result['reason'])
         self.assertFalse(any(a['stage'] == 'publish' for a in self.store.attempts()))
 
+    def test_contradictory_review_recovery_keeps_history_and_consumed_allowance(self):
+        from factory.state import REVIEW_CONTRACT_FAILURE
+        for name, verdict in [('example','accept'),('actual-reject','reject'),('changed-reason','accept')]:
+            if name != 'example': self.store.add(name, {})
+            for _ in range(2): self.store.finish(self.store.begin(name)['id'], {'status':'done'})
+            attempt = self.store.begin(name)
+            review = {'verdict':verdict,'reason':'Reviewed','findings':[{'issue':'An observation'}]}
+            self.store.save(attempt['id'], {'review':review,'review_attempt':attempt['id']})
+            self.store.finish(attempt['id'], {'status':'reject','reason':REVIEW_CONTRACT_FAILURE})
+        with self.store.connect() as db:
+            db.execute("UPDATE candidates SET reason='Later decision' WHERE id='changed-reason'")
+        history = self.store.attempts()
+        self.store.reconcile_misrouted_reviews(); self.store.reconcile_misrouted_reviews()
+        self.assertEqual(history, self.store.attempts())
+        row = self.store.get('example')
+        self.assertEqual('evaluate', row['stage'])
+        self.assertEqual(row['data']['review'], row['data']['pending_semantic_review'])
+        self.assertEqual('rejected', self.store.get('actual-reject')['stage'])
+        self.assertEqual('rejected', self.store.get('changed-reason')['stage'])
+        # The old incorrectly terminal format failure still consumes one retry.
+        result = self.store.finish(self.store.begin('example')['id'],
+                                  {'status':'retry','reason':REVIEW_CONTRACT_FAILURE}, max_attempts=2)
+        self.assertEqual('deferred', result['stage'])
+
     def test_misrouted_repair_correction_preserves_history_and_true_rejections(self):
         for name, verdict in [('example', 'repair'), ('true-reject', 'reject'), ('changed-reason', 'repair')]:
             self.store.add(name, {})

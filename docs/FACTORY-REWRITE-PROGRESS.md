@@ -13,8 +13,9 @@ on both platforms; root independently fetched identical public manifests without
 authentication. `65de530` is deployed; 961 clean-checkout tests pass (13 skipped).
 Bridge source-15, Federal Register source-16 and BSEE source-17 reached their
 existing retry bounds and are deferred, with history preserved. Source-18 CFPB
-bank-account monetary-relief construction is on normal access repair: its terms
-page capture recovered, then the data endpoint returned HTTP 403. Existing
+bank-account monetary-relief build-4 has passed full qualification, baseline and
+exact package verification. Its accept-with-positive-findings review was wrongly
+routed to rejection; a generic bounded review-contract recovery passed 963 clean-checkout tests (13 skipped) and awaits deployment. Existing
 metadata-only gate predicates now reject declarations before new worker spending;
 full-artifact qualification remains mandatory. The extra EUR 25 is authorized
 and applied (EUR 45 November allowance, EUR 5 release reserve); normal EUR 20
@@ -26,6 +27,83 @@ and final resource inventory remain preserved as historical evidence. The tool's
 stored old goal is still paused and cannot be resumed by the agent's tools;
 Eduardo explicitly authorized continuing this implementation in the current turn.
 This is not a completion sign-off.
+
+## 2026-11-09 20:38 UTC — fix contradictory review output without accepting it
+
+The actual CFPB evaluate-1 report is preserved in
+`audits/rewrite/cfpb-evaluate1/response.json` with measured usage. It says
+**accept** and describes the task as valid. Its sole finding is a completed
+check: no label-derived group rate exists, and its repair text explicitly says
+“None required for this construction.” The controller interpreted any nonempty
+findings list as unresolved and permanently rejected the candidate at 20:14:44.
+This is a response-contract/routing error, not evidence of an invalid dataset.
+The saved report was always present in candidate.data.review and the ignored
+`.factory/model-tasks/<attempt>/response.json`; an rg search excluding ignored
+files had incorrectly suggested only a one-line rejection existed.
+
+A contradictory accept now fails the bounded review task, retaining the original
+report as previous_semantic_review for clarification within the same review
+stage. It is never silently approved. The prompt reserves findings for unresolved
+material concerns and puts completed checks/nonblocking notes in reason or
+limitations. Group-rate checks are conditional on such features existing rather
+than assuming every source has that mechanism. Actual leakage checks remain.
+
+The existing deterministic routing reconciliation now also recognizes only the
+old exact terminal-error class with its saved accept/findings and matching last
+review attempt. It restores evaluate, not publish or accepted, preserves original
+attempt history, and counts the old failed response toward the same retry limit.
+True reject verdicts and later independent decisions remain untouched. No manual
+candidate edit, retry reset or source-specific orchestration is used.
+
+Regression checks use the real CFPB review and verify no publication, retained
+paid output, a normal consistent subsequent decision, unchanged historical
+attempts, unchanged true rejections and the consumed retry allowance. All 45
+focused engine/pipeline/model tests pass. The full clean-checkout suite passes 963 tests (13 skipped). Exact pushed-commit CI is next.
+The artifact remains staged and unpublished pending a consistent normal review.
+
+## 2026-11-09 20:12 UTC — CFPB qualification, baseline and exact package verified
+
+Normal CFPB build-3 recovered data access and produced rows (185.9 seconds;
+release 439573188 / manifest 728774927), failing only the incompatible timezone
+representation between naive declaration boundaries and UTC-offset row strings.
+The source code's actual split masks were explicit UTC timestamps. The failed
+report/manifest are preserved in `audits/rewrite/cfpb-build3-utc/`.
+
+Build-4 succeeded in 306.0 worker seconds (release 439583159 / manifest 728805271).
+Full-row gate 1.6.1 and exact qualification receipt pass. Root hash-verified the
+compact metadata, checked the receipt without downloading CSVs, and matched all
+33 package assets against staging pins. Evidence is in
+`audits/rewrite/cfpb-build4-qualified/`. Artifact digest is
+`9f471e2cfd980ea753159195b0bd7df7d97bb31cefd4dba3b6c377e74118ef8a`,
+version `v-fa7df05b0fd096d9`.
+
+The actual repair changes timestamp serialization to naive UTC and checks that
+representation against the declared windows; it is NOT exact builder reuse or
+a quality-only edit. The UTC split masks, target and feature selection are
+unchanged. All construction inputs pass through source_io.fetch with recorded
+source hashes. The source CSV header excludes consumer narrative text; solver
+features are intake fields/calendar values, not company-response outcomes.
+
+The existing unmodified runner measured the qualified validation artifact:
+AUC 0.74124, Brier 0.12052; majority-prior AUC 0.5. Train/eval/holdout rows are
+75,528 / 37,582 / 49,873. No holdout score was calculated. These are measured
+validation results, not a universal headroom claim or semantic acceptance.
+Scope remains current-vintage retrospective research with explicit limitations.
+
+Scout reports the 20:07 tick collected/deleted build-4 and advanced CFPB to
+normal evaluate-1, started 20:08:01 UTC. Publication and anonymous consumers
+remain pending. FAA source-19's existing build-1 attempt is waiting on resources;
+it has no paid worker record yet. Do not equate an attempt timestamp with actual
+model/worker execution. No retry counts or candidate state were manually changed.
+
+December reset readback: job `ca002a2e360e`, scout-allowance-reset-dec1, enabled,
+never run, one-shot 2026-12-01T00:00Z, no-agent, script
+`/opt/data/scripts/scout_allowance_reset.py`. It changes 45 to 20 only if the
+allowance still equals 45 and otherwise reports without modifying it. Exactly
+one such job exists. A fresh coordination chat replaced the prior 227,114-token
+Telegram context; the normal controller and paid tasks were preserved.
+Evidence commit `f1168567302ddbf3939892c09980c911a660401d` passed
+[exact CI](https://github.com/earino/dataset-factory/actions/runs/42687192537).
 
 ## 2026-11-09 19:39 UTC — deployed preflight and normal CFPB access recovery
 

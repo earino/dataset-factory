@@ -8,7 +8,7 @@ from urllib.parse import urlsplit
 
 from .common import FactoryError, identifier, read_json
 from .model_tasks import ModelTasks, BudgetWait, TaskFailure
-from .state import Store, STAGES, record_semantic_repair
+from .state import Store, STAGES, record_semantic_repair, REVIEW_CONTRACT_FAILURE
 from . import construction, task_prompts, worker, worker_artifacts
 from .reconciliation import advance_worker
 
@@ -295,7 +295,8 @@ class Driver:
         if review.get('verdict') != 'accept':
             return {'status': 'reject', 'reason': review.get('reason', 'Unresolved semantic or usefulness concern')}
         if review.get('findings'):
-            return {'status': 'reject', 'reason': 'Review claims acceptance but retains unresolved findings'}
+            data['pending_semantic_review'] = review; save(data)
+            raise TaskFailure(REVIEW_CONTRACT_FAILURE)
         data.pop('pending_semantic_review', None); save(data)
         return {'status': 'done', 'reason': 'Source interpretation and measured usefulness reviewed'}
 

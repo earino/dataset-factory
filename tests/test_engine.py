@@ -442,6 +442,29 @@ class EngineTests(unittest.TestCase):
             self.assertNotIn('publication', data)
             model.run.assert_called_once()
 
+    def test_contradictory_accept_retries_same_review_stage_without_accepting(self):
+        repo = Path(__file__).resolve().parents[1]
+        review = json.loads((repo / 'audits/rewrite/cfpb-evaluate1/response.json').read_text())
+        data = {'source':source(), 'construction':{'build_py':'def build(output, cache): pass',
+                'quality':{'evaluation_contract':{}}},
+                'evidence':{'qualification.json':{'ok':True,'gate_version':'1.6.1','failed_checks':[]},
+                            'evaluation.json':{},'source-checks.json':{},'SOURCES.json':{},
+                            'LICENSE-EVIDENCE.json':{}}}
+        model = Mock(); model.run.return_value = review
+        with tempfile.TemporaryDirectory() as tmp:
+            driver = Driver(tmp, {}, model=model)
+            for _ in range(2):
+                result = driver.execute({'stage':'evaluate','data':data}, {'id':'review-1'}, lambda value:None)
+                self.assertEqual('retry', result['status'])
+            model.run.assert_called_once()
+            self.assertEqual(review, data['pending_semantic_review'])
+            self.assertNotIn('publication', data)
+            model.run.return_value = {**review, 'findings':[]}
+            result = driver.execute({'stage':'evaluate','data':data}, {'id':'review-2'}, lambda value:None)
+            self.assertEqual('done', result['status'])
+            self.assertIn('previous_semantic_review', model.run.call_args.args[1])
+            self.assertNotIn('pending_semantic_review', data)
+
     def test_terms_repair_reuses_builder_and_keeps_frozen_task_and_prior_evidence(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

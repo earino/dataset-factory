@@ -9,6 +9,7 @@ from .common import FactoryError, identifier
 
 STAGES = ('discover', 'build', 'evaluate', 'publish')
 NEXT = dict(zip(STAGES, (*STAGES[1:], 'published')))
+REVIEW_CONTRACT_FAILURE = 'Review claims acceptance but retains unresolved findings'
 
 
 def encoded(value):
@@ -86,11 +87,26 @@ class Store:
             return [self.candidate(row) for row in db.execute('SELECT * FROM candidates ORDER BY created,id')]
 
     def reconcile_misrouted_reviews(self):
-        """Correct the old repair->reject routing; preserve the original verdict/history."""
+        """Correct demonstrated review-routing bugs; preserve verdicts and attempt history."""
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             for row in db.execute("SELECT * FROM candidates WHERE stage='rejected'").fetchall():
                 data = json.loads(row['data']); review = data.get('review', {})
+                if review.get('verdict') == 'accept' and review.get('findings'):
+                    last = db.execute('SELECT * FROM attempts WHERE candidate=? ORDER BY started DESC,id DESC LIMIT 1',
+                                      (row['id'],)).fetchone()
+                    if (last and last['stage'] == 'evaluate' and last['status'] == 'reject'
+                            and json.loads(last['result']).get('reason') == REVIEW_CONTRACT_FAILURE
+                            and row['reason'] == REVIEW_CONTRACT_FAILURE
+                            and data.get('review_attempt') == last['id']
+                            and not data.get('review_contract_routing_corrected')):
+                        data['pending_semantic_review'] = review
+                        data['review_contract_routing_corrected'] = {
+                            'attempt': last['id'], 'previous_reason': row['reason'], 'corrected_at': time.time()}
+                        db.execute("UPDATE candidates SET stage='evaluate',data=?,updated=?,next_run=0,reason=? WHERE id=?",
+                                   (encoded(data), time.time(),
+                                    'Corrected contradictory review routing; bounded clarification required', row['id']))
+                    continue
                 if review.get('verdict') != 'repair' or not review.get('findings'):
                     continue
                 last = db.execute('SELECT * FROM attempts WHERE candidate=? ORDER BY started DESC,id DESC LIMIT 1',
@@ -283,6 +299,13 @@ class Store:
                                for row in db.execute(
                                    "SELECT result FROM attempts WHERE candidate=? AND stage=? AND status='retry'",
                                    (attempt['candidate'], stage)))
+            if stage == 'evaluate' and scope == 'task':
+                # Historical format failures were incorrectly recorded as dataset
+                # rejections. They still consume the normal bounded review allowance.
+                failures += sum(json.loads(row['result']).get('reason') == REVIEW_CONTRACT_FAILURE
+                                for row in db.execute(
+                                    "SELECT result FROM attempts WHERE candidate=? AND stage='evaluate' AND status='reject'",
+                                    (attempt['candidate'],)))
             if status == 'done':
                 stage = NEXT[stage]
             elif status == 'reject':
