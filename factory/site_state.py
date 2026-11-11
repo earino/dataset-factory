@@ -50,13 +50,13 @@ def publication_matches(data):
                for platform, c in consumers.items())
 
 
-def snapshot(root):
+def snapshot(root, rows=None):
     """Compact public projection; errors do not impersonate an empty factory."""
     observed = datetime.now(timezone.utc).isoformat()
     result = {'source': '.factory/pipeline.sqlite3', 'observed_at': observed,
               'status': 'unavailable', 'candidates': [], 'counts': None}
     try:
-        rows = read_candidates(root)
+        rows = read_candidates(root) if rows is None else rows
         counts = {}
         candidates = []
         for row in rows:

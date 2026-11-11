@@ -475,12 +475,18 @@ def collect_ci():
 def collect_snapshot(include_tests=True):
     candidates = collect_candidates()
     releases = collect_releases()
+    from factory.dashboard_modern import collect
+    candidates, releases, modern = collect(ROOT, candidates, releases)
+    local = read_json(ROOT / 'config/local.json', {}) or {}
     stamp = iso(now())
     return {
         "schema": SNAPSHOT_SCHEMA,
         "generated_at": stamp,
         "repo": {"head": None},
         "candidates": candidates,
+        "modern": modern,
+        "runtime": {key: local.get(key) for key in ('pipeline_enabled', 'max_workers')},
+        "sites": read_json(ROOT / '.factory/sites/status.json', {}) or {},
         "coverage": collect_coverage(),
         "resources": collect_resources(),
         "releases": releases,
@@ -489,8 +495,8 @@ def collect_snapshot(include_tests=True):
         "sessions": collect_sessions(),
         "health": collect_health(run_tests=include_tests),
         "panels": {
-            "candidates": panel(len(candidates["live"]), "candidates/*/record.json", stamp),
-            "releases": panel(len(releases["releases"]), "release/*/MANIFEST.json", stamp),
+            "candidates": panel(len(candidates["live"]), candidates.get('scope', 'legacy records'), stamp),
+            "releases": panel(len(releases["releases"]), "publication receipts and legacy manifests", stamp),
             "budget": panel(None, "scripts/research-budget.py --json", stamp),
         },
     }
@@ -508,6 +514,12 @@ def derive_alarms(snapshot):
     def add(text, tone="bad", icon="!"):
         html_parts.append(ui.alarm(ui.esc(text), tone, icon))
         plain.append(text)
+
+    if (snapshot.get('modern') or {}).get('status') == 'unavailable':
+        add('Modern pipeline state unavailable; candidate counts below are legacy history', 'warn')
+    for site in (snapshot.get('sites') or {}).get('releases', []):
+        if site.get('status') != 'complete':
+            add(f"Website {site.get('dataset') or site.get('candidate')}: {site.get('status')}; data publication is separate", 'warn')
 
     for error in (snapshot.get("releases") or {}).get("errors", []):
         add("Release contract: " + error)
@@ -528,7 +540,8 @@ def derive_alarms(snapshot):
             soft.append("A research session is running: " + "; ".join(reasons))
         else:
             add("Research gate refused the next session: " + "; ".join(reasons), "warn", "⏸")
-    tokens, ceiling = budget.get("research_tokens_last_7_days"), budget.get("weekly_token_budget")
+    from factory.dashboard_modern import admission_tokens
+    tokens, ceiling = admission_tokens(budget), budget.get("weekly_token_budget")
     if tokens and ceiling and tokens / ceiling >= 0.8:
         add(f"Token use at {round(100 * tokens / ceiling)}% of the weekly ceiling", "warn", "!")
     ci = health.get("ci") or {}
@@ -536,10 +549,10 @@ def derive_alarms(snapshot):
         add(f"CI on {ci.get('head_sha')} concluded {ci.get('conclusion')}", "bad", "!")
     tests = health.get("tests") or {}
     if tests and not tests.get("ok"):
-        add("Test suite is failing", "bad", "!")
+        add("Local test suite failed on " + str((health.get('head') or {}).get('sha', 'unknown commit')), "bad", "!")
     checks = health.get("checks") or {}
     if checks and not checks.get("ok"):
-        add("check-candidate --all is failing", "bad", "!")
+        add("Legacy candidate checks failed; see local check evidence", "bad", "!")
     release = (snapshot.get("candidates") or {}).get("release") or {}
     for record in release.get("pending", []):
         age = record.get("age_hours")
@@ -574,9 +587,11 @@ def collect_history(out: Path, snapshot):
     decision = (snapshot.get("budget") or {}).get("decision") or {}
     point = {
         "at": snapshot["generated_at"],
-        "published": sum(r["published"] for r in snapshot["releases"]["releases"]),
+        "workflow": snapshot['candidates'].get('workflow', 'legacy'),
+        "published": len({r['dataset'] for r in snapshot["releases"]["releases"] if r['published']
+                          and r.get('workflow', 'legacy') == snapshot['candidates'].get('workflow', 'legacy')}),
         "live": len(snapshot["candidates"]["live"]),
-        "tokens_7d": decision.get("research_tokens_last_7_days"),
+        "tokens_7d": decision.get("normal_operation_tokens_last_7_days", decision.get("research_tokens_last_7_days")),
         "sessions_7d": decision.get("runs_last_7_days"),
         "qualified": snapshot["candidates"]["counts"].get("qualified", 0),
     }
@@ -603,7 +618,7 @@ def build(out: Path, include_tests=True):
     files = {
         "index.html": ui.page("Overview", "exec", stamp,
                               ui.render_overview(snapshot, alarms_html, alarms_plain),
-                              footer_extra="Sources: candidates/*/record.json, release/*/MANIFEST.json, "
+                              footer_extra="Sources: pipeline.sqlite3, public publication receipts, legacy release manifests, "
                                            "research-budget.py, cron jobs.json."),
         "cost.html": ui.page("Cost", "cost", stamp, ui.render_cost(snapshot, alarms_html, alarms_plain),
                              footer_extra="Token figures are measured from the session ledger; USD cost is "

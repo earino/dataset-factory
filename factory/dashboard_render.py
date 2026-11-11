@@ -475,7 +475,12 @@ def render_overview(snapshot, alarms, alarms_plain=()):
     c = snapshot["candidates"]
     coverage = snapshot.get("coverage") or {}
     releases = snapshot["releases"]["releases"]
-    history = snapshot.get("history") or []
+    site_states = {(r.get('dataset'), r.get('version')): r.get('status')
+                   for r in (snapshot.get('sites') or {}).get('releases', [])}
+    releases = [{**r, 'site_status': site_states.get((r['dataset'], r['release_tag']), 'not observed')}
+                for r in releases]
+    history = [p for p in (snapshot.get("history") or [])
+               if p.get('workflow', 'legacy') == snapshot['candidates'].get('workflow', 'legacy')]
     decision = (snapshot.get("budget") or {}).get("decision") or {}
     health = snapshot["health"] or {}
 
@@ -484,7 +489,9 @@ def render_overview(snapshot, alarms, alarms_plain=()):
     kept = counts.get("investigating", 0) + counts.get("qualified", 0) + counts.get("published", 0)
     advanced = counts.get("qualified", 0) + counts.get("published", 0)
     published = counts.get("published", 0)
-    verified = sum(1 for r in releases if r.get("published") and r["verified_all"])
+    modern_view = c.get('workflow') == 'modern'
+    verified = sum(1 for r in releases if r.get("published") and r["verified_all"]
+                   and (not modern_view or r.get('workflow') == 'modern'))
 
     series_tokens = [p.get("tokens_7d") for p in history][-14:]
     series_pub = [p.get("published") for p in history][-14:]
@@ -510,6 +517,18 @@ def render_overview(snapshot, alarms, alarms_plain=()):
         ("parked", counts.get("parked", 0), "var(--violet)"),
         ("dropped", counts.get("dropped", 0), "#3c4553"),
     ]
+    summary_text = (f"{counts.get('qualified', 0)} qualified and {counts.get('investigating', 0)} in construction.")
+    if modern_view:
+        kept = sum(counts.get(k, 0) for k in ('build', 'evaluate', 'publish', 'published'))
+        advanced = sum(counts.get(k, 0) for k in ('evaluate', 'publish', 'published'))
+        stages = [('Sources opened', total, 'Modern controller records'),
+                  ('Build or later', kept, 'Construction selected'),
+                  ('Evaluate or later', advanced, 'Build completed'),
+                  ('Published', published, 'GitHub and Hugging Face')]
+        colors = ('--blue', '--amber', '--violet', '--blue', '--mint', '--faint', '--coral')
+        donut_segments = [(k, counts.get(k, 0), f'var({color})') for k, color in zip(
+            ('discover', 'build', 'evaluate', 'publish', 'published', 'deferred', 'rejected'), colors)]
+        summary_text = ', '.join(f"{counts.get(k, 0)} {k}" for k in ('discover', 'build', 'evaluate', 'publish')) + '.'
     countries = (coverage.get("by_country") or {})
     country_items = list(countries.items())[:6]
 
@@ -526,7 +545,7 @@ def render_overview(snapshot, alarms, alarms_plain=()):
         f'<div class="item"><div class="meta"><div class="name">{esc(r["dataset"])}</div>'
         f'<div class="desc">{esc(r["release_tag"])} · {fmt(r["rows"])} rows · baseline '
         f'{esc(r.get("baseline_display") or "not recorded")}'
-        + f' · {esc("published" if r.get("published") else r.get("disposition") or "private")}'
+        + f' · {esc("published" if r.get("published") else r.get("disposition") or "private")} · {esc(r.get("workflow") or "legacy")} · website {esc(r["site_status"])}'
         + '</div></div>'
         f'<div class="side">{"".join(pill(k, "ok" if v else "bad") for k, v in (r["verified"] or {}).items())}</div></div>'
         for r in releases) + '</div>'
@@ -554,8 +573,8 @@ def render_overview(snapshot, alarms, alarms_plain=()):
                                  "Once the only step left is the flip, construction resumes and this waits on you.") + '</div>' 
 
     release_rows = [(
-        f'<a class="name" href="candidate-{esc(r["dataset"])}.html"><b>{esc(r["dataset"])}</b></a>',
-        esc(r["release_tag"]) + " · " + esc("published" if r.get("published") else r.get("disposition") or "private"),
+        f'<a class="name" href="candidate-{esc(r.get("detail_id") or r["dataset"])}.html"><b>{esc(r["dataset"])}</b></a>',
+        esc(r["release_tag"]) + " · " + esc((r.get('workflow') or 'legacy') + ' · ' + ("published" if r.get("published") else r.get("disposition") or "private")) + ' · website ' + esc(r['site_status']),
         fmt(r["rows"]), esc(r.get("baseline_display") or "not recorded"),
         "".join(pill(k, "ok" if v else "bad") for k, v in (r["verified"] or {}).items()) or pill("—"),
     ) for r in releases]
@@ -566,20 +585,20 @@ def render_overview(snapshot, alarms, alarms_plain=()):
     tiles = "".join([
         kpi("Published", published, note=f"{verified} fully verified"),
         kpi("Days since", days_since, "d", "last publication"),
-        kpi("Active bench", coverage.get("live"),
-            note=f"{coverage.get('live_non_us', 0)} non-US · {round(100 * (coverage.get('live_non_us_share') or 0))}%"),
-        kpi("Tokens 7d", decision.get("research_tokens_last_7_days"),
-            note=(f"{decision['research_tokens_last_7_days'] / decision['weekly_token_budget'] * 100:.1f}% of ceiling"
-                  if decision.get('research_tokens_last_7_days') is not None
+        kpi("Active bench", len(c['live']) if modern_view else coverage.get("live"),
+            note=('Modern candidates awaiting completion' if modern_view else
+                  f"{coverage.get('live_non_us', 0)} non-US · {round(100 * (coverage.get('live_non_us_share') or 0))}%")),
+        kpi("Tokens 7d", decision.get('normal_operation_tokens_last_7_days', decision.get("research_tokens_last_7_days")),
+            note=(f"{decision.get('normal_operation_tokens_last_7_days', decision.get('research_tokens_last_7_days')) / decision['weekly_token_budget'] * 100:.1f}% of ceiling"
+                  if decision.get('normal_operation_tokens_last_7_days', decision.get('research_tokens_last_7_days')) is not None
                   and decision.get('weekly_token_budget') else "Usage or ceiling unknown")),
     ])
 
     body = f"""
 <section class="hero">
-  <div class="eyebrow">Executive overview</div>
+  <div class="eyebrow">Executive overview · {esc(c.get('scope') or 'Legacy history')}</div>
   <h1>{published} datasets shipped</h1>
-  <p>{counts.get('qualified', 0)} qualified and {counts.get('investigating', 0)} in construction. The bench is
-  {round(100 * (coverage.get('live_non_us_share') or 0))}% non-US across {len(countries)} jurisdictions.</p>
+  <p>{esc(summary_text)} Legacy records remain in the release history.</p>
   <div class="statusline {'ok' if hero_ok else 'warn'}"><span class="dot" style="background:{'var(--mint)' if hero_ok else 'var(--amber)'}"></span>
     <span><b>{'All systems nominal' if hero_ok else verdict_text}</b>{'' if hero_ok else ' — ' + esc(alarms_plain[0] if alarms_plain else '')}</span>
     <time>{esc(snapshot['generated_at'][11:16])} UTC</time></div>
@@ -593,14 +612,14 @@ def render_overview(snapshot, alarms, alarms_plain=()):
   <div class="col-5">{card("Portfolio", '<div class="donut-wrap">' + donut(donut_segments, str(total), "candidates", size=150)
         + '<div class="legend">' + "".join(
             f'<span><i style="background:{color}"></i>{esc(label)} <b style="color:var(--text)">{value}</b></span>'
-            for label, value, color in donut_segments) + "</div>", sub="all 28 sources")}</div>
+            for label, value, color in donut_segments) + "</div>", sub=f"{total} sources in this workflow")}</div>
 
   <div class="col-4">{card("Published", sparkline(series_pub), sub="cumulative, 14d",
         foot="History begins 2026-10-20; the series fills in hourly.")}</div>
   <div class="col-4">{card("Active bench", sparkline(series_live, tone="--blue"), sub="live candidates, 14d")}</div>
   <div class="col-4">{card("Research tokens", sparkline(series_tokens, tone="--violet"), sub="7-day total")}</div>
 
-  <div class="col-5">{card("Where the data comes from", bar_list(country_items), sub="by publisher jurisdiction",
+  <div class="col-5">{card("Where the data comes from", bar_list(country_items), sub="legacy coverage by publisher jurisdiction",
         foot=f"{coverage.get('live_non_us', 0)} of {coverage.get('live', 0)} active candidates are non-US.")}</div>
   <div class="col-7">{card("Alarms", "".join(alarms) if alarms else
         alarm("Nothing above threshold. Watchdog jobs, gates and budget are inside limits.", "ok", "✓"),
@@ -613,7 +632,7 @@ def render_overview(snapshot, alarms, alarms_plain=()):
   <div class="col-12">{card("Releases", f'<div class="only-mobile">{release_cards}</div><div class="only-wide">' +
         table(["Dataset", "Version", "Rows", "Baseline AUC", "Destinations"],
               release_rows, num_cols=(2, 3)) + '</div>', sub="release packages · publication status shown separately",
-        foot="Destination pills are read from each release's DESTINATIONS.json, not from a deploy log.")}</div>
+        foot="Modern destinations use matching publication receipts; legacy destinations use DESTINATIONS.json.")}</div>
 </div>"""
     return body
 
@@ -621,9 +640,9 @@ def render_overview(snapshot, alarms, alarms_plain=()):
 def render_cost(snapshot, alarms, alarms_plain=()):
     decision = (snapshot.get("budget") or {}).get("decision") or {}
     usage = decision.get("usage") or {}
-    tokens = decision.get("research_tokens_last_7_days")
+    tokens = decision.get('normal_operation_tokens_last_7_days', decision.get("research_tokens_last_7_days"))
     ceiling = decision.get("weekly_token_budget")
-    sessions = decision.get("runs_last_7_days")
+    sessions = decision.get('normal_operation_runs_weighted_last_7_days', decision.get("runs_last_7_days"))
     cap = decision.get("session_cap_per_week")
     reasons = decision.get("reasons") or []
     only_lock = (decision.get("allowed") is False and reasons
@@ -653,7 +672,8 @@ def render_cost(snapshot, alarms, alarms_plain=()):
 <section class="hero compact">
   <div class="eyebrow">Cost &amp; capacity</div>
   <h1>{fmt(tokens)} tokens this week</h1>
-  <p>of the weekly research ceiling used ({fmt(tokens)} of {fmt(ceiling)} tokens). The gate admits
+  <p>of the normal-operation weekly ceiling used ({fmt(tokens)} of {fmt(ceiling)} tokens).
+  Development: {fmt(decision.get('development_tokens_last_7_days'))} tokens, excluded from this ceiling. The gate admits
   the next session {esc(admission)}.</p>
   {pricing_notice}
   <div class="statusline {'ok' if decision.get('allowed') else ('ok' if only_lock else 'warn')}"><span class="dot" style="background:{'var(--mint)' if decision.get('allowed') or only_lock else 'var(--amber)'}"></span>
@@ -665,7 +685,7 @@ def render_cost(snapshot, alarms, alarms_plain=()):
   <div class="col-6">{card("Weekly tokens", token_gauge,
         sub="measured, not estimated")}</div>
   <div class="col-6">{card("Sessions", session_gauge,
-        sub="scheduled runs this week")}</div>
+        sub="weighted normal-operation sessions this week")}</div>
 
   <div class="col-12">{card("Spend by source", table(
         ["Source", "Calls", "Input tokens", "Output tokens"], rows, num_cols=(1, 2, 3)),
@@ -729,7 +749,9 @@ def render_ops(snapshot, alarms, alarms_plain=()):
   <div class="eyebrow">Operations</div>
   <h1>{'All gates green' if all_ok else ('A gate is failing' if any(m is False for m in measured) else 'Gates not fully measured')}</h1>
   <p>Every number below is read back from the scheduler and the repository, not from a launch
-  message. Repo head <code>{esc(head.get('sha'))}</code> · {esc(head.get('subject'))}</p>
+  message. Repo head <code>{esc(head.get('sha'))}</code> · {esc(head.get('subject'))}.
+  Effective controller enabled: {esc((snapshot.get('runtime') or {}).get('pipeline_enabled', 'unknown'))};
+  worker limit: {esc((snapshot.get('runtime') or {}).get('max_workers', 'unknown'))}.</p>
   <div class="statusline {'ok' if all_ok else 'warn'}"><span class="dot" style="background:{'var(--mint)' if all_ok else 'var(--amber)'}"></span>
     <span><b>{len(jobs)} scheduled jobs</b> — CI {esc(ci.get('conclusion') or 'unknown')}</span>
     <time>{esc(snapshot['generated_at'][11:16])} UTC</time></div>

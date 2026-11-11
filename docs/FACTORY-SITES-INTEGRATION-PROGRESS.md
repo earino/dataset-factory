@@ -5,6 +5,21 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
 
 ## Current work
 
+- Added modern dashboard collectors and connected them to the existing renderer.
+  Modern stages, active queue and release receipts are primary; legacy candidates
+  remain in detail pages and releases are labelled by workflow. Missing modern
+  state is explicitly identified as unavailable with legacy history shown.
+- Dashboard overview, cost display, token alarms and new history points use normal
+  operation tokens. The session gauge uses weighted normal-operation sessions;
+  development usage is identified separately. History from the old workflow is
+  not drawn as a modern throughput series. Effective controller/worker settings
+  and separate website status are included without changing CSS or layout.
+- New dashboard tests cover real published metadata, private-field exclusion,
+  actual modern stages, legacy hold separation, missing-state labels and usage
+  accounting. Dashboard/state checks: 41 pass, one existing optional skip.
+- The hourly shim inventory hash was updated after CI caught the stale entry.
+  Correction commit `d869700` passed Linux CI; the runtime audit also passed in a
+  clean checkout.
 - Added `factory/site_sync.py` and `scripts/site-sync.py` for bounded modern-site
   catch-up. The existing hourly shim invokes it before dashboard generation with
   a 600-second outer limit. It processes releases independently, retains receipts,
@@ -53,9 +68,10 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
 
 ## Next actions
 
-1. Connect modern candidates/releases to the existing dashboard collectors.
-2. Exercise bounded site reconciliation with Scout after dashboard wiring and
+1. Exercise bounded site reconciliation and dashboard generation with Scout after
    exact-commit CI. Verify actual schema compatibility across all five releases.
+2. Deploy the matching hourly shim and verify its runtime inventory; resume saved
+   site bundles until the anonymous live checks pass on all surfaces.
 3. Verify clean-checkout tests and exact-commit CI, deploy with Scout, backfill,
    inspect live desktop/mobile pages, and observe scheduled recovery/no-op passes.
 
