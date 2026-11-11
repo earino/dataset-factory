@@ -5,6 +5,16 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
 
 ## Current work
 
+- Anonymous catalogue readback now includes all five modern benchmarks plus its
+  14 earlier records (19 total). The public dashboard at the same check still
+  served its legacy snapshot from 10:50 UTC; dashboard rollout remains pending.
+- Used an isolated browser for visual checks. The desktop dataset page retained
+  the existing design. A demonstrated 390-pixel mobile defect came from long
+  control metric labels squeezing the value column. The renderer now shows short
+  headline labels for the full model; full metrics remain unchanged in the release
+  record and linked evaluation. The fixed preview has no page overflow and a
+  174-pixel value column. Screenshots and measurements are retained in
+  `audits/sites-integration/visual/`. This correction still needs deployment.
 - At 10:55 UTC root anonymously read all five dataset version `release.json`
   records: 5/5 match the exact public projections prepared earlier. Evidence:
   `audits/sites-integration/dataset-live-record-check.json`. The earlier partial

@@ -41,6 +41,9 @@ class ModernSiteTests(unittest.TestCase):
         self.assertNotIn('/DATA_DICTIONARY.md', html)
         self.assertIn('retrospective research', html)
         self.assertIn('public validation only; no holdout scoring', html)
+        self.assertIn('Validation ROC AUC', html)
+        self.assertNotIn('Validation calendar_identity brier', html)
+        self.assertIn('Validation calendar_identity brier', record['baseline']['metrics'])
 
     def test_changed_metadata_is_rejected_before_quoting_baseline(self):
         self.documents['evaluation.json'] += b' '
