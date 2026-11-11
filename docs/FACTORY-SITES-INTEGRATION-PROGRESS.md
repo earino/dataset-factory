@@ -5,6 +5,20 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
 
 ## Current work
 
+- Added `factory/site_sync.py` and `scripts/site-sync.py` for bounded modern-site
+  catch-up. The existing hourly shim invokes it before dashboard generation with
+  a 600-second outer limit. It processes releases independently, retains receipts,
+  checks completed bundles without republishing, and leaves candidate state alone.
+  `site_reconciliation_enabled: false` in private local config disables only this
+  added step. The script uses the existing publishing credential file on Scout.
+- 44 focused site tests pass. New tests cover stable real-data projection, website
+  edition reuse, failure isolation and completed-bundle no-op behaviour.
+- Scout's fresh read-only inventory is on branch
+  `scout/sites-integration-inventory`, commit `fd5d3b9`, under
+  `audits/sites-inventory/2026-11-11/`. Collection was 10:35–10:40 UTC: five modern
+  published candidates, all five matching publication receipts; controller enabled,
+  max_workers 1; publisher has existing admin/push access to all current targets.
+  Deployed code remained `2bf708a`. No site deployments occurred during inventory.
 - Shared bundle preparation now accepts the validated modern projection. Modern
   bundles record standing-policy authorization; the CLI has `--standing-policy
   <plan-sha>` separately from legacy operator approval.
@@ -40,8 +54,8 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
 ## Next actions
 
 1. Connect modern candidates/releases to the existing dashboard collectors.
-2. Add bounded site reconciliation to the existing hourly entry point using the
-   modern adapter and shared publisher. Retrieve fresh deployed evidence from Scout.
+2. Exercise bounded site reconciliation with Scout after dashboard wiring and
+   exact-commit CI. Verify actual schema compatibility across all five releases.
 3. Verify clean-checkout tests and exact-commit CI, deploy with Scout, backfill,
    inspect live desktop/mobile pages, and observe scheduled recovery/no-op passes.
 

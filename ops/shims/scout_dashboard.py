@@ -14,6 +14,16 @@ REPO = Path("/opt/data/dataset-factory")
 
 
 def main():
+    # Website failures must not prevent the operational dashboard from refreshing.
+    config = REPO / 'config/local.json'
+    local = json.loads(config.read_text()) if config.is_file() else {}
+    if local.get('site_reconciliation_enabled', True):
+        try:
+            sites = subprocess.run([sys.executable, str(REPO / 'scripts/site-sync.py')],
+                                   cwd=REPO, text=True, capture_output=True, timeout=600)
+            print('sites: ' + ('ok' if sites.returncode == 0 else 'failed; see local site receipts'))
+        except subprocess.TimeoutExpired:
+            print('sites: time limit; next refresh resumes saved bundles')
     result = subprocess.run([sys.executable, str(REPO / "scripts/build-dashboard.py"), "--publish"],
                             cwd=REPO, text=True, capture_output=True)
     lines = [line for line in (result.stdout or "").strip().splitlines() if line.strip()]
