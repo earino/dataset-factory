@@ -3,8 +3,38 @@
 Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteria:
 [FACTORY-SITES-INTEGRATION.md](FACTORY-SITES-INTEGRATION.md), S1–S8.
 
-## Current work
+## Final status
 
+Implemented, deployed and verified on 2026-11-11. The S1–S8 evidence and sign-off
+are in [FACTORY-SITES-INTEGRATION-SIGNOFF.md](FACTORY-SITES-INTEGRATION-SIGNOFF.md).
+All five modern dataset pages are live. The catalogue retains 14 earlier records;
+the dashboard shows 19 distinct shipped datasets and retains 500 history points.
+Short dataset titles are restored; prediction questions remain task descriptions.
+
+Scout deployed code `6889214` at 11:31:05 UTC after exact-commit CI passed.
+The existing hourly job ran at 11:50 UTC and finished successfully at 11:51:58 UTC.
+Root independently observed the new public dashboard and verified no additional
+commits or workflow runs across the five dataset websites and shared catalogue.
+Both platforms' frozen version tags and GitHub release assets remain unchanged.
+Scout's deployed runtime, cron and publication receipts are preserved under
+`audits/sites-inventory/2026-11-11/`. No new worker launcher or allowance was added.
+
+## Implementation log
+
+The entries below retain observations and pending actions as recorded during the
+rollout. The final status and linked sign-off supersede those earlier pending states.
+
+- Final stage-wording commit `6889214` passed exact CI `43012087411` and 41
+  focused tests in a clean checkout (one optional skip). Scout has the deployment
+  instruction; it does not alter website records, renderer or shim.
+- Root captured the six website repositories' heads and workflow counts at 11:30
+  UTC in `noop-before.json`, for comparison after a real repeat pass.
+- A bounded read-only observer is live in exec session `1624`, waiting for the
+  11:50 UTC hourly window and a new public snapshot, with deadline 12:05 UTC.
+  It will save `scheduled-window-public-observation.json`. This proves public
+  readback only; Scout's actual cron execution evidence is still needed for
+  unattended causality. Poll this same handle, do not start another observer.
+  No further implementation work is planned absent a demonstrated defect.
 - Neutral stage wording now avoids claiming execution from an open SQLite attempt.
   The regression fixture contains a logically running attempt held by a future
   budget retry; the dashboard shows its stage, cap reason and next attempt time.
@@ -163,14 +193,8 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
   explicitly based on the 10:10 UTC readback and had no tools; it is not a fresh
   deployment observation. Scout remains the sole worker-launching coordinator.
 
-## Next actions
+## Remaining work
 
-1. Deploy the neutral stage wording after exact-commit CI; verify the mobile grid
-   guard and current short names/counts remain correct live.
-2. Collect Scout's complete/no-op receipts, runtime inventory and actual hourly
-   execution evidence. All five dataset pages, the catalogue and dashboard are live.
-3. Complete the criterion-by-criterion audit against current observed evidence;
-   do not equate initial backfill or passing tests with unattended acceptance.
-
-The integration is deployed, with final acceptance still open. The existing untracked
-`docs/.FACTORY-SITES-INTEGRATION.md.swp` has been left untouched.
+No implementation or deployment work remains for S1–S8. Routine updates use the
+existing hourly job; Scout remains the sole worker-launching coordinator.
+The untracked `docs/.FACTORY-SITES-INTEGRATION.md.swp` has been left untouched.
