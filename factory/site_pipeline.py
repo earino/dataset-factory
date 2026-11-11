@@ -261,7 +261,9 @@ def reconcile(plan, folder, gh, hub, fetch=public_json):
                 files.update(navigation)
                 expected.update(originals)
             else:
-                files["README.md"] = f"# Dataset Factory\n\n" + links(record) + "\n\nWebsite sources and release records are managed by the dataset publication pipeline.\n"
+                files["README.md"] = ("# Dataset Factory\n\n"
+                    f"[Browse the dataset catalogue]({record['urls']['catalog']})\n\n"
+                    "Website sources and release records are managed by the dataset publication pipeline.\n")
             commit = gh.commit(target["repository"], files, f"Prepare website for {record['dataset']} {record['release_tag']}", expected=expected)
             done(kind + "_commit", {"repository": target["repository"], "commit": commit})
         done("huggingface_navigation", hub.run("link", record, public=True))

@@ -5,6 +5,15 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
 
 ## Current work
 
+- Diagnosed a real convergence defect during rollout: the shared catalogue README
+  was rewritten with each current dataset's navigation. Live README history cycles
+  through the releases; an alternating-two-release regression reproduces pending
+  after earlier completion. The README now has a stable catalogue link. The new
+  regression and 34 focused tests pass. Evidence is in
+  `audits/sites-integration/catalogue-retry-defect.json`.
+- Asked Scout to finish its current bounded site pass and defer more manual site
+  retries until the fix passes CI. Dashboard publication must proceed independently;
+  controller and cleanup remain active. This is not a pause of the factory or goal.
 - Anonymous catalogue readback now includes all five modern benchmarks plus its
   14 earlier records (19 total). The public dashboard at the same check still
   served its legacy snapshot from 10:50 UTC; dashboard rollout remains pending.

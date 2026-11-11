@@ -281,6 +281,14 @@ class WebsiteTests(unittest.TestCase):
         rendered = RUNTIME["render"](json.loads(gh.files[catalog][".dataset-site/config.json"]), records)
         self.assertIn("releases/abs-visitor-arrivals-direction/v2026.10/index.html", rendered)
         self.assertIn("releases/austin-911-response/v2026.09/index.html", rendered)
+        # A shared catalogue must stay stable when separate release retries alternate.
+        # Linking its README to the current dataset caused endless commits and deploys.
+        self.complete(self.plan, self.out, gh, hub)
+        self.complete(second, other, gh, hub)
+        previous = (gh.commits, len(gh.dispatches))
+        self.assertEqual(reconcile(self.plan, self.out, gh, hub, gh.fetch)['status'], 'complete')
+        self.assertEqual(reconcile(second, other, gh, hub, gh.fetch)['status'], 'complete')
+        self.assertEqual(previous, (gh.commits, len(gh.dispatches)))
 
     def test_reusing_version_for_different_content_is_refused(self):
         gh, hub = FakeGitHub(self.record), FakeHub()
