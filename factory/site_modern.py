@@ -81,6 +81,7 @@ def project(manifest, receipt, documents, release_date, config):
               'qualification': {'gate_version': manifest['qualification']['gate_version'], 'result': 'PASSED'},
               'baseline': {'metrics': metrics, 'scope': evaluation['protocol']},
               'evaluation_use': manifest['evaluation_contract']['use'],
+              'publication_commits': {p: receipt[p]['commit'] for p in ('github', 'huggingface')},
               'licenses': {'code': 'MIT', 'data_compilation': 'CC0-1.0', 'source_data': source['license'],
                            'attribution': source['attribution'], 'citation': source['citation'],
                            'compilation_scope': 'Our additional compilation rights only; upstream terms remain in force.'},

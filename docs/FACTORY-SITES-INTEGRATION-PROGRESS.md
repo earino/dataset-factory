@@ -5,6 +5,15 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
 
 ## Current work
 
+- Shared bundle preparation now accepts the validated modern projection. Modern
+  bundles record standing-policy authorization; the CLI has `--standing-policy
+  <plan-sha>` separately from legacy operator approval.
+- GitHub navigation leaves modern manifests unchanged. GitHub tag verification
+  checks the original consumer-verified commit. The Hub adapter binds verification
+  to that receipt's immutable commit, checks release blobs, and edits only the
+  current README navigation. It does not download bulk files or move tags.
+- 41 focused tests pass, including stable modern bundles, unchanged manifests,
+  later editorial branch commits and mismatched Hub publication commits.
 - Added `factory/site_modern.py`: the modern manifest/receipt adapter supplies the
   existing renderer record. It reads measured baseline results only from compact
   metadata whose bytes and hashes match the pinned manifest, preserves nested Hub
@@ -30,11 +39,9 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
 
 ## Next actions
 
-1. Use the fresh deployed records to implement the modern site-model adapter and
-   connect modern candidates/releases to the existing dashboard collectors.
-2. Adapt schema-aware destination checks and editorial navigation without changing
-   frozen modern manifests or tags. Add standing-policy publication and bounded
-   site reconciliation to the existing hourly entry point.
+1. Connect modern candidates/releases to the existing dashboard collectors.
+2. Add bounded site reconciliation to the existing hourly entry point using the
+   modern adapter and shared publisher. Retrieve fresh deployed evidence from Scout.
 3. Verify clean-checkout tests and exact-commit CI, deploy with Scout, backfill,
    inspect live desktop/mobile pages, and observe scheduled recovery/no-op passes.
 

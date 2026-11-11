@@ -28,6 +28,11 @@ def prepare(package, editorial, config, out):
     problems, _ = runpy.run_path(str(ROOT / "scripts/check-package.py"))["check_package"](package, external_assets=True)
     require(not problems, "Package check failed: " + "; ".join(problems))
     record = project(package, editorial, config)
+    return prepare_record(record, config, out)
+
+
+def prepare_record(record, config, out):
+    """Shared bundle/rendering path for already validated release projections."""
     renderer = (ROOT / "sites/runtime.py").read_text()
     workflow = (ROOT / "sites/pages.yml").read_text()
     targets = {}
@@ -48,6 +53,10 @@ def prepare(package, editorial, config, out):
                            "verify dataset site", "deploy catalogue", "verify all destinations"],
             "publication": "Operator approval required. Dataset destinations must already be public. "
                            "Catalogue repository will be public. No dataset tags or assets are modified."}
+    if record.get('release_schema') == 'factory-1':
+        plan['standing_policy'] = 'FACTORY-SITES-INTEGRATION-2026-11-11'
+        plan['publication'] = ('Automatic website for an accepted, public, consumer-verified modern release. '
+                               'Frozen dataset tags, assets and manifests remain unchanged.')
     plan["plan_sha256"] = digest(dump(plan))
     out = Path(out)
     require(not out.is_symlink(), "Bundle directory cannot be a symlink")
@@ -318,6 +327,8 @@ def record_site_destination(record: dict, verified_at: str) -> None:
     renders as if it did not: nine datasets had live pages and only two showed the pill. Recording
     here keeps the evidence next to the other destinations instead of in a receipt nobody reads.
     """
+    if record.get('release_schema') == 'factory-1':
+        return  # Modern site evidence lives in the bundle receipt, not a legacy ledger.
     package = ROOT / "release" / str(record["dataset"]) / "DESTINATIONS.json"
     if not package.is_file():
         return
@@ -364,7 +375,9 @@ def main(argv=None):
         if name != "status":
             p.add_argument("--hf-python", help="Python with huggingface_hub; defaults to Scout's existing HF venv")
         if name == "publish":
-            p.add_argument("--approved-plan", required=True, help="Exact SHA from the operator-reviewed plan")
+            authorization = p.add_mutually_exclusive_group(required=True)
+            authorization.add_argument("--approved-plan", help="Exact SHA from the operator-reviewed legacy plan")
+            authorization.add_argument("--standing-policy", help="Exact plan SHA for automatic modern sites")
             p.add_argument("--wait-seconds", type=int, default=0,
                            help="Bounded deterministic polling, 0–600 seconds; pending exits 2")
             p.add_argument("--retry-failed", action="store_true",
@@ -381,7 +394,13 @@ def main(argv=None):
             else:
                 gh, hub = GitHub(), Hub(args.hf_python)
                 if args.action == "publish":
-                    require(args.approved_plan == plan["plan_sha256"], "Approval does not match this prepared plan")
+                    if args.standing_policy:
+                        require(args.standing_policy == plan['plan_sha256']
+                                and plan.get('standing_policy') == 'FACTORY-SITES-INTEGRATION-2026-11-11'
+                                and plan['record'].get('release_schema') == 'factory-1',
+                                'Standing policy does not match this modern bundle')
+                    else:
+                        require(args.approved_plan == plan["plan_sha256"], "Approval does not match this prepared plan")
                     require(0 <= args.wait_seconds <= 600, "Wait must be 0–600 seconds")
                     with (args.bundle / "publish.lock").open("w") as lock:
                         try:

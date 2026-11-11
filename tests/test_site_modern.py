@@ -2,11 +2,16 @@ import copy
 import json
 from pathlib import Path
 import runpy
+import tempfile
+from types import SimpleNamespace as NS
 import unittest
+from unittest.mock import patch
 
 from factory.common import FactoryError
 from factory.site_modern import project
 from factory.site_model import check_manifest
+from factory.site_pipeline import prepare_record, load_bundle
+from factory.site_github import GitHub
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -53,6 +58,45 @@ class ModernSiteTests(unittest.TestCase):
         other['source']['citation'] = 'different'
         with self.assertRaisesRegex(FactoryError, 'source terms'):
             check_manifest(record, other)
+
+    def test_modern_bundle_uses_standing_policy_and_stable_digest(self):
+        with tempfile.TemporaryDirectory() as folder:
+            first = prepare_record(self.record(), self.config, Path(folder).resolve() / 'bundle')
+            second = prepare_record(self.record(), self.config, Path(folder).resolve() / 'bundle')
+            self.assertEqual(first['plan_sha256'], second['plan_sha256'])
+            bundle = load_bundle(Path(folder).resolve() / 'bundle')
+            self.assertEqual(bundle['standing_policy'], 'FACTORY-SITES-INTEGRATION-2026-11-11')
+            self.assertNotIn('Operator approval required', bundle['publication'])
+
+    def test_github_editorial_navigation_never_rewrites_modern_manifest(self):
+        record = self.record()
+        gh = GitHub()
+        files = {'README.md': self.documents['README.md'].decode(),
+                 'MANIFEST.json': json.dumps(self.manifest)}
+        with patch.object(gh, 'file', side_effect=lambda repo, path: files[path]):
+            updates, originals = gh.dataset_navigation(record)
+            self.assertEqual(set(updates), {'README.md'})
+            self.assertEqual(originals['MANIFEST.json'], files['MANIFEST.json'])
+
+    def test_hub_modern_verification_uses_pinned_commit_without_bulk_reads(self):
+        fn = runpy.run_path(str(ROOT / 'scripts/site-hf.py'))['modern']
+        record = self.record()
+        entries = [NS(rfilename=path, size=meta['bytes'], blob_id='blob:' + path)
+                   for path, meta in self.manifest['assets'].items()]
+        entries.append(NS(rfilename='MANIFEST.json', size=100, blob_id='manifest'))
+        pinned = NS(sha=record['publication_commits']['huggingface'], siblings=entries, private=False)
+        main = NS(sha='later-editorial-commit', siblings=entries)
+        api = NS(dataset_info=lambda *a, **kw: main)
+        reads = []
+        def small(path, *args):
+            reads.append(path)
+            return json.dumps(self.manifest).encode() if path == 'MANIFEST.json' else self.documents[path]
+        result = fn({'record': record, 'action': 'read'}, api, pinned, small, None)
+        self.assertEqual(result['bulk_downloads'], 0)
+        self.assertEqual(reads, ['MANIFEST.json', 'README.md'])
+        pinned.sha = 'different'
+        with self.assertRaisesRegex(FactoryError, 'publication commit'):
+            fn({'record': record, 'action': 'read'}, api, pinned, small, None)
 
 
 if __name__ == '__main__':

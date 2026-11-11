@@ -108,6 +108,10 @@ class GitHub:
         original = self.file(repo, "README.md")
         remote_manifest = self.file(repo, "MANIFEST.json")
         manifest = json.loads(remote_manifest)
+        if record.get('release_schema') == 'factory-1':
+            check_manifest(record, manifest)
+            return {'README.md': linked_readme(original, record)}, {
+                'README.md': original, 'MANIFEST.json': remote_manifest}
         require(manifest.get("artifact_version") == record["artifact_version"] and
                 manifest.get("release_tag") == record["release_tag"],
                 "Default branch is a different dataset release; resume from its current package")
@@ -205,6 +209,11 @@ class GitHub:
         require(not public or info.get("private") is False, "GitHub dataset is private; complete the approved dataset release first")
         manifest = json.loads(self.file(repo, "MANIFEST.json", ref=tag))
         check_manifest(record, manifest)
+        if record.get('release_schema') == 'factory-1':
+            ref = self.request('GET', f'repos/{repo}/git/ref/tags/{quote(tag, safe="")}')
+            require(ref['object']['type'] == 'commit'
+                    and ref['object']['sha'] == record['publication_commits']['github'],
+                    'GitHub tag differs from the anonymously verified publication commit')
         release = self.request("GET", f"repos/{repo}/releases/tags/{quote(tag, safe='')}")
         require(not release.get("draft"), "GitHub release is still a draft")
         assets = {a["name"]: a for a in release["assets"]}

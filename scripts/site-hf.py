@@ -18,6 +18,44 @@ from factory.hub_integrity import load_worker_receipt, HubIntegrityError
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def modern(payload, api, info, small_file, operation):
+    """Reuse anonymous full-file verification bound to the immutable Hub commit."""
+    record = payload['record']
+    repo, tag = record['hf_repository'], record['release_tag']
+    require(info.sha == record['publication_commits']['huggingface'],
+            'Hub tag differs from the anonymously verified publication commit')
+    entries = {s.rfilename: s for s in info.siblings}
+    item = entries.get('MANIFEST.json')
+    require(item is not None, 'Pinned Hub manifest is missing')
+    manifest = json.loads(small_file('MANIFEST.json', info.sha, item.size))
+    check_manifest(record, manifest)
+    for expected in record['assets'].values():
+        item = entries.get(expected['hf_path'])
+        require(item is not None and item.size == expected['bytes'], 'Pinned Hub file missing or size differs')
+    main = api.dataset_info(repo, revision='main', files_metadata=True)
+    current = {s.rfilename: s for s in main.siblings}
+    # README is an editorial copy on main. All other released bytes stay pinned.
+    for path in ['MANIFEST.json'] + [a['hf_path'] for a in record['assets'].values() if a['hf_path'] != 'README.md']:
+        was, now = entries[path], current.get(path)
+        require(now is not None and now.size == was.size and getattr(was, 'blob_id', None)
+                and now.blob_id == was.blob_id, 'Hub current release blob differs from frozen version')
+    item = current.get('README.md')
+    require(item is not None, 'Hub card is missing')
+    original = small_file('README.md', main.sha, item.size).decode()
+    updated = linked_readme(original, record)
+    pending = updated != original
+    if pending and payload['action'] == 'link':
+        result = api.create_commit(repo_id=repo, repo_type='dataset', revision='main', parent_commit=main.sha,
+            commit_message=f'Link dataset website for {tag}',
+            operations=[operation(path_in_repo='README.md', path_or_fileobj=updated.encode())])
+        main_sha = result.oid
+    else:
+        main_sha = main.sha
+    return {'private': info.private, 'verified': True, 'revision_commit': info.sha,
+            'main_commit': main_sha, 'links_present': not pending or payload['action'] == 'link',
+            'verification_basis': 'anonymous_consumer_receipt_pinned_commit', 'bulk_downloads': 0}
+
+
 def prior_editorial_identity(record, commit):
     """Reviewed continuity of an already verified release, not a fresh data-hash claim."""
     path = ROOT / 'config/editorial-release-baselines.json'
@@ -71,6 +109,8 @@ def execute(payload):
         require(len(raw) <= limit, "Hub file exceeded its declared size")
         return raw
 
+    if record.get('release_schema') == 'factory-1':
+        return modern(payload, api, info, small_file, CommitOperationAdd)
     entries = {s.rfilename: s for s in info.siblings}
     inherited = prior_editorial_identity(record, info.sha)
     receipt = worker_evidence(record, info.sha) if not inherited else None
