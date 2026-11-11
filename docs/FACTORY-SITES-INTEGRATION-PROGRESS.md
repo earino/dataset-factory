@@ -5,6 +5,28 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
 
 ## Current work
 
+- Root prepared all five real modern releases from pinned public metadata and the
+  matching Scout publication receipts: 5/5 projections and offline renderer builds
+  passed. Compact results are in `audits/sites-integration/real-release-previews.json`.
+  Temporary preview bundles remain at the recorded local path for visual checks.
+- Updated the website and dashboard operating docs to describe modern inputs,
+  standing-policy authorization, bounded scheduled catch-up, scope labels and
+  recovery. Historical instructions are explicitly scoped to the legacy path.
+- Scout acknowledged the deployment handoff and independently verified both CI
+  runs. Its 10:50 UTC message reports deployment starting after capturing before
+  state. Root's anonymous check at that point still saw the old public dashboard
+  and catalogue, with zero of the modern release IDs; live completion is pending.
+- Dashboard integration commit `cb60cef66b9b828fe48e45e242c6c69a3baf0bc8` passed
+  exact-commit Local checks `43006437889` and Website preview `43006437641`.
+  The combined 90 focused tests passed in a clean checkout (one optional skip).
+  Sent Scout the concrete rollout instruction in the main Telegram session:
+  fast-forward code, copy only the reviewed hourly shim, verify runtime inventory,
+  run one bounded sync and dashboard publish, then resume pending bundles. No
+  deployment success has yet been observed by root.
+- Root independently recorded all five frozen GitHub tag commits and release
+  asset names/sizes/digests in `audits/sites-integration/pre-rollout-identities.json`.
+  All tag commits match the earlier consumer-verified publication receipts. Use
+  these identities for post-rollout comparison; no data files were downloaded.
 - Added modern dashboard collectors and connected them to the existing renderer.
   Modern stages, active queue and release receipts are primary; legacy candidates
   remain in detail pages and releases are labelled by workflow. Missing modern

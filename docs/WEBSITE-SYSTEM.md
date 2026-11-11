@@ -1,5 +1,55 @@
 # The website publication system
 
+## Modern factory integration (2026-11-11)
+
+The modern path follows [FACTORY-SITES-INTEGRATION.md](FACTORY-SITES-INTEGRATION.md).
+Implementation and live verification status are tracked in
+[FACTORY-SITES-INTEGRATION-PROGRESS.md](FACTORY-SITES-INTEGRATION-PROGRESS.md).
+The legacy package procedure below remains available for historical releases.
+Its per-dataset operator approval requirement does not apply to accepted, public,
+consumer-verified modern releases under the integration standing policy.
+
+The existing hourly `/opt/data/scripts/scout_dashboard.py` first runs
+`python3 scripts/site-sync.py`, then publishes the dashboard even if site work
+fails. This adds no scheduler or model calls. Scout remains the sole worker
+coordinator. `site_reconciliation_enabled: false` in private `config/local.json`
+disables only this website catch-up step.
+
+The sync reads published candidates and matching publication receipts from SQLite
+in read-only mode. It fetches only compact version-pinned public metadata, checks
+it against the accepted manifest, and projects the `factory-1` schema through
+`factory/site_modern.py` into the existing renderer. It does not create legacy
+candidate records, `DESTINATIONS.json`, manual editorial files or new approval
+artifacts. Summary and release-post text come from the accepted task description.
+
+Prepared bundles and receipts remain under `.factory/sites/`. The compact
+`status.json` records each attempted release, bundle and outcome for the dashboard.
+Repeated passes resume pending deployments. A complete bundle gets live
+verification without another publish call. The pass processes releases separately
+and rotates earlier unfinished work through its bounded time window. The hourly
+wrapper has a 600-second outer timeout; interrupted work resumes from receipts.
+Pending Actions runs are not completion. Inspect the existing bundle receipt for
+the specific failure; public summaries do not expose raw SDK diagnostics.
+
+To inspect or resume an automatic bundle directly:
+
+```sh
+python3 scripts/site-publish.py status .factory/sites/<bundle>
+python3 scripts/site-publish.py publish .factory/sites/<bundle> --standing-policy <plan-sha>
+python3 scripts/site-publish.py verify .factory/sites/<bundle>
+```
+
+`--standing-policy` verifies the exact prepared plan digest and its modern policy
+marker. It is separate from `--approved-plan`, which remains the legacy interface.
+The publisher checks public data destinations, deploys and anonymously verifies
+the dataset page, then verifies the catalogue and cross-links. It preserves old
+records and version URLs. Current README/Hub navigation is an editorial overlay:
+modern manifests, frozen asset bytes and dataset tags are never rewritten.
+The original data publication commit remains pinned even when website commits
+advance the default branch. No bulk dataset downloads are needed for this step.
+
+## Legacy package procedure
+
 The deliverable is a repeatable release-to-website pipeline operated by Scout.
 Austin exercises the first run. Another dataset uses the same commands and renderer;
 it supplies its own release package and a small editorial JSON file.

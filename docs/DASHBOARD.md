@@ -1,5 +1,41 @@
 # Dashboard: executive and operational views
 
+## Modern integration (2026-11-11)
+
+The implemented modern input path is described by
+[FACTORY-SITES-INTEGRATION.md](FACTORY-SITES-INTEGRATION.md); deployment and evidence
+are tracked in [its progress record](FACTORY-SITES-INTEGRATION-PROGRESS.md).
+The historical design plan below does not expand this integration to P1/P2.
+
+`factory/dashboard_modern.py` reads a consistent read-only modern SQLite snapshot.
+The existing overview now uses modern stage counts and its active queue. Old
+candidate detail pages and release records remain, with legacy scope labels.
+A missing database is explicitly unavailable; the overview then labels its old
+counts as legacy history. The renderer, CSS, page layout and navigation remain
+the same implementation.
+
+Modern data destination status comes from the exact-artifact publication receipt.
+Website status comes separately from `.factory/sites/status.json`. Thus a website
+failure does not undo a verified dataset publication. Candidate detail pages show
+recorded controller reasons and retry times rather than inferring running workers
+from a stage name. Effective controller and worker settings come from private
+local configuration through a selected public projection, not tracked defaults.
+
+Token gauges, admission alarms and new token history use the budget decision's
+normal-operation counter. Development usage is separately labelled; the session
+gauge uses weighted normal-operation sessions. The displayed admission reasons
+remain the budget tool's actual reasons. Cost estimates and worker reservations
+are not actual billed spend. Old workflow throughput points are not joined to
+modern workflow history. The generator publishes only selected display fields,
+not candidate payloads, model prompts or raw worker diagnostics.
+
+The existing hourly shim also runs the bounded website sync before dashboard
+publication. Site errors or its outer timeout do not suppress the dashboard.
+All four public pages still require anonymous readback. No site, data release or
+routine refresh requires another model session or per-dataset human review.
+
+## Historical dashboard plan
+
 Status: **P0 shipped 2026-10-20.** Exec, Cost and Reliability are live at
 https://earino.github.io/dataset-factory-dashboard/. P1 and P2 below are not built.
 
