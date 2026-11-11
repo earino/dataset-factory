@@ -5,6 +5,16 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
 
 ## Current work
 
+- Commit `6a0241d` passed exact CI `43009932470` / `43009932420` and 72 focused
+  clean-checkout tests. Sent Scout the tested short-name and history corrections.
+  Root anonymously observed the restored `19 datasets shipped` headline at
+  11:16 UTC. The active title readback watcher is waiting for the five short names
+  to appear in the catalogue; its session is `23142` (15-minute observation window).
+- Desktop/mobile checks now cover the live catalogue and dashboard. A concrete
+  dashboard overflow at 390 pixels was corrected by a single grid-child sizing
+  guard. The browser measurement dropped from 449 to 390 pixels; desktop screenshot
+  pixels are identical before/after that guard. No fonts, colours, spacing or cards
+  changed. Evidence and screenshots are in `visual/dashboard-catalogue-check.json`.
 - Eduardo identified two presentation regressions: prediction questions used as
   dataset names, and a shipped headline limited to modern releases. Corrected the
   adapter to derive short names from stable dataset IDs while keeping the accepted

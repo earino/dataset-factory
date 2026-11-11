@@ -96,6 +96,7 @@ a{color:inherit}
 .donut-wrap .legend{flex:1;min-width:170px;margin-top:0}
 /* ---------- grids ---------- */
 .grid{display:grid;gap:var(--gap);grid-template-columns:1fr}
+.grid > *{min-width:0}
 @media(min-width:360px){.grid.two{grid-template-columns:1fr 1fr}}
 .kpis{display:grid;gap:var(--gap);grid-template-columns:1fr 1fr}
 @media(min-width:900px){.kpis{grid-template-columns:repeat(4,1fr)}}
