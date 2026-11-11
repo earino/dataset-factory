@@ -5,6 +5,27 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
 
 ## Current work
 
+- Neutral stage wording now avoids claiming execution from an open SQLite attempt.
+  The regression fixture contains a logically running attempt held by a future
+  budget retry; the dashboard shows its stage, cap reason and next attempt time.
+  Forty-one focused dashboard/state/sync tests pass (one optional skip).
+- Scout's 11:25 UTC readback reports all five short-name bundles complete and
+  dashboard containment rollout starting. Actual no-op receipts and hourly-run
+  evidence are still pending; this message alone is not final sign-off.
+- Root's correction watcher completed successfully at 11:21 UTC: anonymous
+  catalogue readback has all five short names and the live dashboard headline is
+  19. The isolated browser also verified the h1 on each of the five dataset pages.
+  Evidence is in `names-history-live-check.json`. The user-reported title/count
+  regressions are corrected live.
+- Dashboard containment commit `404dabf` passed exact CI `43011209067`; sent Scout
+  this dashboard-only update. Site records/renderer and saved website bundles are
+  unchanged by that commit. Remaining work includes actual no-op/recovery receipts
+  and the next real hourly run.
+- One factual display issue to correct next: the 11:14 snapshot describes budget-
+  held attempts as "Running discover/evaluate" because the SQLite attempt remains
+  logically in flight. Its recorded reason is the weighted session cap and retry
+  time is in the future. Use a stage description rather than claiming execution
+  from the attempt row; resource execution remains the provider inventory's fact.
 - Commit `6a0241d` passed exact CI `43009932470` / `43009932420` and 72 focused
   clean-checkout tests. Sent Scout the tested short-name and history corrections.
   Root anonymously observed the restored `19 datasets shipped` headline at
@@ -144,12 +165,12 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
 
 ## Next actions
 
-1. Exercise bounded site reconciliation and dashboard generation with Scout after
-   exact-commit CI. Verify actual schema compatibility across all five releases.
-2. Deploy the matching hourly shim and verify its runtime inventory; resume saved
-   site bundles until the anonymous live checks pass on all surfaces.
-3. Verify clean-checkout tests and exact-commit CI, deploy with Scout, backfill,
-   inspect live desktop/mobile pages, and observe scheduled recovery/no-op passes.
+1. Deploy the neutral stage wording after exact-commit CI; verify the mobile grid
+   guard and current short names/counts remain correct live.
+2. Collect Scout's complete/no-op receipts, runtime inventory and actual hourly
+   execution evidence. All five dataset pages, the catalogue and dashboard are live.
+3. Complete the criterion-by-criterion audit against current observed evidence;
+   do not equate initial backfill or passing tests with unattended acceptance.
 
-No site code has been deployed. S1–S8 remain unproven. The existing untracked
+The integration is deployed, with final acceptance still open. The existing untracked
 `docs/.FACTORY-SITES-INTEGRATION.md.swp` has been left untouched.

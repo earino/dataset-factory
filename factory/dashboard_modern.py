@@ -32,7 +32,7 @@ def collect(root, legacy_candidates, legacy_releases):
                   'path': '.factory/pipeline.sqlite3', 'question': task.get('question', ''),
                   'target': task.get('target', ''), 'prediction_time': task.get('prediction_time', ''),
                   'split_strategy': task.get('split_policy', ''), 'domain': 'Modern factory',
-                  'next_action': ('Running ' if item.get('running') else 'Waiting in ') + state,
+                  'next_action': 'Stage ' + state,
                   'reason': row['reason'][:240], 'next_run_at': stamp(row['next_run']),
                   'release_splits': {k: {'rows': n} for k, n in manifest.get('rows', {}).items()},
                   'release_baseline': {'display': 'See versioned evaluation.json; public validation only'}

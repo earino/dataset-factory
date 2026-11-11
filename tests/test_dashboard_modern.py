@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
@@ -29,12 +30,18 @@ class ModernDashboardTests(unittest.TestCase):
                 db.execute("UPDATE candidates SET stage='published' WHERE id='source-published'")
             store.add('source-building', {'source': {'dataset_id': 'other'}, 'private_payload': 'DO_NOT_EXPORT'})
             with store.connect() as db:
-                db.execute("UPDATE candidates SET stage='build' WHERE id='source-building'")
+                db.execute("UPDATE candidates SET stage='build',next_run=?,reason=? WHERE id='source-building'",
+                           (time.time() + 3600, 'Weighted session cap; retry later'))
+                db.execute('INSERT INTO attempts VALUES(?,?,?,?,?,?,?,?)',
+                           ('held-attempt', 'source-building', 'build', 1, 'running', time.time(), None, '{}'))
             c, r, m = collect(folder, *self.legacy())
             self.assertEqual(c['counts'], {'published': 1, 'build': 1})
             self.assertEqual(c['release']['pending'], [])
             self.assertEqual(c['legacy_counts'], {'packaged': 1})
             self.assertEqual(len(c['live']), 1)
+            self.assertTrue(c['live'][0]['next_action'].startswith('Stage build: Weighted session cap'))
+            self.assertNotIn('Running', c['live'][0]['next_action'])
+            self.assertIn('next attempt', c['live'][0]['next_action'])
             self.assertEqual(r['releases'][0]['detail_id'], 'source-published')
             self.assertNotIn('DO_NOT_EXPORT', json.dumps([c, r, m]))
             s = snapshot(candidates=c, releases=r, modern=m)
