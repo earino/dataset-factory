@@ -5,6 +5,16 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
 
 ## Current work
 
+- At 10:55 UTC root anonymously read all five dataset version `release.json`
+  records: 5/5 match the exact public projections prepared earlier. Evidence:
+  `audits/sites-integration/dataset-live-record-check.json`. The earlier partial
+  check is retained separately. Catalogue readback still had its 14 earlier
+  records and no modern entries at the preceding check; catalogue/dashboard and
+  unattended completion remain unproven.
+- Documentation/evidence commit `c87dd40` passed exact-commit CI `43007103290`.
+  Browser-extension control returned an API error during preview inspection;
+  native Chrome fallback encountered concurrent user activity and was left alone.
+  Desktop/mobile visual acceptance remains open; no visual success is claimed.
 - Root prepared all five real modern releases from pinned public metadata and the
   matching Scout publication receipts: 5/5 projections and offline renderer builds
   passed. Compact results are in `audits/sites-integration/real-release-previews.json`.
