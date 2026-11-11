@@ -243,6 +243,9 @@ START, END = "<!-- dataset-factory:links -->", "<!-- /dataset-factory:links -->"
 
 def check_manifest(record, manifest):
     """Check what a remote pinned manifest says, as well as the provider's asset digests."""
+    if record.get('release_schema') == 'factory-1':
+        from .site_modern import check_manifest as check_modern
+        return check_modern(record, manifest)
     release = manifest if isinstance(manifest, Release) else from_manifest(manifest, strict=False)
     require(release.tag == record["release_tag"] and
             release.artifact_id == record["artifact_version"], "Pinned manifest identifies another release")

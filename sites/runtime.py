@@ -140,6 +140,11 @@ SUITABILITY_TAGS = {
 
 
 def suitability_html(r):
+    if r.get('release_schema') == 'factory-1':
+        return ('<section aria-label="Dataset suitability"><h2>Suitability and evaluation</h2><p>'
+                + esc('Evaluation setting: ' + r['evaluation_use'].replace('_', ' '))
+                + '. Read the prediction setting and limitations below. Public validation is development data; '
+                'downloadable holdout labels must stay outside the evaluated agent workspace.</p></section>')
     value = r.get("suitability")
     if not value:
         return '<section><h2>Suitability review pending</h2><p>Historical qualification is not certification of real-time forecasting validity.</p></section>'
@@ -168,9 +173,9 @@ def dataset_body(r):
     asset_rows = "".join(f'<tr><td>{link(a["download"], name)}</td><td>{a["bytes"]:,}</td>'
                          f'<td><code>{esc(a["sha256"])}</code></td></tr>' for name, a in r["assets"].items())
     terms = r["licenses"]
-    docs = "".join(link(r["urls"]["github"] + '/blob/' + r["release_tag"] + '/' + path, label) for path, label in (
+    docs = "".join(link(r["urls"]["github"] + '/blob/' + r["release_tag"] + '/' + path, label) for path, label in r.get('documents', (
         ("DATA_DICTIONARY.md", "Data dictionary"), ("REPRODUCE.md", "Reproduction"),
-        ("VERIFICATION.md", "Verification"), ("LICENSE.md", "Licence and attribution")))
+        ("VERIFICATION.md", "Verification"), ("LICENSE.md", "Licence and attribution"))))
     # The loading command is generated, not written into the template: a dataset with more than one
     # config (one per level) has to name it, or the command a reader copies raises "Config name is
     # missing". The names come from the record, which derives them from the same rule as the Hub card.

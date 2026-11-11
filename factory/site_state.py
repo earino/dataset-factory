@@ -4,6 +4,7 @@ The private rows are for local publication adapters. Only ``snapshot`` is suitab
 for public dashboard output; it deliberately does not serialize candidate data.
 """
 from datetime import datetime, timezone
+from contextlib import closing
 import json
 from pathlib import Path
 import sqlite3
@@ -18,7 +19,7 @@ def read_candidates(root):
     path = Path(root).resolve() / '.factory/pipeline.sqlite3'
     if not path.is_file() or path.is_symlink():
         raise FileNotFoundError('Modern pipeline database is unavailable')
-    with sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=5) as db:
+    with closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=5)) as db:
         db.row_factory = sqlite3.Row
         db.execute('BEGIN')
         rows = [dict(row) for row in db.execute('SELECT * FROM candidates ORDER BY created,id')]
