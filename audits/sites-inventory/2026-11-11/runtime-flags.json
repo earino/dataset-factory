@@ -1,0 +1,173 @@
+{
+ "collected_at": "2026-11-11T10:35:28.891426+00:00",
+ "note": "effective flags = deployed config/local.json (untracked local override); tracked defaults shown for contrast",
+ "effective_local_json": {
+  "pipeline_enabled": true,
+  "enabled": true,
+  "project": "earino-dataset-factory",
+  "monthly_budget_eur": 45,
+  "max_workers": 1,
+  "max_lifetime_minutes": 180,
+  "cleanup_grace_minutes": 60,
+  "max_job_minutes": 120,
+  "allowed_locations": [
+   "hel1"
+  ],
+  "server_types": {
+   "cx23": 0.02,
+   "cpx32": 0.08,
+   "cpx42": 0.15
+  },
+  "ssh_key_name": "scout-worker",
+  "ssh_private_key": "[redacted]",
+  "staging_repo": "earino/dataset-factory-staging",
+  "cleanup_configured": true,
+  "max_report_bytes": 262144,
+  "max_coordinator_reports_bytes": 20971520,
+  "policy_note": "A job may run up to 120 minutes; lifetime must allow 15 minutes for boot and upload and stays under 180. Reservation is ceil((lifetime + grace)/60) hours, so a 120-minute job with a 150-minute lifetime reserves 4 hours.",
+  "release_reserve_eur": 5,
+  "release_preempts": true
+ },
+ "tracked_default_config_pipeline_json": {
+  "enabled": false,
+  "max_attempts": 5,
+  "max_pending_candidates": 2,
+  "publication": {
+   "github_owner": "earino",
+   "hf_owner": "earino",
+   "repo_prefix": "factory-"
+  },
+  "worker": {
+   "server_type": "cpx32",
+   "cpus": 4,
+   "memory_mb": 6144,
+   "image": "python:3.11-slim",
+   "timeout_minutes": 30,
+   "lifetime_minutes": 60,
+   "max_disk_mb": 4096,
+   "max_artifact_mb": 1024
+  },
+  "model": {
+   "model": "deepseek/deepseek-v4.1-flash-1017",
+   "provider": "nous",
+   "research_toolset": "web",
+   "research_turns": 12,
+   "code_turns": 6,
+   "task_seconds": 600
+  }
+ },
+ "tracked_config_sites_json": {
+  "schema_version": 1,
+  "catalog_repository": "earino/dataset-factory-site",
+  "catalog_title": "Dataset Factory",
+  "catalog_description": "The Dataset Factory turns public data into prediction tasks. Each release gives you the source, the build code, the checks, and a measured baseline.",
+  "hosting": "github-project-pages"
+ },
+ "tracked_config_research_budget_json": {
+  "allowance_usd": 30.0,
+  "period": {
+   "kind": "monthly",
+   "reset_day": 1
+  },
+  "stop_fraction": 0.95,
+  "warn_fraction": 0.8,
+  "reserve_usd": 0.4,
+  "sessions_per_week": 200,
+  "weekly_token_budget": 40000000,
+  "development_token_exemption_from": "2026-11-08T11:07:00Z",
+  "development_token_exemption_until": "2026-11-08T19:07:00Z",
+  "development_token_exemption_reason": "Eduardo authorized development without normal-operation inference ceilings on 2026-11-08. Sessions started in recorded development windows stay excluded from weekly token and weighted session ceilings after development ends; measured usage is retained. Post-window sessions use normal admission. Worker spending/resource limits are unchanged.",
+  "session_max_minutes": 90,
+  "session_max_turns": 120,
+  "session_token_cap": 600000,
+  "catch_up_window_minutes": 120,
+  "research_job_ids": [
+   "69a5bc676d10",
+   "22ce870ec66f",
+   "86fe52e55ef9"
+  ],
+  "research_sources": [
+   "scout-research",
+   "oneshot"
+  ],
+  "excluded_sessions": [
+   "20260919_060228_2003f8",
+   "20260919_061233_3e147b",
+   "20260919_061434_5655b5",
+   "20260919_061511_1a35c2",
+   "20260919_062008_7b6775",
+   "local-facb99296041066d57ee4a35975c7ad376cf4c80b4395242d92a76328d32773f"
+  ],
+  "excluded_sessions_note": "Verification of the routine itself (2026-09-19): the iteration-cap stop, the approval-gate behaviour, the file-script path, the wall-clock stop, and the scheduler-fired probe. They are tagged scout-research like any session, so they are excluded here by id from both the weekly cap and the allowance - they measured the mechanism rather than doing research. 2026-10-23: the local-facb9929 session is the one-turn validation ping for the --source enum fix (see git history that day), same rationale. Listed explicitly so the exclusion is auditable; delete entries once they age out.",
+  "notes": "30 USD/month configured allowance; dollar spend is unknown when pricing is unavailable. Hermes-ESTIMATED model spend for scheduled research sessions, resetting on the 1st at 00:00 UTC. Every figure is an estimate: Hermes records cost_status='estimated' and actual_cost_usd=0, and it cannot see the NousCloud subscription quota, its usage page or its reset period. This is a budget guard on planned work and must never be presented as enforcement of the subscription. Separate from the 20 EUR/month Hetzner worker allowance. Session limits: hermes chat --max-turns and --run-budget are ENFORCED per run; the token figure is ADVISORY (no runtime token control), with an overshoot counting double against the weekly cap. reserve_usd is held back so the next session stays affordable.",
+  "unpriced_research_policy": "require_token_budget",
+  "development_token_windows": [
+   {
+    "from": "2026-11-08T19:58:14Z",
+    "until": "2026-11-09T21:12:00Z",
+    "reason": "Revised development run completed its two public benchmark outcomes at 2026-11-09T21:12:00Z. Sessions started in this window remain measured and excluded from normal-operation inference ceilings. Later sessions use normal admission; November worker allowance is separately authorized."
+   }
+  ]
+ },
+ "current_admission_decision": {
+  "moment": "2026-11-11T10:35:29.198522+00:00",
+  "period_start": "2026-11-01T00:00:00+00:00",
+  "allowance_usd": 30.0,
+  "research_cost_usd": null,
+  "usage": {
+   "interactive": {
+    "calls": 1215,
+    "input_tokens": 32841370,
+    "output_tokens": 1199746,
+    "cost_usd": null,
+    "cost_status": [
+     "unknown"
+    ],
+    "pricing_available": false
+   },
+   "auxiliary": {
+    "calls": 27,
+    "input_tokens": 41148,
+    "output_tokens": 41536,
+    "cost_usd": null,
+    "cost_status": [
+     "unknown"
+    ],
+    "pricing_available": false
+   },
+   "research": {
+    "calls": 7671,
+    "input_tokens": 44162794,
+    "output_tokens": 12843486,
+    "cost_usd": null,
+    "cost_status": [
+     "estimated",
+     "unknown"
+    ],
+    "pricing_available": false
+   }
+  },
+  "runs_last_7_days": 312,
+  "runs_weighted_last_7_days": 324,
+  "normal_operation_runs_last_7_days": 188,
+  "normal_operation_runs_weighted_last_7_days": 200,
+  "development_runs_last_7_days": 124,
+  "research_tokens_last_7_days": 45653890,
+  "normal_operation_tokens_last_7_days": 35174923,
+  "development_tokens_last_7_days": 10478967,
+  "weekly_token_budget": 40000000,
+  "development_token_exemption_active": false,
+  "sessions_over_token_cap": 12,
+  "session_cap_per_week": 200,
+  "accounting_available": true,
+  "pricing_available": false,
+  "warnings": [
+   "Research dollar spend and remaining allowance are unknown; admission uses the configured measured token ceiling",
+   "10,478,967 measured development tokens are excluded from the normal-operation weekly ceiling"
+  ],
+  "allowed": false,
+  "reasons": [
+   "188 normal-operation research session(s) already ran in the last 7 days, 12 of which overshot the 600,000-token cap and count double (cap 200)"
+  ]
+ }
+}
