@@ -5,6 +5,21 @@ Implementation authorized by Eduardo on 2026-11-11. Scope and completion criteri
 
 ## Current work
 
+- Eduardo identified two presentation regressions: prediction questions used as
+  dataset names, and a shipped headline limited to modern releases. Corrected the
+  adapter to derive short names from stable dataset IDs while keeping the accepted
+  question as summary. The dashboard headline now counts all distinct published
+  datasets across workflows, and its publication chart retains earlier all-time
+  history. Modern queue/funnel and scoped usage remain separate. Existing history
+  files are not rewritten. The combined 72 focused tests pass (one optional skip).
+- Independent anonymous dashboard readback at 11:09 UTC confirmed all four pages
+  carried the 11:06:11 snapshot, modern state was available, controller enabled and
+  max_workers 1. All five modern releases were present. This is the pre-correction
+  dashboard; later readback must verify the restored all-time headline.
+- Both platforms' five frozen version tags match original publication commits;
+  GitHub asset inventories and all 14 old catalogue record blobs remain unchanged.
+  Evidence is in `release-preservation-check.json`; stylesheet comparison against
+  `2bf708a` is in `style-preservation-check.json`.
 - Diagnosed a real convergence defect during rollout: the shared catalogue README
   was rewritten with each current dataset's navigation. Live README history cycles
   through the releases; an alternating-two-release regression reproduces pending

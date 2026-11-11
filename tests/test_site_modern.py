@@ -30,6 +30,8 @@ class ModernSiteTests(unittest.TestCase):
 
     def test_real_release_renders_with_exact_measured_scope_and_actual_documents(self):
         record = self.record()
+        self.assertEqual(record['title'], 'UCMR 5 First Sample PFAS')
+        self.assertEqual(record['summary'], self.manifest['task']['question'])
         check_manifest(record, self.manifest)
         self.assertEqual(record['baseline']['metrics']['Validation full_model auc'], 0.7856421356421357)
         self.assertEqual(record['assets']['extract__public__train.csv']['hf_path'], 'extract/public/train.csv')

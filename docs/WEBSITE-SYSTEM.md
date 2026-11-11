@@ -21,6 +21,8 @@ it against the accepted manifest, and projects the `factory-1` schema through
 `factory/site_modern.py` into the existing renderer. It does not create legacy
 candidate records, `DESTINATIONS.json`, manual editorial files or new approval
 artifacts. Summary and release-post text come from the accepted task description.
+Short dataset names come from the stable dataset identifier, with acronym casing;
+the prediction question stays in the summary rather than becoming the page title.
 
 Prepared bundles and receipts remain under `.factory/sites/`. The compact
 `status.json` records each attempted release, bundle and outcome for the dashboard.

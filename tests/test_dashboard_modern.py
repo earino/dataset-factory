@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from factory.dashboard_modern import collect
 from factory.state import Store
@@ -48,6 +49,21 @@ class ModernDashboardTests(unittest.TestCase):
             self.assertEqual(m['status'], 'unavailable')
             self.assertEqual(c['counts'], {'packaged': 1})
             self.assertIn('modern state unavailable', c['scope'])
+
+    def test_shipped_total_and_chart_keep_historical_public_releases(self):
+        c = {'workflow': 'modern', 'scope': 'Modern factory', 'counts': {'published': 1},
+             'live': [], 'records': []}
+        releases = [{'dataset': name, 'release_tag': 'v1', 'published': True,
+                     'verified_all': True, 'verified': {}, 'rows': 2, 'workflow': workflow}
+                    for name, workflow in [('earlier', 'legacy'), ('current', 'modern')]]
+        history = [{'published': 14}, {'workflow': 'modern', 'published': 5},
+                   {'workflow': 'modern', 'published_scope': 'all_workflows', 'published': 19}]
+        s = snapshot(candidates=c, releases={'releases': releases}, history=history)
+        with patch.object(ui, 'sparkline', return_value='chart') as chart:
+            html = ui.render_overview(s, [])
+        self.assertIn('<h1>2 datasets shipped</h1>', html)
+        self.assertIn('1 shipped by the modern factory; 1 earlier datasets', html)
+        self.assertIn([14, 19], [call.args[0] for call in chart.call_args_list])
 
     def test_cost_and_alarms_use_normal_operation_and_weighted_sessions(self):
         decision = {'research_tokens_last_7_days': 45_800_000,

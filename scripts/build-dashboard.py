@@ -588,8 +588,8 @@ def collect_history(out: Path, snapshot):
     point = {
         "at": snapshot["generated_at"],
         "workflow": snapshot['candidates'].get('workflow', 'legacy'),
-        "published": len({r['dataset'] for r in snapshot["releases"]["releases"] if r['published']
-                          and r.get('workflow', 'legacy') == snapshot['candidates'].get('workflow', 'legacy')}),
+        "published_scope": "all_workflows",
+        "published": len({r['dataset'] for r in snapshot["releases"]["releases"] if r['published']}),
         "live": len(snapshot["candidates"]["live"]),
         "tokens_7d": decision.get("normal_operation_tokens_last_7_days", decision.get("research_tokens_last_7_days")),
         "sessions_7d": decision.get("runs_last_7_days"),

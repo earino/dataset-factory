@@ -479,7 +479,8 @@ def render_overview(snapshot, alarms, alarms_plain=()):
                    for r in (snapshot.get('sites') or {}).get('releases', [])}
     releases = [{**r, 'site_status': site_states.get((r['dataset'], r['release_tag']), 'not observed')}
                 for r in releases]
-    history = [p for p in (snapshot.get("history") or [])
+    all_history = snapshot.get('history') or []
+    history = [p for p in all_history
                if p.get('workflow', 'legacy') == snapshot['candidates'].get('workflow', 'legacy')]
     decision = (snapshot.get("budget") or {}).get("decision") or {}
     health = snapshot["health"] or {}
@@ -489,12 +490,13 @@ def render_overview(snapshot, alarms, alarms_plain=()):
     kept = counts.get("investigating", 0) + counts.get("qualified", 0) + counts.get("published", 0)
     advanced = counts.get("qualified", 0) + counts.get("published", 0)
     published = counts.get("published", 0)
+    all_published = len({r['dataset'] for r in releases if r.get('published')})
     modern_view = c.get('workflow') == 'modern'
-    verified = sum(1 for r in releases if r.get("published") and r["verified_all"]
-                   and (not modern_view or r.get('workflow') == 'modern'))
+    verified = len({r['dataset'] for r in releases if r.get('published') and r['verified_all']})
 
     series_tokens = [p.get("tokens_7d") for p in history][-14:]
-    series_pub = [p.get("published") for p in history][-14:]
+    series_pub = [p.get('published') for p in all_history
+                  if p.get('workflow', 'legacy') != 'modern' or p.get('published_scope') == 'all_workflows'][-14:]
     series_live = [p.get("live") for p in history][-14:]
 
     hero_ok = not alarms
@@ -583,7 +585,7 @@ def render_overview(snapshot, alarms, alarms_plain=()):
     days_since = (round((datetime.now(timezone.utc) - latest_publish).total_seconds() / 86400, 1)
                   if latest_publish else None)
     tiles = "".join([
-        kpi("Published", published, note=f"{verified} fully verified"),
+        kpi("Published", all_published, note=f"{verified} fully verified · all workflows"),
         kpi("Days since", days_since, "d", "last publication"),
         kpi("Active bench", len(c['live']) if modern_view else coverage.get("live"),
             note=('Modern candidates awaiting completion' if modern_view else
@@ -597,8 +599,9 @@ def render_overview(snapshot, alarms, alarms_plain=()):
     body = f"""
 <section class="hero">
   <div class="eyebrow">Executive overview · {esc(c.get('scope') or 'Legacy history')}</div>
-  <h1>{published} datasets shipped</h1>
-  <p>{esc(summary_text)} Legacy records remain in the release history.</p>
+  <h1>{all_published} datasets shipped</h1>
+  <p>{published} shipped by the modern factory; {all_published - published} earlier datasets.
+  {esc(summary_text)} Historical releases remain below.</p>
   <div class="statusline {'ok' if hero_ok else 'warn'}"><span class="dot" style="background:{'var(--mint)' if hero_ok else 'var(--amber)'}"></span>
     <span><b>{'All systems nominal' if hero_ok else verdict_text}</b>{'' if hero_ok else ' — ' + esc(alarms_plain[0] if alarms_plain else '')}</span>
     <time>{esc(snapshot['generated_at'][11:16])} UTC</time></div>

@@ -8,7 +8,9 @@ are tracked in [its progress record](FACTORY-SITES-INTEGRATION-PROGRESS.md).
 The historical design plan below does not expand this integration to P1/P2.
 
 `factory/dashboard_modern.py` reads a consistent read-only modern SQLite snapshot.
-The existing overview now uses modern stage counts and its active queue. Old
+The existing overview uses modern stage counts for its active queue and funnel.
+Its shipped headline and publication history cover all published datasets, including
+historical releases, counted once per dataset. Old
 candidate detail pages and release records remain, with legacy scope labels.
 A missing database is explicitly unavailable; the overview then labels its old
 counts as legacy history. The renderer, CSS, page layout and navigation remain
@@ -25,8 +27,9 @@ Token gauges, admission alarms and new token history use the budget decision's
 normal-operation counter. Development usage is separately labelled; the session
 gauge uses weighted normal-operation sessions. The displayed admission reasons
 remain the budget tool's actual reasons. Cost estimates and worker reservations
-are not actual billed spend. Old workflow throughput points are not joined to
-modern workflow history. The generator publishes only selected display fields,
+are not actual billed spend. Historical all-time publication points remain on the
+publication chart; modern-only intermediate counters are not mixed into that total.
+Active-queue and usage series retain their declared workflow scope. The generator publishes only selected display fields,
 not candidate payloads, model prompts or raw worker diagnostics.
 
 The existing hourly shim also runs the bounded website sync before dashboard

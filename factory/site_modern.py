@@ -1,5 +1,6 @@
 """Project accepted factory-1 releases into the existing website record contract."""
 import json
+import re
 from pathlib import PurePosixPath
 
 from .site_model import digest, dump, encoded, pages_url, repository, require, slug, SHA
@@ -48,8 +49,13 @@ def project(manifest, receipt, documents, release_date, config):
             require(type(value) in (float, int) and 0 <= value <= 1, 'Invalid measured baseline metric')
             metrics[f'Validation {model} {metric}'] = value
     task, source = manifest['task'], manifest['source']
-    title = next((line[2:].strip() for line in documents['README.md'].decode().splitlines()
-                  if line.startswith('# ')), name)
+    # A benchmark's short name is distinct from its prediction question. Source
+    # builders often use that question as their README heading.
+    acronyms = {'cfpb', 'fdic', 'nih', 'nhtsa', 'pfas', 'ucmr', 'epa', 'r01'}
+    words = name.replace('_', '-').split('-')
+    title = ' '.join(word.upper() if word in acronyms or any(c.isdigit() for c in word)
+                     else word.capitalize() for word in words)
+    title = re.sub(r'\bUCMR(\d+)\b', r'UCMR \1', title)
     paragraphs = [task['question']]
     for key, label in (('population', 'Population'), ('target', 'Target'),
                        ('prediction_time', 'Prediction time'), ('split_policy', 'Splits'),
