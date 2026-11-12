@@ -461,3 +461,50 @@ class RenderTests(BudgetTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class TemporaryResourceWindowTests(BudgetTestCase):
+    def test_reset_preserves_history_and_expiry_restores_normal_admission(self):
+        now = datetime.now(timezone.utc)
+        make_state_db(self.state_db, [('old', 'chat', 1, 100, 10, 0.0, 'estimated', 'scout-research')])
+        config = self.config(allowance_usd=30, sessions_per_week=1, weekly_token_budget=1000,
+            temporary_resource_window={'from': (now-timedelta(minutes=30)).isoformat(),
+                'until': (now+timedelta(hours=1)).isoformat(), 'sessions_per_week':10,
+                'weekly_token_budget':10000, 'allowance_usd':300})
+        active = budget.evaluate(config, now)
+        self.assertTrue(active['allowed'], active)
+        self.assertEqual(active['normal_operation_runs_weighted_last_7_days'], 1)
+        self.assertEqual(active['session_admission_weighted'], 0)
+        self.assertEqual(active['normal_operation_tokens_last_7_days'], 110)
+        self.assertEqual(active['session_cap_per_week'], 10)
+        self.assertEqual(active['allowance_usd'], 300)
+        expired = budget.evaluate(config, now+timedelta(hours=1))
+        self.assertFalse(expired['allowed'])
+        self.assertEqual(expired['session_cap_per_week'], 1)
+        self.assertEqual(expired['weekly_token_budget'], 1000)
+        self.assertEqual(expired['allowance_usd'], 30)
+        self.assertIsNone(expired['session_count_reset_at'])
+        self.assertEqual(expired['session_admission_weighted'], 1)
+        self.assertEqual(config['sessions_per_week'], 1)
+        with sqlite3.connect(self.state_db) as db:
+            self.assertEqual(db.execute('select count(*) from sessions').fetchone()[0], 1)
+
+    def test_new_oversized_sessions_still_exhaust_temporary_cap(self):
+        now = datetime.now(timezone.utc)
+        make_state_db(self.state_db, [('new', 'chat', 1, 650000, 10, 0.0, 'estimated', 'scout-research')], session_age_minutes=5)
+        config = self.config(allowance_usd=30, temporary_resource_window={
+            'from': (now-timedelta(minutes=30)).isoformat(), 'until': (now+timedelta(hours=1)).isoformat(),
+            'sessions_per_week':2, 'weekly_token_budget':10000000, 'allowance_usd':300})
+        decision = budget.evaluate(config, now)
+        self.assertFalse(decision['allowed'])
+        self.assertEqual(decision['session_admission_weighted'], 2)
+        self.assertIn('count double', ' '.join(decision['reasons']))
+
+    def test_future_or_invalid_window_does_not_grant_allowance(self):
+        now = datetime.now(timezone.utc)
+        window = {'from': (now+timedelta(hours=1)).isoformat(), 'until': (now+timedelta(hours=2)).isoformat(),
+                  'sessions_per_week':2000, 'weekly_token_budget':400000000, 'allowance_usd':300}
+        config = self.config(allowance_usd=30, sessions_per_week=200, temporary_resource_window=window)
+        self.assertEqual(budget.evaluate(config, now)['session_cap_per_week'], 200)
+        window['until'] = 'bad'
+        self.assertFalse(budget.evaluate(config, now)['allowed'])
+        self.assertIn('invalid temporary', ' '.join(budget.evaluate(config, now)['reasons']))

@@ -1068,3 +1068,26 @@ The experimental chronological adapter is deferred separately in #25 after two
 worker attempts. Do not schedule retries or treat its unverified full scoring path
 as a prerequisite for ordinary construction. It must not be used as a verified
 final-scoring interface. Name the actual access protocol and limitations for scores.
+
+## Temporary operating allowance: 12–20 November 2026
+
+Eduardo authorized a fresh weekly session allowance and ten times the current
+operating resources through November 20. `temporary_resource_window` in
+`config/research-budget.json` applies only between its timezone-aware `from` and
+`until` instants. Until 2026-11-20 23:00 UTC (end November 20 Europe/Paris), the
+research gate uses 2,000 weighted sessions/week, 400,000,000 tokens/week and a
+USD300 estimated monthly model allowance. The normal values remain 200,
+40,000,000 and USD30 in the same file. This does not increase a provider quota.
+
+Only session admission gets a fresh epoch. Full seven-day counts and all measured
+tokens remain reported; `session_admission_weighted` counts normal sessions
+started at/after the epoch. Oversized sessions still count twice. At expiry the
+normal rolling window and limits apply automatically, including recent burst
+usage; work can then wait until usage falls below normal limits. No history is
+deleted or reclassified as development. Invalid temporary configuration holds
+admission. Existing task bounds, one coordinator and cleanup remain in force.
+
+Scout is coordinating a separate temporary worker allowance of EUR50, restoring
+EUR45 at the same expiry and preserving the December 1 reset to EUR20. Hosted
+configuration, expiry scheduling and observed resumed work must be recorded in
+`audits/operations/2026-11-12-resource-window/` before claiming deployment complete.

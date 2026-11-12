@@ -322,11 +322,41 @@ def research_sessions(config, since):
     return out
 
 
+def temporary_policy(config, moment):
+    """Apply a dated operator allowance without changing the measured history."""
+    effective = dict(config)
+    window = config.get("temporary_resource_window")
+    if window is None:
+        return effective, None
+    try:
+        start = datetime.fromisoformat(window["from"].replace("Z", "+00:00"))
+        end = datetime.fromisoformat(window["until"].replace("Z", "+00:00"))
+        if start.tzinfo is None or end.tzinfo is None or end <= start:
+            raise ValueError("invalid dates")
+        for key in ("sessions_per_week", "weekly_token_budget", "allowance_usd"):
+            value = window[key]
+            if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
+                raise ValueError("invalid limit")
+            if key != "allowance_usd" and type(value) is not int:
+                raise ValueError("integer limit required")
+    except (KeyError, TypeError, ValueError, AttributeError):
+        raise AccountingUnavailable("invalid temporary resource window") from None
+    active = start <= moment < end
+    if active:
+        for key in ("sessions_per_week", "weekly_token_budget", "allowance_usd"):
+            effective[key] = window[key]
+        effective["session_count_reset_at"] = start.isoformat()
+    return effective, {"active": active, "from": start.isoformat(), "until": end.isoformat()}
+
+
 def evaluate(config, moment=None, late_minutes=None):
     """Decide whether a research session may run now, with the reasons either way."""
     moment = moment or now_utc()
     try:
-        return _evaluate(config, moment, late_minutes)
+        effective, window = temporary_policy(config, moment)
+        result = _evaluate(effective, moment, late_minutes)
+        result["temporary_resource_window"] = window
+        return result
     except AccountingUnavailable as exc:
         # Discard partial totals: one successful query cannot establish a complete budget.
         return {
@@ -461,10 +491,20 @@ def _evaluate(config, moment, late_minutes):
         for beginning, expiry in development_windows)]
     normal_over_cap = sum(entry['over_cap'] for entry in normal_sessions)
     normal_weighted = len(normal_sessions) + normal_over_cap
-    if normal_weighted >= cap and not development_exempt:
-        detail = f"{len(normal_sessions)} normal-operation research session(s) already ran in the last 7 days"
-        if normal_over_cap:
-            detail += (f", {normal_over_cap} of which overshot the "
+    reset_at = config.get("session_count_reset_at")
+    admission_sessions = normal_sessions
+    if reset_at:
+        epoch = datetime.fromisoformat(reset_at)
+        admission_sessions = [entry for entry in normal_sessions
+                              if datetime.fromisoformat(entry["started_at"]) >= epoch]
+    admission_over_cap = sum(entry["over_cap"] for entry in admission_sessions)
+    admission_weighted = len(admission_sessions) + admission_over_cap
+    if admission_weighted >= cap and not development_exempt:
+        detail = f"{len(admission_sessions)} normal-operation research session(s) already ran in the last 7 days"
+        if reset_at:
+            detail += f" since reset {reset_at}"
+        if admission_over_cap:
+            detail += (f", {admission_over_cap} of which overshot the "
                        f"{config.get('session_token_cap'):,}-token cap and count double")
         reasons.append(f"{detail} (cap {cap})")
 
@@ -493,6 +533,8 @@ def _evaluate(config, moment, late_minutes):
         "development_token_exemption_active": development_exempt,
         "sessions_over_token_cap": len(over_cap),
         "session_cap_per_week": cap,
+        "session_count_reset_at": reset_at,
+        "session_admission_weighted": admission_weighted,
         "accounting_available": True,
         "pricing_available": research_cost is not None,
         "warnings": warnings,
