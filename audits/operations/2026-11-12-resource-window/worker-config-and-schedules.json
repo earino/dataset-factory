@@ -1,0 +1,62 @@
+{
+ "collected_at": "2026-11-12T21:36:59.558355+00:00",
+ "worker_config_local_json_sanitized": {
+  "pipeline_enabled": true,
+  "enabled": true,
+  "project": "earino-dataset-factory",
+  "monthly_budget_eur": 50,
+  "max_workers": 1,
+  "max_lifetime_minutes": 180,
+  "cleanup_grace_minutes": 60,
+  "max_job_minutes": 120,
+  "allowed_locations": [
+   "hel1"
+  ],
+  "server_types": {
+   "cx23": 0.02,
+   "cpx32": 0.08,
+   "cpx42": 0.15
+  },
+  "ssh_key_name": "scout-worker",
+  "staging_repo": "earino/dataset-factory-staging",
+  "cleanup_configured": true,
+  "max_report_bytes": 262144,
+  "max_coordinator_reports_bytes": 20971520,
+  "policy_note": "A job may run up to 120 minutes; lifetime must allow 15 minutes for boot and upload and stays under 180. Reservation is ceil((lifetime + grace)/60) hours, so a 120-minute job with a 150-minute lifetime reserves 4 hours.",
+  "release_reserve_eur": 5,
+  "release_preempts": true
+ },
+ "allowance_chain": {
+  "current": 50,
+  "nov20_2300Z_expiry_job": "dc8f49ebff51 -> 50->45 only if still 50",
+  "dec1_reset_job": "ca002a2e360e -> 45->20 only if still 45 (unchanged)"
+ },
+ "schedules": {
+  "factory_tick_07d6f8be3783": {
+   "schedule": "* * * * *",
+   "enabled": true
+  },
+  "cleanup_sweep_e80975eddd4a": {
+   "schedule": "*/10 * * * *",
+   "enabled": true
+  },
+  "dashboard_refresh_4d8053a69ed2": {
+   "schedule": "50 * * * *",
+   "enabled": true
+  },
+  "release_notify_ba4c8610edf8": {
+   "schedule": "55 * * * *",
+   "enabled": true
+  },
+  "worker_allowance_expiry_dc8f49ebff51": {
+   "schedule": "once 2026-11-20T23:00:00Z",
+   "enabled": true,
+   "catch_up": true
+  },
+  "allowance_reset_dec1_ca002a2e360e": {
+   "schedule": "once 2026-12-01T00:00:00Z",
+   "enabled": true
+  },
+  "legacy_launchers": "paused since 2026-11-08 (research/discovery sessions, worker watch)"
+ }
+}
