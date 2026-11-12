@@ -17,7 +17,7 @@ defaults to prose-only. `--check` detects stale inventory or stale mappings.
 See [publication rule decisions](PUBLICATION-INVARIANTS.md) for contradictions
 resolved from existing operator instructions and remaining judgment boundaries.
 
-Inventory: 122 source blocks; 6 mapped as enforced.
+Inventory: 123 source blocks; 6 mapped as enforced.
 
 ## a5e967126dafd57bf445 — prose-only
 
@@ -823,6 +823,17 @@ Source: [docs/OPERATIONS.md:1064](../docs/OPERATIONS.md#L1064).
 > worker attempts. Do not schedule retries or treat its unverified full scoring path
 > as a prerequisite for ordinary construction. It must not be used as a verified
 > final-scoring interface. Name the actual access protocol and limitations for scores.
+
+No complete mechanical enforcement identified; retain as an agent/operator obligation.
+
+## ca774da0eee3cb2236c7 — prose-only
+
+Source: [docs/OPERATIONS.md:1090](../docs/OPERATIONS.md#L1090).
+
+> Scout is coordinating a separate temporary worker allowance of EUR50, restoring
+> EUR45 at the same expiry and preserving the December 1 reset to EUR20. Hosted
+> configuration, expiry scheduling and observed resumed work must be recorded in
+> `audits/operations/2026-11-12-resource-window/` before claiming deployment complete.
 
 No complete mechanical enforcement identified; retain as an agent/operator obligation.
 
