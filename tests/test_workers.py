@@ -143,6 +143,14 @@ class WorkerTests(unittest.TestCase):
                 self.launch()
         self.assertEqual(self.cloud.created, 0)
 
+    def test_completed_short_job_releases_reservation_for_next_launch(self):
+        write_json(self.root / "jobs/old.json", {
+            "status":"deleted", "server_id":456, "reservation_eur":"9.98",
+            "rate_ceiling_eur":"0.03", "budget_months":[datetime.now(timezone.utc).strftime("%Y-%m")],
+            "created_at":"2026-11-01T00:00:00Z", "deleted_at":"2026-11-01T00:05:00Z"})
+        self.launch()
+        self.assertEqual(self.cloud.created,1)
+
     def test_provider_price_above_ceiling_blocks_creation(self):
         self.config["server_types"]["test-type"] = "0.001"
         with self.assertRaisesRegex(FactoryError, "price exceeds"):

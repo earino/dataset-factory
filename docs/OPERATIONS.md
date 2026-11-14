@@ -129,9 +129,16 @@ example, not a current price quotation. Launch checks live prices and refuses
 unknown prices/currency. Only one active worker and one launching coordinator are
 supported.
 
-Reservation: `ceil((lifetime + cleanup grace) / 60) × hourly ceiling`. Completed
-and failed jobs retain their reservation. Jobs crossing month boundaries reserve
-in both months. Preserve `jobs/` and push it after operations; never launch from a
+Reservation: `ceil((lifetime + cleanup grace) / 60) × hourly ceiling`. Active or
+uncertain jobs retain the full reservation. Confirmed deleted workers with a server
+ID, valid timezone-aware creation/deletion timestamps and a recorded price ceiling
+use `max(1, ceil(actual lifetime hours)) × recorded hourly ceiling` instead. This
+includes failed jobs once deletion is confirmed, and charges overruns even when
+they exceed the original reservation. Missing evidence retains the full reservation.
+Jobs crossing month boundaries charge their full amount in both months.
+Historical reservation fields remain unchanged; admission derives charges from
+the ledger. The dashboard uses the same whole-hour rounding at the recorded
+provider rate; both figures are estimates, not invoices. Preserve `jobs/` and push it after operations; never launch from a
 second checkout with a stale ledger.
 
 This is a conservative admission policy, not a provider billing hard cap. Cleanup

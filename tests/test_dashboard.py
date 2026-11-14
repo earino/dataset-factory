@@ -134,11 +134,11 @@ class ResourceTests(unittest.TestCase):
         jobs = {
             "a": {"created_at": (month_start + timedelta(days=1)).isoformat(),
                   "deleted_at": (month_start + timedelta(days=1, hours=2)).isoformat(),
-                  "provider_hourly_eur": "0.06924", "status": "deleted",
+                  "provider_hourly_eur": "0.06924", "status": "deleted", "server_id": 1,
                   "job": {"id": "a", "server_type": "cpx32", "location": "hel1"}},
             "b": {"created_at": (month_start + timedelta(days=2)).isoformat(),
                   "deleted_at": (month_start + timedelta(days=2, hours=1)).isoformat(),
-                  "provider_hourly_eur": "0.1", "status": "deleted",
+                  "provider_hourly_eur": "0.1", "status": "deleted", "server_id": 2,
                   "job": {"id": "b", "server_type": "cpx42", "location": "hel1"}},
             "c": {"created_at": (month_start + timedelta(days=3)).isoformat(),
                   "provider_hourly_eur": "0.1",
@@ -163,6 +163,19 @@ class ResourceTests(unittest.TestCase):
         self.assertAlmostEqual(0.06, res["eur_per_release"], places=2)
         unfinished = [j for j in res["jobs"] if j["id"] == "c"][0]
         self.assertIsNone(unfinished["eur"])
+
+    def test_short_worker_is_charged_a_whole_provider_hour(self):
+        from unittest import mock
+        import json
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);self.ledger(root)
+            path=root/'jobs/a.json';record=json.loads(path.read_text())
+            record['deleted_at']=record['created_at'].replace('00:00:00','00:05:00')
+            path.write_text(json.dumps(record))
+            with mock.patch.object(dashboard,'ROOT',root):res=dashboard.collect_resources()
+        job=next(j for j in res['jobs'] if j['id']=='a')
+        self.assertAlmostEqual(job['eur'],.06924)
+        self.assertLess(job['hours'],.1)
 
     def test_histogram_covers_every_job_and_normalises_by_reference_rate(self):
         from unittest import mock

@@ -193,20 +193,27 @@ Source: [docs/OPERATIONS.md:124](../docs/OPERATIONS.md#L124).
 
 No complete mechanical enforcement identified; retain as an agent/operator obligation.
 
-## f6bae36f0f5a74e3537b — prose-only
+## 5e31be66a9120fe3bb56 — prose-only
 
 Source: [docs/OPERATIONS.md:132](../docs/OPERATIONS.md#L132).
 
-> Reservation: `ceil((lifetime + cleanup grace) / 60) × hourly ceiling`. Completed
-> and failed jobs retain their reservation. Jobs crossing month boundaries reserve
-> in both months. Preserve `jobs/` and push it after operations; never launch from a
+> Reservation: `ceil((lifetime + cleanup grace) / 60) × hourly ceiling`. Active or
+> uncertain jobs retain the full reservation. Confirmed deleted workers with a server
+> ID, valid timezone-aware creation/deletion timestamps and a recorded price ceiling
+> use `max(1, ceil(actual lifetime hours)) × recorded hourly ceiling` instead. This
+> includes failed jobs once deletion is confirmed, and charges overruns even when
+> they exceed the original reservation. Missing evidence retains the full reservation.
+> Jobs crossing month boundaries charge their full amount in both months.
+> Historical reservation fields remain unchanged; admission derives charges from
+> the ledger. The dashboard uses the same whole-hour rounding at the recorded
+> provider rate; both figures are estimates, not invoices. Preserve `jobs/` and push it after operations; never launch from a
 > second checkout with a stale ledger.
 
 No complete mechanical enforcement identified; retain as an agent/operator obligation.
 
 ## 547d0ab75d41fdd349b5 — prose-only
 
-Source: [docs/OPERATIONS.md:166](../docs/OPERATIONS.md#L166).
+Source: [docs/OPERATIONS.md:173](../docs/OPERATIONS.md#L173).
 
 > The daily deletion path is not this workflow. **Scout deletes each worker as part of
 > finishing the job, immediately after collecting its results.** The sweep exists to
@@ -218,7 +225,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## c2ffd9d689eb6fe774c8 — prose-only
 
-Source: [docs/OPERATIONS.md:198](../docs/OPERATIONS.md#L198).
+Source: [docs/OPERATIONS.md:205](../docs/OPERATIONS.md#L205).
 
 > The sweeper deletes expired servers with matching project/job labels and their
 > labeled, unassigned primary IPs. It rechecks server ownership before deletion and
@@ -231,7 +238,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 0a5db8e66132724cf1d9 — prose-only
 
-Source: [docs/OPERATIONS.md:243](../docs/OPERATIONS.md#L243).
+Source: [docs/OPERATIONS.md:250](../docs/OPERATIONS.md#L250).
 
 > 1. **The normal path** - the smoke cycle above: collection followed by immediate
 >    deletion, with deletion confirmed by reading the server and IP back.
@@ -249,7 +256,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 35bdf1044e5babf9ce90 — prose-only
 
-Source: [docs/OPERATIONS.md:277](../docs/OPERATIONS.md#L277).
+Source: [docs/OPERATIONS.md:284](../docs/OPERATIONS.md#L284).
 
 > The entrypoint builds the extract, then qualifies it, and exits non-zero when the gate fails.
 > **A failed qualification still preserves diagnostics**: the gate report, its rendered output
@@ -261,7 +268,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 2592165b12c8769bca25 — prose-only
 
-Source: [docs/OPERATIONS.md:341](../docs/OPERATIONS.md#L341).
+Source: [docs/OPERATIONS.md:348](../docs/OPERATIONS.md#L348).
 
 > - Both run **host-side on the worker**; a transfer job starts no container, so it needs no
 >   `command` and no `image`.
@@ -278,7 +285,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## d45154a363a8aa5167b7 — prose-only
 
-Source: [docs/OPERATIONS.md:354](../docs/OPERATIONS.md#L354).
+Source: [docs/OPERATIONS.md:361](../docs/OPERATIONS.md#L361).
 
 > `FACTORY_GITHUB_TOKEN` (staging) is scoped to the staging repository and returns 404 on any other.
 > A transfer therefore needs `FACTORY_PUBLISH_TOKEN`, which is used **only** for the target write;
@@ -289,7 +296,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 82f2165c8ea25ac1fb49 — prose-only
 
-Source: [docs/OPERATIONS.md:400](../docs/OPERATIONS.md#L400).
+Source: [docs/OPERATIONS.md:407](../docs/OPERATIONS.md#L407).
 
 > After execution, the host uploads outputs, bounded logs and the source bundle
 > directly to a private draft release tagged `job-ID`. Files over 1 GiB stream as
@@ -302,7 +309,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## b86f9a2d2efd2c8d30d8 — prose-only
 
-Source: [docs/OPERATIONS.md:407](../docs/OPERATIONS.md#L407).
+Source: [docs/OPERATIONS.md:414](../docs/OPERATIONS.md#L414).
 
 > Scout accepts reports up to 256 KiB and keeps at most 20 MiB of collected reports
 > in `.factory/`. Job records also retain compact results. Archive local report
@@ -314,7 +321,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 55305568e20f6f56c32c — prose-only
 
-Source: [docs/OPERATIONS.md:413](../docs/OPERATIONS.md#L413).
+Source: [docs/OPERATIONS.md:420](../docs/OPERATIONS.md#L420).
 
 > For failed transfers while time remains, `worker retry-upload ID` reuses the
 > preserved execution result and never reruns the data job. Then check `collect`.
@@ -327,7 +334,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## d1013ffe81aa3ea0b771 — prose-only
 
-Source: [docs/OPERATIONS.md:425](../docs/OPERATIONS.md#L425).
+Source: [docs/OPERATIONS.md:432](../docs/OPERATIONS.md#L432).
 
 > - [Hetzner API](https://docs.hetzner.cloud/reference/cloud): pricing, servers, IPs and actions.
 > - [Hetzner billing](https://docs.hetzner.com/cloud/billing/faq/): powered-off servers remain billable.
@@ -338,7 +345,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## ce9a6f5b07b1780fa72f — prose-only
 
-Source: [docs/OPERATIONS.md:449](../docs/OPERATIONS.md#L449).
+Source: [docs/OPERATIONS.md:456](../docs/OPERATIONS.md#L456).
 
 > Every cost figure carries `cost_status = "estimated"` and `actual_cost_usd = 0`: Hermes
 > estimates, and **no provider-reported actual exists**. On this provider the estimate is also
@@ -353,7 +360,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## fc2b7b883e8db8fec80e — prose-only
 
-Source: [docs/OPERATIONS.md:465](../docs/OPERATIONS.md#L465).
+Source: [docs/OPERATIONS.md:472](../docs/OPERATIONS.md#L472).
 
 > | Limit | Mechanism |
 > | --- | --- |
@@ -369,7 +376,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 38d36c96f2c6dd29df81 — prose-only
 
-Source: [docs/OPERATIONS.md:475](../docs/OPERATIONS.md#L475).
+Source: [docs/OPERATIONS.md:482](../docs/OPERATIONS.md#L482).
 
 > The pre-check can refuse a session before launch. The existing session wrapper also enforces
 > per-invocation turns and wall-clock limits through Hermes flags and process-group cleanup.
@@ -380,7 +387,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 533ece01486081fa1362 — enforced
 
-Source: [docs/OPERATIONS.md:488](../docs/OPERATIONS.md#L488).
+Source: [docs/OPERATIONS.md:495](../docs/OPERATIONS.md#L495).
 
 > Allowance and limits live in `config/research-budget.json`. With `allowance_usd: null` the gate
 > refuses to wake the model. That is deliberate: an unconfigured budget is not an unlimited one.
@@ -391,7 +398,7 @@ Checks: [`scripts/research-budget.py`](../scripts/research-budget.py), [`scripts
 
 ## 38de6d760a7f839546c0 — prose-only
 
-Source: [docs/OPERATIONS.md:542](../docs/OPERATIONS.md#L542).
+Source: [docs/OPERATIONS.md:549](../docs/OPERATIONS.md#L549).
 
 > The receipt is atomically persisted before model launch while holding the shared
 > research mutex. A failed launch or interrupted admitted run consumes its slot;
@@ -404,7 +411,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## efc5f7e76405c7f95e62 — prose-only
 
-Source: [docs/OPERATIONS.md:567](../docs/OPERATIONS.md#L567).
+Source: [docs/OPERATIONS.md:574](../docs/OPERATIONS.md#L574).
 
 > Status separates the last receipt from current due state and the next scheduled
 > check; these are schedule expectations, not a liveness guarantee. Hermes must be
@@ -417,7 +424,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## bd2ed6c987e8bd6aaa63 — prose-only
 
-Source: [docs/OPERATIONS.md:600](../docs/OPERATIONS.md#L600).
+Source: [docs/OPERATIONS.md:607](../docs/OPERATIONS.md#L607).
 
 > A scheduled session has nobody to answer an approval prompt, so flagged commands are **refused**
 > rather than approved. Measured in this environment:
@@ -426,7 +433,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## db0daddbb99c1074c2b9 — prose-only
 
-Source: [docs/OPERATIONS.md:603](../docs/OPERATIONS.md#L603).
+Source: [docs/OPERATIONS.md:610](../docs/OPERATIONS.md#L610).
 
 > - `python3 -c ...`/`-e ...` and interpreter heredocs are refused ("blocked... single-query mode
 >   (-q) runs without a user present to approve it").
@@ -439,7 +446,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 519741aafa5ecffb932c — prose-only
 
-Source: [docs/OPERATIONS.md:610](../docs/OPERATIONS.md#L610).
+Source: [docs/OPERATIONS.md:617](../docs/OPERATIONS.md#L617).
 
 > The documented escape hatch — permanent approvals by *rule key* in `command_allowlist` — does
 > **not** work on this build: `_command_matches_permanent_allowlist` matches only exact command
@@ -453,7 +460,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 0a391348fec7fca94b9c — prose-only
 
-Source: [docs/OPERATIONS.md:629](../docs/OPERATIONS.md#L629).
+Source: [docs/OPERATIONS.md:636](../docs/OPERATIONS.md#L636).
 
 > **A job's own fire looked like an overlap.** The scheduler writes a `running` row for a job
 > *before* its script starts, and the gate was treating any `running` research-job row as an
@@ -470,7 +477,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 5c08c21ea1bf7a44e8b8 — enforced
 
-Source: [docs/OPERATIONS.md:649](../docs/OPERATIONS.md#L649).
+Source: [docs/OPERATIONS.md:656](../docs/OPERATIONS.md#L656).
 
 > `config/admission.json` is the repository-owned admission policy. With `hold: true`,
 > the research wrapper refuses discovery and advancement before spending model tokens,
@@ -485,7 +492,7 @@ Checks: [`factory/admission.py`](../factory/admission.py), [`scripts/scout_resea
 
 ## 491f5a8a2e3c497cdfa7 — prose-only
 
-Source: [docs/OPERATIONS.md:656](../docs/OPERATIONS.md#L656).
+Source: [docs/OPERATIONS.md:663](../docs/OPERATIONS.md#L663).
 
 > Read-only planning, package checks, existing job reconciliation/collection/destruction,
 > expiry cleanup and bounded worker follow-up remain available. Follow-up still uses the
@@ -500,7 +507,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## a06d6ae0ced067edcd31 — enforced
 
-Source: [docs/OPERATIONS.md:678](../docs/OPERATIONS.md#L678).
+Source: [docs/OPERATIONS.md:685](../docs/OPERATIONS.md#L685).
 
 > A demonstrated label-blind exact recovery blocks a new release unconditionally.
 > Disclosure, retrospective scope, row isolation and a purported waiver never override
@@ -516,7 +523,7 @@ Checks: [`factory/suitability.py`](../factory/suitability.py), [`factory/qualifi
 
 ## 4285180e398ba0bff3bb — prose-only
 
-Source: [docs/OPERATIONS.md:728](../docs/OPERATIONS.md#L728).
+Source: [docs/OPERATIONS.md:735](../docs/OPERATIONS.md#L735).
 
 > `HF_TOKEN_WRITE` is the managed write token, visible to terminal subprocesses here, and
 > `/opt/data/.secrets/huggingface-write.token` (mode 0600) is the file form used by the worker path -
@@ -528,7 +535,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 7ec1e19bdc2c8ee6f09c — prose-only
 
-Source: [docs/OPERATIONS.md:734](../docs/OPERATIONS.md#L734).
+Source: [docs/OPERATIONS.md:741](../docs/OPERATIONS.md#L741).
 
 > The write token reaches the worker as a root-only `/opt/scout/credentials.json` entry, read by the
 > worker **host**, and is passed to the Hugging Face client through the child process environment -
@@ -539,7 +546,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 2bb4e8dea87bed255474 — prose-only
 
-Source: [docs/OPERATIONS.md:751](../docs/OPERATIONS.md#L751).
+Source: [docs/OPERATIONS.md:758](../docs/OPERATIONS.md#L758).
 
 > The worker job downloads each asset from the GitHub release, verifies its digest, uploads it,
 > verifies the digest the Hub reports, and deletes the local copy - so 131 MB never touches this
@@ -550,7 +557,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 40aba8141fd1eaafe734 — prose-only
 
-Source: [docs/OPERATIONS.md:758](../docs/OPERATIONS.md#L758).
+Source: [docs/OPERATIONS.md:765](../docs/OPERATIONS.md#L765).
 
 > Per-file uploads skip any file already at the manifest digest, so a resumed or repeated release is
 > cheap rather than a re-send. Completion is recorded **per destination** in
@@ -561,7 +568,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 708212216aca95ad6347 — prose-only
 
-Source: [docs/OPERATIONS.md:765](../docs/OPERATIONS.md#L765).
+Source: [docs/OPERATIONS.md:772](../docs/OPERATIONS.md#L772).
 
 > `config/licensing-policy.json` holds the standing policy; `candidates/<id>/license.json`
 > preserves the research decision. New packages bind source captures and exact quotations in
@@ -574,7 +581,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 452d78a5be1b0473bac0 — prose-only
 
-Source: [docs/OPERATIONS.md:772](../docs/OPERATIONS.md#L772).
+Source: [docs/OPERATIONS.md:779](../docs/OPERATIONS.md#L779).
 
 > Defaults: **MIT** for our code and documentation, **CC0-1.0** for our rights in a derived
 > compilation, and the **source's terms preserved** - never relicensed, always with its designation,
@@ -586,7 +593,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 15f5e6d52bb5bade3eab — prose-only
 
-Source: [docs/OPERATIONS.md:783](../docs/OPERATIONS.md#L783).
+Source: [docs/OPERATIONS.md:790](../docs/OPERATIONS.md#L790).
 
 > Licence documents are package files, so editing one changes its hash even when data digests
 > stay identical. Prepare a new reviewed package version, regenerate its manifest and re-run
@@ -597,7 +604,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 24a457b801497aa81695 — prose-only
 
-Source: [docs/OPERATIONS.md:794](../docs/OPERATIONS.md#L794).
+Source: [docs/OPERATIONS.md:801](../docs/OPERATIONS.md#L801).
 
 > Every `quality.json` carries a `timing` block: the instant's kind, the measured lag in days, at least
 > one observed `period_end -> published` pair for a statistical release, and the latest period the row
@@ -609,7 +616,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## f3f0b30f0959c7b24c3c — prose-only
 
-Source: [docs/OPERATIONS.md:807](../docs/OPERATIONS.md#L807).
+Source: [docs/OPERATIONS.md:814](../docs/OPERATIONS.md#L814).
 
 > Standing policy, 2026-10-21: a source whose licence is not already established as permitting
 > redistribution and derivatives is **not pursued**. No permission emails, no parked candidates
@@ -621,7 +628,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## ed46aa1fac4a954ed702 — enforced
 
-Source: [docs/OPERATIONS.md:832](../docs/OPERATIONS.md#L832).
+Source: [docs/OPERATIONS.md:839](../docs/OPERATIONS.md#L839).
 
 > Admission requires gate exit 0 and exactly one valid `researchBudget` decision
 > with a boolean `allowed` and consistent reasons. Missing, malformed, duplicate,
@@ -636,7 +643,7 @@ Checks: [`scripts/scout_research_session.py`](../scripts/scout_research_session.
 
 ## 627d707d81284de846f4 — prose-only
 
-Source: [docs/OPERATIONS.md:846](../docs/OPERATIONS.md#L846).
+Source: [docs/OPERATIONS.md:853](../docs/OPERATIONS.md#L853).
 
 > The agent starts in its own process group and inherits the mutex descriptor.
 > The wrapper stops that group on timeout or an exception while the child remains
@@ -660,7 +667,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## e0717319a6e9dd1c01d1 — prose-only
 
-Source: [docs/OPERATIONS.md:864](../docs/OPERATIONS.md#L864).
+Source: [docs/OPERATIONS.md:871](../docs/OPERATIONS.md#L871).
 
 > Deploy only in an idle research window: old wrappers do not use the mutex. Keep
 > the existing cadence, invocation flags and budget limits. `--dry-run` and idle
@@ -672,7 +679,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 5a72b0c649df624340fd — prose-only
 
-Source: [docs/OPERATIONS.md:881](../docs/OPERATIONS.md#L881).
+Source: [docs/OPERATIONS.md:888](../docs/OPERATIONS.md#L888).
 
 > The session admission gate distinguishes a valid empty Hermes usage table from an
 > unavailable ledger. Missing, unreadable, corrupt, locked or incompatible `state.db`
@@ -686,7 +693,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## b03152ce77f90cae3df4 — prose-only
 
-Source: [docs/OPERATIONS.md:889](../docs/OPERATIONS.md#L889).
+Source: [docs/OPERATIONS.md:896](../docs/OPERATIONS.md#L896).
 
 > Usage counters must be nonnegative integers and cost finite and nonnegative.
 > Hermes stores absent/unknown pricing as `0.0`, which is not evidence of free
@@ -705,7 +712,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## a151dee8414414827c19 — prose-only
 
-Source: [docs/OPERATIONS.md:912](../docs/OPERATIONS.md#L912).
+Source: [docs/OPERATIONS.md:919](../docs/OPERATIONS.md#L919).
 
 > `hf-publish.py --tag` verifies the assets at an exact main commit before creating a missing
 > tag at that commit. An existing identical tag is a no-op; an existing different tag is a
@@ -718,7 +725,7 @@ Checks: [`factory/hub_integrity.py`](../factory/hub_integrity.py), [`tests/test_
 
 ## 3f3a2d5d24b769ce3b90 — prose-only
 
-Source: [docs/OPERATIONS.md:925](../docs/OPERATIONS.md#L925).
+Source: [docs/OPERATIONS.md:932](../docs/OPERATIONS.md#L932).
 
 > LFS assets require matching SHA-256 and size. Plain JSON/Markdown/text metadata is streamed
 > from the pinned commit with a 256 KiB per-file and 2 MiB aggregate limit. File size alone never
@@ -733,7 +740,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## d9deb9dfc133350a14ca — prose-only
 
-Source: [docs/OPERATIONS.md:956](../docs/OPERATIONS.md#L956).
+Source: [docs/OPERATIONS.md:963](../docs/OPERATIONS.md#L963).
 
 > The disk charge is the greater of the job directory's apparent size and its
 > initial size plus observed free-space loss on that filesystem. This includes
@@ -747,7 +754,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 8e1e2cecef5f1958174c — prose-only
 
-Source: [docs/OPERATIONS.md:979](../docs/OPERATIONS.md#L979).
+Source: [docs/OPERATIONS.md:986](../docs/OPERATIONS.md#L986).
 
 > A limit failure records `runtime-limit` or `disk-limit`; observation, cleanup and
 > receipt failures are distinct. No exception text from a credential-bearing
@@ -761,7 +768,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## a40cf226d9d650e41ae9 — prose-only
 
-Source: [docs/OPERATIONS.md:995](../docs/OPERATIONS.md#L995).
+Source: [docs/OPERATIONS.md:1002](../docs/OPERATIONS.md#L1002).
 
 > A child that cannot be reaped within ten seconds of cleanup is recorded as
 > `host-cleanup-incomplete`, with `host_cleanup_complete: false` and its observed
@@ -777,7 +784,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## b09a4e665f6769390b28 — prose-only
 
-Source: [docs/OPERATIONS.md:1012](../docs/OPERATIONS.md#L1012).
+Source: [docs/OPERATIONS.md:1019](../docs/OPERATIONS.md#L1019).
 
 > Descriptor paths must remain within their declared source/output roots. Absolute paths,
 > traversal, symlinks and duplicate/reserved destinations are refused before installation.
@@ -787,7 +794,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## 7e0f968f870ecec1e98f — prose-only
 
-Source: [docs/OPERATIONS.md:1016](../docs/OPERATIONS.md#L1016).
+Source: [docs/OPERATIONS.md:1023](../docs/OPERATIONS.md#L1023).
 
 > The assembler also runs the answer-artifact scrubber before sealing a bundle.
 > Fixture answer tables, raw fixture identifiers, literal pseudonym salts and unresolved
@@ -800,7 +807,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## f3fa1b62b4133124a674 — prose-only
 
-Source: [docs/OPERATIONS.md:1048](../docs/OPERATIONS.md#L1048).
+Source: [docs/OPERATIONS.md:1055](../docs/OPERATIONS.md#L1055).
 
 > The watcher interprets, records and cleans up the handed-off job. It may perform one
 > diagnosed, budgeted recovery of the same artifact under the watcher brief; construction
@@ -814,7 +821,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## e6a9aeede4b962f8cf15 — prose-only
 
-Source: [docs/OPERATIONS.md:1064](../docs/OPERATIONS.md#L1064).
+Source: [docs/OPERATIONS.md:1071](../docs/OPERATIONS.md#L1071).
 
 > Core remediation #17 ends the broad construction hold when that issue closes.
 > Resume ordinary budgeted work under the new gate and source-specific contracts;
@@ -828,7 +835,7 @@ No complete mechanical enforcement identified; retain as an agent/operator oblig
 
 ## ca774da0eee3cb2236c7 — prose-only
 
-Source: [docs/OPERATIONS.md:1090](../docs/OPERATIONS.md#L1090).
+Source: [docs/OPERATIONS.md:1097](../docs/OPERATIONS.md#L1097).
 
 > Scout is coordinating a separate temporary worker allowance of EUR50, restoring
 > EUR45 at the same expiry and preserving the December 1 reset to EUR20. Hosted

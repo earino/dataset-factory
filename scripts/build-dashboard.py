@@ -27,6 +27,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from factory.worker_budget import completed_charge, monthly_usage
 from factory import dashboard_render as ui  # noqa: E402
 from factory.release_schema import load_release, normalise_baseline, ReleaseShapeError
 SNAPSHOT_SCHEMA = 1
@@ -202,26 +203,29 @@ def collect_releases():
 def collect_resources(published_count=0):
     """Worker spend and live provider inventory.
 
-    Cost per job is server lifetime (deleted_at - created_at) multiplied by the hourly
-    rate the launcher recorded at launch. It is the same arithmetic the monthly
-    reservation uses, so the page and the budget guard cannot disagree.
+    Completed cost estimates round each identified worker lifetime up to whole hours,
+    using the provider rate recorded at launch. Admission uses the higher policy
+    ceiling instead; neither figure is a provider invoice.
     """
     ceiling = None
     local = read_json(ROOT / "config" / "local.json", {}) or {}
     if local.get("monthly_budget_eur") is not None:
         ceiling = float(local["monthly_budget_eur"])
 
-    jobs, errors = [], []
+    jobs, errors, budget_records = [], [], []
     for path in sorted((ROOT / "jobs").glob("*.json")):
         record = read_json(path)
         if not isinstance(record, dict) or "created_at" not in record:
             errors.append(path.name)
             continue
+        if "budget_months" in record and "reservation_eur" in record:
+            budget_records.append(record)
         created = parse_time(record.get("created_at"))
         deleted = parse_time(record.get("deleted_at"))
         hours = round((deleted - created).total_seconds() / 3600, 3) if created and deleted else None
         rate = float(record.get("provider_hourly_eur") or 0) or None
         job = record.get("job") or {}
+        estimate = completed_charge(record, "provider_hourly_eur")
         jobs.append({
             "id": job.get("id") or path.stem,
             "server_type": job.get("server_type"),
@@ -230,7 +234,7 @@ def collect_resources(published_count=0):
             "deleted_at": record.get("deleted_at"),
             "hours": hours,
             "rate_eur": rate,
-            "eur": round(hours * rate, 4) if hours is not None and rate else None,
+            "eur": float(estimate) if estimate is not None else None,
             "status": record.get("status"),
         })
 
@@ -311,6 +315,8 @@ def collect_resources(published_count=0):
 
     return {
         "ceiling_eur": ceiling,
+        "admission_accounting": monthly_usage(budget_records, current),
+        "release_reserve_eur": float(local.get("release_reserve_eur", 0)),
         "month_to_date": round(mtd_bucket["eur"], 2) if current in months else 0.0,
         "month_hours": round(mtd_bucket["hours"], 1),
         "jobs_this_month": mtd_bucket["jobs"],

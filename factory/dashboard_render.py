@@ -943,12 +943,20 @@ def render_resources(snapshot, alarms, alarms_plain=()):
                                          "ok" if j.get("status") == "deleted" else "warn"))
                 for j in jobs[-10:]][::-1]
 
+    accounting = res.get('admission_accounting', {})
+    booked = accounting.get('charged_eur')
+    budget_note = ''
+    if booked is not None and ceiling is not None:
+        headroom = max(0, float(ceiling) - float(res.get('release_reserve_eur', 0)) - float(booked))
+        budget_note = (f'<p>Admission accounting: {eur(float(booked))} at policy ceiling rates, '
+                       f'including retained reservations. Construction headroom: {eur(headroom)}.</p>')
     body = f"""
 <section class="hero compact">
   <div class="eyebrow">Hetzner resources</div>
   <h1>{eur(mtd)} this month</h1>
   <p>{res.get('jobs_this_month', 'no data')} worker jobs across {res.get('month_hours', 0):.1f} server-hours.
-  Lifetime spend on this project is {eur(lifetime)} across {res.get('jobs_total', 'no data')} jobs.</p>
+  Estimated lifetime cost on this project is {eur(lifetime)} across {res.get('jobs_total', 'no data')} jobs.</p>
+  {budget_note}
   <div class="statusline {hero_status}"><span class="dot" style="background:{'var(--mint)' if hero_status == 'ok' else 'var(--amber)'}"></span>
     <span><b>{hero_text}</b>{' — projected €' + format(projected, '.2f') + ' by month end' if projected is not None else ''}</span>
     <time>{esc(snapshot['generated_at'][11:16])} UTC</time></div>
@@ -964,9 +972,9 @@ def render_resources(snapshot, alarms, alarms_plain=()):
   </div></div>
 
   <div class="col-12">{card("Normalised job cost", histogram_chart, sub=histogram_sub, foot=histogram_foot)}</div>
-  <div class="col-7">{card("Spend by month", bar_list(month_items, money=True), sub="recorded server lifetime × hourly rate",
+  <div class="col-7">{card("Spend by month", bar_list(month_items, money=True), sub="rounded-up worker hours × recorded provider rate",
         foot="Computed from each job record's created_at and deleted_at and the provider rate captured at launch. "
-             "This is what the reservation math uses, not an invoice.")}</div>
+             "Each worker rounds up to a whole hour. Admission uses the configured price ceiling and retains full reservations for uncertain workers. These are estimates, not invoices.")}</div>
   <div class="col-5">{card("Billable right now", '<div class="list">'
         + f'<div class="item"><div class="meta"><div class="name">Servers</div>'
           f'<div class="desc">read from the provider API, not this project\'s bookkeeping</div></div>'

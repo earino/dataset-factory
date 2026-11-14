@@ -14,6 +14,7 @@ import subprocess
 import tarfile
 import time
 
+from .worker_budget import monthly_usage
 from .cloud import Cloud
 from .admission import require as require_admission
 from .common import FactoryError, identifier, locked, read_json, utcnow, write_json
@@ -341,13 +342,15 @@ def launch(root, job_path, config, cloud=None):
         end_month = datetime.fromtimestamp(expires + config["cleanup_grace_minutes"] * 60, timezone.utc).strftime("%Y-%m")
         months = sorted({month, end_month})
         for period in months:
-            spent = sum(Decimal(r["reservation_eur"]) for r in records if period in r["budget_months"])
+            usage = monthly_usage(records, period)
+            spent = Decimal(usage["charged_eur"])
             if spent + Decimal(proposal["reservation_eur"]) > cap:
                 if release_job or reserve == 0:
-                    raise FactoryError("Conservative monthly cost reservations would exceed allowance")
+                    raise FactoryError("Conservative monthly worker charges would exceed allowance")
                 raise FactoryError(
-                    f"Conservative monthly cost reservations would exceed the construction allowance "
-                    f"(EUR {cap} after the EUR {reserve} release reserve)")
+                    f"Conservative monthly worker charges would exceed the construction allowance "
+                    f"(EUR {cap} after the EUR {reserve} release reserve; "
+                    f"charged EUR {spent}, proposed EUR {proposal['reservation_eur']})")
         actual_rate = check_price(cloud, job, proposal["rate_ceiling_eur"])
         folder = Path(root) / ".factory" / job["id"]
         folder.mkdir(parents=True)
