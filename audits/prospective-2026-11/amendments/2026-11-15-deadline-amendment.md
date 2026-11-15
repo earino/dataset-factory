@@ -52,3 +52,17 @@ No acceptance rule, admission threshold or cohort boundary was changed for the s
 - Initial and corrected snapshots (`initial/`, `initial-corrected/`) are retained untouched.
 - Factory production, worker allowance (EUR50) and the 2026-11-20T23:00Z expiry are unchanged;
   the factory keeps running normally.
+
+## Correction 2026-11-15 (later same day): close export moved to 2026-11-16T07:00Z
+
+Eduardo corrected the premature cutoff: dataset collection continues through the morning of
+2026-11-16. The single one-shot job `d35f2e1ec147` was updated in place again — `once at
+2026-11-16 07:00`, `next_run_at 2026-11-16T07:00:00+00:00`, script-only. No export ran on
+2026-11-15 and no 2026-11-17 trigger remains.
+
+Study timing now: research permitted through **2026-11-16T10:00Z**; final analysis then; author
+review package on the afternoon of **2026-11-16** for submission.
+
+Cohort definition, the partial-results record above, initial/corrected snapshots and all
+outcomes remain unchanged. Factory production, worker allowance and the 2026-11-20 expiry are
+untouched.
