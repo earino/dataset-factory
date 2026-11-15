@@ -1,0 +1,284 @@
+{
+ "carry_columns": [],
+ "evaluation_contract": {
+  "access": "isolated_rows",
+  "cross_row_audit": {
+   "auxiliary_files_review": "Only public/train.csv, public/eval.csv, and private/holdout.csv are written; no auxiliary evaluation files.",
+   "probes": [],
+   "rationale": "Each firm contributes one row keyed by a hashed stable identifier; no cross-row rate features are shipped."
+  },
+  "feature_evidence": {
+   "agency": {
+    "availability": "Stored on the index Phase I award record; used as a categorical feature.",
+    "source": "SBIR.gov award data dictionary, Agency field",
+    "status": "verified"
+   },
+   "award_amount": {
+    "availability": "Stored as published; Phase I amount only; may be blank and is not imputed",
+    "source": "SBIR.gov award data dictionary, Award Amount field",
+    "status": "verified"
+   },
+   "award_date": {
+    "availability": "Constructed from Proposal Award Date when it falls inside the award_year federal fiscal year; otherwise the fiscal year end is used. HHS awards do not publish Proposal Award Date, so exact HHS award dates are not observed.",
+    "source": "SBIR.gov award data dictionary, Proposal Award Date and Award Year fields",
+    "status": "assumed"
+   },
+   "award_year": {
+    "availability": "Stored on the index Phase I award record; used as a feature and to derive award_date; current-vintage file may revise historical years",
+    "source": "SBIR.gov award data dictionary, Award Year field",
+    "status": "verified"
+   },
+   "branch": {
+    "availability": "Stored on the index Phase I award record; may be blank for non-DoD awards",
+    "source": "SBIR.gov award data dictionary, Branch field",
+    "status": "verified"
+   },
+   "hubzone_owned": {
+    "availability": "Optional Y/N/U field on the index Phase I award record; U means unavailable",
+    "source": "SBIR.gov award data dictionary, HUBZone Owned field",
+    "status": "verified"
+   },
+   "number_employees": {
+    "availability": "Optional field on the index Phase I award record; may be blank; current-vintage values may be corrected",
+    "source": "SBIR.gov award data dictionary, Number Employees field",
+    "status": "assumed"
+   },
+   "program": {
+    "availability": "Stored on the index Phase I award record; SBIR or STTR",
+    "source": "SBIR.gov award data dictionary, Program field",
+    "status": "verified"
+   },
+   "record_id": {
+    "availability": "Constructed after reading the index Phase I record; stable SHA1 prefix of the firm key",
+    "source": "Constructed at build time from the SBIR firm key; not a publisher field",
+    "status": "verified"
+   },
+   "socially_economically_disadvantaged": {
+    "availability": "Optional Y/N/U field on the index Phase I award record; U means unavailable",
+    "source": "SBIR.gov award data dictionary, Socially and Economically Disadvantaged field",
+    "status": "verified"
+   },
+   "state": {
+    "availability": "Present on the index Phase I award record. The published file stores many values as full state names rather than two-letter codes; the builder canonicalizes both forms to USPS state and territory codes and preserves unrecognized non-US location text verbatim. Blank stays blank and is never imputed.",
+    "source": "SBIR.gov award data dictionary, State field, checked against observed source values in the no-abstract award CSV",
+    "status": "verified"
+   },
+   "topic_code": {
+    "availability": "Stored on the index Phase I award record; may be blank",
+    "source": "SBIR.gov award data dictionary, Topic Code field",
+    "status": "verified"
+   },
+   "women_owned": {
+    "availability": "Optional Y/N/U field on the index Phase I award record; U means unavailable",
+    "source": "SBIR.gov award data dictionary, Women Owned field",
+    "status": "verified"
+   }
+  },
+  "limitations": [
+   "Annual award records are a current-vintage administrative extract; later corrections can revise earlier years, so historical availability is not proven.",
+   "The shipped time column award_date uses Proposal Award Date when it falls inside the award_year federal fiscal year; HHS awards do not publish that date, so the fiscal year end is used. Those rows share a fiscal-year-end event cluster and exact HHS award dates are not observed.",
+   "The published state column mixes two-letter USPS codes with full state and territory names; the builder canonicalizes both to codes, so the state feature is a normalized location rather than a verbatim copy of the source field.",
+   "No parent key links a Phase II award to its Phase I award; conversion is inferred by firm key and agency within four award years, so some labels may be misassigned.",
+   "Firm identity uses UEI, else DUNS, else normalized company name plus state; optional identifiers and name changes can merge or split firms.",
+   "HHS awards may omit proposal_award_date; the index time is the federal award year, and award_date falls back to fiscal year end rather than an exact date.",
+   "Same-year multiple Phase I awards are included only when proposal dates identify a unique earliest record; otherwise the firm is excluded rather than given an arbitrary row.",
+   "Phase II records with missing agency or an unknown or missing phase in a label window are excluded, not treated as negative.",
+   "No label-derived group rates or persistence reference are shipped; each firm appears once.",
+   "The target is an award-record event, not the underlying cause of non-conversion; voluntary exit and temporary suspension are not separately observed."
+  ],
+  "selection": {
+   "evidence": "Only fields on the index Phase I award record are features; award_date is derived from Proposal Award Date or fiscal year end. The target links later Phase II records by firm key and agency.",
+   "kind": "prediction_time"
+  },
+  "training_label_timing": "unverified",
+  "use": "retrospective_research",
+  "vintage": {
+   "evidence": "The SBIR.gov no-abstract award CSV is a current-vintage administrative extract; later corrections can revise earlier award years and exact date fields.",
+   "kind": "current_snapshot"
+  }
+ },
+ "event_key_column": "award_date",
+ "expected_duplicate_ids": 0,
+ "features": [
+  "agency",
+  "branch",
+  "program",
+  "award_year",
+  "award_amount",
+  "topic_code",
+  "state",
+  "number_employees",
+  "hubzone_owned",
+  "women_owned",
+  "socially_economically_disadvantaged"
+ ],
+ "features_documented_at": "prediction_time",
+ "high_cardinality_columns": [
+  "record_id",
+  "award_date",
+  "topic_code",
+  "award_amount"
+ ],
+ "id_columns": [
+  "record_id"
+ ],
+ "label_source_columns": [
+  "phase"
+ ],
+ "measurements": [
+  {
+   "column": "award_amount",
+   "frame": "Phase I award amount only, as published; may be blank and is not imputed",
+   "unit": "USD"
+  },
+  {
+   "column": "award_date",
+   "frame": "Proposal Award Date when it falls inside the award_year federal fiscal year; otherwise fiscal year end",
+   "unit": "date"
+  },
+  {
+   "column": "number_employees",
+   "frame": "Whole number reported for the firm, documented 0-500; optional and may be blank",
+   "unit": "employees"
+  },
+  {
+   "column": "award_year",
+   "frame": "Four-digit federal fiscal year of the index Phase I award; used as a feature and split key, while award_date is the shipped time column",
+   "unit": "federal fiscal year"
+  }
+ ],
+ "name": "sbir-phase1-to-phase2-conversion",
+ "positive_label": 1,
+ "post_hoc_columns": [
+  "phase"
+ ],
+ "split_windows": {
+  "eval": {
+   "end": "2016-10-01T00:00:00.000",
+   "start": "2014-10-01T00:00:00.000"
+  },
+  "holdout": {
+   "end": "2018-10-01T00:00:00.000",
+   "start": "2016-10-01T00:00:00.000"
+  },
+  "train": {
+   "end": "2014-10-01T00:00:00.000",
+   "start": "2004-10-01T00:00:00.000"
+  }
+ },
+ "splits": {
+  "eval": "public/eval.csv",
+  "holdout": "private/holdout.csv",
+  "train": "public/train.csv"
+ },
+ "target": "phase2_conversion",
+ "task": {
+  "features": [
+   {
+    "availability": "Stored on the index Phase I award record; used as a categorical feature.",
+    "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+    "meaning": "Two-to-four character code of the agency making the Phase I award",
+    "name": "agency"
+   },
+   {
+    "availability": "Stored on the index Phase I award record; blank values are preserved.",
+    "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+    "meaning": "Agency sub-component, mandatory for DoD awards and otherwise may be blank",
+    "name": "branch"
+   },
+   {
+    "availability": "Stored on the index Phase I award record.",
+    "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+    "meaning": "SBIR or STTR",
+    "name": "program"
+   },
+   {
+    "availability": "Stored on the index record; current-vintage revisions to historical years are possible. Used to derive award_date and to define the fixed chronological split.",
+    "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+    "meaning": "Federal fiscal year of the index Phase I award; used as a feature and split key",
+    "name": "award_year"
+   },
+   {
+    "availability": "Stored as published; may be blank and is not imputed.",
+    "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+    "meaning": "Dollar amount of the Phase I award only, never Phase II money",
+    "name": "award_amount"
+   },
+   {
+    "availability": "Stored on the index Phase I award record; may be blank.",
+    "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+    "meaning": "Code or number of the solicitation topic or subtopic addressed by the Phase I award",
+    "name": "topic_code"
+   },
+   {
+    "availability": "Stored on the index Phase I award record. The published column mixes full state names with two-letter codes, so both forms are canonicalized to USPS codes; blank values are preserved and non-US location text is kept verbatim.",
+    "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+    "meaning": "Two-letter USPS state or territory code of the awardee address; full state names in the source are converted to the matching code",
+    "name": "state"
+   },
+   {
+    "availability": "Optional field on the index Phase I record; may be blank and is not imputed.",
+    "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+    "meaning": "Whole number of employees reported for the firm, 0-500",
+    "name": "number_employees"
+   },
+   {
+    "availability": "Optional Y/N/U field on the index Phase I record; blank values are preserved.",
+    "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+    "meaning": "Whether the firm is HUBZone-owned: Y, N, or U for unavailable",
+    "name": "hubzone_owned"
+   },
+   {
+    "availability": "Optional Y/N/U field on the index Phase I record; blank values are preserved.",
+    "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+    "meaning": "Whether the firm is at least 51 percent women-owned: Y, N, or U",
+    "name": "women_owned"
+   },
+   {
+    "availability": "Optional Y/N/U field on the index Phase I record; blank values are preserved.",
+    "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+    "meaning": "Whether the firm is socially and economically disadvantaged: Y, N, or U",
+    "name": "socially_economically_disadvantaged"
+   }
+  ],
+  "outcome_horizon": "Up to four federal fiscal years after the index Phase I award year.",
+  "population": "Firms whose earliest award record in the frozen SBIR.gov no-abstract file is a Phase I award with award_year from 2005 through 2018 and a resolvable firm key: UEI, else DUNS, else normalized company name plus state. Firms with any earlier award record of either phase, or whose earliest record is Phase II, are excluded. Each firm contributes one row; same-year multiple Phase I records are included only when proposal_award_date identifies a unique earliest record.",
+  "prediction_time": "The Phase I award date: proposal_award_date when published and inside the federal fiscal year of award_year; otherwise the fiscal year end of award_year. Only fields on the index Phase I award record are read.",
+  "question": "Will a firm's first-ever SBIR/STTR Phase I award convert into a Phase II award from the same agency within four fiscal years?",
+  "simple_references": "Majority-class rate within each split; agency-by-award-year conversion base rate. Persistence is not available because each firm appears once and has no prior Phase I outcome to carry forward.",
+  "split_policy": "Fixed chronological split on award_year using half-open federal fiscal-year windows: train FY2005-2014 (2004-10-01 to 2014-10-01), eval FY2015-2016 (2014-10-01 to 2016-10-01), holdout FY2017-2018 (2016-10-01 to 2018-10-01). No embargo is applied because every feature is read from the index Phase I record and the label uses only later records. Rows require the four-year window to be closed by the maximum award year in the frozen file.",
+  "target": "1 if the same firm (matched on UEI, else DUNS, else normalised company name plus state) has any Phase II record from the same agency with award_year in {y+1, y+2, y+3, y+4}, where y is the Phase I award_year; 0 if no such record exists in the frozen file. Rows are dropped when no firm identifier can be resolved or when y+4 exceeds the last complete award year in the file.",
+  "usefulness": "No source column records Phase I to Phase II conversion, so the label must be rebuilt by linking a later Phase II award to the same firm and agency. Conversion is the SBIR stage gate, and raw Phase I and Phase II counts are confounded by firm survival and agency differences, so within-agency award-time attributes can add signal."
+ },
+ "time_column": "award_date",
+ "timing": {
+  "features": {
+   "lag_days": null,
+   "period": null,
+   "published_days_after_period_end": null,
+   "source_kind": "administrative_record"
+  },
+  "observations": [],
+  "prediction_instant": {
+   "citation": "SBIR.gov award data dictionary defines proposal_award_date as the first day of contract performance and award_year as the federal fiscal year; proposal_award_date is missing for HHS awards, so award_date falls back to the fiscal year end.",
+   "days_after_period_end": null,
+   "kind": "event_time",
+   "period": null
+  },
+  "row_selection": {
+   "fields": [
+    "award_year",
+    "phase",
+    "agency",
+    "uei",
+    "duns",
+    "company",
+    "state",
+    "proposal_award_date"
+   ],
+   "rule": "One row per firm key: keep only firms whose earliest award_year in the frozen file is a Phase I award from 2005 through 2018, with no earlier Phase II or Phase III record and with the four-year label window closed. Later Phase II records from the same firm key and agency define the target; no outcome field is used to select rows."
+  }
+ },
+ "construction_notes": "Repair of the prior build against the qualification gate, not a change to the frozen question, target, population, feature list or split years. The prior file shipped award_year as an integer time column and integer split windows; the gate rejected that as invalid actual ranges and the artifact scan failed on an integer where a date string was expected. The shipped time column is now award_date, an ISO datetime derived from proposal_award_date when it falls inside the federal fiscal year of award_year, otherwise the fiscal year end. The fixed half-open split windows are expressed as federal fiscal-year ISO timestamps for FY2005-2014, FY2015-2016 and FY2017-2018, and event_key_column is award_date so the gate clusters rows by day rather than by year. The label is still the same later Phase II record from the same firm key and agency within four award years. label_source_columns is narrowed to phase because phase is the outcome column; agency, award_year and state are prediction-time fields and matching keys, not outcome columns, and the same-agency and four-year conditions remain in the target rule. State canonicalization from full names to USPS codes is preserved. HHS awards do not publish proposal_award_date, so their award_date is the fiscal year end; this is documented as a limitation and as a clustered-event weakness, not hidden. No persistence reference applies because each firm contributes one row and has no prior Phase I outcome. Missing semantic evidence: the live header was not re-read in this write-only phase, so alias mapping stays defensive and is asserted with observed headers; historical availability of the fields is not proven, so training_label_timing stays unverified and the use stays retrospective_research. Checks assert failures with observed headers, missing names, selected source member and bounded diagnostics. No fixture labels, answer scaffolds, label-derived rates or auxiliary evaluation files are shipped.",
+ "source_access_recipe": "GET https://data.www.sbir.gov/mod_awarddatapublic_no_abstract/award_data_no_abstract.csv with a normal browser user agent, then read the CSV in chunks with pandas.read_csv(low_memory=False). Normalise phase to 1, 2 or 3, program to SBIR or STTR, parse award_year and award_amount after removing dollar signs and commas. Build the firm key in priority order: UEI, else DUNS, else upper-cased company name with legal suffixes stripped plus canonical USPS state. Keep firms whose earliest award record is a Phase I award with award_year 2005-2018 and whose four-year label window is closed by the maximum award year. Derive award_date from proposal_award_date when it falls inside the award_year federal fiscal year, otherwise use the fiscal year end because HHS does not publish proposal_award_date. Label by joining later Phase II records on firm key and agency with y < award_year <= y+4. Drop abstract and award_title from the released table."
+}

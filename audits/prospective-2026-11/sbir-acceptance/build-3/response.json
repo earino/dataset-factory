@@ -1,0 +1,287 @@
+{
+  "build_py": "import hashlib\nimport pathlib\nfrom collections import Counter, defaultdict\n\nimport numpy as np\nimport pandas as pd\n\nfrom source_io import fetch\n\nSOURCE_URL = 'https://data.www.sbir.gov/mod_awarddatapublic_no_abstract/award_data_no_abstract.csv'\nSOURCE_NAME = 'sbir_awards_no_abstract.csv'\nTARGET = 'phase2_conversion'\nID_COL = 'record_id'\nTIME_COL = 'award_date'\nFEATURES = [\n    'agency', 'branch', 'program', 'award_year', 'award_amount', 'topic_code',\n    'state', 'number_employees', 'hubzone_owned', 'women_owned',\n    'socially_economically_disadvantaged',\n]\nCSV_COLUMNS = [ID_COL, TIME_COL] + [c for c in FEATURES if c != TIME_COL] + [TARGET]\nALIASES = {\n    'award_year': ['award_year', 'awardyear', 'fiscal_year', 'year'],\n    'agency': ['agency', 'awarding_agency', 'agency_name'],\n    'branch': ['branch', 'agency_branch', 'sub_agency', 'subagency', 'department'],\n    'phase': ['phase', 'award_phase', 'phase_code'],\n    'program': ['program', 'program_name', 'award_program'],\n    'award_amount': ['award_amount', 'award_amount_usd', 'amount', 'award_value'],\n    'topic_code': ['topic_code', 'topic', 'topic_number', 'solicitation_topic'],\n    'state': ['state', 'state_code', 'awardee_state', 'firm_state'],\n    'number_employees': ['number_employees', 'number_of_employees', 'employees', 'employee_count'],\n    'hubzone_owned': ['hubzone_owned', 'hub_zone_owned', 'hubzone'],\n    'women_owned': ['women_owned', 'woman_owned', 'womenowned'],\n    'socially_economically_disadvantaged': ['socially_economically_disadvantaged', 'socially_and_economically_disadvantaged', 'minority_owned', 'sed'],\n    'uei': ['uei', 'unique_entity_id', 'unique_entity_identifier'],\n    'duns': ['duns', 'duns_number', 'duns_no'],\n    'company': ['company', 'firm', 'company_name', 'organization', 'awardee', 'awardee_name', 'business_name'],\n    'proposal_award_date': ['proposal_award_date', 'award_date', 'proposal_date', 'date_of_award'],\n}\nREQUIRED = [\n    'award_year', 'agency', 'branch', 'phase', 'program', 'award_amount', 'topic_code',\n    'state', 'number_employees', 'hubzone_owned', 'women_owned',\n    'socially_economically_disadvantaged',\n]\nLEGAL = set('inc incorporated llc corp corporation co company ltd limited lp llp plc pc pa the'.split())\nUSPS = set(\n    'AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ '\n    'NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY DC AS GU MP PR VI MH FM PW AA AE AP'.split()\n)\nSTATE_NAME_TO_CODE = {\n    'ALABAMA': 'AL', 'ALASKA': 'AK', 'ARIZONA': 'AZ', 'ARKANSAS': 'AR', 'CALIFORNIA': 'CA',\n    'COLORADO': 'CO', 'CONNECTICUT': 'CT', 'DELAWARE': 'DE', 'DISTRICT OF COLUMBIA': 'DC',\n    'D C': 'DC', 'FLORIDA': 'FL', 'GEORGIA': 'GA', 'HAWAII': 'HI', 'IDAHO': 'ID',\n    'ILLINOIS': 'IL', 'INDIANA': 'IN', 'IOWA': 'IA', 'KANSAS': 'KS', 'KENTUCKY': 'KY',\n    'LOUISIANA': 'LA', 'MAINE': 'ME', 'MARYLAND': 'MD', 'MASSACHUSETTS': 'MA',\n    'MICHIGAN': 'MI', 'MINNESOTA': 'MN', 'MISSISSIPPI': 'MS', 'MISSOURI': 'MO',\n    'MONTANA': 'MT', 'NEBRASKA': 'NE', 'NEVADA': 'NV', 'NEW HAMPSHIRE': 'NH',\n    'NEW JERSEY': 'NJ', 'NEW MEXICO': 'NM', 'NEW YORK': 'NY', 'NORTH CAROLINA': 'NC',\n    'NORTH DAKOTA': 'ND', 'OHIO': 'OH', 'OKLAHOMA': 'OK', 'OREGON': 'OR',\n    'PENNSYLVANIA': 'PA', 'RHODE ISLAND': 'RI', 'SOUTH CAROLINA': 'SC',\n    'SOUTH DAKOTA': 'SD', 'TENNESSEE': 'TN', 'TEXAS': 'TX', 'UTAH': 'UT', 'VERMONT': 'VT',\n    'VIRGINIA': 'VA', 'WASHINGTON': 'WA', 'WEST VIRGINIA': 'WV', 'WISCONSIN': 'WI',\n    'WYOMING': 'WY',\n    'PUERTO RICO': 'PR', 'GUAM': 'GU', 'AMERICAN SAMOA': 'AS',\n    'VIRGIN ISLANDS': 'VI', 'U S VIRGIN ISLANDS': 'VI',\n    'UNITED STATES VIRGIN ISLANDS': 'VI',\n    'NORTHERN MARIANA ISLANDS': 'MP', 'MARIANA ISLANDS': 'MP',\n    'MARSHALL ISLANDS': 'MH', 'FEDERATED STATES OF MICRONESIA': 'FM',\n    'MICRONESIA': 'FM', 'PALAU': 'PW',\n}\n\n\ndef _clean(value):\n    if value is None:\n        return ''\n    try:\n        if pd.isna(value):\n            return ''\n    except Exception:\n        pass\n    text = str(value).strip()\n    return '' if text.lower() in ('', 'nan', 'none', 'null', 'na', 'n/a') else text\n\n\ndef _norm_header(text):\n    return ''.join(ch.lower() if ch.isalnum() else '_' for ch in str(text)).strip('_')\n\n\ndef _header_map(observed):\n    norm_to_actual = {}\n    for col in observed:\n        key = _norm_header(col)\n        if key and key not in norm_to_actual:\n            norm_to_actual[key] = col\n    mapping = {}\n    used = set()\n    for canon, aliases in ALIASES.items():\n        for alias in aliases:\n            actual = norm_to_actual.get(alias)\n            if actual is not None and actual not in used:\n                mapping[canon] = actual\n                used.add(actual)\n                break\n    return mapping\n\n\ndef _fail(message):\n    raise AssertionError(str(message)[:4000])\n\n\ndef _check(checks, name, observed, expected, passed, detail=None, kind=None):\n    ok = bool(passed)\n    record = {'check': name, 'observed': observed, 'expected': expected, 'passed': ok}\n    if kind:\n        record['kind'] = kind\n    checks.append(record)\n    if not ok:\n        message = 'Source check failed: ' + name + '. Observed: ' + str(observed) + '. Expected: ' + str(expected)\n        if detail:\n            message += '. Detail: ' + str(detail)\n        _fail(message)\n\n\ndef _norm_name(value):\n    text = _clean(value).lower()\n    if not text:\n        return ''\n    text = ''.join(ch if ch.isalnum() else ' ' for ch in text)\n    return ' '.join(tok for tok in text.split() if tok and tok not in LEGAL)\n\n\ndef _compact(value):\n    text = _clean(value).upper().replace('.', ' ').replace(',', ' ')\n    return ' '.join(text.split())\n\n\ndef _state_text_like(key):\n    if len(key) < 2:\n        return False\n    return all(ch.isalpha() or ch == ' ' for ch in key)\n\n\ndef _state_kind(value):\n    key = _compact(value)\n    if not key:\n        return 'blank'\n    if len(key) == 2 and key.isalpha() and key in USPS:\n        return 'code'\n    if key in STATE_NAME_TO_CODE:\n        return 'name'\n    return 'other'\n\n\ndef _state_code(value):\n    key = _compact(value)\n    if not key:\n        return ''\n    if len(key) == 2 and key.isalpha() and key in USPS:\n        return key\n    if key in STATE_NAME_TO_CODE:\n        return STATE_NAME_TO_CODE[key]\n    return key\n\n\ndef _phase_series(series):\n    text = series.map(_clean).str.upper()\n    text = text.map(lambda value: ''.join(ch for ch in value if ch.isalnum()))\n    return text.map({\n        '1': 1, 'I': 1, 'PHASEI': 1, 'PHASE1': 1,\n        '2': 2, 'II': 2, 'PHASEII': 2, 'PHASE2': 2,\n        '3': 3, 'III': 3, 'PHASEIII': 3, 'PHASE3': 3,\n    })\n\n\ndef _numeric_series(series, money=False):\n    text = series.map(_clean)\n    text = text.map(lambda value: value.replace('$', '').replace(',', '').replace(' ', ''))\n    return pd.to_numeric(text, errors='coerce')\n\n\ndef _ynu_series(series):\n    text = series.map(_clean).str.upper()\n    out = text.map({\n        'Y': 'Y', 'YES': 'Y', 'TRUE': 'Y', '1': 'Y',\n        'N': 'N', 'NO': 'N', 'FALSE': 'N', '0': 'N',\n        'U': 'U', 'UNKNOWN': 'U',\n    })\n    out = out.where(out.notna(), text)\n    return out.where(text.ne(''), np.nan)\n\n\ndef _firm_keys(frame):\n    uei = frame['uei'].map(_clean).str.upper().map(lambda value: ''.join(ch for ch in value if ch.isalnum()))\n    duns = frame['duns'].map(_clean).map(lambda value: ''.join(ch for ch in value if ch.isdigit()))\n    company = frame['company'].map(_norm_name)\n    state = frame['state'].map(_clean).str.upper()\n    keys = pd.Series(np.nan, index=frame.index, dtype=object)\n    mask = uei.ne('')\n    keys[mask] = 'uei:' + uei[mask]\n    mask = keys.isna() & duns.ne('')\n    keys[mask] = 'duns:' + duns[mask]\n    state_ok = state.map(lambda value: len(value) >= 2)\n    mask = keys.isna() & company.ne('') & state_ok\n    keys[mask] = 'name:' + company[mask] + '|' + state[mask]\n    return keys\n\n\ndef _parse_datetime(value):\n    text = _clean(value)\n    if not text:\n        return None\n    parsed = pd.to_datetime(text, errors='coerce', utc=True)\n    if pd.isna(parsed):\n        return None\n    return parsed.tz_convert(None)\n\n\ndef _award_date(year, value):\n    year = int(year)\n    dt = _parse_datetime(value)\n    start = pd.Timestamp(year=year - 1, month=10, day=1)\n    end = pd.Timestamp(year=year, month=10, day=1)\n    if dt is not None and start <= dt < end:\n        return dt\n    return pd.Timestamp(year=year, month=9, day=30)\n\n\ndef _chunks(path, mapping):\n    reverse = {actual: canon for canon, actual in mapping.items()}\n    for chunk in pd.read_csv(\n        path, dtype=str, low_memory=False, chunksize=200000,\n        encoding='utf-8-sig', keep_default_na=False, na_values=[''],\n    ):\n        chunk = chunk.rename(columns=reverse)\n        for name in ('uei', 'duns', 'company', 'proposal_award_date'):\n            if name not in chunk.columns:\n                chunk[name] = ''\n        if 'state' not in chunk.columns:\n            chunk['state'] = ''\n        chunk['state_raw'] = chunk['state'].map(_clean)\n        chunk['state'] = chunk['state_raw'].map(_state_code)\n        yield chunk\n\n\ndef _split_for_year(year):\n    if 2005 <= year <= 2014:\n        return 'train'\n    if 2015 <= year <= 2016:\n        return 'eval'\n    if 2017 <= year <= 2018:\n        return 'holdout'\n    return None\n\n\ndef build(output: pathlib.Path, cache: pathlib.Path):\n    output = pathlib.Path(output)\n    cache = pathlib.Path(cache)\n    output.mkdir(parents=True, exist_ok=True)\n    (output / 'public').mkdir(parents=True, exist_ok=True)\n    (output / 'private').mkdir(parents=True, exist_ok=True)\n    cache.mkdir(parents=True, exist_ok=True)\n\n    checks = []\n    path = pathlib.Path(fetch(SOURCE_URL, cache, SOURCE_NAME))\n    size = path.stat().st_size\n    _check(\n        checks,\n        'source file present',\n        {'name': path.name, 'bytes': int(size), 'source_member': SOURCE_NAME},\n        'fetch returns a nonempty local file for the published CSV member',\n        size > 0,\n        detail='Selected source member ' + SOURCE_NAME + ' returned an empty file',\n    )\n\n    header = pd.read_csv(path, nrows=0, encoding='utf-8-sig')\n    observed_headers = list(header.columns)\n    mapping = _header_map(observed_headers)\n    missing = [name for name in REQUIRED if name not in mapping]\n    if not any(name in mapping for name in ('uei', 'duns', 'company')):\n        missing.append('a firm identifier among uei, duns and company')\n    _check(\n        checks,\n        'required source fields resolved',\n        {\n            'source_member': SOURCE_NAME,\n            'observed_headers': observed_headers[:80],\n            'resolved_names': sorted(mapping.keys()),\n        },\n        'every declared feature plus phase, firm identifier and agency maps to a published column',\n        not missing,\n        detail=(\n            'Selected archive member ' + SOURCE_NAME\n            + '. Observed headers: ' + repr(observed_headers[:80])\n            + '. Missing required names: ' + repr(missing)\n        ),\n    )\n\n    firm_min = {}\n    firm_missing_year = set()\n    phase2 = defaultdict(set)\n    phase2_firm_ambiguous = set()\n    unknown_phase = defaultdict(set)\n    unknown_phase_firm_ambiguous = set()\n    max_year = None\n    raw_rows = 0\n    missing_firm_key = 0\n    phase_counts = Counter()\n    program_counts = Counter()\n    raw_state_counts = Counter()\n    key_kinds = Counter()\n\n    for chunk in _chunks(path, mapping):\n        for raw_value, raw_count in chunk['state_raw'].value_counts().items():\n            raw_state_counts[str(raw_value)] += int(raw_count)\n        phases = _phase_series(chunk['phase'])\n        years = _numeric_series(chunk['award_year'])\n        agencies = chunk['agency'].map(_clean).str.upper()\n        programs = chunk['program'].map(_clean).str.upper()\n        keys = _firm_keys(chunk)\n        raw_phase = chunk['phase'].map(_clean)\n        for i in range(len(chunk)):\n            raw_rows += 1\n            phase_value = phases.iloc[i]\n            year_value = years.iloc[i]\n            key = keys.iloc[i]\n            agency = agencies.iloc[i]\n            program = programs.iloc[i]\n            if pd.notna(phase_value):\n                phase_counts[str(int(phase_value))] += 1\n            elif raw_phase.iloc[i]:\n                phase_counts['unknown'] += 1\n            else:\n                phase_counts['missing'] += 1\n            program_counts[program if program else 'missing'] += 1\n            if not key or pd.isna(key):\n                missing_firm_key += 1\n                continue\n            key_kinds[str(key).split(':', 1)[0]] += 1\n            if pd.isna(year_value):\n                firm_missing_year.add(key)\n                continue\n            year = int(year_value)\n            if max_year is None or year > max_year:\n                max_year = year\n            phase_num = int(phase_value) if pd.notna(phase_value) else None\n            previous = firm_min.get(key)\n            if previous is None or year < previous[0]:\n                firm_min[key] = (year, {phase_num})\n            elif year == previous[0]:\n                previous[1].add(phase_num)\n            if phase_num == 2:\n                if agency:\n                    phase2[(key, agency)].add(year)\n                else:\n                    phase2_firm_ambiguous.add(key)\n            elif phase_num not in (1, 2, 3):\n                if agency:\n                    unknown_phase[(key, agency)].add(year)\n                else:\n                    unknown_phase_firm_ambiguous.add(key)\n\n    if max_year is None:\n        _fail('No parseable award_year values in source member ' + SOURCE_NAME)\n\n    _check(\n        checks,\n        'firm identifier resolution coverage',\n        {\n            'rows_without_firm_key': int(missing_firm_key),\n            'keyed_rows_by_kind': {kind: int(count) for kind, count in key_kinds.items()},\n        },\n        'firm identity resolves through UEI, else DUNS, else normalized company name with a state',\n        sum(key_kinds.values()) > 0,\n        detail='Source member ' + SOURCE_NAME + ' produced no resolvable firm identifiers',\n    )\n\n    state_kind_totals = Counter()\n    state_other = Counter()\n    for raw_value, raw_count in raw_state_counts.items():\n        kind = _state_kind(raw_value)\n        state_kind_totals[kind] += raw_count\n        if kind == 'other':\n            state_other[_compact(raw_value)] += raw_count\n    bad_state_text = {value: count for value, count in state_other.items() if not _state_text_like(value)}\n    _check(\n        checks,\n        'state vocabulary in the published file',\n        {\n            'source_member': SOURCE_NAME,\n            'distinct_state_values': int(len(raw_state_counts)),\n            'blank': int(state_kind_totals.get('blank', 0)),\n            'two_letter_code': int(state_kind_totals.get('code', 0)),\n            'full_state_name': int(state_kind_totals.get('name', 0)),\n            'other_location_text': {value: int(count) for value, count in list(state_other.items())[:10]},\n            'other_location_total': int(sum(state_other.values())),\n            'non_text_values': {value: int(count) for value, count in list(bad_state_text.items())[:10]},\n        },\n        'the published state column holds two-letter USPS codes or full state and territory names; full names are canonicalized to codes and non-US location text is preserved verbatim',\n        not bad_state_text,\n        detail=(\n            'Selected archive member ' + SOURCE_NAME\n            + '. State values in the source are neither blank, a two-letter code, a known state or territory name, nor alphabetic location text: '\n            + repr(list(bad_state_text.items())[:20])\n        ),\n    )\n\n    eligible = {}\n    for key, value in firm_min.items():\n        year, phases = value\n        if key in firm_missing_year or key in phase2_firm_ambiguous or key in unknown_phase_firm_ambiguous:\n            continue\n        if phases != {1}:\n            continue\n        if year < 2005 or year > 2018:\n            continue\n        if year + 4 > max_year:\n            continue\n        eligible[key] = year\n    if not eligible:\n        _fail(\n            'No eligible first-time Phase I firms after population rules. Observed phase counts '\n            + str(dict(phase_counts)) + ' and maximum award year ' + str(max_year) + '.'\n        )\n\n    candidates = defaultdict(list)\n    for chunk in _chunks(path, mapping):\n        keys = _firm_keys(chunk)\n        mask = keys.isin(eligible)\n        if not mask.any():\n            continue\n        sub = chunk[mask].copy()\n        sub_keys = keys[mask]\n        phases = _phase_series(sub['phase'])\n        years = _numeric_series(sub['award_year'])\n        agencies = sub['agency'].map(_clean).str.upper()\n        branches = sub['branch'].map(_clean)\n        programs = sub['program'].map(_clean).str.upper()\n        amounts = _numeric_series(sub['award_amount'], money=True)\n        topics = sub['topic_code'].map(_clean)\n        states = sub['state'].map(_clean).str.upper()\n        employees = _numeric_series(sub['number_employees'])\n        hubzones = _ynu_series(sub['hubzone_owned'])\n        women = _ynu_series(sub['women_owned'])\n        socials = _ynu_series(sub['socially_economically_disadvantaged'])\n        dates = sub['proposal_award_date'].map(_clean)\n        for i in range(len(sub)):\n            key = sub_keys.iloc[i]\n            year_value = years.iloc[i]\n            if pd.isna(year_value) or int(year_value) != eligible.get(key):\n                continue\n            phase_value = phases.iloc[i]\n            if pd.isna(phase_value) or int(phase_value) != 1:\n                continue\n            candidates[key].append({\n                'firm_key': key,\n                'agency': agencies.iloc[i],\n                'branch': branches.iloc[i],\n                'program': programs.iloc[i],\n                'award_year': int(year_value),\n                'award_amount': amounts.iloc[i],\n                'topic_code': topics.iloc[i],\n                'state': states.iloc[i],\n                'number_employees': employees.iloc[i],\n                'hubzone_owned': hubzones.iloc[i],\n                'women_owned': women.iloc[i],\n                'socially_economically_disadvantaged': socials.iloc[i],\n                'proposal_award_date': dates.iloc[i],\n            })\n\n    rows = []\n    excluded = Counter()\n    for key, year in eligible.items():\n        recs = candidates.get(key, [])\n        if not recs:\n            excluded['no_index_record'] += 1\n            continue\n        if len(recs) == 1:\n            chosen = recs[0]\n        else:\n            parsed = [_parse_datetime(rec['proposal_award_date']) for rec in recs]\n            if any(value is None for value in parsed):\n                excluded['ambiguous_same_year_missing_date'] += 1\n                continue\n            earliest = min(parsed)\n            winners = [rec for rec, value in zip(recs, parsed) if value == earliest]\n            if len(winners) != 1:\n                excluded['ambiguous_same_year_tied_date'] += 1\n                continue\n            chosen = winners[0]\n        agency = chosen['agency']\n        if not agency:\n            excluded['missing_agency'] += 1\n            continue\n        ambiguous = False\n        for future in range(year + 1, year + 5):\n            if future in unknown_phase.get((key, agency), set()):\n                ambiguous = True\n                break\n        if ambiguous:\n            excluded['unknown_phase_in_window'] += 1\n            continue\n        phase2_years = phase2.get((key, agency), set())\n        label = 1 if any(future in phase2_years for future in range(year + 1, year + 5)) else 0\n        record_id = 'sbir-' + hashlib.sha1(str(key).encode('utf-8')).hexdigest()[:24]\n        award_date = _award_date(year, chosen['proposal_award_date'])\n        rows.append({\n            ID_COL: record_id,\n            TIME_COL: award_date.strftime('%Y-%m-%dT%H:%M:%S.000'),\n            'agency': agency,\n            'branch': chosen['branch'],\n            'program': chosen['program'],\n            'award_year': year,\n            'award_amount': chosen['award_amount'],\n            'topic_code': chosen['topic_code'],\n            'state': chosen['state'],\n            'number_employees': chosen['number_employees'],\n            'hubzone_owned': chosen['hubzone_owned'],\n            'women_owned': chosen['women_owned'],\n            'socially_economically_disadvantaged': chosen['socially_economically_disadvantaged'],\n            TARGET: label,\n            '_firm_key': key,\n        })\n\n    if not rows:\n        _fail('No rows constructed. Exclusions ' + str(dict(excluded)) + '.')\n\n    frame = pd.DataFrame(rows)\n    frame[ID_COL] = frame[ID_COL].astype(str)\n    frame['award_year'] = frame['award_year'].astype(int)\n    frame[TARGET] = frame[TARGET].astype(int)\n    frame['award_amount'] = pd.to_numeric(frame['award_amount'], errors='coerce')\n    frame['number_employees'] = pd.to_numeric(frame['number_employees'], errors='coerce')\n    frame[TIME_COL] = pd.to_datetime(frame[TIME_COL], errors='coerce')\n    if frame[TIME_COL].isna().any():\n        _fail('Shipped award_date values could not be parsed. Observed rows ' + str(len(frame)) + '.')\n    frame[TIME_COL] = frame[TIME_COL].dt.strftime('%Y-%m-%dT%H:%M:%S.000')\n\n    program_counts_included = Counter(frame['program'].fillna('missing').astype(str).tolist())\n    bad_program = {name: count for name, count in program_counts_included.items() if name not in ('SBIR', 'STTR')}\n    _check(\n        checks,\n        'program values for included rows',\n        {'counts': dict(program_counts_included)},\n        'program is SBIR or STTR on every included Phase I index record',\n        not bad_program,\n        detail='Selected source member ' + SOURCE_NAME + '. Observed program counts: ' + repr(dict(program_counts_included)),\n    )\n\n    state_values = frame['state'].fillna('').astype(str)\n    missing_state = int((state_values == '').sum())\n    state_codes = Counter(value for value in state_values if len(value) == 2 and value.isalpha() and value in USPS)\n    state_foreign = Counter(value for value in state_values if value and not (len(value) == 2 and value.isalpha() and value in USPS))\n    bad_included_state = {value: int(count) for value, count in state_foreign.items() if not _state_text_like(value)}\n    _check(\n        checks,\n        'state values for included rows',\n        {\n            'missing': missing_state,\n            'usps_code_rows': int(sum(state_codes.values())),\n            'non_usps_two_letter_text': {value: int(count) for value, count in state_foreign.items() if len(value) == 2 and value.isalpha()},\n            'non_us_location_text': {value: int(count) for value, count in list(state_foreign.items())[:10]},\n            'malformed_values': bad_included_state,\n        },\n        'state is a canonical USPS state or territory code, blank, or preserved non-US location text; full names were converted to codes and nothing is imputed',\n        not bad_included_state,\n        detail='Selected source member ' + SOURCE_NAME + '. Observed state values: ' + repr(dict(state_foreign.most_common(20))),\n    )\n\n    ynu_observed = {}\n    ynu_bad = {}\n    for column in ('hubzone_owned', 'women_owned', 'socially_economically_disadvantaged'):\n        counts = Counter(frame[column].fillna('').astype(str))\n        ynu_observed[column] = dict(counts)\n        bad = {name: count for name, count in counts.items() if name not in ('Y', 'N', 'U', '')}\n        if bad:\n            ynu_bad[column] = bad\n    _check(\n        checks,\n        'yes no unavailable values for included rows',\n        ynu_observed,\n        'each coded ownership field is Y, N, U, or blank, with unrecognized text never converted to Y or N',\n        not ynu_bad,\n        detail='Selected source member ' + SOURCE_NAME + '. Unrecognized coded values: ' + repr(ynu_bad),\n    )\n\n    emp = frame['number_employees'].dropna().astype(float)\n    emp_non_integer = int(emp.map(lambda value: not float(value).is_integer()).sum())\n    emp_negative = int((emp < 0).sum())\n    emp_over = int((emp > 500).sum())\n    _check(\n        checks,\n        'number_employees units and range for included rows',\n        {\n            'nonnull': int(len(emp)),\n            'missing': int(frame['number_employees'].isna().sum()),\n            'min': float(emp.min()) if len(emp) else None,\n            'max': float(emp.max()) if len(emp) else None,\n            'negative': emp_negative,\n            'non_integer': emp_non_integer,\n            'above_sbir_500_employee_limit': emp_over,\n        },\n        'whole nonnegative employee count in persons as published; blank stays blank and is never zero; the SBIR eligibility ceiling is 500 employees and values above it are reported as source evidence, not clipped',\n        emp_negative == 0 and emp_non_integer == 0,\n        detail='Selected source member ' + SOURCE_NAME + '. Observed employee range and counts are reported in the check object.',\n        kind='unit',\n    )\n\n    amount = frame['award_amount'].dropna().astype(float)\n    amount_negative = int((amount < 0).sum())\n    _check(\n        checks,\n        'award_amount units for included rows',\n        {\n            'nonnull': int(len(amount)),\n            'missing': int(frame['award_amount'].isna().sum()),\n            'min': float(amount.min()) if len(amount) else None,\n            'max': float(amount.max()) if len(amount) else None,\n            'negative': amount_negative,\n        },\n        'nonnegative US dollars as published for the Phase I award only; blank stays blank and is never zero',\n        amount_negative == 0,\n        detail='Selected source member ' + SOURCE_NAME + '. Observed award amount range and counts are reported in the check object.',\n        kind='unit',\n    )\n\n    target_values = Counter(int(value) for value in frame[TARGET])\n    _check(\n        checks,\n        'target is binary and complete',\n        dict(target_values),\n        'target values are 0 and 1 with no missing row',\n        set(target_values).issubset({0, 1}) and sum(target_values.values()) == len(frame),\n        detail='Selected source member ' + SOURCE_NAME + '. Observed target counts: ' + repr(dict(target_values)),\n    )\n\n    id_unique = int(frame[ID_COL].nunique())\n    _check(\n        checks,\n        'stable identifiers are unique',\n        {'rows': int(len(frame)), 'unique_ids': id_unique},\n        'one unique record_id per firm',\n        id_unique == len(frame),\n        detail='Selected source member ' + SOURCE_NAME + '. Duplicate rows: ' + str(int(len(frame) - id_unique)),\n    )\n\n    bad_fiscal = 0\n    for _, row in frame.iterrows():\n        dt = pd.to_datetime(row[TIME_COL], utc=True).tz_convert(None)\n        y = int(row['award_year'])\n        start = pd.Timestamp(year=y - 1, month=10, day=1)\n        end = pd.Timestamp(year=y, month=10, day=1)\n        if not (start <= dt < end):\n            bad_fiscal += 1\n    _check(\n        checks,\n        'award_date within award fiscal year',\n        {'bad_rows': int(bad_fiscal), 'rows': int(len(frame))},\n        'every shipped award_date lies in the half-open federal fiscal year of its award_year',\n        bad_fiscal == 0,\n        detail='Selected source member ' + SOURCE_NAME + '. Shipped award_date values must stay inside the award_year federal fiscal year.',\n    )\n\n    frame['_split'] = frame['award_year'].map(_split_for_year)\n    if frame['_split'].isna().any():\n        _fail(\n            'Rows outside the fixed split years. Observed years '\n            + str(sorted(frame['award_year'].unique().tolist())) + '.'\n        )\n\n    windows = {\n        'train': ('2004-10-01T00:00:00.000', '2014-10-01T00:00:00.000'),\n        'eval': ('2014-10-01T00:00:00.000', '2016-10-01T00:00:00.000'),\n        'holdout': ('2016-10-01T00:00:00.000', '2018-10-01T00:00:00.000'),\n    }\n    split_ranges = {}\n    split_ok = True\n    for split in ('train', 'eval', 'holdout'):\n        sub = frame[frame['_split'] == split]\n        if len(sub):\n            min_dt = pd.to_datetime(sub[TIME_COL]).min()\n            max_dt = pd.to_datetime(sub[TIME_COL]).max()\n        else:\n            min_dt = pd.NaT\n            max_dt = pd.NaT\n        split_ranges[split] = {\n            'rows': int(len(sub)),\n            'min_date': min_dt.strftime('%Y-%m-%dT%H:%M:%S.000') if pd.notna(min_dt) else None,\n            'max_date': max_dt.strftime('%Y-%m-%dT%H:%M:%S.000') if pd.notna(max_dt) else None,\n            'positives': int(sub[TARGET].sum()) if len(sub) else 0,\n        }\n        start = pd.Timestamp(windows[split][0])\n        end = pd.Timestamp(windows[split][1])\n        if len(sub) == 0 or pd.isna(min_dt) or pd.isna(max_dt) or min_dt < start or max_dt >= end:\n            split_ok = False\n    _check(\n        checks,\n        'fixed chronological split ranges',\n        split_ranges,\n        'train FY2005-2014, eval FY2015-2016, holdout FY2017-2018, all nonempty and inside half-open federal fiscal windows',\n        split_ok,\n        detail='Selected source member ' + SOURCE_NAME + '. Observed split ranges: ' + repr(split_ranges),\n    )\n\n    positive_ok = all(split_ranges[s]['positives'] > 0 for s in windows)\n    _check(\n        checks,\n        'positive events in every split',\n        {s: split_ranges[s]['positives'] for s in windows},\n        'at least one positive in train, eval and holdout',\n        positive_ok,\n        detail='Selected source member ' + SOURCE_NAME + '. Observed positive counts: ' + repr({s: split_ranges[s]['positives'] for s in windows}),\n    )\n\n    pos_bad = 0\n    neg_bad = 0\n    unknown_negative = 0\n    for row in rows:\n        key = row['_firm_key']\n        agency = row['agency']\n        year = row['award_year']\n        phase2_years = phase2.get((key, agency), set())\n        matched = any(future in phase2_years for future in range(year + 1, year + 5))\n        if row[TARGET] == 1 and not matched:\n            pos_bad += 1\n        if row[TARGET] == 0 and matched:\n            neg_bad += 1\n        if row[TARGET] == 0:\n            if any(future in unknown_phase.get((key, agency), set()) for future in range(year + 1, year + 5)):\n                unknown_negative += 1\n    _check(\n        checks,\n        'label matches later Phase II records',\n        {\n            'positive_without_match': pos_bad,\n            'negative_with_match': neg_bad,\n            'positives': int(frame[TARGET].sum()),\n            'negatives': int(len(frame) - frame[TARGET].sum()),\n        },\n        'positive only when the same firm key and agency has a Phase II record in award_year plus one through plus four',\n        pos_bad == 0 and neg_bad == 0,\n        detail='Selected source member ' + SOURCE_NAME + '. Observed label disagreements: ' + repr({'positive_without_match': pos_bad, 'negative_with_match': neg_bad}),\n    )\n\n    _check(\n        checks,\n        'unknown phase never becomes a negative label',\n        {\n            'unknown_phase_records': int(phase_counts.get('unknown', 0)),\n            'missing_phase_records': int(phase_counts.get('missing', 0)),\n            'negative_rows_with_unknown_phase_in_window': unknown_negative,\n            'excluded_unknown_phase_in_window': int(excluded.get('unknown_phase_in_window', 0)),\n        },\n        'no included negative row has an unknown or missing phase record inside its label window',\n        unknown_negative == 0,\n        detail='Selected source member ' + SOURCE_NAME + '. Observed unknown-phase exclusions and negative rows: ' + repr({'negative_rows_with_unknown_phase_in_window': unknown_negative, 'excluded_unknown_phase_in_window': int(excluded.get('unknown_phase_in_window', 0))}),\n    )\n\n    train_ids = set(frame.loc[frame['_split'] == 'train', ID_COL])\n    eval_ids = set(frame.loc[frame['_split'] == 'eval', ID_COL])\n    holdout_ids = set(frame.loc[frame['_split'] == 'holdout', ID_COL])\n    overlaps = len(train_ids & eval_ids) + len(train_ids & holdout_ids) + len(eval_ids & holdout_ids)\n    _check(\n        checks,\n        'split identifier disjointness',\n        {'overlap': overlaps},\n        'no record_id appears in more than one split',\n        overlaps == 0,\n        detail='Selected source member ' + SOURCE_NAME + '. Observed cross-split identifier overlap: ' + str(overlaps),\n    )\n\n    frame['number_employees'] = frame['number_employees'].astype('Int64')\n\n    for split, filename in (\n        ('train', output / 'public' / 'train.csv'),\n        ('eval', output / 'public' / 'eval.csv'),\n        ('holdout', output / 'private' / 'holdout.csv'),\n    ):\n        sub = frame[frame['_split'] == split][CSV_COLUMNS].sort_values([TIME_COL, ID_COL], kind='mergesort')\n        sub.to_csv(filename, index=False)\n\n    return checks\n",
+  "quality": {
+    "carry_columns": [],
+    "evaluation_contract": {
+      "access": "isolated_rows",
+      "cross_row_audit": {
+        "auxiliary_files_review": "Only public/train.csv, public/eval.csv, and private/holdout.csv are written; no auxiliary evaluation files.",
+        "probes": [],
+        "rationale": "Each firm contributes one row keyed by a hashed stable identifier; no cross-row rate features are shipped."
+      },
+      "feature_evidence": {
+        "agency": {
+          "availability": "Stored on the index Phase I award record; used as a categorical feature.",
+          "source": "SBIR.gov award data dictionary, Agency field",
+          "status": "verified"
+        },
+        "award_amount": {
+          "availability": "Stored as published; Phase I amount only; may be blank and is not imputed",
+          "source": "SBIR.gov award data dictionary, Award Amount field",
+          "status": "verified"
+        },
+        "award_date": {
+          "availability": "Constructed from Proposal Award Date when it falls inside the award_year federal fiscal year; otherwise the fiscal year end is used. HHS awards do not publish Proposal Award Date, so exact HHS award dates are not observed.",
+          "source": "SBIR.gov award data dictionary, Proposal Award Date and Award Year fields",
+          "status": "assumed"
+        },
+        "award_year": {
+          "availability": "Stored on the index Phase I award record; used as a feature and to derive award_date; current-vintage file may revise historical years",
+          "source": "SBIR.gov award data dictionary, Award Year field",
+          "status": "verified"
+        },
+        "branch": {
+          "availability": "Stored on the index Phase I award record; may be blank for non-DoD awards",
+          "source": "SBIR.gov award data dictionary, Branch field",
+          "status": "verified"
+        },
+        "hubzone_owned": {
+          "availability": "Optional Y/N/U field on the index Phase I award record; U means unavailable",
+          "source": "SBIR.gov award data dictionary, HUBZone Owned field",
+          "status": "verified"
+        },
+        "number_employees": {
+          "availability": "Optional field on the index Phase I award record; may be blank; current-vintage values may be corrected",
+          "source": "SBIR.gov award data dictionary, Number Employees field",
+          "status": "assumed"
+        },
+        "program": {
+          "availability": "Stored on the index Phase I award record; SBIR or STTR",
+          "source": "SBIR.gov award data dictionary, Program field",
+          "status": "verified"
+        },
+        "record_id": {
+          "availability": "Constructed after reading the index Phase I record; stable SHA1 prefix of the firm key",
+          "source": "Constructed at build time from the SBIR firm key; not a publisher field",
+          "status": "verified"
+        },
+        "socially_economically_disadvantaged": {
+          "availability": "Optional Y/N/U field on the index Phase I award record; U means unavailable",
+          "source": "SBIR.gov award data dictionary, Socially and Economically Disadvantaged field",
+          "status": "verified"
+        },
+        "state": {
+          "availability": "Present on the index Phase I award record. The published file stores many values as full state names rather than two-letter codes; the builder canonicalizes both forms to USPS state and territory codes and preserves unrecognized non-US location text verbatim. Blank stays blank and is never imputed.",
+          "source": "SBIR.gov award data dictionary, State field, checked against observed source values in the no-abstract award CSV",
+          "status": "verified"
+        },
+        "topic_code": {
+          "availability": "Stored on the index Phase I award record; may be blank",
+          "source": "SBIR.gov award data dictionary, Topic Code field",
+          "status": "verified"
+        },
+        "women_owned": {
+          "availability": "Optional Y/N/U field on the index Phase I award record; U means unavailable",
+          "source": "SBIR.gov award data dictionary, Women Owned field",
+          "status": "verified"
+        }
+      },
+      "limitations": [
+        "Annual award records are a current-vintage administrative extract; later corrections can revise earlier years, so historical availability is not proven.",
+        "The shipped time column award_date uses Proposal Award Date when it falls inside the award_year federal fiscal year; HHS awards do not publish that date, so the fiscal year end is used. Those rows share a fiscal-year-end event cluster and exact HHS award dates are not observed.",
+        "The published state column mixes two-letter USPS codes with full state and territory names; the builder canonicalizes both to codes, so the state feature is a normalized location rather than a verbatim copy of the source field.",
+        "No parent key links a Phase II award to its Phase I award; conversion is inferred by firm key and agency within four award years, so some labels may be misassigned.",
+        "Firm identity uses UEI, else DUNS, else normalized company name plus state; optional identifiers and name changes can merge or split firms.",
+        "HHS awards may omit proposal_award_date; the index time is the federal award year, and award_date falls back to fiscal year end rather than an exact date.",
+        "Same-year multiple Phase I awards are included only when proposal dates identify a unique earliest record; otherwise the firm is excluded rather than given an arbitrary row.",
+        "Phase II records with missing agency or an unknown or missing phase in a label window are excluded, not treated as negative.",
+        "No label-derived group rates or persistence reference are shipped; each firm appears once.",
+        "The target is an award-record event, not the underlying cause of non-conversion; voluntary exit and temporary suspension are not separately observed."
+      ],
+      "selection": {
+        "evidence": "Only fields on the index Phase I award record are features; award_date is derived from Proposal Award Date or fiscal year end. The target links later Phase II records by firm key and agency.",
+        "kind": "prediction_time"
+      },
+      "training_label_timing": "unverified",
+      "use": "retrospective_research",
+      "vintage": {
+        "evidence": "The SBIR.gov no-abstract award CSV is a current-vintage administrative extract; later corrections can revise earlier award years and exact date fields.",
+        "kind": "current_snapshot"
+      }
+    },
+    "event_key_column": "award_date",
+    "expected_duplicate_ids": 0,
+    "features": [
+      "agency",
+      "branch",
+      "program",
+      "award_year",
+      "award_amount",
+      "topic_code",
+      "state",
+      "number_employees",
+      "hubzone_owned",
+      "women_owned",
+      "socially_economically_disadvantaged"
+    ],
+    "features_documented_at": "prediction_time",
+    "high_cardinality_columns": [
+      "record_id",
+      "award_date",
+      "topic_code",
+      "award_amount"
+    ],
+    "id_columns": [
+      "record_id"
+    ],
+    "label_source_columns": [
+      "phase"
+    ],
+    "measurements": [
+      {
+        "column": "award_amount",
+        "frame": "Phase I award amount only, as published; may be blank and is not imputed",
+        "unit": "USD"
+      },
+      {
+        "column": "award_date",
+        "frame": "Proposal Award Date when it falls inside the award_year federal fiscal year; otherwise fiscal year end",
+        "unit": "date"
+      },
+      {
+        "column": "number_employees",
+        "frame": "Whole number reported for the firm, documented 0-500; optional and may be blank",
+        "unit": "employees"
+      },
+      {
+        "column": "award_year",
+        "frame": "Four-digit federal fiscal year of the index Phase I award; used as a feature and split key, while award_date is the shipped time column",
+        "unit": "federal fiscal year"
+      }
+    ],
+    "name": "sbir-phase1-to-phase2-conversion",
+    "positive_label": 1,
+    "post_hoc_columns": [
+      "phase"
+    ],
+    "split_windows": {
+      "eval": {
+        "end": "2016-10-01T00:00:00.000",
+        "start": "2014-10-01T00:00:00.000"
+      },
+      "holdout": {
+        "end": "2018-10-01T00:00:00.000",
+        "start": "2016-10-01T00:00:00.000"
+      },
+      "train": {
+        "end": "2014-10-01T00:00:00.000",
+        "start": "2004-10-01T00:00:00.000"
+      }
+    },
+    "splits": {
+      "eval": "public/eval.csv",
+      "holdout": "private/holdout.csv",
+      "train": "public/train.csv"
+    },
+    "target": "phase2_conversion",
+    "task": {
+      "features": [
+        {
+          "availability": "Stored on the index Phase I award record; used as a categorical feature.",
+          "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+          "meaning": "Two-to-four character code of the agency making the Phase I award",
+          "name": "agency"
+        },
+        {
+          "availability": "Stored on the index Phase I award record; blank values are preserved.",
+          "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+          "meaning": "Agency sub-component, mandatory for DoD awards and otherwise may be blank",
+          "name": "branch"
+        },
+        {
+          "availability": "Stored on the index Phase I award record.",
+          "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+          "meaning": "SBIR or STTR",
+          "name": "program"
+        },
+        {
+          "availability": "Stored on the index record; current-vintage revisions to historical years are possible. Used to derive award_date and to define the fixed chronological split.",
+          "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+          "meaning": "Federal fiscal year of the index Phase I award; used as a feature and split key",
+          "name": "award_year"
+        },
+        {
+          "availability": "Stored as published; may be blank and is not imputed.",
+          "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+          "meaning": "Dollar amount of the Phase I award only, never Phase II money",
+          "name": "award_amount"
+        },
+        {
+          "availability": "Stored on the index Phase I award record; may be blank.",
+          "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+          "meaning": "Code or number of the solicitation topic or subtopic addressed by the Phase I award",
+          "name": "topic_code"
+        },
+        {
+          "availability": "Stored on the index Phase I award record. The published column mixes full state names with two-letter codes, so both forms are canonicalized to USPS codes; blank values are preserved and non-US location text is kept verbatim.",
+          "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+          "meaning": "Two-letter USPS state or territory code of the awardee address; full state names in the source are converted to the matching code",
+          "name": "state"
+        },
+        {
+          "availability": "Optional field on the index Phase I record; may be blank and is not imputed.",
+          "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+          "meaning": "Whole number of employees reported for the firm, 0-500",
+          "name": "number_employees"
+        },
+        {
+          "availability": "Optional Y/N/U field on the index Phase I record; blank values are preserved.",
+          "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+          "meaning": "Whether the firm is HUBZone-owned: Y, N, or U for unavailable",
+          "name": "hubzone_owned"
+        },
+        {
+          "availability": "Optional Y/N/U field on the index Phase I record; blank values are preserved.",
+          "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+          "meaning": "Whether the firm is at least 51 percent women-owned: Y, N, or U",
+          "name": "women_owned"
+        },
+        {
+          "availability": "Optional Y/N/U field on the index Phase I record; blank values are preserved.",
+          "evidence_url": "https://www.sbir.gov/data-resources/data-dictionary/award",
+          "meaning": "Whether the firm is socially and economically disadvantaged: Y, N, or U",
+          "name": "socially_economically_disadvantaged"
+        }
+      ],
+      "outcome_horizon": "Up to four federal fiscal years after the index Phase I award year.",
+      "population": "Firms whose earliest award record in the frozen SBIR.gov no-abstract file is a Phase I award with award_year from 2005 through 2018 and a resolvable firm key: UEI, else DUNS, else normalized company name plus state. Firms with any earlier award record of either phase, or whose earliest record is Phase II, are excluded. Each firm contributes one row; same-year multiple Phase I records are included only when proposal_award_date identifies a unique earliest record.",
+      "prediction_time": "The Phase I award date: proposal_award_date when published and inside the federal fiscal year of award_year; otherwise the fiscal year end of award_year. Only fields on the index Phase I award record are read.",
+      "question": "Will a firm's first-ever SBIR/STTR Phase I award convert into a Phase II award from the same agency within four fiscal years?",
+      "simple_references": "Majority-class rate within each split; agency-by-award-year conversion base rate. Persistence is not available because each firm appears once and has no prior Phase I outcome to carry forward.",
+      "split_policy": "Fixed chronological split on award_year using half-open federal fiscal-year windows: train FY2005-2014 (2004-10-01 to 2014-10-01), eval FY2015-2016 (2014-10-01 to 2016-10-01), holdout FY2017-2018 (2016-10-01 to 2018-10-01). No embargo is applied because every feature is read from the index Phase I record and the label uses only later records. Rows require the four-year window to be closed by the maximum award year in the frozen file.",
+      "target": "1 if the same firm (matched on UEI, else DUNS, else normalised company name plus state) has any Phase II record from the same agency with award_year in {y+1, y+2, y+3, y+4}, where y is the Phase I award_year; 0 if no such record exists in the frozen file. Rows are dropped when no firm identifier can be resolved or when y+4 exceeds the last complete award year in the file.",
+      "usefulness": "No source column records Phase I to Phase II conversion, so the label must be rebuilt by linking a later Phase II award to the same firm and agency. Conversion is the SBIR stage gate, and raw Phase I and Phase II counts are confounded by firm survival and agency differences, so within-agency award-time attributes can add signal."
+    },
+    "time_column": "award_date",
+    "timing": {
+      "features": {
+        "lag_days": null,
+        "period": null,
+        "published_days_after_period_end": null,
+        "source_kind": "administrative_record"
+      },
+      "observations": [],
+      "prediction_instant": {
+        "citation": "SBIR.gov award data dictionary defines proposal_award_date as the first day of contract performance and award_year as the federal fiscal year; proposal_award_date is missing for HHS awards, so award_date falls back to the fiscal year end.",
+        "days_after_period_end": null,
+        "kind": "event_time",
+        "period": null
+      },
+      "row_selection": {
+        "fields": [
+          "award_year",
+          "phase",
+          "agency",
+          "uei",
+          "duns",
+          "company",
+          "state",
+          "proposal_award_date"
+        ],
+        "rule": "One row per firm key: keep only firms whose earliest award_year in the frozen file is a Phase I award from 2005 through 2018, with no earlier Phase II or Phase III record and with the four-year label window closed. Later Phase II records from the same firm key and agency define the target; no outcome field is used to select rows."
+      }
+    },
+    "construction_notes": "Repair of the prior build against the qualification gate, not a change to the frozen question, target, population, feature list or split years. The prior file shipped award_year as an integer time column and integer split windows; the gate rejected that as invalid actual ranges and the artifact scan failed on an integer where a date string was expected. The shipped time column is now award_date, an ISO datetime derived from proposal_award_date when it falls inside the federal fiscal year of award_year, otherwise the fiscal year end. The fixed half-open split windows are expressed as federal fiscal-year ISO timestamps for FY2005-2014, FY2015-2016 and FY2017-2018, and event_key_column is award_date so the gate clusters rows by day rather than by year. The label is still the same later Phase II record from the same firm key and agency within four award years. label_source_columns is narrowed to phase because phase is the outcome column; agency, award_year and state are prediction-time fields and matching keys, not outcome columns, and the same-agency and four-year conditions remain in the target rule. State canonicalization from full names to USPS codes is preserved. HHS awards do not publish proposal_award_date, so their award_date is the fiscal year end; this is documented as a limitation and as a clustered-event weakness, not hidden. No persistence reference applies because each firm contributes one row and has no prior Phase I outcome. Missing semantic evidence: the live header was not re-read in this write-only phase, so alias mapping stays defensive and is asserted with observed headers; historical availability of the fields is not proven, so training_label_timing stays unverified and the use stays retrospective_research. Checks assert failures with observed headers, missing names, selected source member and bounded diagnostics. No fixture labels, answer scaffolds, label-derived rates or auxiliary evaluation files are shipped.",
+    "source_access_recipe": "GET https://data.www.sbir.gov/mod_awarddatapublic_no_abstract/award_data_no_abstract.csv with a normal browser user agent, then read the CSV in chunks with pandas.read_csv(low_memory=False). Normalise phase to 1, 2 or 3, program to SBIR or STTR, parse award_year and award_amount after removing dollar signs and commas. Build the firm key in priority order: UEI, else DUNS, else upper-cased company name with legal suffixes stripped plus canonical USPS state. Keep firms whose earliest award record is a Phase I award with award_year 2005-2018 and whose four-year label window is closed by the maximum award year. Derive award_date from proposal_award_date when it falls inside the award_year federal fiscal year, otherwise use the fiscal year end because HHS does not publish proposal_award_date. Label by joining later Phase II records on firm key and agency with y < award_year <= y+4. Drop abstract and award_title from the released table."
+  }
+}
